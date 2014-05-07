@@ -1,0 +1,40 @@
+{
+  "name": "angular-point",
+  "version": "0.0.1",
+  "homepage": "https://github.com/scatcher/angular-point",
+  "authors": [
+    "Scott <github@scotthatcher.com>"
+  ],
+  "appPath": "demo",
+  "distPath": "dist",
+  "description": "Shared components of angularPoint.",
+  "license": "MIT",
+  "dependencies": {
+    "SPServices": "https://github.com/scatcher/SPServices.git#master",
+    "angular-toastr": "~0.2",
+    "lodash": "~2.4",
+    "lodash-deep": "~1.1",
+    "moment": "~2.6"
+  },
+  "devDependencies": {
+    "angular": "~1.2",
+    "jquery": "~1.11",
+    "chancejs": "https://github.com/victorquinn/chancejs.git",
+    "moment": "latest",
+    "ng-table": "master",
+    "respond": "latest",
+    "angular-ui-router": "latest",
+    "angular-ui-utils": "latest",
+    "bootstrap": "~3",
+    "es5-shim": "~2.3.0",
+    "explorer-canvas": "git://github.com/arv/ExplorerCanvas.git",
+    "font-awesome": "~4",
+    "json3": "~3",
+    "angular-point": "git://github.com/scatcher/angular-point.git#master"
+  },
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components"
+  ]
+}
