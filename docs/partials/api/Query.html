@@ -1,0 +1,53 @@
+<h1><code ng:non-bindable="">Query</code>
+<div><span class="hint"></span>
+</div>
+</h1>
+<div><h2 id="description">Description</h2>
+<div class="description"><div class="query-page"><p>Primary constructor that all queries inherit from.</p>
+</div></div>
+<h2 id="usage">Usage</h2>
+<div class="usage"><pre class="prettyprint linenums">Query(queryOptions, model);</pre>
+<h4 id="usage_parameters">Parameters</h4><table class="variables-matrix table table-bordered table-striped"><thead><tr><th>Param</th><th>Type</th><th>Details</th></tr></thead><tbody><tr><td>queryOptions</td><td><a href="" class="label type-hint type-hint-object">object</a></td><td><div class="query-page"><p>Initialization parameters.</p>
+</div></td></tr><tr><td>queryOptions.operation</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="query-page"><p>Optionally use &#39;GetListItems&#39; to
+receive a more efficient response, just don&#39;t have the ability to check for changes since the last time
+the query was called.</p>
+</div> <p><em>(default: GetListItemChangesSinceToken)</em></p></td></tr><tr><td>queryOptions.cacheXML</td><td><a href="" class="label type-hint type-hint-boolean">boolean</a></td><td><div class="query-page"><p>Set to false if you want a fresh request.</p>
+</div> <p><em>(default: true)</em></p></td></tr><tr><td>queryOptions.query</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="query-page"><p>CAML query passed to SharePoint to control
+the data SharePoint returns.</p>
+</div> <p><em>(default: Ordered ascending by ID)</em></p></td></tr><tr><td>[queryOptions.queryOptions]</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="query-page"><p>SharePoint options.
+<pre class="prettyprint linenums">
+//Default
+queryOptions: '' +
+'&lt;QueryOptions&gt;' +
+'   &lt;IncludeMandatoryColumns&gt;FALSE&lt;/IncludeMandatoryColumns&gt;' +
+'   &lt;IncludeAttachmentUrls&gt;TRUE&lt;/IncludeAttachmentUrls&gt;' +
+'   &lt;IncludeAttachmentVersion&gt;FALSE&lt;/IncludeAttachmentVersion&gt;' +
+'   &lt;ExpandUserField&gt;FALSE&lt;/ExpandUserField&gt;' +
+'&lt;/QueryOptions&gt;',
+</pre>
+</div></td></tr><tr><td>model</td><td><a href="" class="label type-hint type-hint-object">object</a></td><td><div class="query-page"><p>Reference to the parent model for the query.  Allows us to reference when out of
+scope.</p>
+</div></td></tr></tbody></table></div>
+<h2 id="example">Example</h2>
+<div class="example"><div class="query-page"><pre class="prettyprint linenums">
+// Query to retrieve the most recent 25 modifications
+model.registerQuery({
+   name: 'recentChanges',
+   CAMLRowLimit: 25,
+   query: '' +
+       '&lt;Query&gt;' +
+       '   &lt;OrderBy&gt;' +
+       '       &lt;FieldRef Name="Modified" Ascending="FALSE"/&gt;' +
+       '   &lt;/OrderBy&gt;' +
+           // Prevents any records from being returned if user
+           // doesn't have permissions on project
+       '   &lt;Where&gt;' +
+       '       &lt;IsNotNull&gt;' +
+       '           &lt;FieldRef Name="Project"/&gt;' +
+       '       &lt;/IsNotNull&gt;' +
+       '   &lt;/Where&gt;' +
+       '&lt;/Query&gt;'
+});
+</pre>
+</div></div>
+</div>

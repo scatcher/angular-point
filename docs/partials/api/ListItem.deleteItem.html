@@ -1,0 +1,17 @@
+<h1><code ng:non-bindable="">deleteItem</code>
+<div><span class="hint">service in module <code ng:non-bindable="">ListItem</code>
+</span>
+</div>
+</h1>
+<div><h2 id="description">Description</h2>
+<div class="description"><div class="listitem-deleteitem-page"><p>Deletes record directly from the object and removes record from user cache.</p>
+</div></div>
+<h2 id="usage">Usage</h2>
+<div class="usage"><pre class="prettyprint linenums">deleteItem([options]);</pre>
+<h4 id="usage_parameters">Parameters</h4><table class="variables-matrix table table-bordered table-striped"><thead><tr><th>Param</th><th>Type</th><th>Details</th></tr></thead><tbody><tr><td>[options]</td><td><a href="" class="label type-hint type-hint-object">object</a></td><td><div class="listitem-deleteitem-page"><p>Optionally pass params to the dataService.</p>
+</div></td></tr><tr><td>options.updateAllCaches</td><td><a href="" class="label type-hint type-hint-boolean">boolean</a></td><td><div class="listitem-deleteitem-page"><p>Iterate over each of the query cache&#39;s and ensure the entity is
+removed everywhere.  This is more process intensive so by default we only remove the cached entity in the
+cache where this entity is currently stored.</p>
+</div> <p><em>(default: false)</em></p></td></tr></tbody></table><h4 id="usage_returns">Returns</h4><table class="variables-matrix"><tr><td><a href="" class="label type-hint type-hint-object">object</a></td><td><div class="listitem-deleteitem-page"><p>Promise which really only lets us know the request is complete.</p>
+</div></td></tr></table></div>
+</div>

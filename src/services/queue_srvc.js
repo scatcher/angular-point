@@ -8,7 +8,7 @@
  * Typical use is to display a loading animation of some sort
  */
 angular.module('angularPoint')
-    .service('queueService', function () {
+    .service('apQueueService', function () {
 
         var counter = 0;
 

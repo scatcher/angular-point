@@ -1,0 +1,31 @@
+<h1><code ng:non-bindable="">addNewItem</code>
+<div><span class="hint">service in module <code ng:non-bindable="">Model</code>
+</span>
+</div>
+</h1>
+<div><h2 id="description">Description</h2>
+<div class="description"><div class="model-addnewitem-page"><p>Using the definition of a list stored in a model, create a new list item in SharePoint.</p>
+</div></div>
+<h2 id="usage">Usage</h2>
+<div class="usage"><pre class="prettyprint linenums">addNewItem(entity, [options]);</pre>
+<h4 id="usage_parameters">Parameters</h4><table class="variables-matrix table table-bordered table-striped"><thead><tr><th>Param</th><th>Type</th><th>Details</th></tr></thead><tbody><tr><td>entity</td><td><a href="" class="label type-hint type-hint-object">object</a></td><td><div class="model-addnewitem-page"><p>An object that will be converted into key/value pairs based on the field definitions
+defined in the model.</p>
+</div></td></tr><tr><td>[options]</td><td><a href="" class="label type-hint type-hint-object">object</a></td><td><div class="model-addnewitem-page"><ul>
+<li>Pass additional options to the data service.</li>
+</ul>
+</div></td></tr></tbody></table><h4 id="usage_returns">Returns</h4><table class="variables-matrix"><tr><td><a href="" class="label type-hint type-hint-object">object</a></td><td><div class="model-addnewitem-page"><p>A promise which when resolved will returned the newly created list item from there server.
+This allows us to update the view with a valid new object that contains a unique list item id.</p>
+</div></td></tr></table></div>
+<h2 id="example">Example</h2>
+<div class="example"><div class="model-addnewitem-page"><pre class="prettyprint linenums">
+//Taken from a fictitious projectsModel.js
+   projectModel.addNewItem({
+          title: 'A Project',
+          customer: {lookupValue: 'My Customer', lookupId: 123},
+          description: 'This is the project description'
+       }).then(function(newEntityFromServer) {
+           //The local query cache is automatically updated but any other dependent logic can go here
+   };
+</pre>
+</div></div>
+</div>

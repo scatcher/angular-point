@@ -1,0 +1,21 @@
+<h1><code ng:non-bindable="">processListItems</code>
+<div><span class="hint">service in module <code ng:non-bindable="">dataService</code>
+</span>
+</div>
+</h1>
+<div><h2 id="description">Description</h2>
+<div class="description"><div class="dataservice-processlistitems-page"><p>Post processing of data after returning list items from server</p>
+</div></div>
+<h2 id="usage">Usage</h2>
+<div class="usage"><pre class="prettyprint linenums">processListItems(model, responseXML, [options]);</pre>
+<h4 id="usage_parameters">Parameters</h4><table class="variables-matrix table table-bordered table-striped"><thead><tr><th>Param</th><th>Type</th><th>Details</th></tr></thead><tbody><tr><td>model</td><td><a href="" class="label type-hint type-hint-object">object</a></td><td><div class="dataservice-processlistitems-page"><p>Reference to allow updating of model.</p>
+</div></td></tr><tr><td>responseXML</td><td><a href="" class="label type-hint type-hint-xml">xml</a></td><td><div class="dataservice-processlistitems-page"><p>Resolved promise from SPServices web service call.</p>
+</div></td></tr><tr><td>[options]</td><td><a href="" class="label type-hint type-hint-object">object</a></td><td><div class="dataservice-processlistitems-page"><p>Optional configuration object.</p>
+</div></td></tr><tr><td>options.factory</td><td><a href="" class="label type-hint type-hint-function">function</a></td><td><div class="dataservice-processlistitems-page"><p>Constructor function typically stored on the model.</p>
+</div> <p><em>(default: model.factory)</em></p></td></tr><tr><td>options.filter</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="dataservice-processlistitems-page"><p>XML filter string used to find the elements to iterate over.</p>
+</div> <p><em>(default: 'z:row')</em></p></td></tr><tr><td>options.mapping</td><td><a href="" class="label type-hint type-hint-array">Array</a></td><td><div class="dataservice-processlistitems-page"><p>Field definitions, typeically stored on the model.</p>
+</div> <p><em>(default: model.list.mapping)</em></p></td></tr><tr><td>options.mode</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="dataservice-processlistitems-page"><p>Options for what to do with local list data array in
+store [&#39;replace&#39;, &#39;update&#39;, &#39;return&#39;]</p>
+</div> <p><em>(default: 'update')</em></p></td></tr><tr><td>options.target</td><td><a href="" class="label type-hint type-hint-array">Array</a></td><td><div class="dataservice-processlistitems-page"><p>Optionally pass in array to update after processing.</p>
+</div> <p><em>(default: model.getCache())</em></p></td></tr></tbody></table></div>
+</div>

@@ -1,0 +1,24 @@
+<h1><code ng:non-bindable="">getFieldVersionHistory</code>
+<div><span class="hint">service in module <code ng:non-bindable="">ListItem</code>
+</span>
+</div>
+</h1>
+<div><h2 id="description">Description</h2>
+<div class="description"><div class="listitem-getfieldversionhistory-page"><p>Takes an array of field names, finds the version history for field, and returns a snapshot of the object at each
+version.  If no fields are provided, we look at the field definitions in the model and pull all non-readonly
+fields.  The only way to do this that I&#39;ve been able to get working is to get the version history for each
+field independently and then build the history by combining the server responses for each requests into a
+snapshot of the object.</p>
+</div></div>
+<h2 id="usage">Usage</h2>
+<div class="usage"><pre class="prettyprint linenums">getFieldVersionHistory([fieldNames]);</pre>
+<h4 id="usage_parameters">Parameters</h4><table class="variables-matrix table table-bordered table-striped"><thead><tr><th>Param</th><th>Type</th><th>Details</th></tr></thead><tbody><tr><td>[fieldNames]</td><td><a href="" class="label type-hint type-hint-string">string[]</a></td><td><div class="listitem-getfieldversionhistory-page"><p>An array of field names that we&#39;re interested in.
+<pre class="prettyprint linenums">
+myGenericListItem.getFieldVersionHistory(['title', 'project'])
+   .then(function(versionHistory) {
+       //We now have an array of versions of the list item
+   };
+</pre>
+</div></td></tr></tbody></table><h4 id="usage_returns">Returns</h4><table class="variables-matrix"><tr><td><a href="" class="label type-hint type-hint-object">object</a></td><td><div class="listitem-getfieldversionhistory-page"><p>promise - containing array of changes</p>
+</div></td></tr></table></div>
+</div>

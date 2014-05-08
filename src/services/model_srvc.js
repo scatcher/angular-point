@@ -10,7 +10,7 @@
  * @function
  */
 angular.module('angularPoint')
-    .factory('modelFactory', function ($q, $timeout, configService, dataService, fieldService, toastr) {
+    .factory('apModelFactory', function ($q, $timeout, apConfig, apDataService, apFieldService, toastr) {
 
         var defaultQueryName = 'primary';
 
@@ -112,7 +112,7 @@ angular.module('angularPoint')
          */
         Model.prototype.getAllListItems = function () {
             var deferred = $q.defer();
-            dataService.executeQuery(this, this.queries.getAllListItems, {deferred: deferred})
+            apDataService.executeQuery(this, this.queries.getAllListItems, {deferred: deferred})
                 .then(function (response) {
                     deferred.resolve(response);
                 });
@@ -146,7 +146,7 @@ angular.module('angularPoint')
         Model.prototype.addNewItem = function (entity, options) {
             var model = this;
             var deferred = $q.defer();
-            dataService.addUpdateItemModel(model, entity, options).then(function (response) {
+            apDataService.addUpdateItemModel(model, entity, options).then(function (response) {
                 deferred.resolve(response);
                 /** Optionally broadcast change event */
                 registerChange(model);
@@ -453,7 +453,7 @@ angular.module('angularPoint')
                 /** Create attributes for each non-readonly field definition */
                 if (!fieldDefinition.readOnly) {
                     /** Create an attribute with the expected empty value based on field definition type */
-                    newItem[fieldDefinition.mappedName] = fieldService.getDefaultValueForType(fieldDefinition.objectType);
+                    newItem[fieldDefinition.mappedName] = apFieldService.getDefaultValueForType(fieldDefinition.objectType);
                 }
             });
             /** Extend any values that should override the default empty values */
@@ -594,7 +594,7 @@ angular.module('angularPoint')
          * @returns {object} Reference to the dataService in the event that it's out of scope.
          */
         ListItem.prototype.getDataService = function () {
-            return dataService;
+            return apDataService;
         };
 
         /**
@@ -614,7 +614,7 @@ angular.module('angularPoint')
             var model = listItem.getModel();
             var deferred = $q.defer();
 
-            dataService.addUpdateItemModel(model, listItem, options).then(function (response) {
+            apDataService.addUpdateItemModel(model, listItem, options).then(function (response) {
                 deferred.resolve(response);
                 /** Optionally broadcast change event */
                 registerChange(model);
@@ -673,14 +673,14 @@ angular.module('angularPoint')
             });
 
             /** Generate value pairs for specified fields */
-            var valuePairs = dataService.generateValuePairs(definitions, listItem);
+            var valuePairs = apDataService.generateValuePairs(definitions, listItem);
 
             var defaults = {buildValuePairs: false, valuePairs: valuePairs};
 
             /** Extend defaults with any provided options */
             var opts = _.extend({}, defaults, options);
 
-            dataService.addUpdateItemModel(model, listItem, opts)
+            apDataService.addUpdateItemModel(model, listItem, opts)
                 .then(function (response) {
                     deferred.resolve(response);
                     /** Optionally broadcast change event */
@@ -707,7 +707,7 @@ angular.module('angularPoint')
             var model = listItem.getModel();
             var deferred = $q.defer();
 
-            dataService.deleteItemModel(model, listItem, options).then(function (response) {
+            apDataService.deleteItemModel(model, listItem, options).then(function (response) {
                 deferred.resolve(response);
                 /** Optionally broadcast change event */
                 registerChange(model);
@@ -741,7 +741,7 @@ angular.module('angularPoint')
          * @returns {object} Promise which resolves with all attachments for a list item.
          */
         ListItem.prototype.getAttachmentCollection = function () {
-            return dataService.getCollection({
+            return apDataService.getCollection({
                 operation: 'GetAttachmentCollection',
                 listName: this.getModel().list.guid,
                 webURL: this.getModel().list.webURL,
@@ -761,7 +761,7 @@ angular.module('angularPoint')
          */
         ListItem.prototype.deleteAttachment = function (url) {
             var listItem = this;
-            return dataService.deleteAttachment({
+            return apDataService.deleteAttachment({
                 listItemId: listItem.id,
                 url: url,
                 listName: listItem.getModel().list.guid
@@ -817,13 +817,13 @@ angular.module('angularPoint')
 
                 var payload = {
                     operation: 'GetVersionCollection',
-                    webURL: configService.defaultUrl,
+                    webURL: apConfig.defaultUrl,
                     strlistID: model.list.guid,
                     strlistItemID: listItem.id,
                     strFieldName: fieldDefinition.internalName
                 };
 
-                promiseArray.push(dataService.getFieldVersionHistory(payload, fieldDefinition));
+                promiseArray.push(apDataService.getFieldVersionHistory(payload, fieldDefinition));
             };
 
             if (!fieldNames) {
@@ -905,12 +905,12 @@ angular.module('angularPoint')
                 guid: '',
                 mapping: {},
                 title: '',
-                webURL: configService.defaultUrl
+                webURL: apConfig.defaultUrl
             };
 
             var list = _.extend({}, defaults, obj);
 
-            fieldService.extendFieldDefinitions(list);
+            apFieldService.extendFieldDefinitions(list);
 
             return list;
         }
@@ -996,7 +996,7 @@ angular.module('angularPoint')
                     '   <ExpandUserField>FALSE</ExpandUserField>' +
                     '</QueryOptions>',
                 viewFields: model.list.viewFields,
-                webURL: configService.defaultUrl
+                webURL: apConfig.defaultUrl
             };
             _.extend(query, defaults, queryOptions);
 
@@ -1056,7 +1056,7 @@ angular.module('angularPoint')
                 /** Extend defaults with any options */
                 var queryOptions = _.extend({}, defaults, options);
 
-                dataService.executeQuery(model, query, queryOptions).then(function (results) {
+                apDataService.executeQuery(model, query, queryOptions).then(function (results) {
                     if (firstRunQuery) {
                         /** Promise resolved the first time query is completed */
                         query.initialized.resolve(queryOptions.target);
@@ -1108,7 +1108,7 @@ angular.module('angularPoint')
          * @param {object} model event
          */
         function registerChange(model) {
-            if (!configService.offline && model.sync && _.isFunction(model.sync.registerChange)) {
+            if (!apConfig.offline && model.sync && _.isFunction(model.sync.registerChange)) {
                 /** Register change after successful update */
                 model.sync.registerChange();
             }

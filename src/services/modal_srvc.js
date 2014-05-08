@@ -5,9 +5,11 @@
  * @name modalService
  * @description
  * Extends a modal form to include many standard functions
+ *
+ * @requires $modal from Angular Bootstrap.
  */
 angular.module('angularPoint')
-    .service('modalService', function ($modal, toastr) {
+    .service('apModalService', function ($modal, toastr) {
 
         /**
          * @ngdoc function

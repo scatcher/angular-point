@@ -9,7 +9,7 @@
  * event is so all subscribers are notified to request an update from SharePoint.
  */
 angular.module('angularPoint')
-    .factory('syncService', function ($q, $timeout, $firebase, configService) {
+    .factory('apSyncService', function ($q, $timeout, $firebase, apConfig) {
 
         /**
          * @ngdoc method
@@ -24,7 +24,7 @@ angular.module('angularPoint')
         function synchronizeData(model, updateQuery) {
             var sync = {};
             sync.updateQuery = updateQuery;
-            sync.changeNotifier = new Firebase(configService.firebaseURL + '/changes/' + model.list.title);
+            sync.changeNotifier = new Firebase(apConfig.firebaseURL + '/changes/' + model.list.title);
             sync.lastUpdate = $firebase(sync.changeNotifier);
 
             /** Notify all other users listening to this model that a change has been made */

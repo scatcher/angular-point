@@ -1,9 +1,9 @@
 'use strict';
 
 angular.module('angularPoint')
-    .controller('generateOfflineCtrl', function ($scope, $q, dataService, configService, toastr) {
+    .controller('generateOfflineCtrl', function ($scope, $q, apDataService, apConfigService, toastr) {
         $scope.state = {
-            siteUrl: configService.defaultUrl,
+            siteUrl: apConfigService.defaultUrl,
             query: '',
             itemLimit: 0,
             selectedList: '',
@@ -21,7 +21,7 @@ angular.module('angularPoint')
         $scope.listCollection = [];
 
         $scope.getLists = function() {
-            dataService.getCollection({
+            apDataService.getCollection({
                 operation: "GetListCollection",
                 webURL: $scope.state.siteUrl
             }).then(function(dataArray) {
@@ -70,7 +70,7 @@ angular.module('angularPoint')
             $scope.state.availableListFields.length = 0;
             $scope.state.selectedListFields.length = 0;
             if(_.isObject($scope.state.selectedList) && $scope.state.selectedList.Title) {
-                dataService.getList({
+                apDataService.getList({
                     webURL: $scope.state.siteUrl,
                     listName: $scope.state.selectedList.Name
                 }).then(function(dataArray) {

@@ -7,7 +7,7 @@
  * Provides shared utility functionality across the application.
  */
 angular.module('angularPoint')
-    .service('utilityService', function () {
+    .service('apUtilityService', function () {
         // AngularJS will instantiate a singleton by calling "new" on this function
 
         /** Extend underscore with a simple helper function */
@@ -243,10 +243,6 @@ angular.module('angularPoint')
             }
         }
 
-        function htmlToJsonObject(s) {
-            return _.unescape(s);
-        }
-
         // Split values like 1;#value into id and value
         function SplitIndex(s) {
             var spl = s.split(';#');
@@ -298,6 +294,80 @@ angular.module('angularPoint')
         }
 
         /**
+         * Add a leading zero if a number/string only contains a single character
+         * @param {number|string} val
+         * @returns {string} Two digit string.
+         */
+        function doubleDigit(val) {
+            return val > 9 ? val.toString() : '0' + val;
+        }
+
+        /**
+         * @ngdoc function
+         * @name utilityService.stringifySharePointDate
+         * @description
+         * Converts a JavaScript date into a modified ISO8601 date string using the TimeZone offset for the current user.
+         * e.g., '2014-05-08T08:12:18Z-07:00'
+         * @param {Date} date Valid JS date.
+         * @returns {string} ISO8601 date string.
+         */
+        function stringifySharePointDate(date) {
+            if(!_.isDate(date)) {
+                return '';
+            }
+            var self = this;
+            var dateString = '';
+            dateString += date.getFullYear();
+            dateString += '-';
+            dateString += doubleDigit(date.getMonth() + 1);
+            dateString += '-';
+            dateString += doubleDigit(date.getDate());
+            dateString += 'T';
+            dateString += doubleDigit(date.getHours());
+            dateString += ':';
+            dateString += doubleDigit(date.getMinutes());
+            dateString += ':';
+            dateString += doubleDigit(date.getSeconds());
+            dateString += 'Z-';
+
+            if(!self.timeZone) {
+                //Get difference between UTC time and local time in minutes and convert to hours
+                //Store so we only need to do this once
+                window.console.log('Calculating');
+
+                self.timeZone = new Date().getTimezoneOffset() / 60;
+            }
+            dateString += doubleDigit(self.timeZone);
+            dateString += ':00';
+            return dateString;
+        }
+
+        /**
+         * @ngdoc function
+         * @name utilityService.stringifySharePointMultiSelect
+         * @description
+         * Turns an array of, typically {lookupId: someId, lookupValue: someValue}, objects into a string
+         * of delimited id's that can be passed to SharePoint for a multi select lookup or multi user selection
+         * field.  SharePoint doesn't need the lookup values so we only need to pass the ID's back.
+         *
+         * @param {object[]} multiSelectValue Array of {lookupId: #, lookupValue: 'Some Value'} objects.
+         * @param {string} [idProperty='lookupId'] Property name where we'll find the ID value on each of the objects.
+         * @returns {string} Need to format string of id's in following format [ID0];#;#[ID1];#;#[ID1]
+         */
+        function stringifySharePointMultiSelect(multiSelectValue, idProperty) {
+            var stringifiedValues = '';
+            var idProp = idProperty || 'lookupId';
+            _.each(multiSelectValue, function (lookupObject, iteration) {
+                /** Need to format string of id's in following format [ID0];#;#[ID1];#;#[ID1] */
+                stringifiedValues += lookupObject[idProp];
+                if (iteration < multiSelectValue.length) {
+                    stringifiedValues += ';#;#';
+                }
+            });
+            return stringifiedValues;
+        }
+
+        /**
          * @ngdoc function
          * @name utilityService.yyyymmdd
          * @description
@@ -309,7 +379,7 @@ angular.module('angularPoint')
             var mm = (date.getMonth() + 1).toString();
             var dd = date.getDate().toString();
             /** Add leading 0's to month and day if necessary */
-            return parseInt(yyyy + (mm[1] ? mm : '0' + mm[0]) + (dd[1] ? dd : '0' + dd[0]));
+            return parseInt(yyyy + doubleDigit(mm) + doubleDigit(dd));
         }
 
         /**
@@ -346,6 +416,8 @@ angular.module('angularPoint')
             fromCamelCase: fromCamelCase,
             lookupToJsonObject: lookupToJsonObject,
             SplitIndex: SplitIndex,
+            stringifySharePointDate: stringifySharePointDate,
+            stringifySharePointMultiSelect: stringifySharePointMultiSelect,
             toCamelCase: toCamelCase,
             xmlToJson: xmlToJson
         };

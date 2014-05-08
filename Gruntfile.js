@@ -25,106 +25,6 @@ module.exports = function (grunt) {
             services: 'src/services'
         },
 
-        // Watches files for changes and runs tasks based on the changed files
-        watch: {
-            js: {
-                files: ['{.tmp,<%= config.src %>, }/{,*/}*.js'],
-                tasks: ['newer:jshint:all'],
-                options: {
-                    livereload: true
-                }
-            },
-            jsTest: {
-                files: ['test/spec/{,*/}*.js'],
-                tasks: ['newer:jshint:test', 'karma']
-            },
-            styles: {
-                files: ['<%= config.src %>/styles/{,*/}*.css'],
-                tasks: ['newer:copy:styles', 'autoprefixer']
-            },
-            gruntfile: {
-                files: ['Gruntfile.js']
-            },
-            livereload: {
-                options: {
-                    livereload: '<%= connect.options.livereload %>'
-                },
-                files: [
-                    '<%= config.dist %>/*.{js,html}',
-                    '<%= config.src %>/{modules,scripts,views}/{,*/}*.{js,html}',
-                    '<%= config.src %>/dev/*.xml'
-                ]
-            }
-        },
-        // Add vendor prefixed styles
-        autoprefixer: {
-            options: {
-                browsers: ['last 1 version']
-            },
-            dist: {
-                files: [
-                    {
-                        expand: true,
-                        cwd: '.tmp/styles/',
-                        src: '{,*/}*.css',
-                        dest: '.tmp/styles/'
-                    }
-                ]
-            }
-        },
-
-        // The actual grunt server settings
-        connect: {
-            options: {
-                port: 9000,
-                // Change this to '0.0.0.0' to access the server from outside.
-                hostname: 'localhost',
-                livereload: 35729
-            },
-            livereload: {
-                options: {
-                    open: true,
-                    base: [
-                        '.tmp',
-                        '<%= config.src %>'
-                    ]
-                }
-            },
-            test: {
-                options: {
-                    port: 9001,
-                    base: [
-                        '.tmp',
-                        'test',
-                        '<%= config.src %>'
-                    ]
-                }
-            },
-            dist: {
-                options: {
-                    base: '<%= config.dist %>'
-                }
-            }
-        },
-
-        // Make sure code styles are up to par and there are no obvious mistakes
-        jshint: {
-            options: {
-                jshintrc: '.jshintrc',
-                reporter: require('jshint-stylish')
-            },
-            all: [
-                'Gruntfile.js',
-                '<%= config.src %>/{,*/}*.js'
-            ],
-            test: {
-                options: {
-                    jshintrc: 'test/.jshintrc'
-                },
-                src: ['test/spec/{,*/}*.js']
-            }
-        },
-
         // Empties folders to start fresh
         clean: {
             dist: {
@@ -140,35 +40,7 @@ module.exports = function (grunt) {
                     }
                 ]
             },
-            server: '.tmp',
             docs: 'docs'
-        },
-
-        htmlmin: {
-            dist: {
-                options: {
-                    //collapseWhitespace: true,
-                    //collapseBooleanAttributes: true,
-                    // removeAttributeQuotes: true,
-                    // removeRedundantAttributes: true,
-                    // useShortDoctype: true,
-                    // removeEmptyAttributes: true,
-                    //removeOptionalTags: true
-                },
-                files: [
-                    {
-                        expand: true,
-                        cwd: '<%= config.dist %>',
-                        src: [
-                            '*.html',
-                            'views/*.html',
-                            'modules/**/*.html',
-                            'scripts/directives/**/*.html'
-                        ],
-                        dest: '<%= config.dist %>'
-                    }
-                ]
-            }
         },
 
         ngtemplates: {
@@ -190,11 +62,12 @@ module.exports = function (grunt) {
                     '<%= config.src %>/app.js',
                     '<%= config.services %>/*.js',
                     '<%= config.src %>/directives/**/*.js',
+                    '!<%= config.src %>/directives/ap_comments/*.js',
                     '.tmp/angular-point-templates.js'
                 ],
                 dest: '<%= config.dist %>/angular-point.js'
             },
-            ieshim: {
+            iesafe: {
                 src: [
                     'bower_components/explorer-canvas/excanvas.js',
                     'bower_components/es5-shim/es5-shim.js',
@@ -202,14 +75,7 @@ module.exports = function (grunt) {
                     'bower_components/respond/dest/respond.src.js',
                     'scripts/utility/ap_ie_safe.js'
                 ],
-                dest: '<%= config.dist %>/ie-shim.js'
-            },
-            sync: {
-                src: [
-                    '<%= config.src %>/utility/*.js',
-                    '<%= config.dist %>/angular-point-directives.js'
-                ],
-                dest: '<%= config.dist %>/angular-point-directives.js'
+                dest: '<%= config.dist %>/ie-safe.js'
             }
         },
 
@@ -226,58 +92,14 @@ module.exports = function (grunt) {
             }
         },
 
-        // Copies remaining files to places other tasks can use
-        copy: {
-            dist: {
-                files: [
-                    {
-                        expand: true,
-                        dest: '<%= config.dist %>',
-                        src: [
-                            //HTML
-                            '*.html',
-                            'views/{,*/}*.html',
-                            'modules/**/*.html',
-                            'scripts/**/*.html',
-
-                            //PROJECT SPECIFIC RESOURCES
-                            '*.{ico,png,txt}',
-                            'images/{,*/}*.{png,jpg,gif}',
-
-                            //FONT AWESOME
-                            'bower_components/font-awesome/css/**',
-                            'bower_components/font-awesome/fonts/**',
-
-                            //jQuery UI Bootstrap Images
-                            'bower_components/jquery-ui-bootstrap/css/custom-theme/images/**',
-
-                            //Glyph Icons
-                            'bower_components/bootstrap/fonts/**'
-                        ]
-                    }
-                ]
-            },
-            styles: {
-                expand: true,
-                cwd: 'styles',
-                dest: '.tmp/styles/',
-                src: '{,*/}*.css'
-            }
-
-        },
         uglify: {
             js: {
                 src: ['<%= config.dist %>/angular-point.js'],
                 dest: '<%= config.dist %>/angular-point.min.js'
             },
             ie: {
-                src: '<%= config.dist %>/ie-shim.js',
-                dest: '<%= config.dist %>/ie-shim.min.js'
-
-            },
-            directives: {
-                src: '<%= config.dist %>/angular-point-directives.js',
-                dest: '<%= config.dist %>/angular-point-directives.min.js'
+                src: '<%= config.dist %>/ie-safe.js',
+                dest: '<%= config.dist %>/ie-safe.min.js'
             }
         },
         // Run some tasks in parallel to speed up the build process
@@ -319,26 +141,6 @@ module.exports = function (grunt) {
         }
     });
 
-
-    grunt.registerTask('serve', function (target) {
-        if (target === 'dist') {
-            return grunt.task.run(['build', 'connect:dist:keepalive']);
-        }
-
-        grunt.task.run([
-            'clean:server',
-            'concurrent:server',
-            'autoprefixer',
-            'connect:livereload',
-            'watch'
-        ]);
-    });
-
-    grunt.registerTask('server', function (target) {
-        grunt.log.warn('The `server` task has been deprecated. Use `grunt serve` to start a server.');
-        grunt.task.run(['serve:' + target]);
-    });
-
     grunt.registerTask('test', [
         'clean:server',
         'concurrent:test',
@@ -362,7 +164,6 @@ module.exports = function (grunt) {
     ]);
 
     grunt.registerTask('default', [
-        'newer:jshint',
         'test',
         'build'
     ]);

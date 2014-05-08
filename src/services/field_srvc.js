@@ -7,7 +7,7 @@
  * Handles the mapping of the various types of fields used within a SharePoint list
  */
 angular.module('angularPoint')
-    .service('fieldService', function (utilityService) {
+    .service('apFieldService', function (apUtilityService) {
 
         var getUniqueCounter = function () {
             var self = getUniqueCounter;
@@ -138,7 +138,7 @@ angular.module('angularPoint')
                 objectType: 'Text'
             };
             _.extend(self, defaults, obj);
-            self.displayName = self.displayName || utilityService.fromCamelCase(self.mappedName);
+            self.displayName = self.displayName || apUtilityService.fromCamelCase(self.mappedName);
         }
 
         Field.prototype.getDefinition = function () {
@@ -211,6 +211,8 @@ angular.module('angularPoint')
          * Can return mock data appropriate for the field type, by default it dynamically generates data but
          * the staticValue param will instead return a hard coded type specific value
          *
+         * @requires ChanceJS to produce dynamic data.
+         * https://github.com/victorquinn/chancejs
          * @param {string} fieldType
          * @param {object} [options]
          * @param {boolean} [options.staticValue=false]
@@ -220,7 +222,8 @@ angular.module('angularPoint')
             var mock;
             var fieldDefinition = getDefinition(fieldType);
             if (fieldDefinition) {
-                mock = (options && options.staticValue) ? fieldDefinition.staticMock : fieldDefinition.dynamicMock(options);
+                //Return static data if the flag is set or ChanceJS isn't available
+                mock = (options && (options.staticValue || !_.isFunction(chance))) ? fieldDefinition.staticMock : fieldDefinition.dynamicMock(options);
             }
             return mock;
         }

@@ -1,0 +1,39 @@
+<h1><code ng:non-bindable="">getCollection</code>
+<div><span class="hint">service in module <code ng:non-bindable="">dataService</code>
+</span>
+</div>
+</h1>
+<div><h2 id="description">Description</h2>
+<div class="description"><div class="dataservice-getcollection-page"><p>Used to handle any of the Get[filterNode]Collection calls to SharePoint</p>
+</div></div>
+<h2 id="usage">Usage</h2>
+<div class="usage"><pre class="prettyprint linenums">getCollection(options);</pre>
+<h4 id="usage_parameters">Parameters</h4><table class="variables-matrix table table-bordered table-striped"><thead><tr><th>Param</th><th>Type</th><th>Details</th></tr></thead><tbody><tr><td>options</td><td><a href="" class="label type-hint type-hint-object">Object</a></td><td><div class="dataservice-getcollection-page"><ul>
+<li>object used to extend payload and needs to include all SPServices required attributes</li>
+</ul>
+</div></td></tr><tr><td>[options.operation]</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="dataservice-getcollection-page"><p>GetUserCollectionFromSite</p>
+</div></td></tr><tr><td>[options.operation]</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="dataservice-getcollection-page"><p>GetGroupCollectionFromSite</p>
+</div></td></tr><tr><td>[options.operation]</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="dataservice-getcollection-page"><p>GetGroupCollectionFromUser @requires options.userLoginName</p>
+</div></td></tr><tr><td>[options.operation]</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="dataservice-getcollection-page"><p>GetUserCollectionFromGroup @requires options.groupName</p>
+</div></td></tr><tr><td>[options.operation]</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="dataservice-getcollection-page"><p>GetListCollection</p>
+</div></td></tr><tr><td>[options.operation]</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="dataservice-getcollection-page"><p>GetViewCollection @requires options.listName</p>
+</div></td></tr><tr><td>[options.operation]</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="dataservice-getcollection-page"><p>GetAttachmentCollection @requires options.listName &amp; options.ID</p>
+</div></td></tr><tr><td>[options.filterNode]</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="dataservice-getcollection-page"><ul>
+<li>Value to iterate over in returned XML
+if not provided it&#39;s extracted from the name of the operation
+ex: Get[User]CollectionFromSite, &quot;User&quot; is used as the filterNode</li>
+</ul>
+</div></td></tr></tbody></table><h4 id="usage_returns">Returns</h4><table class="variables-matrix"><tr><td><a href="" class="label type-hint type-hint-object">object[]</a></td><td><div class="dataservice-getcollection-page"><p>Promise which when resolved will contain an array of objects representing the
+requested collection.</p>
+</div></td></tr></table></div>
+<h2 id="example">Example</h2>
+<div class="example"><div class="dataservice-getcollection-page"><pre class="prettyprint linenums">
+dataService.getCollection({
+     operation: "GetGroupCollectionFromUser",
+     userLoginName: $scope.state.selectedUser.LoginName
+     }).then(function (response) {
+         postProcessFunction(response);
+    });
+</pre>
+</div></div>
+</div>

@@ -10,16 +10,16 @@
  *  http://spservices.codeplex.com/documentation
  */
 angular.module('angularPoint')
-    .service('dataService', function ($q, $timeout, queueService, configService, utilityService, angularPointConfig, toastr) {
+    .service('apDataService', function ($q, $timeout, apQueueService, apConfig, apUtilityService, toastr) {
         var dataService = {};
 
         /** Flag to use cached XML files from the src/dev folder */
-        var offline = angularPointConfig.offline;
+        var offline = apConfig.offline;
         /** Allows us to make code easier to read */
         var online = !offline;
 
         //TODO Figure out a better way to get this value, shouldn't need to make a blocking call
-        var defaultUrl = configService.defaultUrl || online ? $().SPServices.SPGetCurrentSite() : '';
+        var defaultUrl = apConfig.defaultUrl || online ? $().SPServices.SPGetCurrentSite() : '';
 
         /**
          * @ngdoc function
@@ -37,7 +37,7 @@ angular.module('angularPoint')
          * @param {Array} [options.target=model.getCache()] Optionally pass in array to update after processing.
          */
         var processListItems = function (model, responseXML, options) {
-            queueService.decrease();
+            apQueueService.decrease();
 
             var defaults = {
                 factory: model.factory,
@@ -51,7 +51,7 @@ angular.module('angularPoint')
 
             /** Map returned XML to JS objects based on mapping from model */
             var filteredNodes = $(responseXML).SPFilterNode(opts.filter);
-            var jsObjects = utilityService.xmlToJson(filteredNodes, { mapping: opts.mapping });
+            var jsObjects = apUtilityService.xmlToJson(filteredNodes, { mapping: opts.mapping });
 
             var entities = [];
 
@@ -137,15 +137,16 @@ angular.module('angularPoint')
 
                 /** Parse the xml and create a representation of the version as a js object */
                 var version = {
-                    editor: utilityService.attrToJson($(self).attr('Editor'), 'User'),
-                    modified: moment($(self).attr('Modified')).toDate(),
+                    editor: apUtilityService.attrToJson($(self).attr('Editor'), 'User'),
+                    /** Turn the SharePoint formatted date into a valid date object */
+                    modified: apUtilityService.attrToJson($(self).attr('Modified'), 'DateTime'),
                     /** Returns records in desc order so compute the version number from index */
                     version: versionCount - index
                 };
 
                 /** Properly format field based on definition from model */
                 version[fieldDefinition.mappedName] =
-                    utilityService.attrToJson($(self).attr(fieldDefinition.internalName), fieldDefinition.objectType);
+                    apUtilityService.attrToJson($(self).attr(fieldDefinition.internalName), fieldDefinition.objectType);
 
                 /** Push to beginning of array */
                 versions.unshift(version);
@@ -230,7 +231,7 @@ angular.module('angularPoint')
          </pre>
          */
         var getCollection = function (options) {
-            queueService.increase();
+            apQueueService.increase();
             var defaults = {
                 webURL: defaultUrl
             };
@@ -265,13 +266,13 @@ angular.module('angularPoint')
                 /** Get offline data */
                 $.ajax(offlineData).then(
                     function (offlineData) {
-                        queueService.decrease();
+                        apQueueService.decrease();
                         /** Pass back the group array */
                         deferred.resolve(processXML(offlineData));
                     }, function (outcome) {
                         toastr.error('You need to have a dev/' + opts.operation + '.xml in order to get the group collection in offline mode.');
                         deferred.reject(outcome);
-                        queueService.decrease();
+                        apQueueService.decrease();
                     });
             } else {
                 var validPayload = true;
@@ -311,12 +312,12 @@ angular.module('angularPoint')
 
                     webServiceCall.then(function () {
                         //Success
-                        queueService.decrease();
+                        apQueueService.decrease();
                         deferred.resolve(processXML(webServiceCall.responseXML));
                     }, function (outcome) {
                         //Failure
                         toastr.error('Failed to fetch list collection.');
-                        queueService.decrease();
+                        apQueueService.decrease();
                         deferred.reject(outcome);
                     });
                 }
@@ -353,7 +354,7 @@ angular.module('angularPoint')
             var opts = _.extend({}, defaults, options);
             var deferred = $q.defer();
 
-            queueService.increase();
+            apQueueService.increase();
 
             /** Convert the xml returned from the server into an array of js objects */
             var processXML = function (serverResponse) {
@@ -377,12 +378,12 @@ angular.module('angularPoint')
 
                 webServiceCall.then(function () {
                     /** Success */
-                    queueService.decrease();
+                    apQueueService.decrease();
                     deferred.resolve(processXML(webServiceCall.responseXML));
                 }, function (outcome) {
                     /** Failure */
                     toastr.error('Failed to fetch list collection.');
-                    queueService.decrease();
+                    apQueueService.decrease();
                     deferred.reject(outcome);
                 });
             } else {
@@ -392,13 +393,13 @@ angular.module('angularPoint')
                 /** Get offline data */
                 $.ajax(offlineData).then(
                     function (offlineData) {
-                        queueService.decrease();
+                        apQueueService.decrease();
                         /** Pass back the group array */
                         deferred.resolve(processXML(offlineData));
                     }, function (outcome) {
                         toastr.error('You need to have a dev/' + opts.operation + '.xml in order to get the group collection in offline mode.');
                         deferred.reject(outcome);
-                        queueService.decrease();
+                        apQueueService.decrease();
                     });
             }
 
@@ -417,7 +418,7 @@ angular.module('angularPoint')
          */
         var getList = function (options) {
             var opts = _.extend({}, options);
-            queueService.increase();
+            apQueueService.increase();
             var deferred = $q.defer();
 
             //TODO: Use serviceWrapper
@@ -428,7 +429,7 @@ angular.module('angularPoint')
 
             webServiceCall.then(function () {
                 /** Success */
-                queueService.decrease();
+                apQueueService.decrease();
 
                 /** Map returned XML to JSON */
                 var json = $(webServiceCall.responseXML).SPFilterNode('Field').SPXmlToJson({
@@ -442,7 +443,7 @@ angular.module('angularPoint')
                 deferred.reject(outcome);
                 toastr.error('Failed to fetch list details.');
             }).always(function () {
-                queueService.decrease();
+                apQueueService.decrease();
             });
 
             return deferred.promise;
@@ -480,7 +481,7 @@ angular.module('angularPoint')
                 operation: 'DeleteAttachment'
             };
             var opts = _.extend({}, defaults, options);
-            queueService.increase();
+            apQueueService.increase();
             var deferred = $q.defer();
 
             //TODO: Use serviceWrapper
@@ -493,7 +494,7 @@ angular.module('angularPoint')
 
             webServiceCall.then(function () {
                 /** Success */
-                queueService.decrease();
+                apQueueService.decrease();
 
                 /** Map returned XML to JSON */
                 var json = $(webServiceCall.responseXML).SPFilterNode('Field').SPXmlToJson({
@@ -507,7 +508,7 @@ angular.module('angularPoint')
                 deferred.reject(outcome);
                 toastr.error('Failed to fetch list details.');
             }).always(function () {
-                queueService.decrease();
+                apQueueService.decrease();
             });
 
             return deferred.promise;
@@ -529,7 +530,7 @@ angular.module('angularPoint')
             var opts = _.extend({}, options);
             var deferred = $q.defer();
 
-            queueService.increase();
+            apQueueService.increase();
 
             var payload = {
                 operation: 'GetView',
@@ -559,7 +560,7 @@ angular.module('angularPoint')
                 toastr.error('Failed to fetch view details.');
                 deferred.reject(outcome);
             }).always(function () {
-                queueService.decrease();
+                apQueueService.decrease();
             });
 
             return deferred.promise;
@@ -595,7 +596,7 @@ angular.module('angularPoint')
             };
 
             /** Trigger processing animation */
-            queueService.increase();
+            apQueueService.increase();
 
             if(online) {
                 var webServiceCall = $().SPServices(query);
@@ -621,7 +622,7 @@ angular.module('angularPoint')
 
                     /** Set date time to allow for time based updates */
                     query.lastRun = new Date();
-                    queueService.decrease();
+                    apQueueService.decrease();
                     deferred.resolve(changes);
                 });
             } else {
@@ -633,7 +634,7 @@ angular.module('angularPoint')
                 if (query.lastRun) {
                     /** Query has already been run, resolve reference to existing data */
                     query.lastRun = new Date();
-                    queueService.decrease();
+                    apQueueService.decrease();
                     deferred.resolve(query.cache);
                 } else {
                     /** First run for query
@@ -643,7 +644,7 @@ angular.module('angularPoint')
                         var entities = processListItems(model, responseXML, opts);
                         /** Set date time to allow for time based updates */
                         query.lastRun = new Date();
-                        queueService.decrease();
+                        apQueueService.decrease();
                         deferred.resolve(entities);
                     }, function () {
                         var mockData = model.generateMockData();
@@ -739,32 +740,6 @@ angular.module('angularPoint')
 
         /**
          * @ngdoc function
-         * @name dataService.stringifySharePointMultiSelect
-         * @description
-         * Turns an array of, typically {lookupId: someId, lookupValue: someValue}, objects into a string
-         * of delimited id's that can be passed to SharePoint for a multi select lookup or multi user selection
-         * field.  SharePoint doesn't need the lookup values so we only need to pass the ID's back.
-         *
-         * @param {object[]} multiSelectValue Array of {lookupId: #, lookupValue: 'Some Value'} objects.
-         * @param {string} [idProperty='lookupId'] Property name where we'll find the ID value on each of the objects.
-         * @returns {string} Need to format string of id's in following format [ID0];#;#[ID1];#;#[ID1]
-         */
-        function stringifySharePointMultiSelect(multiSelectValue, idProperty) {
-            var stringifiedValues = '';
-            var idProp = idProperty || 'lookupId';
-            _.each(multiSelectValue, function (lookupObject, iteration) {
-                /** Need to format string of id's in following format [ID0];#;#[ID1];#;#[ID1] */
-                stringifiedValues += lookupObject[idProp];
-                if (iteration < multiSelectValue.length) {
-                    stringifiedValues += ';#;#';
-                }
-            });
-            return stringifiedValues;
-        }
-
-
-        /**
-         * @ngdoc function
          * @name dataService.createValuePair
          * @description
          * Uses a field definition from a model to properly format a value for submission to SharePoint.  Typically
@@ -794,16 +769,16 @@ angular.module('angularPoint')
                         break;
                     case 'LookupMulti':
                     case 'UserMulti':
-                        var stringifiedArray = stringifySharePointMultiSelect(value, 'lookupId');
+                        var stringifiedArray = apUtilityService.stringifySharePointMultiSelect(value, 'lookupId');
                         valuePair = [fieldDefinition.internalName, stringifiedArray];
                         break;
                     case 'Boolean':
                         valuePair = [internalName, value ? 1 : 0];
                         break;
                     case 'DateTime':
-                        if (moment(value).isValid()) {
-                            //A string date in ISO format, e.g., '2013-05-08T01:20:29Z-05:00'
-                            valuePair = [internalName, moment(value).format('YYYY-MM-DDTHH:mm:ss[Z]Z')];
+                        if (_.isDate(value)) {
+                            //A string date in ISO8601 format, e.g., '2013-05-08T01:20:29Z-05:00'
+                            valuePair = [internalName, apUtilityService.stringifySharePointDate(value)];
                         } else {
                             valuePair = [internalName, ''];
                         }
@@ -901,7 +876,7 @@ angular.module('angularPoint')
             var opts = _.extend({}, defaults, options);
 
             /** Display loading animation */
-            queueService.increase();
+            apQueueService.increase();
 
             if (opts.buildValuePairs === true) {
                 var editableFields = _.where(model.list.fields, {readOnly: false});
@@ -942,7 +917,7 @@ angular.module('angularPoint')
                     toastr.error('There was an error getting the requested data from ' + model.list.name);
                     deferred.reject(outcome);
                 }).always(function () {
-                    queueService.decrease();
+                    apQueueService.decrease();
                 });
             } else {
                 /** Logic to simulate expected behavior when working offline */
@@ -991,7 +966,7 @@ angular.module('angularPoint')
                     _.extend(entity, offlineDefaults);
                     deferred.resolve(entity);
                 }
-                queueService.decrease();
+                apQueueService.decrease();
             }
             return deferred.promise;
         };
@@ -1013,7 +988,7 @@ angular.module('angularPoint')
          * @returns {object} Promise which resolves when the operation is complete.  Nothing of importance is returned.
          */
         var deleteItemModel = function (model, entity, options) {
-            queueService.increase();
+            apQueueService.increase();
 
             var defaults = {
                 target: entity.getContainer(),
@@ -1056,19 +1031,19 @@ angular.module('angularPoint')
                 webServiceCall.then(function () {
                     /** Success */
                     cleanCache();
-                    queueService.decrease();
+                    apQueueService.decrease();
                     deferred.resolve(opts.target);
                 }, function (outcome) {
                     //In the event of an error, display toast
                     toastr.error('There was an error deleting a list item from ' + model.list.title);
-                    queueService.decrease();
+                    apQueueService.decrease();
                     deferred.reject(outcome);
                 });
             } else {
                 /** Offline debug mode */
                 /** Simulate deletion and remove locally */
                 cleanCache();
-                queueService.decrease();
+                apQueueService.decrease();
                 deferred.resolve(opts.target);
             }
 

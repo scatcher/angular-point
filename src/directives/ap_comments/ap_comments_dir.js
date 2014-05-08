@@ -1,5 +1,5 @@
 angular.module('angularPoint')
-    .directive('apComments', function ($sce, $timeout, commentsModel, angularPointConfig, toastr) {
+    .directive('apComments', function ($sce, $timeout, commentsModel, apConfig, toastr) {
         return {
             restrict: "A",
             replace: true,
@@ -94,7 +94,7 @@ angular.module('angularPoint')
                     toastr.info("Checking for new comments");
                     scope.listItem.fetchComments().then(function (comments) {
                         $timeout(function () {
-                            if (angularPointConfig.offline && !scope.listItem.comments) {
+                            if (apConfig.offline && !scope.listItem.comments) {
                                 //Just return first comment
                                 scope.comments = comments[0];
                             } else if (comments.length > 0) {

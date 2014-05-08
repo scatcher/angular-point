@@ -1,0 +1,60 @@
+<h1><code ng:non-bindable="">Model</code>
+<div><span class="hint"></span>
+</div>
+</h1>
+<div><h2 id="description">Description</h2>
+<div class="description"><div class="model-page"><p>Model Constructor
+Provides the Following
+- adds an empty &quot;data&quot; array
+- adds an empty &quot;queries&quot; object
+- adds a deferred obj &quot;ready&quot;
+- builds &quot;model.list&quot; with constructor
+- adds &quot;getAllListItems&quot; function
+- adds &quot;addNewItem&quot; function</p>
+</div></div>
+<h2 id="usage">Usage</h2>
+<div class="usage"><pre class="prettyprint linenums">Model(options);</pre>
+<h4 id="usage_parameters">Parameters</h4><table class="variables-matrix table table-bordered table-striped"><thead><tr><th>Param</th><th>Type</th><th>Details</th></tr></thead><tbody><tr><td>options</td><td><a href="" class="label type-hint type-hint-object">object</a></td><td><div class="model-page"><p>Object containing optional params.</p>
+</div></td></tr><tr><td>options.factory</td><td><a href="" class="label type-hint type-hint-object">object</a></td><td><div class="model-page"><ul>
+<li>Constructor function for individual list items.</li>
+</ul>
+</div> <p><em>(default: StandardListItem)</em></p></td></tr><tr><td>options.list</td><td><a href="" class="label type-hint type-hint-object">object</a></td><td><div class="model-page"><ul>
+<li>Definition of the list in SharePoint; This object will
+be passed to the list constructor to extend further</li>
+</ul>
+</div></td></tr><tr><td>options.list.title</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="model-page"><ul>
+<li>List name, no spaces.  Offline XML file will need to be
+named the same (ex: CustomList so xml file would be /dev/CustomList.xml)</li>
+</ul>
+</div></td></tr><tr><td>options.list.guid</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="model-page"><ul>
+<li>Unique SharePoint ID (ex: &#39;{3DBEB25A-BEF0-4213-A634-00DAF46E3897}&#39;)</li>
+</ul>
+</div></td></tr><tr><td>options.list.customFields</td><td><a href="" class="label type-hint type-hint-object">object[]</a></td><td><div class="model-page"><ul>
+<li>Maps SharePoint fields with names we&#39;ll use within the
+application.  Identifies field types and formats accordingly.  Also denotes if a field is read only.</li>
+</ul>
+</div></td></tr></tbody></table></div>
+<h2 id="example">Example</h2>
+<div class="example"><div class="model-page"><pre class="prettyprint linenums">
+//Taken from a fictitious projectsModel.js
+var model = new modelFactory.Model({
+       factory: Project,
+       list: {
+           guid: '{PROJECT LIST GUID}',
+           title: 'Projects',
+           customFields: [
+               { internalName: 'Title', objectType: 'Text', mappedName: 'title', readOnly: false },
+               { internalName: 'Customer', objectType: 'Lookup', mappedName: 'customer', readOnly: false },
+               { internalName: 'ProjectDescription', objectType: 'Text', mappedName: 'projectDescription', readOnly: false },
+               { internalName: 'Status', objectType: 'Text', mappedName: 'status', readOnly: false },
+               { internalName: 'TaskManager', objectType: 'User', mappedName: 'taskManager', readOnly: false },
+               { internalName: 'ProjectGroup', objectType: 'Lookup', mappedName: 'group', readOnly: false },
+               { internalName: 'CostEstimate', objectType: 'Currency', mappedName: 'costEstimate', readOnly: false },
+               { internalName: 'Active', objectType: 'Boolean', mappedName: 'active', readOnly: false },
+               { internalName: 'Attachments', objectType: 'Attachments', mappedName: 'attachments', readOnly: true}
+           ]
+       }
+   });
+</pre>
+</div></div>
+</div>

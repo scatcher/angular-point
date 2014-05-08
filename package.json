@@ -28,7 +28,6 @@
     "grunt-usemin": "~2",
     "karma": "~0.12",
     "karma-chrome-launcher": "~0.1",
-    "karma-coffee-preprocessor": "~0.2",
     "karma-firefox-launcher": "~0.1",
     "karma-html2js-preprocessor": "~0.1",
     "karma-jasmine": "~0.2",

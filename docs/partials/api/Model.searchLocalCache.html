@@ -1,0 +1,25 @@
+<h1><code ng:non-bindable="">searchLocalCache</code>
+<div><span class="hint">service in module <code ng:non-bindable="">Model</code>
+</span>
+</div>
+</h1>
+<div><h2 id="description">Description</h2>
+<div class="description"><div class="model-searchlocalcache-page"><p>Search functionality that allow for deeply searching an array of objects for the first
+record matching the supplied value.  Additionally it maps indexes to speed up future calls.  It
+currently rebuilds the mapping when the length of items in the local cache has changed or when the
+rebuildIndex flag is set.</p>
+</div></div>
+<h2 id="usage">Usage</h2>
+<div class="usage"><pre class="prettyprint linenums">searchLocalCache(value, [options]);</pre>
+<h4 id="usage_parameters">Parameters</h4><table class="variables-matrix table table-bordered table-striped"><thead><tr><th>Param</th><th>Type</th><th>Details</th></tr></thead><tbody><tr><td>value</td><td><a href="" class="label type-hint type-hint-object">*</a></td><td><div class="model-searchlocalcache-page"><p>The value or array of values to compare against.</p>
+</div></td></tr><tr><td>[options]</td><td><a href="" class="label type-hint type-hint-object">object</a></td><td><div class="model-searchlocalcache-page"><p>Object containing optional parameters.</p>
+</div></td></tr><tr><td>[options.propertyPath]</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="model-searchlocalcache-page"><p>The dot separated propertyPath.
+<pre class="prettyprint linenums">
+'project.lookupId'
+</pre>
+</div></td></tr><tr><td>[options.cacheName]</td><td><a href="" class="label type-hint type-hint-object">object</a></td><td><div class="model-searchlocalcache-page"><p>Required if using a data source other than primary cache.</p>
+</div></td></tr><tr><td>options.localCache</td><td><a href="" class="label type-hint type-hint-object">object</a></td><td><div class="model-searchlocalcache-page"><p>Array of objects to search (Default model.getCache()).</p>
+</div> <p><em>(default: model.getCache())</em></p></td></tr><tr><td>options.rebuildIndex</td><td><a href="" class="label type-hint type-hint-boolean">boolean</a></td><td><div class="model-searchlocalcache-page"><p>Ignore previous index and rebuild.</p>
+</div> <p><em>(default: false)</em></p></td></tr></tbody></table><h4 id="usage_returns">Returns</h4><table class="variables-matrix"><tr><td><a href="" class="label type-hint type-hint-object">(object|object[])</a></td><td><div class="model-searchlocalcache-page"><p>Either the object(s) that you&#39;re searching for or undefined if not found.</p>
+</div></td></tr></table></div>
+</div>

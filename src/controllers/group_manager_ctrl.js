@@ -1,7 +1,7 @@
 'use strict';
 
 angular.module('angularPoint')
-    .controller('groupManagerCtrl', function ($scope, $q, $timeout, $filter, ngTableParams, angularPointConfig, dataService, toastr) {
+    .controller('groupManagerCtrl', function ($scope, $q, $timeout, $filter, ngTableParams, apConfig, apDataService, toastr) {
         $scope.availableOptions = [];
         $scope.assignedOptions = [];
 
@@ -71,7 +71,7 @@ angular.module('angularPoint')
         $scope.updateAvailableGroups = function () {
             var deferred = $q.defer();
             toastr.info('Retrieving an updated list of groups for the current user');
-            dataService.getCollection({
+            apDataService.getCollection({
                 webUrl: $scope.state.siteUrl,
                 operation: 'GetGroupCollectionFromUser',
                 userLoginName: $scope.groups.filter.LoginName
@@ -87,7 +87,7 @@ angular.module('angularPoint')
             var deferred = $q.defer();
 
             toastr.info('Retrieving an updated list of users for the current group');
-            dataService.getCollection({
+            apDataService.getCollection({
                 webUrl: $scope.state.siteUrl,
                 groupName: group.Name,
                 operation: 'GetUserCollectionFromGroup'
@@ -160,7 +160,7 @@ angular.module('angularPoint')
                     _.each(groupsArray, function (group) {
                         var deferred = $q.defer();
 
-                        if (angularPointConfig.offline) {
+                        if (apConfig.offline) {
                             //Simulate an async call
                             $timeout(function () {
                                 //Push option to look like they've been assigned
@@ -169,7 +169,7 @@ angular.module('angularPoint')
 //                                source.splice(source.indexOf(user), 1);
                             });
                         } else {
-                            dataService.serviceWrapper({
+                            apDataService.serviceWrapper({
                                 webUrl: $scope.state.siteUrl,
                                 filterNode: 'User',   //Look for all xml 'User' nodes and convert those in to JS objects
                                 operation: operation, //AddUserToGroup || RemoveUserFromGroup'
@@ -193,7 +193,7 @@ angular.module('angularPoint')
                     toastr.success(operation === 'AddUserToGroup' ?
                         'User successfully added' :
                         'User successfully removed');
-                    if (!angularPointConfig.offline) {
+                    if (!apConfig.offline) {
                         //Retrieve updated value from the server
                         if ($scope.state.activeTab === 'Users') {
                             $scope.updateAvailableUsers($scope.users.filter);
@@ -284,7 +284,7 @@ angular.module('angularPoint')
 
         var getUserCollection = function () {
             var deferred = $q.defer();
-            dataService.getCollection({
+            apDataService.getCollection({
                 webUrl: $scope.state.siteUrl,
                 operation: 'GetUserCollectionFromSite'
             }).then(function (response) {
@@ -301,7 +301,7 @@ angular.module('angularPoint')
 
         var getGroupCollection = function () {
             var deferred = $q.defer();
-            dataService.getCollection({
+            apDataService.getCollection({
                 webUrl: $scope.state.siteUrl,
                 operation: 'GetGroupCollectionFromSite'
             }).then(function (response) {
