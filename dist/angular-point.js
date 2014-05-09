@@ -17,21 +17,12 @@ try {
     }
   ]);
 }
-angular.module('angularPoint', ['toastr']).run(function () {
-});
-;
-'use strict';
-/**
-* @ngdoc service
-* @name configService
-* @description
-* Basic config for the application (unique for each environment)
-*/
-angular.module('angularPoint').constant('apConfig', {
-  appTitle: 'SP-Angular',
+angular.module('angularPoint', ['toastr']).constant('apConfig', {
+  appTitle: 'Angular-Point',
   debugEnabled: true,
-  firebaseURL: 'The url of your firebase source',
+  firebaseURL: 'The optional url of your firebase source',
   offline: window.location.href.indexOf('localhost') > -1 || window.location.href.indexOf('http://0.') > -1 || window.location.href.indexOf('http://10.') > -1 || window.location.href.indexOf('http://192.') > -1
+}).run(function () {
 });
 ;
 'use strict';
@@ -57,8 +48,6 @@ angular.module('angularPoint').service('apDataService', [
     var offline = apConfig.offline;
     /** Allows us to make code easier to read */
     var online = !offline;
-    //TODO Figure out a better way to get this value, shouldn't need to make a blocking call
-    var defaultUrl = apConfig.defaultUrl || online ? $().SPServices.SPGetCurrentSite() : '';
     /**
          * @ngdoc function
          * @name dataService.processListItems
@@ -184,7 +173,7 @@ angular.module('angularPoint').service('apDataService', [
          <pre>
          var payload = {
                 operation: 'GetVersionCollection',
-                webURL: configService.defaultUrl,
+                webURL: apConfig.defaultUrl,
                 strlistID: model.list.guid,
                 strlistItemID: listItem.id,
                 strFieldName: fieldDefinition.internalName
@@ -250,7 +239,7 @@ angular.module('angularPoint').service('apDataService', [
          */
     var getCollection = function (options) {
       apQueueService.increase();
-      var defaults = { webURL: defaultUrl };
+      var defaults = {};
       var opts = _.extend({}, defaults, options);
       /** Determine the XML node to iterate over if filterNode isn't provided */
       var filterNode = opts.filterNode || opts.operation.split('Get')[1].split('Collection')[0];
@@ -341,7 +330,7 @@ angular.module('angularPoint').service('apDataService', [
          * Check http://spservices.codeplex.com/documentation for details on expected parameters for each operation.
          *
          * @param {object} options Payload params that is directly passed to SPServices.
-         * @param {string} [options.webURL=defaultUrl] XML filter string used to find the elements to iterate over.
+         * @param {string} [options.webURL] XML filter string used to find the elements to iterate over.
          * @param {string} [options.filterNode] XML filter string used to find the elements to iterate over.
          * This is typically 'z:row' for list items.
          * @returns {object} Returns a promise which when resolved either returns clean objects parsed by the value
@@ -352,7 +341,7 @@ angular.module('angularPoint').service('apDataService', [
          */
     //TODO: Make this the primary function which interacts with SPServices and makes web service call.  No need having this logic duplicated.
     var serviceWrapper = function (options) {
-      var defaults = { webURL: defaultUrl };
+      var defaults = {};
       var opts = _.extend({}, defaults, options);
       var deferred = $q.defer();
       apQueueService.increase();
@@ -2352,11 +2341,14 @@ angular.module('angularPoint').factory('apModelFactory', [
         var fieldDefinition = _.findWhere(model.list.fields, { mappedName: fieldName });
         var payload = {
             operation: 'GetVersionCollection',
-            webURL: apConfig.defaultUrl,
             strlistID: model.list.guid,
             strlistItemID: listItem.id,
             strFieldName: fieldDefinition.internalName
           };
+        /** Manually set site url if defined, prevents SPServices from making a blocking call to fetch it. */
+        if (apConfig.defaultUrl) {
+          payload.webURL = apConfig.defaultUrl;
+        }
         promiseArray.push(apDataService.getFieldVersionHistory(payload, fieldDefinition));
       };
       if (!fieldNames) {
@@ -2429,9 +2421,12 @@ angular.module('angularPoint').factory('apModelFactory', [
           fields: [],
           guid: '',
           mapping: {},
-          title: '',
-          webURL: apConfig.defaultUrl
+          title: ''
         };
+      /** Manually set site url if defined, prevents SPServices from making a blocking call to fetch it. */
+      if (apConfig.defaultUrl) {
+        defaults.webURL = apConfig.defaultUrl;
+      }
       var list = _.extend({}, defaults, obj);
       apFieldService.extendFieldDefinitions(list);
       return list;
@@ -2497,9 +2492,12 @@ angular.module('angularPoint').factory('apModelFactory', [
           cacheXML: false,
           query: '' + '<Query>' + '   <OrderBy>' + '       <FieldRef Name="ID" Ascending="TRUE"/>' + '   </OrderBy>' + '</Query>',
           queryOptions: '' + '<QueryOptions>' + '   <IncludeMandatoryColumns>FALSE</IncludeMandatoryColumns>' + '   <IncludeAttachmentUrls>TRUE</IncludeAttachmentUrls>' + '   <IncludeAttachmentVersion>FALSE</IncludeAttachmentVersion>' + '   <ExpandUserField>FALSE</ExpandUserField>' + '</QueryOptions>',
-          viewFields: model.list.viewFields,
-          webURL: apConfig.defaultUrl
+          viewFields: model.list.viewFields
         };
+      /** Set the default url if the config param is defined, otherwise let SPServices handle it */
+      if (apConfig.defaultUrl) {
+        defaults.webURL = apConfig.defaultUrl;
+      }
       _.extend(query, defaults, queryOptions);
       /** Key/Value mapping of SharePoint properties to SPServices properties */
       var mapping = [

@@ -1,9 +1,9 @@
 'use strict';
 
 angular.module('angularPoint')
-    .controller('generateOfflineCtrl', function ($scope, $q, apDataService, apConfigService, toastr) {
+    .controller('generateOfflineCtrl', function ($scope, $q, apDataService, apConfig, toastr) {
         $scope.state = {
-            siteUrl: apConfigService.defaultUrl,
+            siteUrl: apConfig.defaultUrl,
             query: '',
             itemLimit: 0,
             selectedList: '',

@@ -82,7 +82,7 @@ NG_DOCS={
       "type": "function",
       "moduleName": "dataService",
       "shortDescription": "Returns the version history for a field in a list item.",
-      "keywords": "api array changes configservice configuration dataservice defaulturl definition field fielddefinition function getfieldversionhistory getversioncollection guid history internalname item list listitem model object operation passed payload promise resolves returns spservices strfieldname strlistid strlistitemid var version weburl"
+      "keywords": "apconfig api array changes configuration dataservice defaulturl definition field fielddefinition function getfieldversionhistory getversioncollection guid history internalname item list listitem model object operation passed payload promise resolves returns spservices strfieldname strlistid strlistitemid var version weburl"
     },
     {
       "section": "api",

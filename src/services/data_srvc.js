@@ -18,9 +18,6 @@ angular.module('angularPoint')
         /** Allows us to make code easier to read */
         var online = !offline;
 
-        //TODO Figure out a better way to get this value, shouldn't need to make a blocking call
-        var defaultUrl = apConfig.defaultUrl || online ? $().SPServices.SPGetCurrentSite() : '';
-
         /**
          * @ngdoc function
          * @name dataService.processListItems
@@ -164,7 +161,7 @@ angular.module('angularPoint')
          <pre>
          var payload = {
                 operation: 'GetVersionCollection',
-                webURL: configService.defaultUrl,
+                webURL: apConfig.defaultUrl,
                 strlistID: model.list.guid,
                 strlistItemID: listItem.id,
                 strFieldName: fieldDefinition.internalName
@@ -232,9 +229,7 @@ angular.module('angularPoint')
          */
         var getCollection = function (options) {
             apQueueService.increase();
-            var defaults = {
-                webURL: defaultUrl
-            };
+            var defaults = {};
             var opts = _.extend({}, defaults, options);
 
             /** Determine the XML node to iterate over if filterNode isn't provided */
@@ -337,7 +332,7 @@ angular.module('angularPoint')
          * Check http://spservices.codeplex.com/documentation for details on expected parameters for each operation.
          *
          * @param {object} options Payload params that is directly passed to SPServices.
-         * @param {string} [options.webURL=defaultUrl] XML filter string used to find the elements to iterate over.
+         * @param {string} [options.webURL] XML filter string used to find the elements to iterate over.
          * @param {string} [options.filterNode] XML filter string used to find the elements to iterate over.
          * This is typically 'z:row' for list items.
          * @returns {object} Returns a promise which when resolved either returns clean objects parsed by the value
@@ -348,9 +343,7 @@ angular.module('angularPoint')
          */
         //TODO: Make this the primary function which interacts with SPServices and makes web service call.  No need having this logic duplicated.
         var serviceWrapper = function (options) {
-            var defaults = {
-                webURL: defaultUrl
-            };
+            var defaults = {};
             var opts = _.extend({}, defaults, options);
             var deferred = $q.defer();
 

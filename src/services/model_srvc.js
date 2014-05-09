@@ -817,11 +817,15 @@ angular.module('angularPoint')
 
                 var payload = {
                     operation: 'GetVersionCollection',
-                    webURL: apConfig.defaultUrl,
                     strlistID: model.list.guid,
                     strlistItemID: listItem.id,
                     strFieldName: fieldDefinition.internalName
                 };
+
+                /** Manually set site url if defined, prevents SPServices from making a blocking call to fetch it. */
+                if(apConfig.defaultUrl) {
+                    payload.webURL = apConfig.defaultUrl;
+                }
 
                 promiseArray.push(apDataService.getFieldVersionHistory(payload, fieldDefinition));
             };
@@ -904,9 +908,14 @@ angular.module('angularPoint')
                 fields: [],
                 guid: '',
                 mapping: {},
-                title: '',
-                webURL: apConfig.defaultUrl
+                title: ''
             };
+
+            /** Manually set site url if defined, prevents SPServices from making a blocking call to fetch it. */
+            if(apConfig.defaultUrl) {
+                defaults.webURL = apConfig.defaultUrl;
+            }
+
 
             var list = _.extend({}, defaults, obj);
 
@@ -995,10 +1004,16 @@ angular.module('angularPoint')
                     '   <IncludeAttachmentVersion>FALSE</IncludeAttachmentVersion>' +
                     '   <ExpandUserField>FALSE</ExpandUserField>' +
                     '</QueryOptions>',
-                viewFields: model.list.viewFields,
-                webURL: apConfig.defaultUrl
+                viewFields: model.list.viewFields
             };
+
+            /** Set the default url if the config param is defined, otherwise let SPServices handle it */
+            if(apConfig.defaultUrl) {
+                defaults.webURL = apConfig.defaultUrl;
+            }
+
             _.extend(query, defaults, queryOptions);
+
 
             /** Key/Value mapping of SharePoint properties to SPServices properties */
             var mapping = [
