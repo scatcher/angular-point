@@ -74,7 +74,7 @@ module.exports = function (grunt) {
                     'bower_components/es5-shim/es5-shim.js',
                     'bower_components/json3/lib/json3.js',
                     'bower_components/respond/dest/respond.src.js',
-                    'scripts/utility/ap_ie_safe.js'
+                    'src/utility/ap_ie_safe.js'
                 ],
                 dest: '<%= config.dist %>/ie-safe.js'
             }
