@@ -126,7 +126,7 @@ module.exports = function (grunt) {
                 ],
                 html5Mode: false,
 //                startPage: '/api',
-                title: 'SP-Angular Docs'
+                title: 'Angular-Point API Docs'
             },
             api: [
                 '<%= config.services %>/modal_srvc.js',
@@ -139,6 +139,12 @@ module.exports = function (grunt) {
 //                src: ['<%= config.services %>/model_srvc.js'],
 //                title: 'Model Service'
 //            }
+        },
+        'gh-pages': {
+            options: {
+                base: 'docs'
+            },
+            src: ['**']
         }
     });
 
@@ -162,6 +168,11 @@ module.exports = function (grunt) {
     grunt.registerTask('doc', [
         'clean:docs',
         'ngdocs'
+    ]);
+
+    grunt.registerTask('build-docs', [
+        'doc',
+        'gh-pages'
     ]);
 
     grunt.registerTask('default', [
