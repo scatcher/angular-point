@@ -125,6 +125,10 @@ module.exports = function (grunt) {
                     '//ajax.googleapis.com/ajax/libs/angularjs/1.2.16/angular-animate.min.js'
                 ],
                 html5Mode: false,
+                analytics: {
+                    account: 'UA-51195298-1',
+                    domainName: 'scatcher.github.io'
+                },
 //                startPage: '/api',
                 title: 'Angular-Point API Docs'
             },
@@ -166,7 +170,7 @@ module.exports = function (grunt) {
     ]);
 
     grunt.registerTask('doc', [
-        'clean:docs',
+//        'clean:docs',
         'ngdocs'
     ]);
 
