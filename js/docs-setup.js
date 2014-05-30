@@ -5,6 +5,51 @@ NG_DOCS={
   "pages": [
     {
       "section": "api",
+      "id": "apCacheService",
+      "shortName": "apCacheService",
+      "type": "service",
+      "moduleName": "apCacheService",
+      "shortDescription": "Stores a reference for all list items based on list GUID and list item id.  Allows us to then register promises that",
+      "keywords": "allows apcacheservice api based future guid item items list promises reference register registered requested resolve service stores"
+    },
+    {
+      "section": "api",
+      "id": "apCacheService.EntityCache",
+      "shortName": "apCacheService.EntityCache",
+      "type": "function",
+      "moduleName": "apCacheService",
+      "shortDescription": "Cache constructor that maintains a queue of all requests for a list item, counter for the number of times",
+      "keywords": "add apcacheservice api belongs cache counter entity entitycache entityid entitytype function functionality guid item list maintains number queue requests times timestamp update updated"
+    },
+    {
+      "section": "api",
+      "id": "apCacheService.getEntity",
+      "shortName": "apCacheService.getEntity",
+      "type": "function",
+      "moduleName": "apCacheService",
+      "shortDescription": "Returns a deferred object that resolves with the requested entity immediately if already present or at some",
+      "keywords": "apcacheservice api assuming belongs deferred entity entityid entitytype eventually function future getentity guid item list object point registered requested resolves returns"
+    },
+    {
+      "section": "api",
+      "id": "apCacheService.registerEntity",
+      "shortName": "apCacheService.registerEntity",
+      "type": "function",
+      "moduleName": "apCacheService",
+      "shortDescription": "Registers an entity in the cache and fulfills any pending deferred requests for the entity.",
+      "keywords": "add apcacheservice api cache created deferred entity fulfills function newly pass pending registerentity registers requests"
+    },
+    {
+      "section": "api",
+      "id": "apCacheService.removeEntity",
+      "shortName": "apCacheService.removeEntity",
+      "type": "function",
+      "moduleName": "apCacheService",
+      "shortDescription": "Removes the entity from the local entity cache.",
+      "keywords": "apcacheservice api belongs cache entity entityid entitytype function guid item list local removeentity removes"
+    },
+    {
+      "section": "api",
       "id": "dataService",
       "shortName": "dataService",
       "type": "service",
@@ -200,6 +245,15 @@ NG_DOCS={
       "moduleName": "ListItem",
       "shortDescription": "Base prototype which all list items inherit CRUD functionality that can be called directly from obj.",
       "keywords": "api base called crud directly function functionality inherit items list listitem obj prototype"
+    },
+    {
+      "section": "api",
+      "id": "ListItem.addEntityReference",
+      "shortName": "ListItem.addEntityReference",
+      "type": "function",
+      "moduleName": "ListItem",
+      "shortDescription": "Allows us to pass in another entity to associate superficially, only persists for the current session and",
+      "keywords": "_apcache addentityreference allows api associate associated associateprojecttasks cache corresponding creates current data digest entity faster fictitious function item iterate list listitem lookup lookupid model multi-lookup object pass passed persists project projects property references save saved searchlocalcache session superficially task tasks tasksmodel title type var"
     },
     {
       "section": "api",
@@ -531,8 +585,8 @@ NG_DOCS={
       "shortName": "queueService.reset",
       "type": "function",
       "moduleName": "queueService",
-      "shortDescription": "Reset counter to 0.",
-      "keywords": "api count counter current function incrementing queueservice reset"
+      "shortDescription": "Decrease the counter by 1.",
+      "keywords": "api count counter current decrease decrementing function queueservice reset"
     },
     {
       "section": "api",
@@ -540,8 +594,8 @@ NG_DOCS={
       "shortName": "queueService.reset",
       "type": "function",
       "moduleName": "queueService",
-      "shortDescription": "Decrease the counter by 1.",
-      "keywords": "api count counter current decrease decrementing function queueservice reset"
+      "shortDescription": "Reset counter to 0.",
+      "keywords": "api count counter current function incrementing queueservice reset"
     },
     {
       "section": "api",
@@ -559,7 +613,7 @@ NG_DOCS={
       "type": "function",
       "moduleName": "utilityService",
       "shortDescription": "Converts a SharePoint string representation of a field into the correctly formatted JavaScript version",
-      "keywords": "api attrtojson based boolean calc converts correctly counter currency datetime definition field formatted function integer javascript json lookup lookupmulti multichoice number object options representation sharepoint string text type user usermulti utilityservice version"
+      "keywords": "api attrtojson based boolean calc converts correctly counter currency datetime definition field float formatted function integer javascript json lookup lookupmulti multichoice number object options representation sharepoint string text type user usermulti utilityservice version"
     },
     {
       "section": "api",
