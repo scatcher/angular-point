@@ -358,7 +358,7 @@ angular.module('angularPoint').service('apDataService', [
          *
          * @example
          <pre>
-           dataService.getCollection({
+         dataService.getCollection({
                 operation: "GetGroupCollectionFromUser",
                 userLoginName: $scope.state.selectedUser.LoginName
                 }).then(function (response) {
@@ -657,11 +657,16 @@ angular.module('angularPoint').service('apDataService', [
       return deferred.promise;
     };
     var parseFieldDefinitionXML = function (customFields, responseXML) {
-      var fieldMap = _.index(customFields, 'internalName');
-      var fieldsUpdated = 0;
+      var fieldMap = {}, fieldsUpdated = 0;
+      /** Map all custom fields with keys of the internalName and values = field definition */
+      _.each(customFields, function (field) {
+        if (field.internalName) {
+          fieldMap[field.internalName] = field;
+        }
+      });
+      /** Iterate over each of the field nodes */
       $(responseXML).SPFilterNode('Field').each(function () {
         var field = this;
-        /** Map all custom fields with keys of the internalName and values = field definition */
         var staticName = $(field).attr('StaticName');
         /** If we've defined this field then we should extend it */
         if (fieldMap[staticName]) {
@@ -750,6 +755,10 @@ angular.module('angularPoint').service('apDataService', [
             /** Set date time to allow for time based updates */
             query.lastRun = new Date();
             apQueueService.decrease();
+            /** Extend the field definition in the model with the offline data */
+            if (query.operation === 'GetListItemChangesSinceToken') {
+              model.list.extendedFieldDefinitions = parseFieldDefinitionXML(model.list.customFields, responseXML);
+            }
             deferred.resolve(entities);
           }, function () {
             var mockData = model.generateMockData();

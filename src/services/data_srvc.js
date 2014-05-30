@@ -174,7 +174,7 @@ angular.module('angularPoint')
          */
         var getFieldVersionHistory = function (payload, fieldDefinition) {
             var deferred = $q.defer();
-            if(online) {
+            if (online) {
                 /** SPServices returns a promise */
                 var webServiceCall = $().SPServices(payload);
 
@@ -221,7 +221,7 @@ angular.module('angularPoint')
          *
          * @example
          <pre>
-           dataService.getCollection({
+         dataService.getCollection({
                 operation: "GetGroupCollectionFromUser",
                 userLoginName: $scope.state.selectedUser.LoginName
                 }).then(function (response) {
@@ -363,7 +363,7 @@ angular.module('angularPoint')
                 }
             };
 
-            if(online) {
+            if (online) {
                 /** Add in webURL to speed up call, set to default if not specified */
                 var payload = {};
 
@@ -562,19 +562,26 @@ angular.module('angularPoint')
         };
 
         var parseFieldDefinitionXML = function (customFields, responseXML) {
-            var fieldMap = _.index(customFields, 'internalName');
-            var fieldsUpdated = 0;
+            var fieldMap = {}, fieldsUpdated = 0;
+
+            /** Map all custom fields with keys of the internalName and values = field definition */
+            _.each(customFields, function (field) {
+                if(field.internalName) {
+                    fieldMap[field.internalName] = field;
+                }
+            });
+
+            /** Iterate over each of the field nodes */
             $(responseXML).SPFilterNode('Field').each(function () {
                 var field = this;
-                /** Map all custom fields with keys of the internalName and values = field definition */
                 var staticName = $(field).attr('StaticName');
                 /** If we've defined this field then we should extend it */
-                if(fieldMap[staticName]) {
+                if (fieldMap[staticName]) {
 
                     var row = {};
                     var rowAttrs = field.attributes;
 
-                    _.each(rowAttrs, function(attr, attrNum) {
+                    _.each(rowAttrs, function (attr, attrNum) {
                         var attrName = rowAttrs[attrNum].name;
                         row[attrName] = $(field).attr(attrName);
                     });
@@ -620,7 +627,7 @@ angular.module('angularPoint')
             /** Trigger processing animation */
             apQueueService.increase();
 
-            if(online) {
+            if (online) {
                 var webServiceCall = $().SPServices(query);
                 webServiceCall.then(function () {
                     var responseXML = webServiceCall.responseXML;
@@ -629,7 +636,7 @@ angular.module('angularPoint')
                         /** The initial call to GetListItemChangesSinceToken also includes the field definitions for the
                          *  list so use this to extend the existing field defintitions defined in the model.
                          */
-                        if(!model.list.extendedFieldDefinitions) {
+                        if (!model.list.extendedFieldDefinitions) {
                             model.list.extendedFieldDefinitions = parseFieldDefinitionXML(model.list.customFields, responseXML);
                         }
 
@@ -674,6 +681,12 @@ angular.module('angularPoint')
                         /** Set date time to allow for time based updates */
                         query.lastRun = new Date();
                         apQueueService.decrease();
+
+                        /** Extend the field definition in the model with the offline data */
+                        if (query.operation === 'GetListItemChangesSinceToken') {
+                            model.list.extendedFieldDefinitions = parseFieldDefinitionXML(model.list.customFields, responseXML);
+                        }
+
                         deferred.resolve(entities);
                     }, function () {
                         var mockData = model.generateMockData();
