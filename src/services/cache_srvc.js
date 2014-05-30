@@ -34,6 +34,7 @@ angular.module('angularPoint')
             var deferred = $q.defer();
             if(self.entity) {
                 /** Entity already exists so resolve immediately */
+                deferred.resolve(self.entity);
             } else {
                 self.associationQueue.push(deferred);
             }
