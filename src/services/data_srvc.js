@@ -48,7 +48,7 @@ angular.module('angularPoint')
 
             /** Map returned XML to JS objects based on mapping from model */
             var filteredNodes = $(responseXML).SPFilterNode(opts.filter);
-            var jsObjects = apUtilityService.xmlToJson(filteredNodes, { mapping: opts.mapping });
+            var jsObjects = apUtilityService.xmlToJson(filteredNodes, opts);
 
             var entities = [];
 
@@ -64,6 +64,8 @@ angular.module('angularPoint')
                 };
                 var listItem = new model.factory(item);
                 entities.push(listItem);
+
+                /** Register in global application entity cache */
                 apCacheService.registerEntity(listItem);
             });
 

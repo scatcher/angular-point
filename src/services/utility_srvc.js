@@ -33,11 +33,13 @@ angular.module('angularPoint')
          */
         var xmlToJson = function (rows, options) {
 
-            var opt = $.extend({}, {
+            var defaults = {
                 mapping: {},
                 includeAllAttrs: false,
                 removeOws: true
-            }, options);
+            };
+
+            var opts = _.extend({}, defaults, options);
 
             var attrNum;
             var jsonObject = [];
@@ -47,18 +49,18 @@ angular.module('angularPoint')
                 var rowAttrs = item.attributes;
 
                 // Bring back all mapped columns, even those with no value
-                _.each(opt.mapping, function (prop) {
+                _.each(opts.mapping, function (prop) {
                     row[prop.mappedName] = '';
                 });
 
                 // Parse through the element's attributes
                 for (attrNum = 0; attrNum < rowAttrs.length; attrNum++) {
                     var thisAttrName = rowAttrs[attrNum].name;
-                    var thisMapping = opt.mapping[thisAttrName];
-                    var thisObjectName = typeof thisMapping !== 'undefined' ? thisMapping.mappedName : opt.removeOws ? thisAttrName.split('ows_')[1] : thisAttrName;
+                    var thisMapping = opts.mapping[thisAttrName];
+                    var thisObjectName = typeof thisMapping !== 'undefined' ? thisMapping.mappedName : opts.removeOws ? thisAttrName.split('ows_')[1] : thisAttrName;
                     var thisObjectType = typeof thisMapping !== 'undefined' ? thisMapping.objectType : undefined;
-                    if (opt.includeAllAttrs || thisMapping !== undefined) {
-                        row[thisObjectName] = attrToJson(rowAttrs[attrNum].value, thisObjectType, {entity: row, propertyName: thisObjectName});
+                    if (opts.includeAllAttrs || thisMapping !== undefined) {
+                        row[thisObjectName] = attrToJson(rowAttrs[attrNum].value, thisObjectType, {query: opts.getQuery, entity: row, propertyName: thisObjectName});
                     }
                 }
                 // Push this item into the JSON Object
@@ -301,7 +303,9 @@ angular.module('angularPoint')
         Lookup.prototype.getEntity = function () {
             var props = this._props();
             if(!props.getEntity) {
-                var listItem = props.entity;
+                var query = props.getQuery();
+                var listItem = query.searchLocalCache(props.entity.id);
+
                 /** Create a new deferred object if this is the first run */
                 props.getEntity = $q.defer();
                 listItem.getLookupReference(props.propertyName, self.lookupId)

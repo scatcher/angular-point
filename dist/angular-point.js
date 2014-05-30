@@ -202,7 +202,7 @@ angular.module('angularPoint').service('apDataService', [
       var opts = _.extend({}, defaults, options);
       /** Map returned XML to JS objects based on mapping from model */
       var filteredNodes = $(responseXML).SPFilterNode(opts.filter);
-      var jsObjects = apUtilityService.xmlToJson(filteredNodes, { mapping: opts.mapping });
+      var jsObjects = apUtilityService.xmlToJson(filteredNodes, opts);
       var entities = [];
       /** Use factory, typically on model, to create new object for each returned item */
       _.each(jsObjects, function (item) {
@@ -216,6 +216,7 @@ angular.module('angularPoint').service('apDataService', [
         };
         var listItem = new model.factory(item);
         entities.push(listItem);
+        /** Register in global application entity cache */
         apCacheService.registerEntity(listItem);
       });
       if (opts.mode === 'replace') {
@@ -3074,28 +3075,30 @@ angular.module('angularPoint').service('apUtilityService', [
          * @returns {Array} An array of JavaScript objects.
          */
     var xmlToJson = function (rows, options) {
-      var opt = $.extend({}, {
+      var defaults = {
           mapping: {},
           includeAllAttrs: false,
           removeOws: true
-        }, options);
+        };
+      var opts = _.extend({}, defaults, options);
       var attrNum;
       var jsonObject = [];
       _.each(rows, function (item) {
         var row = {};
         var rowAttrs = item.attributes;
         // Bring back all mapped columns, even those with no value
-        _.each(opt.mapping, function (prop) {
+        _.each(opts.mapping, function (prop) {
           row[prop.mappedName] = '';
         });
         // Parse through the element's attributes
         for (attrNum = 0; attrNum < rowAttrs.length; attrNum++) {
           var thisAttrName = rowAttrs[attrNum].name;
-          var thisMapping = opt.mapping[thisAttrName];
-          var thisObjectName = typeof thisMapping !== 'undefined' ? thisMapping.mappedName : opt.removeOws ? thisAttrName.split('ows_')[1] : thisAttrName;
+          var thisMapping = opts.mapping[thisAttrName];
+          var thisObjectName = typeof thisMapping !== 'undefined' ? thisMapping.mappedName : opts.removeOws ? thisAttrName.split('ows_')[1] : thisAttrName;
           var thisObjectType = typeof thisMapping !== 'undefined' ? thisMapping.objectType : undefined;
-          if (opt.includeAllAttrs || thisMapping !== undefined) {
+          if (opts.includeAllAttrs || thisMapping !== undefined) {
             row[thisObjectName] = attrToJson(rowAttrs[attrNum].value, thisObjectType, {
+              query: opts.getQuery,
               entity: row,
               propertyName: thisObjectName
             });
@@ -3318,7 +3321,8 @@ angular.module('angularPoint').service('apUtilityService', [
     Lookup.prototype.getEntity = function () {
       var props = this._props();
       if (!props.getEntity) {
-        var listItem = props.entity;
+        var query = props.getQuery();
+        var listItem = query.searchLocalCache(props.entity.id);
         /** Create a new deferred object if this is the first run */
         props.getEntity = $q.defer();
         listItem.getLookupReference(props.propertyName, self.lookupId).then(function (entity) {
