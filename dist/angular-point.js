@@ -167,8 +167,9 @@ angular.module('angularPoint').service('apDataService', [
   'apConfig',
   'apUtilityService',
   'apCacheService',
+  'apFieldService',
   'toastr',
-  function ($q, $timeout, apQueueService, apConfig, apUtilityService, apCacheService, toastr) {
+  function ($q, $timeout, apQueueService, apConfig, apUtilityService, apCacheService, apFieldService, toastr) {
     var dataService = {};
     /** Flag to use cached XML files from the src/dev folder */
     var offline = apConfig.offline;
@@ -655,6 +656,29 @@ angular.module('angularPoint').service('apDataService', [
       });
       return deferred.promise;
     };
+    var parseFieldDefinitionXML = function (customFields, responseXML) {
+      var fieldMap = _.index(customFields, 'internalName');
+      var fieldsUpdated = 0;
+      $(responseXML).SPFilterNode('Field').each(function () {
+        var field = this;
+        /** Map all custom fields with keys of the internalName and values = field definition */
+        var staticName = $(field).attr('StaticName');
+        /** If we've defined this field then we should extend it */
+        if (fieldMap[staticName]) {
+          var row = {};
+          var rowAttrs = field.attributes;
+          _.each(rowAttrs, function (attr, attrNum) {
+            var attrName = rowAttrs[attrNum].name;
+            row[attrName] = $(field).attr(attrName);
+          });
+          /** Extend the existing field definition with field attributes from SharePoint */
+          _.extend(fieldMap[staticName], row);
+          fieldsUpdated++;
+        }
+      });
+      window.console.log('Field Definitions Updated: ' + fieldsUpdated);
+      return true;
+    };
     /**
          * @ngdoc function
          * @name dataService.executeQuery
@@ -684,6 +708,12 @@ angular.module('angularPoint').service('apDataService', [
         webServiceCall.then(function () {
           var responseXML = webServiceCall.responseXML;
           if (query.operation === 'GetListItemChangesSinceToken') {
+            /** The initial call to GetListItemChangesSinceToken also includes the field definitions for the
+                         *  list so use this to extend the existing field defintitions defined in the model.
+                         */
+            if (!model.list.extendedFieldDefinitions) {
+              model.list.extendedFieldDefinitions = parseFieldDefinitionXML(model.list.customFields, responseXML);
+            }
             /** Store token for future web service calls to return changes */
             query.changeToken = retrieveChangeToken(responseXML);
             /** Update the user permissions for this list */
@@ -992,7 +1022,7 @@ angular.module('angularPoint').service('apDataService', [
           var updatedEntity = output[0];
           /** Optionally search through each cache on the model and update any other references to this entity */
           if (opts.updateAllCaches && _.isNumber(entity.id)) {
-            updateAllCaches(model, updatedEntity, entity.getQuery(), 'update');
+            updateAllCaches(model, updatedEntity, entity.getQuery());
           }
           deferred.resolve(updatedEntity);
         }, function (outcome) {

@@ -290,7 +290,7 @@ angular.module('angularPoint')
             /** Close viewFields */
             list.viewFields += '</ViewFields>';
         }
-
+        
         return{
             defaultFields: defaultFields,
             extendFieldDefinitions: extendFieldDefinitions,
