@@ -9,14 +9,14 @@
             <div class="input-group">
                 <input type="url" class="form-control" ng-model="state.siteUrl">
                   <span class="input-group-btn">
-                    <button title="Refresh list/libraries" class="btn btn-success btn-sm"
+                    <button title="Refresh list/libraries" class="btn btn-success"
                             type="button" ng-click="getLists()">
                         <i class="fa fa-refresh"></i> </button>
                   </span>
             </div>
         </div>
         <div class="row">
-            <div class="col-xs-6">
+            <div class="col-xs-5">
                 <div class="form-group">
                     <label>List Name or GUID</label>
                     <select ng-model="state.selectedList"
@@ -24,10 +24,19 @@
                             class="form-control"></select>
                 </div>
             </div>
-            <div class="col-xs-6">
+            <div class="col-xs-3">
                 <div class="form-group">
-                    <label>Number of Items to Return (Optional) [0 = All Items]</label>
+                    <label>Number of Items to Return</label>
                     <input type="number" class="form-control" ng-model="state.itemLimit"/>
+                    <p class="help-block">[0 = All Items]</p>
+                </div>
+            </div>
+            <div class="col-xs-4">
+                <div class="form-group">
+                    <label>Operation</label>
+                    <select class="form-control" ng-model="state.operation"
+                            ng-options="operation for operation in operations"></select>
+                    <p class="help-block">Operation to query with.</p>
                 </div>
             </div>
         </div>
@@ -41,6 +50,7 @@
                         <option ng-repeat="field in state.availableListFields"
                                 value="{{field.Name}}">{{ field.Name }}</option>
                     </select>
+                    <p class="help-block">Leaving this blank will return all fields visible in the default list view.</p>
                 </div>
             </div>
         </div>
@@ -55,12 +65,12 @@
         <ol>
             <li>Create a new offline file under "app/dev" in angularPoint.</li>
             <li>Use the same name as found in the model at "model.list.title" + .xml</li>
-            <li>Select the returned XML below (Ctrl+A)</li>
+            <li>Select the returned XML below by clicking in the textarea.</li>
             <li>Add the XML to the newly created offline .xml file.</li>
         </ol>
         <div class="well well-sm">
             <textarea name="xmlResponse" class="form-control" cols="30" rows="10"
-                      ng-model="state.xmlResponse"></textarea>
+                      ng-model="state.xmlResponse" ng-click="onTextClick($event)"></textarea>
         </div>
     </form>
 </div>

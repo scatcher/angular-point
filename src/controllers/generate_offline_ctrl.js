@@ -2,12 +2,17 @@
 
 angular.module('angularPoint')
     .controller('generateOfflineCtrl', function ($scope, $q, apDataService, apConfig, toastr) {
+
+
+        $scope.operations = ['GetListItemChangesSinceToken', 'GetListItems'];
+
         $scope.state = {
             siteUrl: apConfig.defaultUrl,
             query: '',
             itemLimit: 0,
             selectedList: '',
             availableListFields: [],
+            operation: $scope.operations[0],
             selectedListFields: [],
             xmlResponse: ''
         };
@@ -37,7 +42,7 @@ angular.module('angularPoint')
             $scope.listCollection.length = 0;
 
             var payload = {
-                operation: "GetListItems",
+                operation: $scope.state.operation,
                 listName: $scope.state.selectedList.Name,
                 CAMLRowLimit: $scope.state.itemLimit,
                 webURL: $scope.state.siteUrl
@@ -63,6 +68,10 @@ angular.module('angularPoint')
                 $scope.state.xmlResponse = response.responseText;
                 $scope.refresh();
             });
+        };
+
+        $scope.onTextClick = function ($event) {
+            $event.target.select();
         };
 
         $scope.lookupListFields = function() {
