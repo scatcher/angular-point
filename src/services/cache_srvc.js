@@ -8,7 +8,7 @@
  * resolve once a requested list item is registered in the future.
  */
 angular.module('angularPoint')
-    .service('apCacheService', function () {
+    .service('apCacheService', function ($q) {
         var listItemCache = {}, entityTypes = {}, entityCache = {};
 
         /**
