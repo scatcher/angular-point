@@ -3098,7 +3098,7 @@ angular.module('angularPoint').service('apUtilityService', [
           var thisObjectType = typeof thisMapping !== 'undefined' ? thisMapping.objectType : undefined;
           if (opts.includeAllAttrs || thisMapping !== undefined) {
             row[thisObjectName] = attrToJson(rowAttrs[attrNum].value, thisObjectType, {
-              query: opts.getQuery,
+              getQuery: opts.getQuery,
               entity: row,
               propertyName: thisObjectName
             });

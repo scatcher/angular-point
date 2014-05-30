@@ -60,7 +60,7 @@ angular.module('angularPoint')
                     var thisObjectName = typeof thisMapping !== 'undefined' ? thisMapping.mappedName : opts.removeOws ? thisAttrName.split('ows_')[1] : thisAttrName;
                     var thisObjectType = typeof thisMapping !== 'undefined' ? thisMapping.objectType : undefined;
                     if (opts.includeAllAttrs || thisMapping !== undefined) {
-                        row[thisObjectName] = attrToJson(rowAttrs[attrNum].value, thisObjectType, {query: opts.getQuery, entity: row, propertyName: thisObjectName});
+                        row[thisObjectName] = attrToJson(rowAttrs[attrNum].value, thisObjectType, {getQuery: opts.getQuery, entity: row, propertyName: thisObjectName});
                     }
                 }
                 // Push this item into the JSON Object
