@@ -3319,7 +3319,8 @@ angular.module('angularPoint').service('apUtilityService', [
          * @returns {promise} Resolves with the object the lookup is referencing.
          */
     Lookup.prototype.getEntity = function () {
-      var props = this._props();
+      var self = this;
+      var props = self._props();
       if (!props.getEntity) {
         var query = props.getQuery();
         var listItem = query.searchLocalCache(props.entity.id);
