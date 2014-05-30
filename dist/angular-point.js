@@ -51,7 +51,7 @@ angular.module('angularPoint').service('apCacheService', [
       var self = this;
       self.associationQueue = [];
       self.updateCount = 0;
-      self.entityType = entityType;
+      self.entityType = entityType.toLowerCase();
       self.entityId = entityId;
     };
     EntityCache.prototype.getEntity = function () {
@@ -76,7 +76,7 @@ angular.module('angularPoint').service('apCacheService', [
          * @returns {promise} entity
          */
     var getEntity = function (entityType, entityId) {
-      var entityCache = getEntityCache(entityType, entityId);
+      var entityCache = getEntityCache(entityType.toLowerCase(), entityId);
       return entityCache.getEntity();
     };
     EntityCache.prototype.addEntity = function (entity) {
@@ -98,7 +98,7 @@ angular.module('angularPoint').service('apCacheService', [
          * @param {object} entity Pass in a newly created entity to add to the cache.
          */
     var registerEntity = function (entity) {
-      var entityType = entity.getModel().list.guid;
+      var entityType = entity.getModel().list.guid.toLowerCase();
       var entityCache = getEntityCache(entityType, entity.id);
       entityCache.addEntity(entity);
     };
@@ -114,15 +114,16 @@ angular.module('angularPoint').service('apCacheService', [
          * @param {number} entityId The entity.id.
          */
     var removeEntity = function (entityType, entityId) {
-      var entityCache = getEntityCache(entityType, entityId);
+      var entityCache = getEntityCache(entityType.toLowerCase(), entityId);
       entityCache.removeEntity();
     };
     var getEntityCache = function (entityType, entityId) {
-      if (!entityCache[entityType] || !entityCache[entityType][entityId]) {
-        entityCache[entityType] = entityCache[entityType] || {};
-        entityCache[entityType][entityId] = new EntityCache(entityType, entityId);
+      var entityTypeLower = entityType.toLowerCase();
+      if (!entityCache[entityTypeLower] || !entityCache[entityTypeLower][entityId]) {
+        entityCache[entityTypeLower] = entityCache[entityTypeLower] || {};
+        entityCache[entityTypeLower][entityId] = new EntityCache(entityTypeLower, entityId);
       }
-      return entityCache[entityType][entityId];
+      return entityCache[entityTypeLower][entityId];
     };
     /** Older List Item Functionality */
     //TODO: Remove these if there not being used
