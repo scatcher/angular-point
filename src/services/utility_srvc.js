@@ -58,7 +58,7 @@ angular.module('angularPoint')
                     var thisObjectName = typeof thisMapping !== 'undefined' ? thisMapping.mappedName : opt.removeOws ? thisAttrName.split('ows_')[1] : thisAttrName;
                     var thisObjectType = typeof thisMapping !== 'undefined' ? thisMapping.objectType : undefined;
                     if (opt.includeAllAttrs || thisMapping !== undefined) {
-                        row[thisObjectName] = attrToJson(rowAttrs[attrNum].value, thisObjectType);
+                        row[thisObjectName] = attrToJson(rowAttrs[attrNum].value, thisObjectType, {entity: row, propertyName: thisObjectName});
                     }
                 }
                 // Push this item into the JSON Object
@@ -95,9 +95,10 @@ angular.module('angularPoint')
          *  JSON,
          *  Text [Default]
          * ]
+         * @param {obj} row Reference to the parent list item which can be used by child constructors.
          * @returns {*} The formatted JavaScript value based on field type.
          */
-        function attrToJson(value, objectType) {
+        function attrToJson(value, objectType, options) {
 
             var colValue;
 
@@ -108,13 +109,13 @@ angular.module('angularPoint')
                     colValue = dateToJsonObject(value);
                     break;
                 case 'Lookup':
-                    colValue = lookupToJsonObject(value);
+                    colValue = lookupToJsonObject(value, options);
                     break;
                 case 'User':
                     colValue = userToJsonObject(value);
                     break;
                 case 'LookupMulti':
-                    colValue = lookupMultiToJsonObject(value);
+                    colValue = lookupMultiToJsonObject(value, options);
                     break;
                 case 'UserMulti':
                     colValue = userMultiToJsonObject(value);
@@ -195,23 +196,23 @@ angular.module('angularPoint')
             }
         }
 
-        function lookupToJsonObject(s) {
+        function lookupToJsonObject(s, options) {
             if (s.length === 0) {
                 return null;
             } else {
                 //Send to constructor
-                return new Lookup(s);
+                return new Lookup(s, options);
             }
         }
 
-        function lookupMultiToJsonObject(s) {
+        function lookupMultiToJsonObject(s, options) {
             if (s.length === 0) {
                 return [];
             } else {
                 var thisLookupMultiObject = [];
                 var thisLookupMulti = s.split(';#');
                 for (var i = 0; i < thisLookupMulti.length; i = i + 2) {
-                    var thisLookup = lookupToJsonObject(thisLookupMulti[i] + ';#' + thisLookupMulti[i + 1]);
+                    var thisLookup = lookupToJsonObject(thisLookupMulti[i] + ';#' + thisLookupMulti[i + 1], options);
                     thisLookupMultiObject.push(thisLookup);
                 }
                 return thisLookupMultiObject;
@@ -267,11 +268,49 @@ angular.module('angularPoint')
 
         /**Constructors for user and lookup fields*/
         /**Allows for easier distinction when debugging if object type is shown as either Lookup or User**/
-        function Lookup(s) {
+
+        /**
+         * @ngdoc function
+         * @name Lookup
+         * @description
+         * Allows for easier distinction when debugging if object type is shown as either Lookup or User.  Also allows us
+         * to create an async request for the entity being referenced by the lookup
+         * @param {string} s String to split into lookupValue and lookupId
+         * @param {object} options Contains a reference to the parent list item and the property name.
+         * @param {object} options.entity Reference to parent list item.
+         * @param {object} options.propertyName Key on list item object.
+         * @constructor
+         */
+        function Lookup(s, options) {
             var thisLookup = new SplitIndex(s);
             this.lookupId = thisLookup.id;
             this.lookupValue = thisLookup.value;
+            this._props = function () {
+                return options;
+            }
         }
+
+        /**
+         * @ngdoc function
+         * @name Lookup.getEntity
+         * @description
+         * Allows us to create a promise that will resolve with the entity referenced in the lookup whenever that list
+         * item is registered.
+         * @returns {promise} Resolves with the object the lookup is referencing.
+         */
+        Lookup.prototype.getEntity = function () {
+            var props = this._props();
+            if(!props.getEntity) {
+                var listItem = props.entity;
+                /** Create a new deferred object if this is the first run */
+                props.getEntity = $q.defer();
+                listItem.getLookupReference(props.propertyName, self.lookupId)
+                    .then(function (entity) {
+                        props.getEntity.resolve(entity);
+                    })
+            }
+            return props.getEntity.promise;
+        };
 
         function User(s) {
             var self = this;

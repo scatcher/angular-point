@@ -352,6 +352,20 @@ angular.module('angularPoint')
          * @name Model.getCache
          * @module Model
          * @description
+         * Returns the field definition from the definitions defined in the custom fields array within a model.
+         * @param {string} fieldName Internal field name.
+         * @returns {*} Field definition.
+         */
+        Model.prototype.getFieldDefinition = function (fieldName) {
+            return _.findWhere(this.list.customFields, { mappedName:  fieldName} );
+        };
+
+
+        /**
+         * @ngdoc function
+         * @name Model.getCache
+         * @module Model
+         * @description
          * Helper function that return the local cache for a named query if provided, otherwise
          * it returns the cache for the primary query for the model.  Useful if you know the query
          * has already been resolved and there's no need to check SharePoint for changes.
@@ -705,6 +719,30 @@ angular.module('angularPoint')
                 registerChange(model);
             });
 
+            return deferred.promise;
+        };
+
+
+        ListItem.prototype.getLookupReference = function (fieldName, lookupId) {
+            var listItem = this;
+            var deferred = $q.defer();
+
+            if(fieldName && lookupId) {
+                var model = listItem.getModel();
+                var fieldDefinition = model.getFieldDefinition(fieldName);
+                /** Ensure the field definition has the List attribute which contains the GUID of the list
+                 *  that a lookup is referencing.
+                 */
+                if(fieldDefinition && fieldDefinition.List) {
+                    apCacheService.getEntity(fieldDefinition.List, lookupId).then(function (entity) {
+                        deferred.resolve(entity);
+                    });
+                } else {
+                    deferred.fail('Need a List GUID before we can find this in cache.')
+                }
+            } else {
+                deferred.fail('Need both fieldName && lookupId params');
+            }
             return deferred.promise;
         };
 
