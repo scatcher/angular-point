@@ -5,6 +5,51 @@ NG_DOCS={
   "pages": [
     {
       "section": "api",
+      "id": "apCacheService",
+      "shortName": "apCacheService",
+      "type": "service",
+      "moduleName": "apCacheService",
+      "shortDescription": "Stores a reference for all list items based on list GUID and list item id.  Allows us to then register promises that",
+      "keywords": "allows apcacheservice api based future guid item items list promises reference register registered requested resolve service stores"
+    },
+    {
+      "section": "api",
+      "id": "apCacheService.EntityCache",
+      "shortName": "apCacheService.EntityCache",
+      "type": "function",
+      "moduleName": "apCacheService",
+      "shortDescription": "Cache constructor that maintains a queue of all requests for a list item, counter for the number of times",
+      "keywords": "add apcacheservice api belongs cache counter entity entitycache entityid entitytype function functionality guid item list maintains number queue requests times timestamp update updated"
+    },
+    {
+      "section": "api",
+      "id": "apCacheService.getEntity",
+      "shortName": "apCacheService.getEntity",
+      "type": "function",
+      "moduleName": "apCacheService",
+      "shortDescription": "Returns a deferred object that resolves with the requested entity immediately if already present or at some",
+      "keywords": "apcacheservice api assuming belongs deferred entity entityid entitytype eventually function future getentity guid item list object point registered requested resolves returns"
+    },
+    {
+      "section": "api",
+      "id": "apCacheService.registerEntity",
+      "shortName": "apCacheService.registerEntity",
+      "type": "function",
+      "moduleName": "apCacheService",
+      "shortDescription": "Registers an entity in the cache and fulfills any pending deferred requests for the entity.",
+      "keywords": "add apcacheservice api cache created deferred entity fulfills function newly pass pending registerentity registers requests"
+    },
+    {
+      "section": "api",
+      "id": "apCacheService.removeEntity",
+      "shortName": "apCacheService.removeEntity",
+      "type": "function",
+      "moduleName": "apCacheService",
+      "shortDescription": "Removes the entity from the local entity cache.",
+      "keywords": "apcacheservice api belongs cache entity entityid entitytype function guid item list local removeentity removes"
+    },
+    {
+      "section": "api",
       "id": "dataService",
       "shortName": "dataService",
       "type": "service",
@@ -185,6 +230,78 @@ NG_DOCS={
     },
     {
       "section": "api",
+      "id": "fieldService",
+      "shortName": "fieldService",
+      "type": "service",
+      "moduleName": "fieldService",
+      "shortDescription": "Handles the mapping of the various types of fields used within a SharePoint list",
+      "keywords": "api fields fieldservice handles list mapping service sharepoint types"
+    },
+    {
+      "section": "api",
+      "id": "fieldService.defaultFields",
+      "shortName": "fieldService.defaultFields",
+      "type": "function",
+      "moduleName": "fieldService",
+      "shortDescription": "Read only fields that should be included in all lists",
+      "keywords": "api defaultfields fields fieldservice function included lists read"
+    },
+    {
+      "section": "api",
+      "id": "fieldService.extendFieldDefinitions",
+      "shortName": "fieldService.extendFieldDefinitions",
+      "type": "function",
+      "moduleName": "fieldService",
+      "shortDescription": "",
+      "keywords": "api array combine creates default defined defines definition extendfielddefinitions field fields fieldservice function list model populates query reference requested sharepoint string viewfields xml"
+    },
+    {
+      "section": "api",
+      "id": "fieldService.Field",
+      "shortName": "fieldService.Field",
+      "type": "function",
+      "moduleName": "fieldService",
+      "shortDescription": "Decorates field with optional defaults",
+      "keywords": "api decorates defaults definition field fieldservice function obj optional"
+    },
+    {
+      "section": "api",
+      "id": "fieldService.getDefaultValueForType",
+      "shortName": "fieldService.getDefaultValueForType",
+      "type": "function",
+      "moduleName": "fieldService",
+      "shortDescription": "Returns the empty value expected for a field type",
+      "keywords": "api based default empty expected field fieldservice fieldtype function getdefaultvaluefortype returns type"
+    },
+    {
+      "section": "api",
+      "id": "fieldService.getMockData",
+      "shortName": "fieldService.getMockData",
+      "type": "function",
+      "moduleName": "fieldService",
+      "shortDescription": "Can return mock data appropriate for the field type, by default it dynamically generates data but",
+      "keywords": "api appropriate build chancejs coded data default definition dynamic dynamically field fieldservice fieldtype function generates getmockdata hard https mock mockdata optional param params produce return specific staticvalue type"
+    },
+    {
+      "section": "api",
+      "id": "fieldService.mockPermMask",
+      "shortName": "fieldService.mockPermMask",
+      "type": "function",
+      "moduleName": "fieldService",
+      "shortDescription": "Defaults to a full mask but allows simulation of each of main permission levels",
+      "keywords": "allows api container defaults fieldservice full function levels main mask mockpermmask optional options permission permissionlevel simulation values"
+    },
+    {
+      "section": "api",
+      "id": "fieldService.resolveValueForEffectivePermMask",
+      "shortName": "fieldService.resolveValueForEffectivePermMask",
+      "type": "function",
+      "moduleName": "fieldService",
+      "shortDescription": "Takes the name of a permission mask and returns a permission value which can then be used",
+      "keywords": "addlistitems api approveitems deletelistitems editlistitems fieldservice fullmask function generate mask modelservice object options permask permission resolvepermissions resolvevalueforeffectivepermmask returns takes viewlistitems"
+    },
+    {
+      "section": "api",
       "id": "List",
       "shortName": "List",
       "type": "function",
@@ -200,6 +317,15 @@ NG_DOCS={
       "moduleName": "ListItem",
       "shortDescription": "Base prototype which all list items inherit CRUD functionality that can be called directly from obj.",
       "keywords": "api base called crud directly function functionality inherit items list listitem obj prototype"
+    },
+    {
+      "section": "api",
+      "id": "ListItem.addEntityReference",
+      "shortName": "ListItem.addEntityReference",
+      "type": "function",
+      "moduleName": "ListItem",
+      "shortDescription": "Allows us to pass in another entity to associate superficially, only persists for the current session and",
+      "keywords": "_apcache addentityreference allows api associate associated associateprojecttasks cache corresponding creates current data digest entity faster fictitious function item iterate list listitem lookup lookupid model multi-lookup object pass passed persists project projects property references save saved searchlocalcache session superficially task tasks tasksmodel title type var"
     },
     {
       "section": "api",
@@ -559,7 +685,7 @@ NG_DOCS={
       "type": "function",
       "moduleName": "utilityService",
       "shortDescription": "Converts a SharePoint string representation of a field into the correctly formatted JavaScript version",
-      "keywords": "api attrtojson based boolean calc converts correctly counter currency datetime definition field formatted function integer javascript json lookup lookupmulti multichoice number object options representation sharepoint string text type user usermulti utilityservice version"
+      "keywords": "api attrtojson based boolean calc converts correctly counter currency datetime definition field float formatted function integer javascript json lookup lookupmulti multichoice number object options representation sharepoint string text type user usermulti utilityservice version"
     },
     {
       "section": "api",

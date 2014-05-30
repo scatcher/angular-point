@@ -46,7 +46,13 @@ angular.module('angularPoint')
          * @description
          * Takes the name of a permission mask and returns a permission value which can then be used
          * to generate a permission object using modelService.resolvePermissions(outputfromthis)
-         * @param {string} perMask
+         * @param {string} perMask Options:
+         *  - AddListItems
+         *  - EditListItems
+         *  - DeleteListItems
+         *  - ApproveItems
+         *  - FullMask
+         *  - ViewListItems
          * @returns {string} value
          */
         function resolveValueForEffectivePermMask(perMask) {
@@ -80,9 +86,9 @@ angular.module('angularPoint')
          * @name fieldService.mockPermMask
          * @description
          * Defaults to a full mask but allows simulation of each of main permission levels
-         * @param {object} [options]
-         * @param {string} [options.permissionLevel=FullMask]
-         * @returns {string}
+         * @param {object} [options] Options container.
+         * @param {string} [options.permissionLevel=FullMask] Optional mask.
+         * @returns {string} Values for mask.
          */
         function mockPermMask(options) {
             var mask = 'FullMask';
@@ -127,8 +133,8 @@ angular.module('angularPoint')
          * @name fieldService.Field
          * @description
          * Decorates field with optional defaults
-         * @param obj
-         * @returns {Field}
+         * @param {object} obj Field definition.
+         * @returns {object} Field
          * @constructor
          */
         function Field(obj) {
@@ -193,8 +199,8 @@ angular.module('angularPoint')
          * @name fieldService.getDefaultValueForType
          * @description
          * Returns the empty value expected for a field type
-         * @param fieldType
-         * @returns {*}
+         * @param {string} fieldType Type of field.
+         * @returns {*} Default value based on field type.
          */
         function getDefaultValueForType(fieldType) {
             var fieldDefinition = getDefinition(fieldType), defaultValue;
@@ -213,9 +219,9 @@ angular.module('angularPoint')
          *
          * @requires ChanceJS to produce dynamic data.
          * https://github.com/victorquinn/chancejs
-         * @param {string} fieldType
-         * @param {object} [options]
-         * @param {boolean} [options.staticValue=false]
+         * @param {string} fieldType Field type from the field definition.
+         * @param {object} [options] Optional params.
+         * @param {boolean} [options.staticValue=false] Default to dynamically build mock data.
          * @returns {*} mockData
          */
         function getMockData(fieldType, options) {
@@ -240,7 +246,8 @@ angular.module('angularPoint')
             { internalName: 'Created', objectType: 'DateTime', mappedName: 'created', readOnly: true},
             { internalName: 'Author', objectType: 'User', mappedName: 'author', readOnly: true},
             { internalName: 'Editor', objectType: 'User', mappedName: 'editor', readOnly: true},
-            { internalName: 'PermMask', objectType: 'Mask', mappedName: 'permMask', readOnly: true}
+            { internalName: 'PermMask', objectType: 'Mask', mappedName: 'permMask', readOnly: true},
+            { internalName: 'UniqueId', objectType: 'String', mappedName: 'uniqueId', readOnly: true}
         ];
 
         /**
@@ -251,10 +258,7 @@ angular.module('angularPoint')
          * SharePoint fields with those defined in the list definition on the model
          * 2. Creates the list.viewFields XML string that defines the fields to be requested on a query
          *
-         * @param {object} list
-         * @param {array} list.customFields
-         * @param {array} list.fields
-         * @param {string} list.viewFiSelds
+         * @param {object} list Reference to the list within a model.
          */
         function extendFieldDefinitions(list) {
             /**

@@ -10,7 +10,7 @@
  *  http://spservices.codeplex.com/documentation
  */
 angular.module('angularPoint')
-    .service('apDataService', function ($q, $timeout, apQueueService, apConfig, apUtilityService, toastr) {
+    .service('apDataService', function ($q, $timeout, apQueueService, apConfig, apUtilityService, apCacheService, toastr) {
         var dataService = {};
 
         /** Flag to use cached XML files from the src/dev folder */
@@ -62,7 +62,9 @@ angular.module('angularPoint')
                 item.getContainer = function () {
                     return opts.target;
                 };
-                entities.push(new model.factory(item));
+                var listItem = new model.factory(item);
+                entities.push(listItem);
+                apCacheService.registerEntity(listItem);
             });
 
             if (opts.mode === 'replace') {

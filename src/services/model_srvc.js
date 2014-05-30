@@ -10,7 +10,7 @@
  * @function
  */
 angular.module('angularPoint')
-    .factory('apModelFactory', function ($q, $timeout, apConfig, apDataService, apFieldService, toastr) {
+    .factory('apModelFactory', function ($q, $timeout, $cacheFactory, $log, apConfig, apDataService, apCacheService, apFieldService, toastr) {
 
         var defaultQueryName = 'primary';
 
@@ -89,6 +89,70 @@ angular.module('angularPoint')
             model.factory.prototype.getModel = function () {
                 return model;
             };
+
+
+            /**
+             * @ngdoc function
+             * @name Model.searchLocalCache
+             * @module Model
+             * @description
+             * Search functionality that allow for deeply searching an array of objects for the first
+             * record matching the supplied value.  Additionally it maps indexes to speed up future calls.  It
+             * currently rebuilds the mapping when the length of items in the local cache has changed or when the
+             * rebuildIndex flag is set.
+             *
+             * @param {*} value The value or array of values to compare against.
+             * @param {object} [options] Object containing optional parameters.
+             * @param {string} [options.propertyPath] The dot separated propertyPath.
+             <pre>
+             'project.lookupId'
+             </pre>
+             * @param {object} [options.cacheName] Required if using a data source other than primary cache.
+             * @param {object} [options.localCache=model.getCache()] Array of objects to search (Default model.getCache()).
+             * @param {boolean} [options.rebuildIndex=false] Ignore previous index and rebuild.
+             *
+             * @returns {(object|object[])} Either the object(s) that you're searching for or undefined if not found.
+             */
+            model.searchLocalCache = function (value, options) {
+                var self = model.searchLocalCache;
+                var response;
+                var defaults = {
+                    propertyPath: 'id',
+                    localCache: model.getCache(),
+                    cacheName: 'main',
+                    rebuildIndex: false
+                };
+                /** Extend defaults with any provided options */
+                var opts = _.extend({}, defaults, options);
+                /** Create a cache if it doesn't already exist */
+                self.indexCache = self.indexCache || {};
+                self.indexCache[opts.cacheName] = self.indexCache[opts.cacheName] || {};
+                var cache = self.indexCache[opts.cacheName];
+                var properties = opts.propertyPath.split('.');
+                _.each(properties, function (attribute) {
+                    cache[attribute] = cache[attribute] || {};
+                    /** Update cache reference to another level down the cache object */
+                    cache = cache[attribute];
+                });
+                cache.map = cache.map || [];
+                /** Remap if no existing map, the number of items in the array has changed, or the rebuild flag is set */
+                if (!_.isNumber(cache.count) || cache.count !== opts.localCache.length || opts.rebuildIndex) {
+                    cache.map = _.deepPluck(opts.localCache, opts.propertyPath);
+                    /** Store the current length of the array for future comparisons */
+                    cache.count = opts.localCache.length;
+                }
+                /** Allow an array of values to be passed in */
+                if (_.isArray(value)) {
+                    response = [];
+                    _.each(value, function (key) {
+                        response.push(opts.localCache[cache.map.indexOf(key)]);
+                    });
+                } else {
+                    response = opts.localCache[cache.map.indexOf(value)];
+                }
+                return response;
+            };
+
 
             return model;
         }
@@ -359,78 +423,6 @@ angular.module('angularPoint')
          */
         Model.prototype.isInitialised = function () {
             return _.isDate(this.lastServerUpdate);
-        };
-
-        /**
-         * @ngdoc function
-         * @name Model.searchLocalCache
-         * @module Model
-         * @description
-         * Search functionality that allow for deeply searching an array of objects for the first
-         * record matching the supplied value.  Additionally it maps indexes to speed up future calls.  It
-         * currently rebuilds the mapping when the length of items in the local cache has changed or when the
-         * rebuildIndex flag is set.
-         *
-         * @param {*} value The value or array of values to compare against.
-         * @param {object} [options] Object containing optional parameters.
-         * @param {string} [options.propertyPath] The dot separated propertyPath.
-         <pre>
-         'project.lookupId'
-         </pre>
-         * @param {object} [options.cacheName] Required if using a data source other than primary cache.
-         * @param {object} [options.localCache=model.getCache()] Array of objects to search (Default model.getCache()).
-         * @param {boolean} [options.rebuildIndex=false] Ignore previous index and rebuild.
-         *
-         * @returns {(object|object[])} Either the object(s) that you're searching for or undefined if not found.
-         */
-        Model.prototype.searchLocalCache = function (value, options) {
-            var model = this;
-            var self = model.searchLocalCache;
-
-            var response;
-
-            var defaults = {
-                propertyPath: 'id',
-                localCache: model.getCache(),
-                cacheName: 'main',
-                rebuildIndex: false
-            };
-
-            /** Extend defaults with any provided options */
-            var opts = _.extend({}, defaults, options);
-
-            /** Create a cache if it doesn't already exist */
-            self.indexCache = self.indexCache || {};
-            self.indexCache[opts.cacheName] = self.indexCache[opts.cacheName] || {};
-            var cache = self.indexCache[opts.cacheName];
-
-
-            var properties = opts.propertyPath.split('.');
-            _.each(properties, function (attribute) {
-                cache[attribute] = cache[attribute] || {};
-                /** Update cache reference to another level down the cache object */
-                cache = cache[attribute];
-            });
-
-            cache.map = cache.map || [];
-            /** Remap if no existing map, the number of items in the array has changed, or the rebuild flag is set */
-            if (!_.isNumber(cache.count) || cache.count !== opts.localCache.length || opts.rebuildIndex) {
-                cache.map = _.deepPluck(opts.localCache, opts.propertyPath);
-                /** Store the current length of the array for future comparisons */
-                cache.count = opts.localCache.length;
-            }
-
-            /** Allow an array of values to be passed in */
-            if (_.isArray(value)) {
-                response = [];
-                _.each(value, function (key) {
-                    response.push(opts.localCache[cache.map.indexOf(key)]);
-                });
-            } else {
-                response = opts.localCache[cache.map.indexOf(value)];
-            }
-
-            return response;
         };
 
         /**
@@ -783,6 +775,88 @@ angular.module('angularPoint')
         ListItem.prototype.resolvePermissions = function () {
             return resolvePermissions(this.permMask);
         };
+
+
+        ListItem.prototype.getEntityReferenceCache = function () {
+            return apCacheService.listItem.get(this.uniqueId);
+        };
+
+
+        /**
+         * @ngdoc function
+         * @name ListItem.addEntityReference
+         * @module ListItem
+         * @description
+         * Allows us to pass in another entity to associate superficially, only persists for the current session and
+         * no data is saved but it allows us to iterate over all of the references much faster than doing a lookup each
+         * on each digest.  Creates a item._apCache property on the list item object.  It then creates an object for each
+         * type of list item passed in using the list name in the list item model.
+         * @param {object} entity List item to associate.
+         * @returns {Object} The cache for the list of the item passed in.
+         * @example
+         <pre>
+         //Function to save references between a fictitious project and corresponding associated tasks
+         function associateProjectTasks(project) {
+            //Assuming project.tasks is a multi-lookup
+            _.each(project.tasks, function(taskLookup) {
+                var task = tasksModel.searchLocalCache(taskLookup.lookupId);
+                if(task) {
+                    task.addEntityReference(project);
+                    project.addEntityReference(task);
+                }
+            });
+        }
+         </pre>
+         <pre>
+         //Structure of cache
+         listItem._apCache = {
+            Projects: {
+                14: {id: 14, title: 'Some Project'},
+                15: {id: 15, title: 'Another Project'}
+            },
+            Tasks: {
+                300: {id: 300, title: 'Task 300'},
+                412: {id: 412, title: 'Some Important Tasks'}
+            }
+        }
+         </pre>
+         */
+        ListItem.prototype.addEntityReference = function (entity) {
+            var self = this;
+            /** Verify that a valid entity is being provided */
+            if(entity && entity.constructor.name === 'ListItem') {
+                var uniqueId = self.uniqueId;
+                var constructorName = entity.getModel().list.title;
+                return apCacheService.listItem.add(uniqueId, constructorName, entity);
+            } else {
+                $log.warn('Please verify that a valid entity is being used: ', self, entity);
+            }
+        }
+
+        ListItem.prototype.getEntityReferences = function (constructorName) {
+            var self = this;
+            var cache = self.getEntityReferenceCache();
+//          var cache = self._apCache.entityReference;
+            if(constructorName && !cache[constructorName]) {
+                return {};
+            } else if(constructorName && cache[constructorName]) {
+                return cache[constructorName];
+            } else {
+                return cache;
+            }
+        };
+
+        ListItem.prototype.removeEntityReference = function (entity) {
+            var uniqueId = this.uniqueId;
+            var constructorName = entity.getModel().list.title;
+            return apCacheService.listItem.remove(uniqueId, constructorName, entity);
+
+            var pType = entity.getModel().list.title;
+            var cache = self.getEntityReferenceCache();
+            if(entity.id && cache[pType] && cache[pType][entity.id]) {
+                delete cache[pType][entity.id];
+            }
+        }
 
 
         /**

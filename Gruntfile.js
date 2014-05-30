@@ -46,7 +46,17 @@ module.exports = function (grunt) {
         ngtemplates: {
             app: {
                 options: {
-                    module: 'angularPoint'
+                    module: 'angularPoint',
+                    htmlmin: {
+                        collapseBooleanAttributes:      true,
+                        collapseWhitespace:             true,
+                        removeAttributeQuotes:          true,
+                        removeComments:                 true, // Only if you don't use comment directives!
+                        removeEmptyAttributes:          true,
+                        removeRedundantAttributes:      true,
+                        removeScriptTypeAttributes:     true,
+                        removeStyleLinkTypeAttributes:  true
+                    }
                 },
                 src: '<%= config.src %>/**/*.html',
                 dest:'.tmp/angular-point-templates.js'
@@ -137,7 +147,9 @@ module.exports = function (grunt) {
                 '<%= config.services %>/model_srvc.js',
                 '<%= config.services %>/data_srvc.js',
                 '<%= config.services %>/queue_srvc.js',
-                '<%= config.services %>/utility_srvc.js'
+                '<%= config.services %>/utility_srvc.js',
+                '<%= config.services %>/cache_srvc.js',
+                '<%= config.services %>/field_srvc.js'
             ]
 //            model: {
 //                src: ['<%= config.services %>/model_srvc.js'],

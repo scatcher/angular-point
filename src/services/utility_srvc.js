@@ -86,6 +86,7 @@ angular.module('angularPoint')
          *  UserMulti,
          *  Boolean,
          *  Integer,
+         *  Float,
          *  Counter,
          *  MultiChoice,
          *  Currency,
@@ -122,21 +123,20 @@ angular.module('angularPoint')
                     colValue = booleanToJsonObject(value);
                     break;
                 case 'Integer':
-                    colValue = intToJsonObject(value);
-                    break;
                 case 'Counter':
                     colValue = intToJsonObject(value);
                     break;
-                case 'MultiChoice':
-                    colValue = choiceMultiToJsonObject(value);
-                    break;
                 case 'Currency':
                 case 'Number':
+                case 'Float':
                 case 'float':	// For calculated columns, stored as float;#value
                     colValue = floatToJsonObject(value);
                     break;
                 case 'Calc':
                     colValue = calcToJsonObject(value);
+                    break;
+                case 'MultiChoice':
+                    colValue = choiceMultiToJsonObject(value);
                     break;
                 case 'JSON':
                     colValue = parseJSON(value);

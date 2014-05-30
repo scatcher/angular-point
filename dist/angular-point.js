@@ -28,6 +28,131 @@ angular.module('angularPoint', ['toastr']).constant('apConfig', {
 'use strict';
 /**
  * @ngdoc service
+ * @name apCacheService
+ * @description
+ * Stores a reference for all list items based on list GUID and list item id.  Allows us to then register promises that
+ * resolve once a requested list item is registered in the future.
+ */
+angular.module('angularPoint').service('apCacheService', function () {
+  var listItemCache = {}, entityTypes = {}, entityCache = {};
+  /**
+         * @ngdoc function
+         * @name apCacheService.EntityCache
+         * @description
+         * Cache constructor that maintains a queue of all requests for a list item, counter for the number of times
+         * the cache has been updated, timestamp of last update, and add/update/remove functionality.
+         * @param {string} entityType GUID for list the list item belongs to.
+         * @param {number} entityId The entity.id.
+         * @constructor
+         */
+  var EntityCache = function (entityType, entityId) {
+    var self = this;
+    self.associationQueue = [];
+    self.updateCount = 0;
+    self.entityType = entityType;
+    self.entityId = entityId;
+  };
+  EntityCache.prototype.getEntity = function () {
+    var self = this;
+    var deferred = $q.defer();
+    if (self.entity) {
+    } else {
+      self.associationQueue.push(deferred);
+    }
+    return deferred.promise;
+  };
+  /**
+         * @ngdoc function
+         * @name apCacheService.getEntity
+         * @description
+         * Returns a deferred object that resolves with the requested entity immediately if already present or at some
+         * point in the future assuming the entity is eventually registered.
+         * @param {string} entityType GUID for list the list item belongs to.
+         * @param {number} entityId The entity.id.
+         * @returns {promise} entity
+         */
+  var getEntity = function (entityType, entityId) {
+    var entityCache = getEntityCache(entityType, entityId);
+    return entityCache.getEntity();
+  };
+  EntityCache.prototype.addEntity = function (entity) {
+    var self = this;
+    self.entity = entity;
+    self.updateCount++;
+    self.entity.age = new Date();
+    _.each(self.associationQueue, function (deferredRequest) {
+      deferredRequest.resolve(entity);
+      /** Remove request from queue */
+      self.associationQueue.shift();
+    });
+  };
+  /**
+         * @ngdoc function
+         * @name apCacheService.registerEntity
+         * @description
+         * Registers an entity in the cache and fulfills any pending deferred requests for the entity.
+         * @param {object} entity Pass in a newly created entity to add to the cache.
+         */
+  var registerEntity = function (entity) {
+    var entityType = entity.getModel().list.guid;
+    var entityCache = getEntityCache(entityType, entity.id);
+    entityCache.addEntity(entity);
+  };
+  EntityCache.prototype.removeEntity = function () {
+    delete entityCache[this.entityType][this.entityId];
+  };
+  /**
+         * @ngdoc function
+         * @name apCacheService.removeEntity
+         * @description
+         * Removes the entity from the local entity cache.
+         * @param {string} entityType GUID for list the list item belongs to.
+         * @param {number} entityId The entity.id.
+         */
+  var removeEntity = function (entityType, entityId) {
+    var entityCache = getEntityCache(entityType, entityId);
+    entityCache.removeEntity();
+  };
+  var getEntityCache = function (entityType, entityId) {
+    if (!entityCache[entityType] || !entityCache[entityType][entityId]) {
+      entityCache[entityType] = entityCache[entityType] || {};
+      entityCache[entityType][entityId] = new EntityCache(entityType, entityId);
+    }
+    return entityCache[entityType][entityId];
+  };
+  /** Older List Item Functionality */
+  //TODO: Remove these if there not being used
+  var addToCache = function (uniqueId, constructorName, entity) {
+    var cache = getCache(uniqueId, constructorName);
+    cache[constructorName] = entity;
+    return cache[constructorName];
+  };
+  var getCache = function (uniqueId, constructorName) {
+    listItemCache[uniqueId] = listItemCache[uniqueId] || {};
+    listItemCache[uniqueId][constructorName] = listItemCache[uniqueId][constructorName] || {};
+    return listItemCache[uniqueId][constructorName];
+  };
+  var removeFromCache = function (uniqueId, constructorName, entity) {
+    var cache = getCache(uniqueId, constructorName);
+    if (cache && cache[constructorName] && cache[constructorName][entity.id]) {
+      delete cache[constructorName][entity.id];
+    }
+  };
+  return {
+    getEntity: getEntity,
+    removeEntity: removeEntity,
+    listItem: {
+      add: addToCache,
+      get: getCache,
+      remove: removeFromCache
+    },
+    registerEntity: registerEntity
+  };
+});
+;
+'use strict';
+/**
+ * @ngdoc service
  * @name dataService
  * @description
  * Handles all interaction with SharePoint web services
@@ -41,8 +166,9 @@ angular.module('angularPoint').service('apDataService', [
   'apQueueService',
   'apConfig',
   'apUtilityService',
+  'apCacheService',
   'toastr',
-  function ($q, $timeout, apQueueService, apConfig, apUtilityService, toastr) {
+  function ($q, $timeout, apQueueService, apConfig, apUtilityService, apCacheService, toastr) {
     var dataService = {};
     /** Flag to use cached XML files from the src/dev folder */
     var offline = apConfig.offline;
@@ -87,7 +213,9 @@ angular.module('angularPoint').service('apDataService', [
         item.getContainer = function () {
           return opts.target;
         };
-        entities.push(new model.factory(item));
+        var listItem = new model.factory(item);
+        entities.push(listItem);
+        apCacheService.registerEntity(listItem);
       });
       if (opts.mode === 'replace') {
         /** Replace any existing data */
@@ -1050,7 +1178,13 @@ angular.module('angularPoint').service('apFieldService', [
          * @description
          * Takes the name of a permission mask and returns a permission value which can then be used
          * to generate a permission object using modelService.resolvePermissions(outputfromthis)
-         * @param {string} perMask
+         * @param {string} perMask Options:
+         *  - AddListItems
+         *  - EditListItems
+         *  - DeleteListItems
+         *  - ApproveItems
+         *  - FullMask
+         *  - ViewListItems
          * @returns {string} value
          */
     function resolveValueForEffectivePermMask(perMask) {
@@ -1083,9 +1217,9 @@ angular.module('angularPoint').service('apFieldService', [
          * @name fieldService.mockPermMask
          * @description
          * Defaults to a full mask but allows simulation of each of main permission levels
-         * @param {object} [options]
-         * @param {string} [options.permissionLevel=FullMask]
-         * @returns {string}
+         * @param {object} [options] Options container.
+         * @param {string} [options.permissionLevel=FullMask] Optional mask.
+         * @returns {string} Values for mask.
          */
     function mockPermMask(options) {
       var mask = 'FullMask';
@@ -1125,8 +1259,8 @@ angular.module('angularPoint').service('apFieldService', [
          * @name fieldService.Field
          * @description
          * Decorates field with optional defaults
-         * @param obj
-         * @returns {Field}
+         * @param {object} obj Field definition.
+         * @returns {object} Field
          * @constructor
          */
     function Field(obj) {
@@ -1258,8 +1392,8 @@ angular.module('angularPoint').service('apFieldService', [
          * @name fieldService.getDefaultValueForType
          * @description
          * Returns the empty value expected for a field type
-         * @param fieldType
-         * @returns {*}
+         * @param {string} fieldType Type of field.
+         * @returns {*} Default value based on field type.
          */
     function getDefaultValueForType(fieldType) {
       var fieldDefinition = getDefinition(fieldType), defaultValue;
@@ -1277,9 +1411,9 @@ angular.module('angularPoint').service('apFieldService', [
          *
          * @requires ChanceJS to produce dynamic data.
          * https://github.com/victorquinn/chancejs
-         * @param {string} fieldType
-         * @param {object} [options]
-         * @param {boolean} [options.staticValue=false]
+         * @param {string} fieldType Field type from the field definition.
+         * @param {object} [options] Optional params.
+         * @param {boolean} [options.staticValue=false] Default to dynamically build mock data.
          * @returns {*} mockData
          */
     function getMockData(fieldType, options) {
@@ -1333,6 +1467,12 @@ angular.module('angularPoint').service('apFieldService', [
           objectType: 'Mask',
           mappedName: 'permMask',
           readOnly: true
+        },
+        {
+          internalName: 'UniqueId',
+          objectType: 'String',
+          mappedName: 'uniqueId',
+          readOnly: true
         }
       ];
     /**
@@ -1343,10 +1483,7 @@ angular.module('angularPoint').service('apFieldService', [
          * SharePoint fields with those defined in the list definition on the model
          * 2. Creates the list.viewFields XML string that defines the fields to be requested on a query
          *
-         * @param {object} list
-         * @param {array} list.customFields
-         * @param {array} list.fields
-         * @param {string} list.viewFiSelds
+         * @param {object} list Reference to the list within a model.
          */
     function extendFieldDefinitions(list) {
       /**
@@ -1603,11 +1740,14 @@ angular.module('angularPoint').service('apModalService', [
 angular.module('angularPoint').factory('apModelFactory', [
   '$q',
   '$timeout',
+  '$cacheFactory',
+  '$log',
   'apConfig',
   'apDataService',
+  'apCacheService',
   'apFieldService',
   'toastr',
-  function ($q, $timeout, apConfig, apDataService, apFieldService, toastr) {
+  function ($q, $timeout, $cacheFactory, $log, apConfig, apDataService, apCacheService, apFieldService, toastr) {
     var defaultQueryName = 'primary';
     /** In the event that a factory isn't specified, just use a
          * standard constructor to allow it to inherit from ListItem */
@@ -1677,6 +1817,67 @@ angular.module('angularPoint').factory('apModelFactory', [
       /** Make the model directly accessible from the list item */
       model.factory.prototype.getModel = function () {
         return model;
+      };
+      /**
+             * @ngdoc function
+             * @name Model.searchLocalCache
+             * @module Model
+             * @description
+             * Search functionality that allow for deeply searching an array of objects for the first
+             * record matching the supplied value.  Additionally it maps indexes to speed up future calls.  It
+             * currently rebuilds the mapping when the length of items in the local cache has changed or when the
+             * rebuildIndex flag is set.
+             *
+             * @param {*} value The value or array of values to compare against.
+             * @param {object} [options] Object containing optional parameters.
+             * @param {string} [options.propertyPath] The dot separated propertyPath.
+             <pre>
+             'project.lookupId'
+             </pre>
+             * @param {object} [options.cacheName] Required if using a data source other than primary cache.
+             * @param {object} [options.localCache=model.getCache()] Array of objects to search (Default model.getCache()).
+             * @param {boolean} [options.rebuildIndex=false] Ignore previous index and rebuild.
+             *
+             * @returns {(object|object[])} Either the object(s) that you're searching for or undefined if not found.
+             */
+      model.searchLocalCache = function (value, options) {
+        var self = model.searchLocalCache;
+        var response;
+        var defaults = {
+            propertyPath: 'id',
+            localCache: model.getCache(),
+            cacheName: 'main',
+            rebuildIndex: false
+          };
+        /** Extend defaults with any provided options */
+        var opts = _.extend({}, defaults, options);
+        /** Create a cache if it doesn't already exist */
+        self.indexCache = self.indexCache || {};
+        self.indexCache[opts.cacheName] = self.indexCache[opts.cacheName] || {};
+        var cache = self.indexCache[opts.cacheName];
+        var properties = opts.propertyPath.split('.');
+        _.each(properties, function (attribute) {
+          cache[attribute] = cache[attribute] || {};
+          /** Update cache reference to another level down the cache object */
+          cache = cache[attribute];
+        });
+        cache.map = cache.map || [];
+        /** Remap if no existing map, the number of items in the array has changed, or the rebuild flag is set */
+        if (!_.isNumber(cache.count) || cache.count !== opts.localCache.length || opts.rebuildIndex) {
+          cache.map = _.deepPluck(opts.localCache, opts.propertyPath);
+          /** Store the current length of the array for future comparisons */
+          cache.count = opts.localCache.length;
+        }
+        /** Allow an array of values to be passed in */
+        if (_.isArray(value)) {
+          response = [];
+          _.each(value, function (key) {
+            response.push(opts.localCache[cache.map.indexOf(key)]);
+          });
+        } else {
+          response = opts.localCache[cache.map.indexOf(value)];
+        }
+        return response;
       };
       return model;
     }
@@ -1931,68 +2132,6 @@ angular.module('angularPoint').factory('apModelFactory', [
          */
     Model.prototype.isInitialised = function () {
       return _.isDate(this.lastServerUpdate);
-    };
-    /**
-         * @ngdoc function
-         * @name Model.searchLocalCache
-         * @module Model
-         * @description
-         * Search functionality that allow for deeply searching an array of objects for the first
-         * record matching the supplied value.  Additionally it maps indexes to speed up future calls.  It
-         * currently rebuilds the mapping when the length of items in the local cache has changed or when the
-         * rebuildIndex flag is set.
-         *
-         * @param {*} value The value or array of values to compare against.
-         * @param {object} [options] Object containing optional parameters.
-         * @param {string} [options.propertyPath] The dot separated propertyPath.
-         <pre>
-         'project.lookupId'
-         </pre>
-         * @param {object} [options.cacheName] Required if using a data source other than primary cache.
-         * @param {object} [options.localCache=model.getCache()] Array of objects to search (Default model.getCache()).
-         * @param {boolean} [options.rebuildIndex=false] Ignore previous index and rebuild.
-         *
-         * @returns {(object|object[])} Either the object(s) that you're searching for or undefined if not found.
-         */
-    Model.prototype.searchLocalCache = function (value, options) {
-      var model = this;
-      var self = model.searchLocalCache;
-      var response;
-      var defaults = {
-          propertyPath: 'id',
-          localCache: model.getCache(),
-          cacheName: 'main',
-          rebuildIndex: false
-        };
-      /** Extend defaults with any provided options */
-      var opts = _.extend({}, defaults, options);
-      /** Create a cache if it doesn't already exist */
-      self.indexCache = self.indexCache || {};
-      self.indexCache[opts.cacheName] = self.indexCache[opts.cacheName] || {};
-      var cache = self.indexCache[opts.cacheName];
-      var properties = opts.propertyPath.split('.');
-      _.each(properties, function (attribute) {
-        cache[attribute] = cache[attribute] || {};
-        /** Update cache reference to another level down the cache object */
-        cache = cache[attribute];
-      });
-      cache.map = cache.map || [];
-      /** Remap if no existing map, the number of items in the array has changed, or the rebuild flag is set */
-      if (!_.isNumber(cache.count) || cache.count !== opts.localCache.length || opts.rebuildIndex) {
-        cache.map = _.deepPluck(opts.localCache, opts.propertyPath);
-        /** Store the current length of the array for future comparisons */
-        cache.count = opts.localCache.length;
-      }
-      /** Allow an array of values to be passed in */
-      if (_.isArray(value)) {
-        response = [];
-        _.each(value, function (key) {
-          response.push(opts.localCache[cache.map.indexOf(key)]);
-        });
-      } else {
-        response = opts.localCache[cache.map.indexOf(value)];
-      }
-      return response;
     };
     /**
          * @ngdoc function
@@ -2311,6 +2450,81 @@ angular.module('angularPoint').factory('apModelFactory', [
          */
     ListItem.prototype.resolvePermissions = function () {
       return resolvePermissions(this.permMask);
+    };
+    ListItem.prototype.getEntityReferenceCache = function () {
+      return apCacheService.listItem.get(this.uniqueId);
+    };
+    /**
+         * @ngdoc function
+         * @name ListItem.addEntityReference
+         * @module ListItem
+         * @description
+         * Allows us to pass in another entity to associate superficially, only persists for the current session and
+         * no data is saved but it allows us to iterate over all of the references much faster than doing a lookup each
+         * on each digest.  Creates a item._apCache property on the list item object.  It then creates an object for each
+         * type of list item passed in using the list name in the list item model.
+         * @param {object} entity List item to associate.
+         * @returns {Object} The cache for the list of the item passed in.
+         * @example
+         <pre>
+         //Function to save references between a fictitious project and corresponding associated tasks
+         function associateProjectTasks(project) {
+            //Assuming project.tasks is a multi-lookup
+            _.each(project.tasks, function(taskLookup) {
+                var task = tasksModel.searchLocalCache(taskLookup.lookupId);
+                if(task) {
+                    task.addEntityReference(project);
+                    project.addEntityReference(task);
+                }
+            });
+        }
+         </pre>
+         <pre>
+         //Structure of cache
+         listItem._apCache = {
+            Projects: {
+                14: {id: 14, title: 'Some Project'},
+                15: {id: 15, title: 'Another Project'}
+            },
+            Tasks: {
+                300: {id: 300, title: 'Task 300'},
+                412: {id: 412, title: 'Some Important Tasks'}
+            }
+        }
+         </pre>
+         */
+    ListItem.prototype.addEntityReference = function (entity) {
+      var self = this;
+      /** Verify that a valid entity is being provided */
+      if (entity && entity.constructor.name === 'ListItem') {
+        var uniqueId = self.uniqueId;
+        var constructorName = entity.getModel().list.title;
+        return apCacheService.listItem.add(uniqueId, constructorName, entity);
+      } else {
+        $log.warn('Please verify that a valid entity is being used: ', self, entity);
+      }
+    };
+    ListItem.prototype.getEntityReferences = function (constructorName) {
+      var self = this;
+      var cache = self.getEntityReferenceCache();
+      //          var cache = self._apCache.entityReference;
+      if (constructorName && !cache[constructorName]) {
+        return {};
+      } else if (constructorName && cache[constructorName]) {
+        return cache[constructorName];
+      } else {
+        return cache;
+      }
+    };
+    ListItem.prototype.removeEntityReference = function (entity) {
+      var uniqueId = this.uniqueId;
+      var constructorName = entity.getModel().list.title;
+      return apCacheService.listItem.remove(uniqueId, constructorName, entity);
+      var pType = entity.getModel().list.title;
+      var cache = self.getEntityReferenceCache();
+      if (entity.id && cache[pType] && cache[pType][entity.id]) {
+        delete cache[pType][entity.id];
+      }
     };
     /**
          * @ngdoc function
@@ -2832,6 +3046,7 @@ angular.module('angularPoint').service('apUtilityService', function () {
          *  UserMulti,
          *  Boolean,
          *  Integer,
+         *  Float,
          *  Counter,
          *  MultiChoice,
          *  Currency,
@@ -2867,22 +3082,21 @@ angular.module('angularPoint').service('apUtilityService', function () {
       colValue = booleanToJsonObject(value);
       break;
     case 'Integer':
-      colValue = intToJsonObject(value);
-      break;
     case 'Counter':
       colValue = intToJsonObject(value);
       break;
-    case 'MultiChoice':
-      colValue = choiceMultiToJsonObject(value);
-      break;
     case 'Currency':
     case 'Number':
+    case 'Float':
     case 'float':
       // For calculated columns, stored as float;#value
       colValue = floatToJsonObject(value);
       break;
     case 'Calc':
       colValue = calcToJsonObject(value);
+      break;
+    case 'MultiChoice':
+      colValue = choiceMultiToJsonObject(value);
       break;
     case 'JSON':
       colValue = parseJSON(value);
@@ -3387,11 +3601,11 @@ angular.module('angularPoint').run([
   '$templateCache',
   function ($templateCache) {
     'use strict';
-    $templateCache.put('src/directives/ap_attachments/ap_attachments_tmpl.html', '<div style="min-height: 200px;">\r' + '\n' + '\r' + '\n' + '    <div class="row">\r' + '\n' + '        <div class="col-xs-12">\r' + '\n' + '            <div ng-hide="state.ready" class="alert alert-info">Loading attachment details</div>\r' + '\n' + '            <div style="height: 110px;" ng-show="state.ready">\r' + '\n' + '                <h4>\r' + '\n' + '                    <small>Add Attachment</small>\r' + '\n' + '                </h4>\r' + '\n' + '                <iframe frameborder="0" seamless="seamless" width="100%" src="{{ trustedUrl }}"\r' + '\n' + '                        scrolling="no" style="height: 95px"></iframe>\r' + '\n' + '            </div>\r' + '\n' + '        </div>\r' + '\n' + '    </div>\r' + '\n' + '\r' + '\n' + '    <h4 ng-show="attachments.length > 0">\r' + '\n' + '        <small>Attachments</small>\r' + '\n' + '    </h4>\r' + '\n' + '\r' + '\n' + '    <ul class="list-unstyled">\r' + '\n' + '        <li ng-repeat="attachment in attachments">\r' + '\n' + '            <a href="{{ attachment }}" target="_blank">{{ fileName(attachment) }}</a>\r' + '\n' + '            <button class="btn btn-link" ng-click="deleteAttachment(attachment)" title="Delete this attachment">\r' + '\n' + '                <i class="fa fa-times red"></i>\r' + '\n' + '            </button>\r' + '\n' + '        </li>\r' + '\n' + '    </ul>\r' + '\n' + '\r' + '\n' + '</div>');
-    $templateCache.put('src/directives/ap_comments/ap_comments_tmpl.html', '<div>\r' + '\n' + '    <div class="pull-right">\r' + '\n' + '        <button class="btn btn-primary btn-xs" ng-click="createNewComment()"\r' + '\n' + '                title="Create a new comment"\r' + '\n' + '                ng-show="state.tempComment.length > 0">Save\r' + '\n' + '        </button>\r' + '\n' + '        <button class="btn btn-default btn-xs" ng-click="clearTempVars()"\r' + '\n' + '                title="Cancel comment"\r' + '\n' + '                ng-show="state.tempComment.length > 0">Cancel\r' + '\n' + '        </button>\r' + '\n' + '        <!--<button class="btn btn-link btn-xs" title="Toggle the new comment form"-->\r' + '\n' + '        <!--ng-click="state.newCommentVisible = !state.newCommentVisible">-->\r' + '\n' + '        <!--<i class="fa fa-comment"></i> Create-->\r' + '\n' + '        <!--</button>-->\r' + '\n' + '    </div>\r' + '\n' + '    <div style="min-height: 150px;">\r' + '\n' + '        <div class="newComment">\r' + '\n' + '            <div class="form-group">\r' + '\n' + '                <h4><small>New Comment</small></h4>\r' + '\n' + '                <textarea class="form-control" rows="2" ng-model="state.tempComment" placeholder="Create a new comment..."></textarea>\r' + '\n' + '            </div>\r' + '\n' + '        </div>\r' + '\n' + '        <div class="alert text-center" style="margin-top: 30px;" ng-show="!state.ready">\r' + '\n' + '            <h4><small>loading...</small></h4>\r' + '\n' + '        </div>\r' + '\n' + '        <div class="grey" style="margin-top: 30px;" ng-show="!comments && !state.newCommentVisible && state.ready">\r' + '\n' + '            No comments have been made. Create one using the input box above.\r' + '\n' + '        </div>\r' + '\n' + '        <div ng-if="comments && comments.thread.length > 0" class="comments-container">\r' + '\n' + '            <span ng-include="\'src/directives/ap_comments/ap_recursive_comment.html\'"\r' + '\n' + '                  ng-init="comment = comments;"></span>\r' + '\n' + '        </div>\r' + '\n' + '    </div>\r' + '\n' + '</div>');
-    $templateCache.put('src/directives/ap_comments/ap_recursive_comment.html', '<ul class="comments">\r' + '\n' + '    <li class="comment" ng-repeat="response in comment.thread" style="border-top-width: 1px;border-top-color: grey">\r' + '\n' + '        <div class="comment-content">\r' + '\n' + '            <div class="content">\r' + '\n' + '                <h5>\r' + '\n' + '                    <small>\r' + '\n' + '                        <span class="author">{{ response.author.lookupValue }}</span>\r' + '\n' + '                        <span>{{ response.modified  | date:\'short\' }}</span>\r' + '\n' + '                        <button class="btn btn-link btn-xs" ng-click="state.respondingTo = response"><i\r' + '\n' + '                                class="fa fa-mail-reply"></i> Reply\r' + '\n' + '                        </button>\r' + '\n' + '                        <button class="btn btn-link btn-xs"\r' + '\n' + '                                ng-click="deleteComment(response)"><i\r' + '\n' + '                                class="fa fa-trash-o"></i> Delete\r' + '\n' + '                        </button>\r' + '\n' + '                    </small>\r' + '\n' + '                </h5>\r' + '\n' + '                <p class="comment-text">{{ response.comment }}</p>\r' + '\n' + '            </div>\r' + '\n' + '        </div>\r' + '\n' + '        <div ng-if="state.respondingTo === response">\r' + '\n' + '            <div class="row">\r' + '\n' + '                <div class="col-xs-12">\r' + '\n' + '                    <form>\r' + '\n' + '                        <div class="form-group">\r' + '\n' + '                            <h5>\r' + '\n' + '                                <small>\r' + '\n' + '                                    Response\r' + '\n' + '                                    <label class="pull-right">\r' + '\n' + '                                        <button class="btn btn-link btn-xs"\r' + '\n' + '                                                ng-click="createResponse(response)"><i\r' + '\n' + '                                                class="fa fa-save"></i> Save\r' + '\n' + '                                        </button>\r' + '\n' + '                                        <button class="btn btn-link btn-xs"\r' + '\n' + '                                                ng-click="clearTempVars()"><i class="fa fa-undo"></i> Cancel\r' + '\n' + '                                        </button>\r' + '\n' + '                                    </label>\r' + '\n' + '                                </small>\r' + '\n' + '                            </h5>\r' + '\n' + '                            <textarea class="form-control" rows="2"\r' + '\n' + '                                      ng-model="state.tempResponse"></textarea>\r' + '\n' + '                        </div>\r' + '\n' + '                    </form>\r' + '\n' + '                </div>\r' + '\n' + '            </div>\r' + '\n' + '        </div>\r' + '\n' + '        <div ng-if="response.thread.length !== -1">\r' + '\n' + '            <span ng-include="\'src/directives/ap_comments/ap_recursive_comment.html\'"\r' + '\n' + '                  ng-init="comment = response;"></span>\r' + '\n' + '        </div>\r' + '\n' + '    </li>\r' + '\n' + '</ul>');
-    $templateCache.put('src/directives/ap_select/ap_select_tmpl.html', '<span class="ng-cloak">\r' + '\n' + '   <span ng-if="!multi">\r' + '\n' + '       <select class="form-control" ng-model="state.singleSelectID"\r' + '\n' + '               ng-change="updateSingleModel()" style="width: 100%" ng-disabled="ngDisabled"\r' + '\n' + '               ng-options="lookup.id as lookup[state.lookupField] for lookup in arr">\r' + '\n' + '       </select>\r' + '\n' + '   </span>\r' + '\n' + '   <span ng-if="multi">\r' + '\n' + '       <select multiple ui-select2 ng-model="state.multiSelectIDs"\r' + '\n' + '               ng-change="updateMultiModel()" style="width: 100%;" ng-disabled="ngDisabled">\r' + '\n' + '           <option></option>\r' + '\n' + '           <option ng-repeat="lookup in arr" value="{{ lookup.id }}"\r' + '\n' + '                   ng-bind="lookup[state.lookupField]">&nbsp;</option>\r' + '\n' + '       </select>\r' + '\n' + '   </span>\r' + '\n' + '</span>\r' + '\n');
-    $templateCache.put('src/views/generate_offline_view.html', '<div class="container">\r' + '\n' + '    <h3>Offline XML Generator</h3>\r' + '\n' + '    <p>Fill in the basic information for a list and make the request to SharePoint.  The xml\r' + '\n' + '        response will appear at the bottom of the page where you can then copy by Ctrl + A.</p>\r' + '\n' + '    <hr/>\r' + '\n' + '    <form role="form">\r' + '\n' + '        <div class="form-group">\r' + '\n' + '            <label>Site URL</label>\r' + '\n' + '            <div class="input-group">\r' + '\n' + '                <input type="url" class="form-control" ng-model="state.siteUrl">\r' + '\n' + '                  <span class="input-group-btn">\r' + '\n' + '                    <button title="Refresh list/libraries" class="btn btn-success btn-sm"\r' + '\n' + '                            type="button" ng-click="getLists()">\r' + '\n' + '                        <i class="fa fa-refresh"></i> </button>\r' + '\n' + '                  </span>\r' + '\n' + '            </div>\r' + '\n' + '        </div>\r' + '\n' + '        <div class="row">\r' + '\n' + '            <div class="col-xs-6">\r' + '\n' + '                <div class="form-group">\r' + '\n' + '                    <label>List Name or GUID</label>\r' + '\n' + '                    <select ng-model="state.selectedList"\r' + '\n' + '                            ng-options="list.Title for list in listCollection"\r' + '\n' + '                            class="form-control"></select>\r' + '\n' + '                </div>\r' + '\n' + '            </div>\r' + '\n' + '            <div class="col-xs-6">\r' + '\n' + '                <div class="form-group">\r' + '\n' + '                    <label>Number of Items to Return (Optional) [0 = All Items]</label>\r' + '\n' + '                    <input type="number" class="form-control" ng-model="state.itemLimit"/>\r' + '\n' + '                </div>\r' + '\n' + '            </div>\r' + '\n' + '        </div>\r' + '\n' + '        <div class="row">\r' + '\n' + '            <div class="col-xs-12">\r' + '\n' + '                <div class="form-group">\r' + '\n' + '                    <label>Selected Fields</label>\r' + '\n' + '                    <select multiple ui-select2 ng-model="state.selectedListFields"\r' + '\n' + '                            style="width: 100%;"\r' + '\n' + '                            ng-disabled="listCollection.length < 1">\r' + '\n' + '                        <option ng-repeat="field in state.availableListFields"\r' + '\n' + '                                value="{{field.Name}}">{{ field.Name }}</option>\r' + '\n' + '                    </select>\r' + '\n' + '                </div>\r' + '\n' + '            </div>\r' + '\n' + '        </div>\r' + '\n' + '        <div class="form-group">\r' + '\n' + '            <label>CAML Query (Optional)</label>\r' + '\n' + '            <textarea  class="form-control" ng-model="state.query" rows="3"></textarea>\r' + '\n' + '        </div>\r' + '\n' + '        <br/>\r' + '\n' + '        <button type="submit" class="btn btn-primary" ng-click="getXML()">Make Request</button>\r' + '\n' + '        <hr/>\r' + '\n' + '        <h4>XML Response</h4>\r' + '\n' + '        <ol>\r' + '\n' + '            <li>Create a new offline file under "app/dev" in angularPoint.</li>\r' + '\n' + '            <li>Use the same name as found in the model at "model.list.title" + .xml</li>\r' + '\n' + '            <li>Select the returned XML below (Ctrl+A)</li>\r' + '\n' + '            <li>Add the XML to the newly created offline .xml file.</li>\r' + '\n' + '        </ol>\r' + '\n' + '        <div class="well well-sm">\r' + '\n' + '            <textarea name="xmlResponse" class="form-control" cols="30" rows="10"\r' + '\n' + '                      ng-model="state.xmlResponse"></textarea>\r' + '\n' + '        </div>\r' + '\n' + '    </form>\r' + '\n' + '</div>');
-    $templateCache.put('src/views/group_manager_view.html', '<style type="text/css">\r' + '\n' + '    select.multiselect {\r' + '\n' + '        min-height: 400px;\r' + '\n' + '    }\r' + '\n' + '\r' + '\n' + '    .ui-match {\r' + '\n' + '        background: yellow;\r' + '\n' + '    }\r' + '\n' + '</style>\r' + '\n' + '\r' + '\n' + '\r' + '\n' + '<div class="container">\r' + '\n' + '<ul class="nav nav-tabs">\r' + '\n' + '    <li ng-class="{active: state.activeTab === \'Users\'}">\r' + '\n' + '        <a href ng-click="updateTab(\'Users\')">Users</a>\r' + '\n' + '    </li>\r' + '\n' + '    <li ng-class="{active: state.activeTab === \'Groups\'}">\r' + '\n' + '        <a href ng-click="updateTab(\'Groups\')">Groups</a>\r' + '\n' + '    </li>\r' + '\n' + '    <li ng-class="{active: state.activeTab === \'Merge\'}">\r' + '\n' + '        <a href ng-click="state.activeTab = \'Merge\'">Merge</a>\r' + '\n' + '    </li>\r' + '\n' + '    <li ng-class="{active: state.activeTab === \'UserList\'}">\r' + '\n' + '        <a href ng-click="state.activeTab = \'UserList\'">User List</a>\r' + '\n' + '    </li>\r' + '\n' + '    <li ng-class="{active: state.activeTab === \'GroupList\'}">\r' + '\n' + '        <a href ng-click="state.activeTab = \'GroupList\'">Group List</a>\r' + '\n' + '    </li>\r' + '\n' + '</ul>\r' + '\n' + '\r' + '\n' + '<div ng-if="state.activeTab === \'Users\'">\r' + '\n' + '    <div class="panel panel-default">\r' + '\n' + '        <div class="panel-heading">\r' + '\n' + '            <div class="row">\r' + '\n' + '                <div class="col-xs-5">\r' + '\n' + '                    <span style="font-weight:bold">Select a Group:</span>\r' + '\n' + '                    <select class="form-control" ng-model="users.filter"\r' + '\n' + '                            ng-options="group.Name for group in groups.all"\r' + '\n' + '                            ng-change="updateAvailableUsers(users.filter)" style="min-width: 100px;"></select>\r' + '\n' + '                </div>\r' + '\n' + '                <div class="col-xs-7">\r' + '\n' + '                    <span style="font-weight:bold">Site/Site Collection: </span>\r' + '\n' + '                    <input class="form-control" ng-model="state.siteUrl" ng-change="updateAvailableUsers(users.filter)">\r' + '\n' + '                </div>\r' + '\n' + '            </div>\r' + '\n' + '            <div class="row" ng-if="users.filter.Description">\r' + '\n' + '                <div class="col-xs-12">\r' + '\n' + '                    <p class="help-block">Description: {{ users.filter.Description }}</p>\r' + '\n' + '                </div>\r' + '\n' + '            </div>\r' + '\n' + '        </div>\r' + '\n' + '        <div class="panel-body">\r' + '\n' + '            <div class="row">\r' + '\n' + '                <div class="col-xs-12">\r' + '\n' + '                    <div colspan="3" class="description">This tab will allow you to quickly assign multiple users to a selected group.</div>\r' + '\n' + '                </div>\r' + '\n' + '            </div>\r' + '\n' + '            <hr class="hr-sm">\r' + '\n' + '            <div class="row">\r' + '\n' + '                <div class="col-xs-5">\r' + '\n' + '                    <div class="form-group">\r' + '\n' + '                        <label>Available Users ({{users.available.length}})</label>\r' + '\n' + '                        <select ng-model="users.selectedAvailable"\r' + '\n' + '                                ng-options="user.Name for user in users.available"\r' + '\n' + '                                multiple="multiple" class="multiselect form-control"></select>\r' + '\n' + '                    </div>\r' + '\n' + '                </div>\r' + '\n' + '                <div class="col-xs-2 text-center" style="padding-top: 175px">\r' + '\n' + '                    <button class="btn btn-default" style="width:80px;"\r' + '\n' + '                            ng-click="updatePermissions(\'AddUserToGroup\', users.selectedAvailable, [users.filter])" title="Add user">\r' + '\n' + '                        <i class="fa fa-2x fa-angle-double-right"></i>\r' + '\n' + '                    </button>\r' + '\n' + '                    <br/><br/>\r' + '\n' + '                    <button class="btn btn-default" style="width:80px;"\r' + '\n' + '                            ng-click="updatePermissions(\'RemoveUserFromGroup\', users.selectedAssigned, [users.filter])">\r' + '\n' + '                        <i class="fa fa-2x fa-angle-double-left"></i>\r' + '\n' + '                    </button>\r' + '\n' + '                </div>\r' + '\n' + '                <div class="col-xs-5">\r' + '\n' + '                    <div class="form-group">\r' + '\n' + '                        <label>Assigned Users ({{users.assigned.length}})</label>\r' + '\n' + '                        <select ng-model="users.selectedAssigned"\r' + '\n' + '                                ng-options="user.Name for user in users.assigned"\r' + '\n' + '                                multiple="multiple" class="multiselect form-control"></select>\r' + '\n' + '                    </div>\r' + '\n' + '                </div>\r' + '\n' + '            </div>\r' + '\n' + '        </div>\r' + '\n' + '    </div>\r' + '\n' + '</div>\r' + '\n' + '\r' + '\n' + '<div ng-if="state.activeTab === \'Groups\'">\r' + '\n' + '    <div class="panel panel-default">\r' + '\n' + '        <div class="panel-heading">\r' + '\n' + '            <div class="row">\r' + '\n' + '                <div class="col-xs-5">\r' + '\n' + '                    <span style="font-weight:bold">Select a User:</span>\r' + '\n' + '                    <select class="form-control" ng-model="groups.filter"\r' + '\n' + '                            ng-options="user.Name for user in users.all"\r' + '\n' + '                            ng-change="updateAvailableGroups(groups.filter)" style="min-width: 100px;"></select>\r' + '\n' + '                </div>\r' + '\n' + '                <div class="col-xs-7">\r' + '\n' + '                    <span style="font-weight:bold">Site/Site Collection: </span>\r' + '\n' + '                    <input class="form-control" ng-model="state.siteUrl" ng-change="updateAvailableGroups(groups.filter)">\r' + '\n' + '                </div>\r' + '\n' + '            </div>\r' + '\n' + '        </div>\r' + '\n' + '        <div class="panel-body">\r' + '\n' + '            <div class="row">\r' + '\n' + '                <div class="col-xs-12">\r' + '\n' + '                    <div colspan="3" class="description">This page was created to make the process of managing users/groups within the site\r' + '\n' + '                        collection more manageable.  When a user is selected, the available groups are displayed on the\r' + '\n' + '                        left and the groups that the user is currently a member of will show on the right. Selecting\r' + '\n' + '                        multiple groups is supported.</div>\r' + '\n' + '                </div>\r' + '\n' + '            </div>\r' + '\n' + '            <hr class="hr-sm">\r' + '\n' + '            <div class="row">\r' + '\n' + '                <div class="col-xs-5">\r' + '\n' + '                    <div class="form-group">\r' + '\n' + '                        <label>Available Groups ({{groups.available.length}})</label>\r' + '\n' + '                        <select ng-model="groups.selectedAvailable"\r' + '\n' + '                                ng-options="group.Name for group in groups.available"\r' + '\n' + '                                multiple="multiple" class="multiselect form-control"></select>\r' + '\n' + '                    </div>\r' + '\n' + '                </div>\r' + '\n' + '                <div class="col-xs-2 text-center" style="padding-top: 175px">\r' + '\n' + '                    <button class="btn btn-default" style="width:80px;"\r' + '\n' + '                            ng-click="updatePermissions(\'AddUserToGroup\', [groups.filter], groups.selectedAvailable)" title="Add to group">\r' + '\n' + '                        <i class="fa fa-2x fa-angle-double-right"></i>\r' + '\n' + '                    </button>\r' + '\n' + '                    <br/><br/>\r' + '\n' + '                    <button class="btn btn-default" style="width:80px;"\r' + '\n' + '                            ng-click="updatePermissions(\'RemoveUserFromGroup\', [groups.filter], groups.selectedAssigned)">\r' + '\n' + '                        <i class="fa fa-2x fa-angle-double-left"></i>\r' + '\n' + '                    </button>\r' + '\n' + '                </div>\r' + '\n' + '                <div class="col-xs-5">\r' + '\n' + '                    <div class="form-group">\r' + '\n' + '                        <label>Assigned Users ({{users.assigned.length}})</label>\r' + '\n' + '                        <select ng-model="groups.selectedAssigned"\r' + '\n' + '                                ng-options="group.Name for group in groups.assigned"\r' + '\n' + '                                multiple="multiple" class="multiselect form-control"></select>\r' + '\n' + '                    </div>\r' + '\n' + '                </div>\r' + '\n' + '            </div>\r' + '\n' + '        </div>\r' + '\n' + '    </div>\r' + '\n' + '</div>\r' + '\n' + '\r' + '\n' + '<div ng-if="state.activeTab === \'Merge\'">\r' + '\n' + '    <div class="panel panel-default">\r' + '\n' + '        <div class="panel-body">\r' + '\n' + '            <div class="row">\r' + '\n' + '                <div class="col-xs-12">\r' + '\n' + '                    <div class="description">This tab allows us to copy the members from the "Source" group over to\r' + '\n' + '                        the "Target" group.\r' + '\n' + '                        It\'s not a problem if any of the users already exist in the destination group. Note: This is\r' + '\n' + '                        a onetime operation\r' + '\n' + '                        so any additional members added to the Source group will not automatically be added to the\r' + '\n' + '                        destination group. You will\r' + '\n' + '                        need to repeat this process.\r' + '\n' + '                    </div>\r' + '\n' + '                </div>\r' + '\n' + '            </div>\r' + '\n' + '            <hr class="hr-sm">\r' + '\n' + '            <div class="row">\r' + '\n' + '                <div class="col-xs-5">\r' + '\n' + '                    <fieldset>\r' + '\n' + '                        <legend>Step 1</legend>\r' + '\n' + '                        <div class="well">\r' + '\n' + '                            <div class="form-group">\r' + '\n' + '                                <label>Source Group</label>\r' + '\n' + '                                <select class="form-control" ng-model="state.sourceGroup"\r' + '\n' + '                                        ng-options="group.Name for group in groups.all"\r' + '\n' + '                                        ng-change="updateAvailableUsers(state.sourceGroup)"\r' + '\n' + '                                        style="min-width: 100px;"></select>\r' + '\n' + '                            </div>\r' + '\n' + '                        </div>\r' + '\n' + '                    </fieldset>\r' + '\n' + '                </div>\r' + '\n' + '                <div class="col-xs-5">\r' + '\n' + '                    <fieldset>\r' + '\n' + '                        <legend>Step 2</legend>\r' + '\n' + '\r' + '\n' + '                        <div class="well">\r' + '\n' + '                            <div class="form-group">\r' + '\n' + '                                <label>Source Group</label>\r' + '\n' + '                                <select class="form-control" ng-model="state.targetGroup"\r' + '\n' + '                                        ng-options="group.Name for group in groups.all"\r' + '\n' + '                                        style="min-width: 100px;"></select>\r' + '\n' + '                            </div>\r' + '\n' + '                        </div>\r' + '\n' + '                    </fieldset>\r' + '\n' + '                </div>\r' + '\n' + '                <div class="col-xs-2">\r' + '\n' + '                    <fieldset>\r' + '\n' + '                        <legend>Step 3</legend>\r' + '\n' + '                        <button class="btn btn-success"\r' + '\n' + '                                ng-disabled="state.sourceGroup.length < 1 || state.targetGroup.length < 1"\r' + '\n' + '                                ng-click="mergeGroups()"\r' + '\n' + '                                title="Copy all members from the source group over to the destination group.">\r' + '\n' + '                            <i class="fa fa-2x fa-magic"></i> Merge\r' + '\n' + '                        </button>\r' + '\n' + '                    </fieldset>\r' + '\n' + '                </div>\r' + '\n' + '            </div>\r' + '\n' + '        </div>\r' + '\n' + '    </div>\r' + '\n' + '</div>\r' + '\n' + '<div ng-if="state.activeTab === \'UserList\'">\r' + '\n' + '    <div class="panel panel-default">\r' + '\n' + '        <div class="panel-heading">\r' + '\n' + '            <span style="font-weight:bold">User Filter</span>\r' + '\n' + '            <input type="text" class="form-control" ng-model="state.userFilter"\r' + '\n' + '                   ng-change="usersTable.reload()">\r' + '\n' + '        </div>\r' + '\n' + '        <table ng-table="usersTable" class="table" template-pagination="custom/pager">\r' + '\n' + '            <tr ng-repeat="user in $data">\r' + '\n' + '                <td data-title="\'ID\'"> {{ user.ID }}</td>\r' + '\n' + '                <td data-title="\'Name\'">\r' + '\n' + '                    <a href ng-click="userDetailsLink(user)"\r' + '\n' + '                       ng-bind-html="user.Name |  highlight:state.userFilter"></a>\r' + '\n' + '                </td>\r' + '\n' + '                <td data-title="\'Email\'"> {{ user.Email }}</td>\r' + '\n' + '            </tr>\r' + '\n' + '\r' + '\n' + '        </table>\r' + '\n' + '    </div>\r' + '\n' + '</div>\r' + '\n' + '<div ng-if="state.activeTab === \'GroupList\'">\r' + '\n' + '    <div class="panel panel-default">\r' + '\n' + '        <div class="panel-heading">\r' + '\n' + '            <span style="font-weight:bold">Group Filter</span>\r' + '\n' + '            <input type="text" class="form-control" ng-model="state.groupFilter"\r' + '\n' + '                   ng-change="groupsTable.reload()">\r' + '\n' + '        </div>\r' + '\n' + '        <table ng-table="groupsTable" class="table" template-pagination="custom/pager">\r' + '\n' + '            <tr ng-repeat="group in $data">\r' + '\n' + '                <td data-title="\'ID\'"> {{ group.ID }}</td>\r' + '\n' + '                <td data-title="\'Name\'">\r' + '\n' + '                    <a href ng-click="groupDetailsLink(group)"\r' + '\n' + '                       ng-bind-html="group.Name |  highlight:state.groupFilter"></a>\r' + '\n' + '                </td>\r' + '\n' + '                <td data-title="\'Description\'"> {{ group.Description }}</td>\r' + '\n' + '            </tr>\r' + '\n' + '        </table>\r' + '\n' + '    </div>\r' + '\n' + '</div>\r' + '\n' + '</div>\r' + '\n' + '\r' + '\n' + '<script type="text/ng-template" id="custom/pager">\r' + '\n' + '    <div class="row">\r' + '\n' + '        <div class="col-xs-12">\r' + '\n' + '            <ul class="pager ng-cloak">\r' + '\n' + '                <li ng-repeat="page in pages"\r' + '\n' + '                    ng-class="{\'disabled\': !page.active}"\r' + '\n' + '                    ng-show="page.type == \'prev\' || page.type == \'next\'" ng-switch="page.type">\r' + '\n' + '                    <a ng-switch-when="prev" ng-click="params.page(page.number)" href="">\r' + '\n' + '                        <i class="fa fa-chevron-left"></i>\r' + '\n' + '                    </a>\r' + '\n' + '                    <a ng-switch-when="next" ng-click="params.page(page.number)" href="">\r' + '\n' + '                        <i class="fa fa-chevron-right"></i>\r' + '\n' + '                    </a>\r' + '\n' + '                </li>\r' + '\n' + '            </ul>\r' + '\n' + '        </div>\r' + '\n' + '    </div>\r' + '\n' + '</script>');
+    $templateCache.put('src/directives/ap_attachments/ap_attachments_tmpl.html', '<div style="min-height: 200px"><div class=row><div class=col-xs-12><div ng-hide=state.ready class="alert alert-info">Loading attachment details</div><div style="height: 110px" ng-show=state.ready><h4><small>Add Attachment</small></h4><iframe frameborder=0 seamless width=100% src="{{ trustedUrl }}" scrolling=no style="height: 95px"></iframe></div></div></div><h4 ng-show="attachments.length > 0"><small>Attachments</small></h4><ul class=list-unstyled><li ng-repeat="attachment in attachments"><a href="{{ attachment }}" target=_blank>{{ fileName(attachment) }}</a> <button class="btn btn-link" ng-click=deleteAttachment(attachment) title="Delete this attachment"><i class="fa fa-times red"></i></button></li></ul></div>');
+    $templateCache.put('src/directives/ap_comments/ap_comments_tmpl.html', '<div><div class=pull-right><button class="btn btn-primary btn-xs" ng-click=createNewComment() title="Create a new comment" ng-show="state.tempComment.length > 0">Save</button> <button class="btn btn-default btn-xs" ng-click=clearTempVars() title="Cancel comment" ng-show="state.tempComment.length > 0">Cancel</button>    </div><div style="min-height: 150px"><div class=newComment><div class=form-group><h4><small>New Comment</small></h4><textarea class=form-control rows=2 ng-model=state.tempComment placeholder="Create a new comment..."></textarea></div></div><div class="alert text-center" style="margin-top: 30px" ng-show=!state.ready><h4><small>loading...</small></h4></div><div class=grey style="margin-top: 30px" ng-show="!comments && !state.newCommentVisible && state.ready">No comments have been made. Create one using the input box above.</div><div ng-if="comments && comments.thread.length > 0" class=comments-container><span ng-include="\'src/directives/ap_comments/ap_recursive_comment.html\'" ng-init="comment = comments;"></span></div></div></div>');
+    $templateCache.put('src/directives/ap_comments/ap_recursive_comment.html', '<ul class=comments><li class=comment ng-repeat="response in comment.thread" style="border-top-width: 1px;border-top-color: grey"><div class=comment-content><div class=content><h5><small><span class=author>{{ response.author.lookupValue }}</span> <span>{{ response.modified | date:\'short\' }}</span> <button class="btn btn-link btn-xs" ng-click="state.respondingTo = response"><i class="fa fa-mail-reply"></i> Reply</button> <button class="btn btn-link btn-xs" ng-click=deleteComment(response)><i class="fa fa-trash-o"></i> Delete</button></small></h5><p class=comment-text>{{ response.comment }}</p></div></div><div ng-if="state.respondingTo === response"><div class=row><div class=col-xs-12><form><div class=form-group><h5><small>Response<label class=pull-right><button class="btn btn-link btn-xs" ng-click=createResponse(response)><i class="fa fa-save"></i> Save</button> <button class="btn btn-link btn-xs" ng-click=clearTempVars()><i class="fa fa-undo"></i> Cancel</button></label></small></h5><textarea class=form-control rows=2 ng-model=state.tempResponse></textarea></div></form></div></div></div><div ng-if="response.thread.length !== -1"><span ng-include="\'src/directives/ap_comments/ap_recursive_comment.html\'" ng-init="comment = response;"></span></div></li></ul>');
+    $templateCache.put('src/directives/ap_select/ap_select_tmpl.html', '<span class=ng-cloak><span ng-if=!multi><select class=form-control ng-model=state.singleSelectID ng-change=updateSingleModel() style="width: 100%" ng-disabled=ngDisabled ng-options="lookup.id as lookup[state.lookupField] for lookup in arr"></select></span> <span ng-if=multi><select multiple ui-select2="" ng-model=state.multiSelectIDs ng-change=updateMultiModel() style="width: 100%" ng-disabled=ngDisabled><option></option><option ng-repeat="lookup in arr" value="{{ lookup.id }}" ng-bind=lookup[state.lookupField]>&nbsp;</option></select></span></span>');
+    $templateCache.put('src/views/generate_offline_view.html', '<div class=container><h3>Offline XML Generator</h3><p>Fill in the basic information for a list and make the request to SharePoint. The xml response will appear at the bottom of the page where you can then copy by Ctrl + A.</p><hr><form role=form><div class=form-group><label>Site URL</label><div class=input-group><input type=url class=form-control ng-model=state.siteUrl><span class=input-group-btn><button title="Refresh list/libraries" class="btn btn-success btn-sm" type=button ng-click=getLists()><i class="fa fa-refresh"></i></button></span></div></div><div class=row><div class=col-xs-6><div class=form-group><label>List Name or GUID</label><select ng-model=state.selectedList ng-options="list.Title for list in listCollection" class=form-control></select></div></div><div class=col-xs-6><div class=form-group><label>Number of Items to Return (Optional) [0 = All Items]</label><input type=number class=form-control ng-model=state.itemLimit></div></div></div><div class=row><div class=col-xs-12><div class=form-group><label>Selected Fields</label><select multiple ui-select2="" ng-model=state.selectedListFields style="width: 100%" ng-disabled="listCollection.length < 1"><option ng-repeat="field in state.availableListFields" value={{field.Name}}>{{ field.Name }}</option></select></div></div></div><div class=form-group><label>CAML Query (Optional)</label><textarea class=form-control ng-model=state.query rows=3></textarea></div><br><button type=submit class="btn btn-primary" ng-click=getXML()>Make Request</button><hr><h4>XML Response</h4><ol><li>Create a new offline file under "app/dev" in angularPoint.</li><li>Use the same name as found in the model at "model.list.title" + .xml</li><li>Select the returned XML below (Ctrl+A)</li><li>Add the XML to the newly created offline .xml file.</li></ol><div class="well well-sm"><textarea name=xmlResponse class=form-control cols=30 rows=10 ng-model=state.xmlResponse></textarea></div></form></div>');
+    $templateCache.put('src/views/group_manager_view.html', '<style>select.multiselect {\n' + '        min-height: 400px;\n' + '    }\n' + '\n' + '    .ui-match {\n' + '        background: yellow;\n' + '    }</style><div class=container><ul class="nav nav-tabs"><li ng-class="{active: state.activeTab === \'Users\'}"><a href="" ng-click="updateTab(\'Users\')">Users</a></li><li ng-class="{active: state.activeTab === \'Groups\'}"><a href="" ng-click="updateTab(\'Groups\')">Groups</a></li><li ng-class="{active: state.activeTab === \'Merge\'}"><a href="" ng-click="state.activeTab = \'Merge\'">Merge</a></li><li ng-class="{active: state.activeTab === \'UserList\'}"><a href="" ng-click="state.activeTab = \'UserList\'">User List</a></li><li ng-class="{active: state.activeTab === \'GroupList\'}"><a href="" ng-click="state.activeTab = \'GroupList\'">Group List</a></li></ul><div ng-if="state.activeTab === \'Users\'"><div class="panel panel-default"><div class=panel-heading><div class=row><div class=col-xs-5><span style=font-weight:bold>Select a Group:</span><select class=form-control ng-model=users.filter ng-options="group.Name for group in groups.all" ng-change=updateAvailableUsers(users.filter) style="min-width: 100px"></select></div><div class=col-xs-7><span style=font-weight:bold>Site/Site Collection:</span><input class=form-control ng-model=state.siteUrl ng-change=updateAvailableUsers(users.filter)></div></div><div class=row ng-if=users.filter.Description><div class=col-xs-12><p class=help-block>Description: {{ users.filter.Description }}</p></div></div></div><div class=panel-body><div class=row><div class=col-xs-12><div colspan=3 class=description>This tab will allow you to quickly assign multiple users to a selected group.</div></div></div><hr class=hr-sm><div class=row><div class=col-xs-5><div class=form-group><label>Available Users ({{users.available.length}})</label><select ng-model=users.selectedAvailable ng-options="user.Name for user in users.available" multiple class="multiselect form-control"></select></div></div><div class="col-xs-2 text-center" style="padding-top: 175px"><button class="btn btn-default" style=width:80px ng-click="updatePermissions(\'AddUserToGroup\', users.selectedAvailable, [users.filter])" title="Add user"><i class="fa fa-2x fa-angle-double-right"></i></button><br><br><button class="btn btn-default" style=width:80px ng-click="updatePermissions(\'RemoveUserFromGroup\', users.selectedAssigned, [users.filter])"><i class="fa fa-2x fa-angle-double-left"></i></button></div><div class=col-xs-5><div class=form-group><label>Assigned Users ({{users.assigned.length}})</label><select ng-model=users.selectedAssigned ng-options="user.Name for user in users.assigned" multiple class="multiselect form-control"></select></div></div></div></div></div></div><div ng-if="state.activeTab === \'Groups\'"><div class="panel panel-default"><div class=panel-heading><div class=row><div class=col-xs-5><span style=font-weight:bold>Select a User:</span><select class=form-control ng-model=groups.filter ng-options="user.Name for user in users.all" ng-change=updateAvailableGroups(groups.filter) style="min-width: 100px"></select></div><div class=col-xs-7><span style=font-weight:bold>Site/Site Collection:</span><input class=form-control ng-model=state.siteUrl ng-change=updateAvailableGroups(groups.filter)></div></div></div><div class=panel-body><div class=row><div class=col-xs-12><div colspan=3 class=description>This page was created to make the process of managing users/groups within the site collection more manageable. When a user is selected, the available groups are displayed on the left and the groups that the user is currently a member of will show on the right. Selecting multiple groups is supported.</div></div></div><hr class=hr-sm><div class=row><div class=col-xs-5><div class=form-group><label>Available Groups ({{groups.available.length}})</label><select ng-model=groups.selectedAvailable ng-options="group.Name for group in groups.available" multiple class="multiselect form-control"></select></div></div><div class="col-xs-2 text-center" style="padding-top: 175px"><button class="btn btn-default" style=width:80px ng-click="updatePermissions(\'AddUserToGroup\', [groups.filter], groups.selectedAvailable)" title="Add to group"><i class="fa fa-2x fa-angle-double-right"></i></button><br><br><button class="btn btn-default" style=width:80px ng-click="updatePermissions(\'RemoveUserFromGroup\', [groups.filter], groups.selectedAssigned)"><i class="fa fa-2x fa-angle-double-left"></i></button></div><div class=col-xs-5><div class=form-group><label>Assigned Users ({{users.assigned.length}})</label><select ng-model=groups.selectedAssigned ng-options="group.Name for group in groups.assigned" multiple class="multiselect form-control"></select></div></div></div></div></div></div><div ng-if="state.activeTab === \'Merge\'"><div class="panel panel-default"><div class=panel-body><div class=row><div class=col-xs-12><div class=description>This tab allows us to copy the members from the "Source" group over to the "Target" group. It\'s not a problem if any of the users already exist in the destination group. Note: This is a onetime operation so any additional members added to the Source group will not automatically be added to the destination group. You will need to repeat this process.</div></div></div><hr class=hr-sm><div class=row><div class=col-xs-5><fieldset><legend>Step 1</legend><div class=well><div class=form-group><label>Source Group</label><select class=form-control ng-model=state.sourceGroup ng-options="group.Name for group in groups.all" ng-change=updateAvailableUsers(state.sourceGroup) style="min-width: 100px"></select></div></div></fieldset></div><div class=col-xs-5><fieldset><legend>Step 2</legend><div class=well><div class=form-group><label>Source Group</label><select class=form-control ng-model=state.targetGroup ng-options="group.Name for group in groups.all" style="min-width: 100px"></select></div></div></fieldset></div><div class=col-xs-2><fieldset><legend>Step 3</legend><button class="btn btn-success" ng-disabled="state.sourceGroup.length < 1 || state.targetGroup.length < 1" ng-click=mergeGroups() title="Copy all members from the source group over to the destination group."><i class="fa fa-2x fa-magic"></i> Merge</button></fieldset></div></div></div></div></div><div ng-if="state.activeTab === \'UserList\'"><div class="panel panel-default"><div class=panel-heading><span style=font-weight:bold>User Filter</span><input class=form-control ng-model=state.userFilter ng-change=usersTable.reload()></div><table ng-table=usersTable class=table template-pagination=custom/pager><tr ng-repeat="user in $data"><td data-title="\'ID\'">{{ user.ID }}</td><td data-title="\'Name\'"><a href="" ng-click=userDetailsLink(user) ng-bind-html="user.Name |  highlight:state.userFilter"></a></td><td data-title="\'Email\'">{{ user.Email }}</td></tr></table></div></div><div ng-if="state.activeTab === \'GroupList\'"><div class="panel panel-default"><div class=panel-heading><span style=font-weight:bold>Group Filter</span><input class=form-control ng-model=state.groupFilter ng-change=groupsTable.reload()></div><table ng-table=groupsTable class=table template-pagination=custom/pager><tr ng-repeat="group in $data"><td data-title="\'ID\'">{{ group.ID }}</td><td data-title="\'Name\'"><a href="" ng-click=groupDetailsLink(group) ng-bind-html="group.Name |  highlight:state.groupFilter"></a></td><td data-title="\'Description\'">{{ group.Description }}</td></tr></table></div></div></div><script type=text/ng-template id=custom/pager><div class="row">\n' + '        <div class="col-xs-12">\n' + '            <ul class="pager ng-cloak">\n' + '                <li ng-repeat="page in pages"\n' + '                    ng-class="{\'disabled\': !page.active}"\n' + '                    ng-show="page.type == \'prev\' || page.type == \'next\'" ng-switch="page.type">\n' + '                    <a ng-switch-when="prev" ng-click="params.page(page.number)" href="">\n' + '                        <i class="fa fa-chevron-left"></i>\n' + '                    </a>\n' + '                    <a ng-switch-when="next" ng-click="params.page(page.number)" href="">\n' + '                        <i class="fa fa-chevron-right"></i>\n' + '                    </a>\n' + '                </li>\n' + '            </ul>\n' + '        </div>\n' + '    </div></script>');
   }
 ]);
