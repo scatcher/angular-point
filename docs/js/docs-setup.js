@@ -410,6 +410,24 @@ NG_DOCS={
     },
     {
       "section": "api",
+      "id": "Lookup",
+      "shortName": "Lookup",
+      "type": "function",
+      "moduleName": "Lookup",
+      "shortDescription": "Allows for easier distinction when debugging if object type is shown as either Lookup or User.  Also allows us",
+      "keywords": "allows api async create debugging distinction easier entity function item key list lookup lookupid lookupvalue object options parent property propertyname reference referenced request split string type user"
+    },
+    {
+      "section": "api",
+      "id": "Lookup.getEntity",
+      "shortName": "Lookup.getEntity",
+      "type": "function",
+      "moduleName": "Lookup",
+      "shortDescription": "Allows us to create a promise that will resolve with the entity referenced in the lookup whenever that list",
+      "keywords": "allows api create entity function getentity item list lookup object promise referenced referencing registered resolve resolves"
+    },
+    {
+      "section": "api",
       "id": "modalService",
       "shortName": "modalService",
       "type": "service",
@@ -524,6 +542,15 @@ NG_DOCS={
       "moduleName": "Model",
       "shortDescription": "Helper function that return the local cache for a named query if provided, otherwise",
       "keywords": "api cache changes check contents current customquery function getcache helper identify key local model named namedquerycache primary primaryquerycache projectmodel provided query resolved return returns sharepoint unique var"
+    },
+    {
+      "section": "api",
+      "id": "Model.getCache",
+      "shortName": "Model.getCache",
+      "type": "function",
+      "moduleName": "Model",
+      "shortDescription": "Returns the field definition from the definitions defined in the custom fields array within a model.",
+      "keywords": "api array custom defined definition definitions field fieldname fields function getcache internal model returns"
     },
     {
       "section": "api",
@@ -685,7 +712,7 @@ NG_DOCS={
       "type": "function",
       "moduleName": "utilityService",
       "shortDescription": "Converts a SharePoint string representation of a field into the correctly formatted JavaScript version",
-      "keywords": "api attrtojson based boolean calc converts correctly counter currency datetime definition field float formatted function integer javascript json lookup lookupmulti multichoice number object options representation sharepoint string text type user usermulti utilityservice version"
+      "keywords": "api attrtojson based boolean calc child constructors converts correctly counter currency datetime definition field float formatted function integer item javascript json list lookup lookupmulti multichoice number object options parent reference representation row sharepoint string text type user usermulti utilityservice version"
     },
     {
       "section": "api",

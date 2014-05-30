@@ -7,7 +7,7 @@
  * Provides shared utility functionality across the application.
  */
 angular.module('angularPoint')
-    .service('apUtilityService', function () {
+    .service('apUtilityService', function ($q) {
         // AngularJS will instantiate a singleton by calling "new" on this function
 
         /** Extend underscore with a simple helper function */
