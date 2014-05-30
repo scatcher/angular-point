@@ -230,6 +230,78 @@ NG_DOCS={
     },
     {
       "section": "api",
+      "id": "fieldService",
+      "shortName": "fieldService",
+      "type": "service",
+      "moduleName": "fieldService",
+      "shortDescription": "Handles the mapping of the various types of fields used within a SharePoint list",
+      "keywords": "api fields fieldservice handles list mapping service sharepoint types"
+    },
+    {
+      "section": "api",
+      "id": "fieldService.defaultFields",
+      "shortName": "fieldService.defaultFields",
+      "type": "function",
+      "moduleName": "fieldService",
+      "shortDescription": "Read only fields that should be included in all lists",
+      "keywords": "api defaultfields fields fieldservice function included lists read"
+    },
+    {
+      "section": "api",
+      "id": "fieldService.extendFieldDefinitions",
+      "shortName": "fieldService.extendFieldDefinitions",
+      "type": "function",
+      "moduleName": "fieldService",
+      "shortDescription": "",
+      "keywords": "api array combine creates default defined defines definition extendfielddefinitions field fields fieldservice function list model populates query reference requested sharepoint string viewfields xml"
+    },
+    {
+      "section": "api",
+      "id": "fieldService.Field",
+      "shortName": "fieldService.Field",
+      "type": "function",
+      "moduleName": "fieldService",
+      "shortDescription": "Decorates field with optional defaults",
+      "keywords": "api decorates defaults definition field fieldservice function obj optional"
+    },
+    {
+      "section": "api",
+      "id": "fieldService.getDefaultValueForType",
+      "shortName": "fieldService.getDefaultValueForType",
+      "type": "function",
+      "moduleName": "fieldService",
+      "shortDescription": "Returns the empty value expected for a field type",
+      "keywords": "api based default empty expected field fieldservice fieldtype function getdefaultvaluefortype returns type"
+    },
+    {
+      "section": "api",
+      "id": "fieldService.getMockData",
+      "shortName": "fieldService.getMockData",
+      "type": "function",
+      "moduleName": "fieldService",
+      "shortDescription": "Can return mock data appropriate for the field type, by default it dynamically generates data but",
+      "keywords": "api appropriate build chancejs coded data default definition dynamic dynamically field fieldservice fieldtype function generates getmockdata hard https mock mockdata optional param params produce return specific staticvalue type"
+    },
+    {
+      "section": "api",
+      "id": "fieldService.mockPermMask",
+      "shortName": "fieldService.mockPermMask",
+      "type": "function",
+      "moduleName": "fieldService",
+      "shortDescription": "Defaults to a full mask but allows simulation of each of main permission levels",
+      "keywords": "allows api container defaults fieldservice full function levels main mask mockpermmask optional options permission permissionlevel simulation values"
+    },
+    {
+      "section": "api",
+      "id": "fieldService.resolveValueForEffectivePermMask",
+      "shortName": "fieldService.resolveValueForEffectivePermMask",
+      "type": "function",
+      "moduleName": "fieldService",
+      "shortDescription": "Takes the name of a permission mask and returns a permission value which can then be used",
+      "keywords": "addlistitems api approveitems deletelistitems editlistitems fieldservice fullmask function generate mask modelservice object options permask permission resolvepermissions resolvevalueforeffectivepermmask returns takes viewlistitems"
+    },
+    {
+      "section": "api",
       "id": "List",
       "shortName": "List",
       "type": "function",
@@ -585,8 +657,8 @@ NG_DOCS={
       "shortName": "queueService.reset",
       "type": "function",
       "moduleName": "queueService",
-      "shortDescription": "Decrease the counter by 1.",
-      "keywords": "api count counter current decrease decrementing function queueservice reset"
+      "shortDescription": "Reset counter to 0.",
+      "keywords": "api count counter current function incrementing queueservice reset"
     },
     {
       "section": "api",
@@ -594,8 +666,8 @@ NG_DOCS={
       "shortName": "queueService.reset",
       "type": "function",
       "moduleName": "queueService",
-      "shortDescription": "Reset counter to 0.",
-      "keywords": "api count counter current function incrementing queueservice reset"
+      "shortDescription": "Decrease the counter by 1.",
+      "keywords": "api count counter current decrease decrementing function queueservice reset"
     },
     {
       "section": "api",
