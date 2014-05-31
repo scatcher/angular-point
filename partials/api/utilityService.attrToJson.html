@@ -8,7 +8,7 @@
 based on object type.</p>
 </div></div>
 <h2 id="usage">Usage</h2>
-<div class="usage"><pre class="prettyprint linenums">attrToJson(value, objectType);</pre>
+<div class="usage"><pre class="prettyprint linenums">attrToJson(value, objectType, row);</pre>
 <h4 id="usage_parameters">Parameters</h4><table class="variables-matrix table table-bordered table-striped"><thead><tr><th>Param</th><th>Type</th><th>Details</th></tr></thead><tbody><tr><td>value</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="utilityservice-attrtojson-page"><p>SharePoint string.</p>
 </div></td></tr><tr><td>objectType</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="utilityservice-attrtojson-page"><p>The type based on field definition.
 Options:[
@@ -28,6 +28,7 @@ Options:[
  JSON,
  Text [Default]
 ]</p>
-</div> <p><em>(default: 'Text')</em></p></td></tr></tbody></table><h4 id="usage_returns">Returns</h4><table class="variables-matrix"><tr><td><a href="" class="label type-hint type-hint-object">*</a></td><td><div class="utilityservice-attrtojson-page"><p>The formatted JavaScript value based on field type.</p>
+</div> <p><em>(default: 'Text')</em></p></td></tr><tr><td>row</td><td><a href="" class="label type-hint type-hint-obj">obj</a></td><td><div class="utilityservice-attrtojson-page"><p>Reference to the parent list item which can be used by child constructors.</p>
+</div></td></tr></tbody></table><h4 id="usage_returns">Returns</h4><table class="variables-matrix"><tr><td><a href="" class="label type-hint type-hint-object">*</a></td><td><div class="utilityservice-attrtojson-page"><p>The formatted JavaScript value based on field type.</p>
 </div></td></tr></table></div>
 </div>
