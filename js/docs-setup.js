@@ -383,6 +383,15 @@ NG_DOCS={
     },
     {
       "section": "api",
+      "id": "ListItem.getLookupReference",
+      "shortName": "ListItem.getLookupReference",
+      "type": "function",
+      "moduleName": "ListItem",
+      "shortDescription": "Allows us to retrieve the entity being referenced in a given lookup field.",
+      "keywords": "allows api building entity field fieldname function getlookupreference item iterating list listitem location logic lookup lookupid lookups lookupvalue multi-select object project property referenced references referencing resolves retrieve title"
+    },
+    {
+      "section": "api",
       "id": "ListItem.resolvePermissions",
       "shortName": "ListItem.resolvePermissions",
       "type": "function",
@@ -433,7 +442,7 @@ NG_DOCS={
       "type": "function",
       "moduleName": "Lookup",
       "shortDescription": "Allows us to create a promise that will resolve with the entity referenced in the lookup whenever that list",
-      "keywords": "allows api create entity function getentity item list lookup object promise referenced referencing registered resolve resolves"
+      "keywords": "allows api building cache create entity full function getentity item list location lookup lookupid lookupvalue object project promise referenced referencing registered resolve resolves title"
     },
     {
       "section": "api",
@@ -442,7 +451,7 @@ NG_DOCS={
       "type": "function",
       "moduleName": "Lookup",
       "shortDescription": "Returns a promise which resolves with the value of a property in the referenced object.",
-      "keywords": "api doesn dot exists function getproperty lookup object promise property propertypath referenced resolves returns separated undefined"
+      "keywords": "api building city doesn dot entity exists function getproperty location lookup lookupid lookupvalue object project promise property propertypath referenced resolves returns separated title undefined"
     },
     {
       "section": "api",
