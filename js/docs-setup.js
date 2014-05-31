@@ -437,6 +437,15 @@ NG_DOCS={
     },
     {
       "section": "api",
+      "id": "Lookup.getProperty",
+      "shortName": "Lookup.getProperty",
+      "type": "function",
+      "moduleName": "Lookup",
+      "shortDescription": "Returns a promise which resolves with the value of a property in the referenced object.",
+      "keywords": "api doesn dot exists function getproperty lookup object promise property propertypath referenced resolves returns separated undefined"
+    },
+    {
+      "section": "api",
       "id": "modalService",
       "shortName": "modalService",
       "type": "service",
@@ -549,8 +558,8 @@ NG_DOCS={
       "shortName": "Model.getCache",
       "type": "function",
       "moduleName": "Model",
-      "shortDescription": "Helper function that return the local cache for a named query if provided, otherwise",
-      "keywords": "api cache changes check contents current customquery function getcache helper identify key local model named namedquerycache primary primaryquerycache projectmodel provided query resolved return returns sharepoint unique var"
+      "shortDescription": "Returns the field definition from the definitions defined in the custom fields array within a model.",
+      "keywords": "api array custom defined definition definitions field fieldname fields function getcache internal model returns"
     },
     {
       "section": "api",
@@ -558,8 +567,8 @@ NG_DOCS={
       "shortName": "Model.getCache",
       "type": "function",
       "moduleName": "Model",
-      "shortDescription": "Returns the field definition from the definitions defined in the custom fields array within a model.",
-      "keywords": "api array custom defined definition definitions field fieldname fields function getcache internal model returns"
+      "shortDescription": "Helper function that return the local cache for a named query if provided, otherwise",
+      "keywords": "api cache changes check contents current customquery function getcache helper identify key local model named namedquerycache primary primaryquerycache projectmodel provided query resolved return returns sharepoint unique var"
     },
     {
       "section": "api",
