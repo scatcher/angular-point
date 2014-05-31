@@ -8,9 +8,38 @@
  * resolve once a requested list item is registered in the future.
  */
 angular.module('angularPoint')
-    .service('apCacheService', function ($q) {
-        var listItemCache = {}, entityTypes = {}, entityCache = {};
+    .service('apCacheService', function ($q, $log) {
+        var listItemCache = {}, entityNameToType = {}, entityCache = {};
 
+        var registerModel = function (model) {
+            if (model.list && model.list.guid && model.list.title) {
+                entityNameToType[model.list.title] = {
+                    model: model,
+                    entityType: getEntityTypeKey(model.list.guid)
+                };
+            }
+        };
+
+        var getEntityTypeByName = function (name) {
+            if(entityNameToType[name] && entityNameToType[name].entityType) {
+                return entityNameToType[name].entityType;
+            } else {
+                $log.error('The requested list name isn\'t valid: ', name);
+            }
+        };
+
+        /** Allows us to use either the List Name or the list GUID and returns the lowercase GUID */
+        var getEntityTypeKey = function (keyString) {
+            /** A GUID will contain "{", where a list title won't */
+            if (_.contains(keyString, '{')) {
+                /** GUID */
+                return keyString.toLowerCase();
+            } else {
+                /** List Title */
+                return getEntityTypeByName(keyString);
+            }
+        };
+        
         /**
          * @ngdoc function
          * @name apCacheService.EntityCache
@@ -25,10 +54,16 @@ angular.module('angularPoint')
             var self = this;
             self.associationQueue = [];
             self.updateCount = 0;
-            self.entityType = entityType.toLowerCase();
+            self.entityType = getEntityTypeKey(entityType);
             self.entityId = entityId;
         };
 
+        /**
+         * @ngdoc function
+         * @name apCacheService.EntityCache:getEntity
+         * @description
+         * Promise which returns the requested entity once it has been registered in the cache.
+         */
         EntityCache.prototype.getEntity = function () {
             var self = this;
             var deferred = $q.defer();
@@ -52,7 +87,7 @@ angular.module('angularPoint')
          * @returns {promise} entity
          */
         var getEntity = function (entityType, entityId) {
-            var entityCache = getEntityCache(entityType.toLowerCase(), entityId);
+            var entityCache = getEntityCache(entityType, entityId);
             return entityCache.getEntity();
         };
 
@@ -76,7 +111,7 @@ angular.module('angularPoint')
          * @param {object} entity Pass in a newly created entity to add to the cache.
          */
         var registerEntity = function (entity) {
-            var entityType = entity.getModel().list.guid.toLowerCase();
+            var entityType = entity.getModel().list.guid;
             var entityCache = getEntityCache(entityType, entity.id);
             entityCache.addEntity(entity);
         };
@@ -95,17 +130,18 @@ angular.module('angularPoint')
          * @param {number} entityId The entity.id.
          */
         var removeEntity = function (entityType, entityId) {
-            var entityCache = getEntityCache(entityType.toLowerCase(), entityId);
+            var entityCache = getEntityCache(entityType, entityId);
             entityCache.removeEntity();
         };
 
         var getEntityCache = function (entityType, entityId) {
-            var entityTypeLower = entityType.toLowerCase();
-            if(!entityCache[entityTypeLower] || !entityCache[entityTypeLower][entityId]) {
-                entityCache[entityTypeLower] = entityCache[entityTypeLower] || {};
-                entityCache[entityTypeLower][entityId] = new EntityCache(entityTypeLower, entityId);
+            var entityTypeKey = getEntityTypeKey(entityType);
+            /** Create the object structure if it doesn't already exist */
+            if(!entityCache[entityTypeKey] || !entityCache[entityTypeKey][entityId]) {
+                entityCache[entityTypeKey] = entityCache[entityTypeKey] || {};
+                entityCache[entityTypeKey][entityId] = new EntityCache(entityTypeKey, entityId);
             }
-            return entityCache[entityTypeLower][entityId];
+            return entityCache[entityTypeKey][entityId];
         };
 
         /** Older List Item Functionality */
@@ -138,6 +174,7 @@ angular.module('angularPoint')
                 get: getCache,
                 remove: removeFromCache
             },
-            registerEntity: registerEntity
+            registerEntity: registerEntity,
+            registerModel: registerModel
         };
     });

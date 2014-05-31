@@ -35,8 +35,35 @@ angular.module('angularPoint', ['toastr']).constant('apConfig', {
  */
 angular.module('angularPoint').service('apCacheService', [
   '$q',
-  function ($q) {
-    var listItemCache = {}, entityTypes = {}, entityCache = {};
+  '$log',
+  function ($q, $log) {
+    var listItemCache = {}, entityNameToType = {}, entityCache = {};
+    var registerModel = function (model) {
+      if (model.list && model.list.guid && model.list.title) {
+        entityNameToType[model.list.title] = {
+          model: model,
+          entityType: getEntityTypeKey(model.list.guid)
+        };
+      }
+    };
+    var getEntityTypeByName = function (name) {
+      if (entityNameToType[name] && entityNameToType[name].entityType) {
+        return entityNameToType[name].entityType;
+      } else {
+        $log.error('The requested list name isn\'t valid: ', name);
+      }
+    };
+    /** Allows us to use either the List Name or the list GUID and returns the lowercase GUID */
+    var getEntityTypeKey = function (keyString) {
+      /** A GUID will contain "{", where a list title won't */
+      if (_.contains(keyString, '{')) {
+        /** GUID */
+        return keyString.toLowerCase();
+      } else {
+        /** List Title */
+        return getEntityTypeByName(keyString);
+      }
+    };
     /**
          * @ngdoc function
          * @name apCacheService.EntityCache
@@ -51,9 +78,15 @@ angular.module('angularPoint').service('apCacheService', [
       var self = this;
       self.associationQueue = [];
       self.updateCount = 0;
-      self.entityType = entityType.toLowerCase();
+      self.entityType = getEntityTypeKey(entityType);
       self.entityId = entityId;
     };
+    /**
+         * @ngdoc function
+         * @name apCacheService.EntityCache:getEntity
+         * @description
+         * Promise which returns the requested entity once it has been registered in the cache.
+         */
     EntityCache.prototype.getEntity = function () {
       var self = this;
       var deferred = $q.defer();
@@ -76,7 +109,7 @@ angular.module('angularPoint').service('apCacheService', [
          * @returns {promise} entity
          */
     var getEntity = function (entityType, entityId) {
-      var entityCache = getEntityCache(entityType.toLowerCase(), entityId);
+      var entityCache = getEntityCache(entityType, entityId);
       return entityCache.getEntity();
     };
     EntityCache.prototype.addEntity = function (entity) {
@@ -98,7 +131,7 @@ angular.module('angularPoint').service('apCacheService', [
          * @param {object} entity Pass in a newly created entity to add to the cache.
          */
     var registerEntity = function (entity) {
-      var entityType = entity.getModel().list.guid.toLowerCase();
+      var entityType = entity.getModel().list.guid;
       var entityCache = getEntityCache(entityType, entity.id);
       entityCache.addEntity(entity);
     };
@@ -114,16 +147,17 @@ angular.module('angularPoint').service('apCacheService', [
          * @param {number} entityId The entity.id.
          */
     var removeEntity = function (entityType, entityId) {
-      var entityCache = getEntityCache(entityType.toLowerCase(), entityId);
+      var entityCache = getEntityCache(entityType, entityId);
       entityCache.removeEntity();
     };
     var getEntityCache = function (entityType, entityId) {
-      var entityTypeLower = entityType.toLowerCase();
-      if (!entityCache[entityTypeLower] || !entityCache[entityTypeLower][entityId]) {
-        entityCache[entityTypeLower] = entityCache[entityTypeLower] || {};
-        entityCache[entityTypeLower][entityId] = new EntityCache(entityTypeLower, entityId);
+      var entityTypeKey = getEntityTypeKey(entityType);
+      /** Create the object structure if it doesn't already exist */
+      if (!entityCache[entityTypeKey] || !entityCache[entityTypeKey][entityId]) {
+        entityCache[entityTypeKey] = entityCache[entityTypeKey] || {};
+        entityCache[entityTypeKey][entityId] = new EntityCache(entityTypeKey, entityId);
       }
-      return entityCache[entityTypeLower][entityId];
+      return entityCache[entityTypeKey][entityId];
     };
     /** Older List Item Functionality */
     //TODO: Remove these if there not being used
@@ -151,7 +185,8 @@ angular.module('angularPoint').service('apCacheService', [
         get: getCache,
         remove: removeFromCache
       },
-      registerEntity: registerEntity
+      registerEntity: registerEntity,
+      registerModel: registerModel
     };
   }
 ]);
@@ -664,7 +699,7 @@ angular.module('angularPoint').service('apDataService', [
       return deferred.promise;
     };
     var parseFieldDefinitionXML = function (customFields, responseXML) {
-      var fieldMap = {}, fieldsUpdated = 0;
+      var fieldMap = {};
       /** Map all custom fields with keys of the internalName and values = field definition */
       _.each(customFields, function (field) {
         if (field.internalName) {
@@ -685,10 +720,8 @@ angular.module('angularPoint').service('apDataService', [
           });
           /** Extend the existing field definition with field attributes from SharePoint */
           _.extend(fieldMap[staticName], row);
-          fieldsUpdated++;
         }
       });
-      window.console.log('Field Definitions Updated: ' + fieldsUpdated);
       return true;
     };
     /**
@@ -1826,8 +1859,8 @@ angular.module('angularPoint').factory('apModelFactory', [
          *
          * @example
          <pre>
-          //Taken from a fictitious projectsModel.js
-          var model = new modelFactory.Model({
+         //Taken from a fictitious projectsModel.js
+         var model = new modelFactory.Model({
                  factory: Project,
                  list: {
                      guid: '{PROJECT LIST GUID}',
@@ -1864,6 +1897,8 @@ angular.module('angularPoint').factory('apModelFactory', [
       model.factory.prototype.getModel = function () {
         return model;
       };
+      /** Register cache name with cache service so we can map factory name with list GUID */
+      apCacheService.registerModel(model);
       /**
              * @ngdoc function
              * @name Model.searchLocalCache
@@ -1937,8 +1972,8 @@ angular.module('angularPoint').factory('apModelFactory', [
          * @returns {object} Promise returning all list items when resolved.
          * @example
          <pre>
-          //Taken from a fictitious projectsModel.js
-              projectModel.getAllListItems().then(function(entities) {
+         //Taken from a fictitious projectsModel.js
+         projectModel.getAllListItems().then(function(entities) {
                   //Do something with all of the returned entities
                   $scope.projects = entities;
               };
@@ -1965,8 +2000,8 @@ angular.module('angularPoint').factory('apModelFactory', [
          *
          * @example
          <pre>
-          //Taken from a fictitious projectsModel.js
-             projectModel.addNewItem({
+         //Taken from a fictitious projectsModel.js
+         projectModel.addNewItem({
                     title: 'A Project',
                     customer: {lookupValue: 'My Customer', lookupId: 123},
                     description: 'This is the project description'
@@ -2076,19 +2111,19 @@ angular.module('angularPoint').factory('apModelFactory', [
          * @returns {object} See Query prototype for additional details on what a Query looks like.
          *
          * @example
-          <pre>
-          var primaryQuery = projectModel.getQuery();
-          </pre>
+         <pre>
+         var primaryQuery = projectModel.getQuery();
+         </pre>
 
          * @example
-          <pre>
-          var primaryQuery = projectModel.getQuery('primary');
-          </pre>
+         <pre>
+         var primaryQuery = projectModel.getQuery('primary');
+         </pre>
 
          * @example
-          <pre>
-          var namedQuery = projectModel.getQuery('customQuery');
-          </pre>
+         <pre>
+         var namedQuery = projectModel.getQuery('customQuery');
+         </pre>
          */
     Model.prototype.getQuery = function (queryName) {
       var model = this, query;
@@ -2111,7 +2146,7 @@ angular.module('angularPoint').factory('apModelFactory', [
          * @description
          * Returns the field definition from the definitions defined in the custom fields array within a model.
          * @param {string} fieldName Internal field name.
-         * @returns {*} Field definition.
+         * @returns {object} Field definition.
          */
     Model.prototype.getFieldDefinition = function (fieldName) {
       return _.findWhere(this.list.customFields, { mappedName: fieldName });
@@ -2130,17 +2165,17 @@ angular.module('angularPoint').factory('apModelFactory', [
          *
          * @example
          <pre>
-            var primaryQueryCache = projectModel.getCache();
+         var primaryQueryCache = projectModel.getCache();
          </pre>
 
          * @example
          <pre>
-            var primaryQueryCache = projectModel.getCache('primary');
+         var primaryQueryCache = projectModel.getCache('primary');
          </pre>
 
          * @example
          <pre>
-            var namedQueryCache = projectModel.getCache('customQuery');
+         var namedQueryCache = projectModel.getCache('customQuery');
          </pre>
          */
     Model.prototype.getCache = function (queryName) {
@@ -2166,7 +2201,7 @@ angular.module('angularPoint').factory('apModelFactory', [
          *
          * @example To call the query or check for changes since the last call.
          <pre>
-          projectModel.executeQuery('MyCustomQuery').then(function(entities) {
+         projectModel.executeQuery('MyCustomQuery').then(function(entities) {
               //We now have a reference to array of entities stored in the local cache
               //These inherit from the ListItem prototype as well as the Project prototype on the model
               $scope.subsetOfProjects = entities;
@@ -2372,7 +2407,7 @@ angular.module('angularPoint').factory('apModelFactory', [
          <pre>
          //Create an array to store all promises.
          var queue = [],
-            progressCounter = 0;
+         progressCounter = 0;
 
          //We're only updating a single field on each entity so it's much faster to use ListItem.saveFields() so we
          //don't need to push the entire object back to the server.
@@ -2446,6 +2481,34 @@ angular.module('angularPoint').factory('apModelFactory', [
       });
       return deferred.promise;
     };
+    /**
+         * @ngdoc function
+         * @name ListItem.getLookupReference
+         * @module ListItem
+         * @description
+         * Allows us to retrieve the entity being referenced in a given lookup field.
+         * @param {string} fieldName Name of the lookup property on the list item that references an entity.
+         * @param {number} lookupId The listItem.lookupId of the lookup object.  This allows us to also use this logic
+         * on a multi-select by iterating over each of the lookups.
+         * @example
+         <pre>
+         var project = {
+            title: 'Project 1',
+            location: {
+                lookupId: 5,
+                lookupValue: 'Some Building'
+            }
+         };
+
+         //To get the location entity
+         project.getLookupReference('location', project.location.lookupId)
+             .then(function(entity) {
+                //Do something with the location entity
+
+             });
+         </pre>
+         * @returns {promise} Resolves with the entity the lookup is referencing.
+         */
     ListItem.prototype.getLookupReference = function (fieldName, lookupId) {
       var listItem = this;
       var deferred = $q.defer();
@@ -2524,7 +2587,7 @@ angular.module('angularPoint').factory('apModelFactory', [
          * @returns {Object} Contains properties for each permission level evaluated for current user.
          * @example
          <pre>
-            var permissionObject = myGenericListItem.resolvePermissions();
+         var permissionObject = myGenericListItem.resolvePermissions();
          </pre>
          */
     ListItem.prototype.resolvePermissions = function () {
@@ -2618,7 +2681,7 @@ angular.module('angularPoint').factory('apModelFactory', [
          * @param {string[]} [fieldNames] An array of field names that we're interested in.
          <pre>
          myGenericListItem.getFieldVersionHistory(['title', 'project'])
-            .then(function(versionHistory) {
+         .then(function(versionHistory) {
                 //We now have an array of versions of the list item
             };
          </pre>
@@ -2696,13 +2759,13 @@ angular.module('angularPoint').factory('apModelFactory', [
          * @param {object[]} [obj.customFields] Mapping of SharePoint field names to the internal names we'll be using
          * in our application.  Also contains field type, readonly attribute, and any other non-standard settings.
          <pre>
-             [
-                 { internalName: "Title", objectType: "Text", mappedName: "lastName", readOnly:false },
-                 { internalName: "FirstName", objectType: "Text", mappedName: "firstName", readOnly:false },
-                 { internalName: "Organization", objectType: "Lookup", mappedName: "organization", readOnly:false },
-                 { internalName: "Account", objectType: "User", mappedName: "account", readOnly:false },
-                 { internalName: "Details", objectType: "Text", mappedName: "details", readOnly:false }
-             ]
+         [
+         { internalName: "Title", objectType: "Text", mappedName: "lastName", readOnly:false },
+         { internalName: "FirstName", objectType: "Text", mappedName: "firstName", readOnly:false },
+         { internalName: "Organization", objectType: "Lookup", mappedName: "organization", readOnly:false },
+         { internalName: "Account", objectType: "User", mappedName: "account", readOnly:false },
+         { internalName: "Details", objectType: "Text", mappedName: "details", readOnly:false }
+         ]
          </pre>
          * @constructor
          */
@@ -2753,8 +2816,8 @@ angular.module('angularPoint').factory('apModelFactory', [
          *
          * @example
          <pre>
-        // Query to retrieve the most recent 25 modifications
-        model.registerQuery({
+         // Query to retrieve the most recent 25 modifications
+         model.registerQuery({
             name: 'recentChanges',
             CAMLRowLimit: 25,
             query: '' +
@@ -2771,7 +2834,7 @@ angular.module('angularPoint').factory('apModelFactory', [
                 '   </Where>' +
                 '</Query>'
         });
-        </pre>
+         </pre>
          */
     function Query(queryOptions, model) {
       var query = this;
@@ -3309,10 +3372,11 @@ angular.module('angularPoint').service('apUtilityService', [
          * @constructor
          */
     function Lookup(s, options) {
+      var lookup = this;
       var thisLookup = new SplitIndex(s);
-      this.lookupId = thisLookup.id;
-      this.lookupValue = thisLookup.value;
-      this._props = function () {
+      lookup.lookupId = thisLookup.id;
+      lookup.lookupValue = thisLookup.value;
+      lookup._props = function () {
         return options;
       };
     }
@@ -3322,6 +3386,22 @@ angular.module('angularPoint').service('apUtilityService', [
          * @description
          * Allows us to create a promise that will resolve with the entity referenced in the lookup whenever that list
          * item is registered.
+         * @example
+         <pre>
+         var project = {
+            title: 'Project 1',
+            location: {
+                lookupId: 5,
+                lookupValue: 'Some Building'
+            }
+         };
+
+         //To get the location entity
+         project.location.getEntity().then(function(entity) {
+             //Resolves with the full location entity once it's registered in the cache
+
+            });
+         </pre>
          * @returns {promise} Resolves with the object the lookup is referencing.
          */
     Lookup.prototype.getEntity = function () {
@@ -3337,6 +3417,38 @@ angular.module('angularPoint').service('apUtilityService', [
         });
       }
       return props.getEntity.promise;
+    };
+    /**
+         * @ngdoc function
+         * @name Lookup.getProperty
+         * @description
+         * Returns a promise which resolves with the value of a property in the referenced object.
+         * @param {string} propertyPath The dot separated propertyPath.
+         * @example
+         <pre>
+         var project = {
+            title: 'Project 1',
+            location: {
+                lookupId: 5,
+                lookupValue: 'Some Building'
+            }
+         };
+
+         //To get the location.city
+         project.location.getProperty('city').then(function(city) {
+            //Resolves with the city property from the referenced location entity
+
+            });
+         </pre>
+         * @returns {promise} Resolves with the value, or undefined if it doesn't exists.
+         */
+    Lookup.prototype.getProperty = function (propertyPath) {
+      var self = this;
+      var deferred = $q.defer();
+      self.getEntity().then(function (entity) {
+        deferred.resolve(_.deepGetOwnValue(entity, propertyPath));
+      });
+      return deferred.promise;
     };
     function User(s) {
       var self = this;
@@ -3369,7 +3481,8 @@ angular.module('angularPoint').service('apUtilityService', [
          * @name utilityService.stringifySharePointDate
          * @description
          * Converts a JavaScript date into a modified ISO8601 date string using the TimeZone offset for the current user.
-         * e.g., '2014-05-08T08:12:18Z-07:00'
+         * @example
+         <pre>'2014-05-08T08:12:18Z-07:00'</pre>
          * @param {Date} date Valid JS date.
          * @returns {string} ISO8601 date string.
          */

@@ -284,12 +284,13 @@ angular.module('angularPoint')
          * @constructor
          */
         function Lookup(s, options) {
+            var lookup = this;
             var thisLookup = new SplitIndex(s);
-            this.lookupId = thisLookup.id;
-            this.lookupValue = thisLookup.value;
-            this._props = function () {
+            lookup.lookupId = thisLookup.id;
+            lookup.lookupValue = thisLookup.value;
+            lookup._props = function () {
                 return options;
-            }
+            };
         }
 
         /**
@@ -298,12 +299,29 @@ angular.module('angularPoint')
          * @description
          * Allows us to create a promise that will resolve with the entity referenced in the lookup whenever that list
          * item is registered.
+         * @example
+         <pre>
+         var project = {
+            title: 'Project 1',
+            location: {
+                lookupId: 5,
+                lookupValue: 'Some Building'
+            }
+         };
+
+         //To get the location entity
+         project.location.getEntity().then(function(entity) {
+             //Resolves with the full location entity once it's registered in the cache
+
+            });
+         </pre>
          * @returns {promise} Resolves with the object the lookup is referencing.
          */
         Lookup.prototype.getEntity = function () {
             var self = this;
             var props = self._props();
-            if(!props.getEntity) {
+
+            if (!props.getEntity) {
                 var query = props.getQuery();
                 var listItem = query.searchLocalCache(props.entity.id);
 
@@ -315,6 +333,39 @@ angular.module('angularPoint')
                     })
             }
             return props.getEntity.promise;
+        };
+
+        /**
+         * @ngdoc function
+         * @name Lookup.getProperty
+         * @description
+         * Returns a promise which resolves with the value of a property in the referenced object.
+         * @param {string} propertyPath The dot separated propertyPath.
+         * @example
+         <pre>
+         var project = {
+            title: 'Project 1',
+            location: {
+                lookupId: 5,
+                lookupValue: 'Some Building'
+            }
+         };
+
+         //To get the location.city
+         project.location.getProperty('city').then(function(city) {
+            //Resolves with the city property from the referenced location entity
+
+            });
+         </pre>
+         * @returns {promise} Resolves with the value, or undefined if it doesn't exists.
+         */
+        Lookup.prototype.getProperty = function (propertyPath) {
+            var self = this;
+            var deferred = $q.defer();
+            self.getEntity().then(function (entity) {
+                deferred.resolve(_.deepGetOwnValue(entity, propertyPath));
+            });
+            return deferred.promise;
         };
 
         function User(s) {
@@ -351,12 +402,13 @@ angular.module('angularPoint')
          * @name utilityService.stringifySharePointDate
          * @description
          * Converts a JavaScript date into a modified ISO8601 date string using the TimeZone offset for the current user.
-         * e.g., '2014-05-08T08:12:18Z-07:00'
+         * @example
+         <pre>'2014-05-08T08:12:18Z-07:00'</pre>
          * @param {Date} date Valid JS date.
          * @returns {string} ISO8601 date string.
          */
         function stringifySharePointDate(date) {
-            if(!_.isDate(date)) {
+            if (!_.isDate(date)) {
                 return '';
             }
             var self = this;
@@ -374,7 +426,7 @@ angular.module('angularPoint')
             dateString += doubleDigit(date.getSeconds());
             dateString += 'Z-';
 
-            if(!self.timeZone) {
+            if (!self.timeZone) {
                 //Get difference between UTC time and local time in minutes and convert to hours
                 //Store so we only need to do this once
                 window.console.log('Calculating');

@@ -23,6 +23,15 @@ NG_DOCS={
     },
     {
       "section": "api",
+      "id": "apCacheService.EntityCache:getEntity",
+      "shortName": "getEntity",
+      "type": "function",
+      "moduleName": "apCacheService",
+      "shortDescription": "Promise which returns the requested entity once it has been registered in the cache.",
+      "keywords": "apcacheservice api cache entity entitycache function promise registered requested returns"
+    },
+    {
+      "section": "api",
       "id": "apCacheService.getEntity",
       "shortName": "apCacheService.getEntity",
       "type": "function",
@@ -374,6 +383,15 @@ NG_DOCS={
     },
     {
       "section": "api",
+      "id": "ListItem.getLookupReference",
+      "shortName": "ListItem.getLookupReference",
+      "type": "function",
+      "moduleName": "ListItem",
+      "shortDescription": "Allows us to retrieve the entity being referenced in a given lookup field.",
+      "keywords": "allows api building entity field fieldname function getlookupreference item iterating list listitem location logic lookup lookupid lookups lookupvalue multi-select object project property referenced references referencing resolves retrieve title var"
+    },
+    {
+      "section": "api",
       "id": "ListItem.resolvePermissions",
       "shortName": "ListItem.resolvePermissions",
       "type": "function",
@@ -424,7 +442,16 @@ NG_DOCS={
       "type": "function",
       "moduleName": "Lookup",
       "shortDescription": "Allows us to create a promise that will resolve with the entity referenced in the lookup whenever that list",
-      "keywords": "allows api create entity function getentity item list lookup object promise referenced referencing registered resolve resolves"
+      "keywords": "allows api building cache create entity full function getentity item list location lookup lookupid lookupvalue object project promise referenced referencing registered resolve resolves title var"
+    },
+    {
+      "section": "api",
+      "id": "Lookup.getProperty",
+      "shortName": "Lookup.getProperty",
+      "type": "function",
+      "moduleName": "Lookup",
+      "shortDescription": "Returns a promise which resolves with the value of a property in the referenced object.",
+      "keywords": "api building city doesn dot entity exists function getproperty location lookup lookupid lookupvalue object project promise property propertypath referenced resolves returns separated title undefined var"
     },
     {
       "section": "api",
@@ -540,8 +567,8 @@ NG_DOCS={
       "shortName": "Model.getCache",
       "type": "function",
       "moduleName": "Model",
-      "shortDescription": "Helper function that return the local cache for a named query if provided, otherwise",
-      "keywords": "api cache changes check contents current customquery function getcache helper identify key local model named namedquerycache primary primaryquerycache projectmodel provided query resolved return returns sharepoint unique var"
+      "shortDescription": "Returns the field definition from the definitions defined in the custom fields array within a model.",
+      "keywords": "api array custom defined definition definitions field fieldname fields function getcache internal model returns"
     },
     {
       "section": "api",
@@ -549,8 +576,8 @@ NG_DOCS={
       "shortName": "Model.getCache",
       "type": "function",
       "moduleName": "Model",
-      "shortDescription": "Returns the field definition from the definitions defined in the custom fields array within a model.",
-      "keywords": "api array custom defined definition definitions field fieldname fields function getcache internal model returns"
+      "shortDescription": "Helper function that return the local cache for a named query if provided, otherwise",
+      "keywords": "api cache changes check contents current customquery function getcache helper identify key local model named namedquerycache primary primaryquerycache projectmodel provided query resolved return returns sharepoint unique var"
     },
     {
       "section": "api",
@@ -684,8 +711,8 @@ NG_DOCS={
       "shortName": "queueService.reset",
       "type": "function",
       "moduleName": "queueService",
-      "shortDescription": "Reset counter to 0.",
-      "keywords": "api count counter current function incrementing queueservice reset"
+      "shortDescription": "Decrease the counter by 1.",
+      "keywords": "api count counter current decrease decrementing function queueservice reset"
     },
     {
       "section": "api",
@@ -693,8 +720,8 @@ NG_DOCS={
       "shortName": "queueService.reset",
       "type": "function",
       "moduleName": "queueService",
-      "shortDescription": "Decrease the counter by 1.",
-      "keywords": "api count counter current decrease decrementing function queueservice reset"
+      "shortDescription": "Reset counter to 0.",
+      "keywords": "api count counter current function incrementing queueservice reset"
     },
     {
       "section": "api",

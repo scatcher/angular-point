@@ -46,8 +46,8 @@ angular.module('angularPoint')
          *
          * @example
          <pre>
-          //Taken from a fictitious projectsModel.js
-          var model = new modelFactory.Model({
+         //Taken from a fictitious projectsModel.js
+         var model = new modelFactory.Model({
                  factory: Project,
                  list: {
                      guid: '{PROJECT LIST GUID}',
@@ -89,6 +89,9 @@ angular.module('angularPoint')
             model.factory.prototype.getModel = function () {
                 return model;
             };
+
+            /** Register cache name with cache service so we can map factory name with list GUID */
+            apCacheService.registerModel(model);
 
 
             /**
@@ -167,8 +170,8 @@ angular.module('angularPoint')
          * @returns {object} Promise returning all list items when resolved.
          * @example
          <pre>
-          //Taken from a fictitious projectsModel.js
-              projectModel.getAllListItems().then(function(entities) {
+         //Taken from a fictitious projectsModel.js
+         projectModel.getAllListItems().then(function(entities) {
                   //Do something with all of the returned entities
                   $scope.projects = entities;
               };
@@ -197,8 +200,8 @@ angular.module('angularPoint')
          *
          * @example
          <pre>
-          //Taken from a fictitious projectsModel.js
-             projectModel.addNewItem({
+         //Taken from a fictitious projectsModel.js
+         projectModel.addNewItem({
                     title: 'A Project',
                     customer: {lookupValue: 'My Customer', lookupId: 123},
                     description: 'This is the project description'
@@ -318,19 +321,19 @@ angular.module('angularPoint')
          * @returns {object} See Query prototype for additional details on what a Query looks like.
          *
          * @example
-          <pre>
-          var primaryQuery = projectModel.getQuery();
-          </pre>
+         <pre>
+         var primaryQuery = projectModel.getQuery();
+         </pre>
 
          * @example
-          <pre>
-          var primaryQuery = projectModel.getQuery('primary');
-          </pre>
+         <pre>
+         var primaryQuery = projectModel.getQuery('primary');
+         </pre>
 
          * @example
-          <pre>
-          var namedQuery = projectModel.getQuery('customQuery');
-          </pre>
+         <pre>
+         var namedQuery = projectModel.getQuery('customQuery');
+         </pre>
          */
         Model.prototype.getQuery = function (queryName) {
             var model = this, query;
@@ -354,10 +357,10 @@ angular.module('angularPoint')
          * @description
          * Returns the field definition from the definitions defined in the custom fields array within a model.
          * @param {string} fieldName Internal field name.
-         * @returns {*} Field definition.
+         * @returns {object} Field definition.
          */
         Model.prototype.getFieldDefinition = function (fieldName) {
-            return _.findWhere(this.list.customFields, { mappedName:  fieldName} );
+            return _.findWhere(this.list.customFields, { mappedName: fieldName});
         };
 
 
@@ -375,17 +378,17 @@ angular.module('angularPoint')
          *
          * @example
          <pre>
-            var primaryQueryCache = projectModel.getCache();
+         var primaryQueryCache = projectModel.getCache();
          </pre>
 
          * @example
          <pre>
-            var primaryQueryCache = projectModel.getCache('primary');
+         var primaryQueryCache = projectModel.getCache('primary');
          </pre>
 
          * @example
          <pre>
-            var namedQueryCache = projectModel.getCache('customQuery');
+         var namedQueryCache = projectModel.getCache('customQuery');
          </pre>
          */
         Model.prototype.getCache = function (queryName) {
@@ -412,7 +415,7 @@ angular.module('angularPoint')
          *
          * @example To call the query or check for changes since the last call.
          <pre>
-          projectModel.executeQuery('MyCustomQuery').then(function(entities) {
+         projectModel.executeQuery('MyCustomQuery').then(function(entities) {
               //We now have a reference to array of entities stored in the local cache
               //These inherit from the ListItem prototype as well as the Project prototype on the model
               $scope.subsetOfProjects = entities;
@@ -640,7 +643,7 @@ angular.module('angularPoint')
          <pre>
          //Create an array to store all promises.
          var queue = [],
-            progressCounter = 0;
+         progressCounter = 0;
 
          //We're only updating a single field on each entity so it's much faster to use ListItem.saveFields() so we
          //don't need to push the entire object back to the server.
@@ -723,17 +726,45 @@ angular.module('angularPoint')
         };
 
 
+        /**
+         * @ngdoc function
+         * @name ListItem.getLookupReference
+         * @module ListItem
+         * @description
+         * Allows us to retrieve the entity being referenced in a given lookup field.
+         * @param {string} fieldName Name of the lookup property on the list item that references an entity.
+         * @param {number} lookupId The listItem.lookupId of the lookup object.  This allows us to also use this logic
+         * on a multi-select by iterating over each of the lookups.
+         * @example
+         <pre>
+         var project = {
+            title: 'Project 1',
+            location: {
+                lookupId: 5,
+                lookupValue: 'Some Building'
+            }
+         };
+
+         //To get the location entity
+         project.getLookupReference('location', project.location.lookupId)
+             .then(function(entity) {
+                //Do something with the location entity
+
+             });
+         </pre>
+         * @returns {promise} Resolves with the entity the lookup is referencing.
+         */
         ListItem.prototype.getLookupReference = function (fieldName, lookupId) {
             var listItem = this;
             var deferred = $q.defer();
 
-            if(fieldName && lookupId) {
+            if (fieldName && lookupId) {
                 var model = listItem.getModel();
                 var fieldDefinition = model.getFieldDefinition(fieldName);
                 /** Ensure the field definition has the List attribute which contains the GUID of the list
                  *  that a lookup is referencing.
                  */
-                if(fieldDefinition && fieldDefinition.List) {
+                if (fieldDefinition && fieldDefinition.List) {
                     apCacheService.getEntity(fieldDefinition.List, lookupId).then(function (entity) {
                         deferred.resolve(entity);
                     });
@@ -807,7 +838,7 @@ angular.module('angularPoint')
          * @returns {Object} Contains properties for each permission level evaluated for current user.
          * @example
          <pre>
-            var permissionObject = myGenericListItem.resolvePermissions();
+         var permissionObject = myGenericListItem.resolvePermissions();
          </pre>
          */
         ListItem.prototype.resolvePermissions = function () {
@@ -862,7 +893,7 @@ angular.module('angularPoint')
         ListItem.prototype.addEntityReference = function (entity) {
             var self = this;
             /** Verify that a valid entity is being provided */
-            if(entity && entity.constructor.name === 'ListItem') {
+            if (entity && entity.constructor.name === 'ListItem') {
                 var uniqueId = self.uniqueId;
                 var constructorName = entity.getModel().list.title;
                 return apCacheService.listItem.add(uniqueId, constructorName, entity);
@@ -875,9 +906,9 @@ angular.module('angularPoint')
             var self = this;
             var cache = self.getEntityReferenceCache();
 //          var cache = self._apCache.entityReference;
-            if(constructorName && !cache[constructorName]) {
+            if (constructorName && !cache[constructorName]) {
                 return {};
-            } else if(constructorName && cache[constructorName]) {
+            } else if (constructorName && cache[constructorName]) {
                 return cache[constructorName];
             } else {
                 return cache;
@@ -891,7 +922,7 @@ angular.module('angularPoint')
 
             var pType = entity.getModel().list.title;
             var cache = self.getEntityReferenceCache();
-            if(entity.id && cache[pType] && cache[pType][entity.id]) {
+            if (entity.id && cache[pType] && cache[pType][entity.id]) {
                 delete cache[pType][entity.id];
             }
         }
@@ -910,7 +941,7 @@ angular.module('angularPoint')
          * @param {string[]} [fieldNames] An array of field names that we're interested in.
          <pre>
          myGenericListItem.getFieldVersionHistory(['title', 'project'])
-            .then(function(versionHistory) {
+         .then(function(versionHistory) {
                 //We now have an array of versions of the list item
             };
          </pre>
@@ -935,7 +966,7 @@ angular.module('angularPoint')
                 };
 
                 /** Manually set site url if defined, prevents SPServices from making a blocking call to fetch it. */
-                if(apConfig.defaultUrl) {
+                if (apConfig.defaultUrl) {
                     payload.webURL = apConfig.defaultUrl;
                 }
 
@@ -1002,13 +1033,13 @@ angular.module('angularPoint')
          * @param {object[]} [obj.customFields] Mapping of SharePoint field names to the internal names we'll be using
          * in our application.  Also contains field type, readonly attribute, and any other non-standard settings.
          <pre>
-             [
-                 { internalName: "Title", objectType: "Text", mappedName: "lastName", readOnly:false },
-                 { internalName: "FirstName", objectType: "Text", mappedName: "firstName", readOnly:false },
-                 { internalName: "Organization", objectType: "Lookup", mappedName: "organization", readOnly:false },
-                 { internalName: "Account", objectType: "User", mappedName: "account", readOnly:false },
-                 { internalName: "Details", objectType: "Text", mappedName: "details", readOnly:false }
-             ]
+         [
+         { internalName: "Title", objectType: "Text", mappedName: "lastName", readOnly:false },
+         { internalName: "FirstName", objectType: "Text", mappedName: "firstName", readOnly:false },
+         { internalName: "Organization", objectType: "Lookup", mappedName: "organization", readOnly:false },
+         { internalName: "Account", objectType: "User", mappedName: "account", readOnly:false },
+         { internalName: "Details", objectType: "Text", mappedName: "details", readOnly:false }
+         ]
          </pre>
          * @constructor
          */
@@ -1024,7 +1055,7 @@ angular.module('angularPoint')
             };
 
             /** Manually set site url if defined, prevents SPServices from making a blocking call to fetch it. */
-            if(apConfig.defaultUrl) {
+            if (apConfig.defaultUrl) {
                 defaults.webURL = apConfig.defaultUrl;
             }
 
@@ -1065,8 +1096,8 @@ angular.module('angularPoint')
          *
          * @example
          <pre>
-        // Query to retrieve the most recent 25 modifications
-        model.registerQuery({
+         // Query to retrieve the most recent 25 modifications
+         model.registerQuery({
             name: 'recentChanges',
             CAMLRowLimit: 25,
             query: '' +
@@ -1083,7 +1114,7 @@ angular.module('angularPoint')
                 '   </Where>' +
                 '</Query>'
         });
-        </pre>
+         </pre>
          */
         function Query(queryOptions, model) {
             var query = this;
@@ -1120,7 +1151,7 @@ angular.module('angularPoint')
             };
 
             /** Set the default url if the config param is defined, otherwise let SPServices handle it */
-            if(apConfig.defaultUrl) {
+            if (apConfig.defaultUrl) {
                 defaults.webURL = apConfig.defaultUrl;
             }
 

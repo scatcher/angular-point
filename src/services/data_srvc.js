@@ -564,7 +564,7 @@ angular.module('angularPoint')
         };
 
         var parseFieldDefinitionXML = function (customFields, responseXML) {
-            var fieldMap = {}, fieldsUpdated = 0;
+            var fieldMap = {};
 
             /** Map all custom fields with keys of the internalName and values = field definition */
             _.each(customFields, function (field) {
@@ -589,10 +589,8 @@ angular.module('angularPoint')
                     });
                     /** Extend the existing field definition with field attributes from SharePoint */
                     _.extend(fieldMap[staticName], row);
-                    fieldsUpdated++;
                 }
             });
-            window.console.log("Field Definitions Updated: " + fieldsUpdated);
 
             return true;
         };
