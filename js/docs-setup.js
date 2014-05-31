@@ -23,12 +23,12 @@ NG_DOCS={
     },
     {
       "section": "api",
-      "id": "apCacheService.EntityCache.getEntity",
-      "shortName": "apCacheService.EntityCache.getEntity",
+      "id": "apCacheService.EntityCache:getEntity",
+      "shortName": "getEntity",
       "type": "function",
-      "moduleName": "apCacheService.EntityCache",
+      "moduleName": "apCacheService",
       "shortDescription": "Promise which returns the requested entity once it has been registered in the cache.",
-      "keywords": "apcacheservice api cache entity entitycache function getentity promise registered requested returns"
+      "keywords": "apcacheservice api cache entity entitycache function promise registered requested returns"
     },
     {
       "section": "api",
