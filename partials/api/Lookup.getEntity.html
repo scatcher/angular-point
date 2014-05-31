@@ -12,19 +12,20 @@ item is registered.</p>
 <h4 id="usage_returns">Returns</h4><table class="variables-matrix"><tr><td><a href="" class="label type-hint type-hint-promise">promise</a></td><td><div class="lookup-getentity-page"><p>Resolves with the object the lookup is referencing.</p>
 </div></td></tr></table></div>
 <h2 id="example">Example</h2>
-<div class="example"><div class="lookup-getentity-page"><pre class="prettyprint linenums">var project = {
+<div class="example"><div class="lookup-getentity-page"><pre class="prettyprint linenums">
+var project = {
    title: 'Project 1',
    location: {
        lookupId: 5,
        lookupValue: 'Some Building'
    }
+};
 
-   //To get the location entity
-   project.location.getEntity()
-       .then(function(entity) {
-          //Resolves with the full location entity once it's registered in the cache
+//To get the location entity
+project.location.getEntity().then(function(entity) {
+    //Resolves with the full location entity once it's registered in the cache
 
-       });
+   });
 </pre>
 </div></div>
 </div>

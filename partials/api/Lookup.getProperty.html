@@ -12,19 +12,20 @@
 </div></td></tr></tbody></table><h4 id="usage_returns">Returns</h4><table class="variables-matrix"><tr><td><a href="" class="label type-hint type-hint-promise">promise</a></td><td><div class="lookup-getproperty-page"><p>Resolves with the value, or undefined if it doesn&#39;t exists.</p>
 </div></td></tr></table></div>
 <h2 id="example">Example</h2>
-<div class="example"><div class="lookup-getproperty-page"><pre class="prettyprint linenums">var project = {
+<div class="example"><div class="lookup-getproperty-page"><pre class="prettyprint linenums">
+var project = {
    title: 'Project 1',
    location: {
        lookupId: 5,
        lookupValue: 'Some Building'
    }
+};
 
-   //To get the location.city
-   project.location.getProperty('city')
-       .then(function(city) {
-          //Resolves with the city property from the referenced location entity
+//To get the location.city
+project.location.getProperty('city').then(function(city) {
+   //Resolves with the city property from the referenced location entity
 
-       });
+   });
 </pre>
 </div></div>
 </div>

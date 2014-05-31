@@ -17,7 +17,7 @@ optionally go through a defined constructor on the model.</p>
 <h2 id="example">Example</h2>
 <div class="example"><div class="model-executequery-page"><p>To call the query or check for changes since the last call.
 <pre class="prettyprint linenums">
- projectModel.executeQuery('MyCustomQuery').then(function(entities) {
+projectModel.executeQuery('MyCustomQuery').then(function(entities) {
      //We now have a reference to array of entities stored in the local cache
      //These inherit from the ListItem prototype as well as the Project prototype on the model
      $scope.subsetOfProjects = entities;

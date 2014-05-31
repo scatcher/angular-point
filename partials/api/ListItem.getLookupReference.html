@@ -14,19 +14,21 @@ on a multi-select by iterating over each of the lookups.</p>
 </div></td></tr></tbody></table><h4 id="usage_returns">Returns</h4><table class="variables-matrix"><tr><td><a href="" class="label type-hint type-hint-promise">promise</a></td><td><div class="listitem-getlookupreference-page"><p>Resolves with the entity the lookup is referencing.</p>
 </div></td></tr></table></div>
 <h2 id="example">Example</h2>
-<div class="example"><div class="listitem-getlookupreference-page"><pre class="prettyprint linenums">var project = {
+<div class="example"><div class="listitem-getlookupreference-page"><pre class="prettyprint linenums">
+var project = {
    title: 'Project 1',
    location: {
        lookupId: 5,
        lookupValue: 'Some Building'
    }
+};
 
-   //To get the location entity
-   project.getLookupReference('location', project.location.lookupId)
-       .then(function(entity) {
-          //Do something with the location entity
+//To get the location entity
+project.getLookupReference('location', project.location.lookupId)
+    .then(function(entity) {
+       //Do something with the location entity
 
-       });
+    });
 </pre>
 </div></div>
 </div>
