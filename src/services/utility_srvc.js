@@ -14,6 +14,10 @@ angular.module('angularPoint')
         _.mixin({
             isDefined: function (value) {
                 return !_.isUndefined(value);
+            },
+            /** Based on functionality in Breeze.js */
+            isGuid: function (value) {
+                return (typeof value === "string") && /[a-fA-F\d]{8}-(?:[a-fA-F\d]{4}-){3}[a-fA-F\d]{12}/.test(value);
             }
         });
 

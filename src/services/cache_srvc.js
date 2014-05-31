@@ -31,7 +31,7 @@ angular.module('angularPoint')
         /** Allows us to use either the List Name or the list GUID and returns the lowercase GUID */
         var getEntityTypeKey = function (keyString) {
             /** A GUID will contain "{", where a list title won't */
-            if (_.contains(keyString, '{')) {
+            if (_.isGuid(keyString)) {
                 /** GUID */
                 return keyString.toLowerCase();
             } else {
