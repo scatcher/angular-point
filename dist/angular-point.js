@@ -718,6 +718,15 @@ angular.module('angularPoint').service('apDataService', [
             var attrName = rowAttrs[attrNum].name;
             row[attrName] = $(field).attr(attrName);
           });
+          /** Additional processing for Choice fields to include the default value and choices */
+          if (fieldMap[staticName].objectType === 'Choice') {
+            row.choices = [];
+            $(this).find('CHOICE').each(function () {
+              row.choices.push($(this).text());
+            });
+            row.default = $(this).find('Default').text();
+            window.console.log(row);
+          }
           /** Extend the existing field definition with field attributes from SharePoint */
           _.extend(fieldMap[staticName], row);
         }
@@ -754,7 +763,7 @@ angular.module('angularPoint').service('apDataService', [
           var responseXML = webServiceCall.responseXML;
           if (query.operation === 'GetListItemChangesSinceToken') {
             /** The initial call to GetListItemChangesSinceToken also includes the field definitions for the
-                         *  list so use this to extend the existing field defintitions defined in the model.
+                         *  list so use this to extend the existing field definitions defined in the model.
                          */
             if (!model.list.extendedFieldDefinitions) {
               model.list.extendedFieldDefinitions = parseFieldDefinitionXML(model.list.customFields, responseXML);
