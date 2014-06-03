@@ -379,7 +379,7 @@ NG_DOCS={
       "type": "function",
       "moduleName": "ListItem",
       "shortDescription": "Returns the field definition from the definitions defined in the custom fields array within a model.",
-      "keywords": "api array custom defined definition definitions field fieldname fields function getfielddefinition internal listitem model returns"
+      "keywords": "api array building custom defined definition definitions field fieldname fields function getfielddefinition internal listitem location locationdefinition lookupid lookupvalue metadata model project returns title var"
     },
     {
       "section": "api",
@@ -586,7 +586,7 @@ NG_DOCS={
       "type": "function",
       "moduleName": "Model",
       "shortDescription": "Returns the field definition from the definitions defined in the custom fields array within a model.",
-      "keywords": "api array custom defined definition definitions field fieldname fields function getfielddefinition internal model returns"
+      "keywords": "api array building custom defined definition definitions field fieldname fields function getfielddefinition internal location locationdefinition lookupid lookupvalue metadata model project projectsmodel returns title var"
     },
     {
       "section": "api",

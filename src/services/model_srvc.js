@@ -356,6 +356,18 @@ angular.module('angularPoint')
          * @module Model
          * @description
          * Returns the field definition from the definitions defined in the custom fields array within a model.
+         <pre>
+         var project = {
+            title: 'Project 1',
+            location: {
+                lookupId: 5,
+                lookupValue: 'Some Building'
+            }
+         };
+
+         //To get field metadata
+         var locationDefinition = projectsModel.getFieldDefinition('location');
+         </pre>
          * @param {string} fieldName Internal field name.
          * @returns {object} Field definition.
          */
@@ -818,6 +830,19 @@ angular.module('angularPoint')
          * @module ListItem
          * @description
          * Returns the field definition from the definitions defined in the custom fields array within a model.
+         * @example
+         <pre>
+         var project = {
+            title: 'Project 1',
+            location: {
+                lookupId: 5,
+                lookupValue: 'Some Building'
+            }
+         };
+
+         //To get field metadata
+         var locationDefinition = project.getFieldDefinition('location');
+         </pre>
          * @param {string} fieldName Internal field name.
          * @returns {object} Field definition.
          */
