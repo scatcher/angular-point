@@ -725,7 +725,6 @@ angular.module('angularPoint').service('apDataService', [
               row.choices.push($(this).text());
             });
             row.default = $(this).find('Default').text();
-            window.console.log(row);
           }
           /** Extend the existing field definition with field attributes from SharePoint */
           _.extend(fieldMap[staticName], row);
@@ -2497,7 +2496,7 @@ angular.module('angularPoint').factory('apModelFactory', [
          * @description
          * Allows us to retrieve the entity being referenced in a given lookup field.
          * @param {string} fieldName Name of the lookup property on the list item that references an entity.
-         * @param {number} lookupId The listItem.lookupId of the lookup object.  This allows us to also use this logic
+         * @param {number} [lookupId=listItem.fieldName.lookupId] The listItem.lookupId of the lookup object.  This allows us to also use this logic
          * on a multi-select by iterating over each of the lookups.
          * @example
          <pre>
@@ -2510,7 +2509,24 @@ angular.module('angularPoint').factory('apModelFactory', [
          };
 
          //To get the location entity
-         project.getLookupReference('location', project.location.lookupId)
+         project.getLookupReference('location')
+             .then(function(entity) {
+                //Do something with the location entity
+
+             });
+         </pre>
+
+         <pre>
+         var project = {
+            title: 'Project 1',
+            location: [
+                { lookupId: 5, lookupValue: 'Some Building' },
+                { lookupId: 6, lookupValue: 'Some Other Building' },
+            ]
+         };
+
+         //To get the location entity
+         project.getLookupReference('location', project.location[0].lookupId)
              .then(function(entity) {
                 //Do something with the location entity
 
@@ -2521,14 +2537,15 @@ angular.module('angularPoint').factory('apModelFactory', [
     ListItem.prototype.getLookupReference = function (fieldName, lookupId) {
       var listItem = this;
       var deferred = $q.defer();
-      if (fieldName && lookupId) {
+      var targetId = lookupId || listItem[fieldName].lookupId;
+      if (fieldName) {
         var model = listItem.getModel();
         var fieldDefinition = model.getFieldDefinition(fieldName);
         /** Ensure the field definition has the List attribute which contains the GUID of the list
                  *  that a lookup is referencing.
                  */
         if (fieldDefinition && fieldDefinition.List) {
-          apCacheService.getEntity(fieldDefinition.List, lookupId).then(function (entity) {
+          apCacheService.getEntity(fieldDefinition.List, targetId).then(function (entity) {
             deferred.resolve(entity);
           });
         } else {
