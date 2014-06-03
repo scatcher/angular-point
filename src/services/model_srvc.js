@@ -352,7 +352,7 @@ angular.module('angularPoint')
 
         /**
          * @ngdoc function
-         * @name Model.getCache
+         * @name Model.getFieldDefinition
          * @module Model
          * @description
          * Returns the field definition from the definitions defined in the custom fields array within a model.
@@ -811,6 +811,20 @@ angular.module('angularPoint')
                 model = listItem.getModel();
             return model.validateEntity(listItem, options);
         };
+
+        /**
+         * @ngdoc function
+         * @name ListItem.getFieldDefinition
+         * @module ListItem
+         * @description
+         * Returns the field definition from the definitions defined in the custom fields array within a model.
+         * @param {string} fieldName Internal field name.
+         * @returns {object} Field definition.
+         */
+        ListItem.prototype.getFieldDefinition = function (fieldName) {
+            return this.getModel().getFieldDefinition(fieldName);
+        };
+
 
         /**
          * @ngdoc function

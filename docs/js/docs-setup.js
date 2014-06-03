@@ -374,6 +374,15 @@ NG_DOCS={
     },
     {
       "section": "api",
+      "id": "ListItem.getFieldDefinition",
+      "shortName": "ListItem.getFieldDefinition",
+      "type": "function",
+      "moduleName": "ListItem",
+      "shortDescription": "Returns the field definition from the definitions defined in the custom fields array within a model.",
+      "keywords": "api array custom defined definition definitions field fieldname fields function getfielddefinition internal listitem model returns"
+    },
+    {
+      "section": "api",
       "id": "ListItem.getFieldVersionHistory",
       "shortName": "ListItem.getFieldVersionHistory",
       "type": "function",
@@ -567,17 +576,17 @@ NG_DOCS={
       "shortName": "Model.getCache",
       "type": "function",
       "moduleName": "Model",
-      "shortDescription": "Returns the field definition from the definitions defined in the custom fields array within a model.",
-      "keywords": "api array custom defined definition definitions field fieldname fields function getcache internal model returns"
+      "shortDescription": "Helper function that return the local cache for a named query if provided, otherwise",
+      "keywords": "api cache changes check contents current customquery function getcache helper identify key local model named namedquerycache primary primaryquerycache projectmodel provided query resolved return returns sharepoint unique var"
     },
     {
       "section": "api",
-      "id": "Model.getCache",
-      "shortName": "Model.getCache",
+      "id": "Model.getFieldDefinition",
+      "shortName": "Model.getFieldDefinition",
       "type": "function",
       "moduleName": "Model",
-      "shortDescription": "Helper function that return the local cache for a named query if provided, otherwise",
-      "keywords": "api cache changes check contents current customquery function getcache helper identify key local model named namedquerycache primary primaryquerycache projectmodel provided query resolved return returns sharepoint unique var"
+      "shortDescription": "Returns the field definition from the definitions defined in the custom fields array within a model.",
+      "keywords": "api array custom defined definition definitions field fieldname fields function getfielddefinition internal model returns"
     },
     {
       "section": "api",
@@ -711,8 +720,8 @@ NG_DOCS={
       "shortName": "queueService.reset",
       "type": "function",
       "moduleName": "queueService",
-      "shortDescription": "Decrease the counter by 1.",
-      "keywords": "api count counter current decrease decrementing function queueservice reset"
+      "shortDescription": "Reset counter to 0.",
+      "keywords": "api count counter current function incrementing queueservice reset"
     },
     {
       "section": "api",
@@ -720,8 +729,8 @@ NG_DOCS={
       "shortName": "queueService.reset",
       "type": "function",
       "moduleName": "queueService",
-      "shortDescription": "Reset counter to 0.",
-      "keywords": "api count counter current function incrementing queueservice reset"
+      "shortDescription": "Decrease the counter by 1.",
+      "keywords": "api count counter current decrease decrementing function queueservice reset"
     },
     {
       "section": "api",
