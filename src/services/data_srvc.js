@@ -594,7 +594,7 @@ angular.module('angularPoint')
                         $(this).find('CHOICE').each(function () {
                             row.choices.push($(this).text());
                         });
-                        row.default = $(this).find('Default').text();
+                        row.Default = $(this).find('Default').text();
                     }
 
                     /** Extend the existing field definition with field attributes from SharePoint */
