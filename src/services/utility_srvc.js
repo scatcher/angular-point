@@ -177,7 +177,8 @@ angular.module('angularPoint')
         }
 
         function dateToJsonObject(s) {
-            return new Date(s.replace(/-/g, '/'));
+            /** Replace dashes with slashes and the "T" deliminator with a space if found */
+            return new Date(s.replace(/-/g, '/').replace(/T/i, ' '));
         }
 
         function userToJsonObject(s) {
