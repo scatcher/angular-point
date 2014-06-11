@@ -162,6 +162,37 @@ angular.module('angularPoint')
 
         /**
          * @ngdoc function
+         * @name Model.getLocalEntity
+         * @module Model
+         * @description
+         * Similar to Model.searchLocalCache but you don't need to specifiy a query, only searches by list item
+         * id, and returns a promise that is fullfilled once the requested list item is registered in the cache
+         *
+         * @param {number} entityId The ListItem.id of the object.
+         * @returns {promise} Will resolve once the item is registered in the cache.
+         * @example
+         <pre>
+         var task = {
+            title: 'A Task',
+            project: {
+                lookupId: 4,
+                lookupValue: 'Super Project'
+            }
+         };
+
+         //Now we'd like to get the project referenced in the task
+         projectModel.getLocalEntity(task.project.lookupId).then(function(entity) {
+             var projectThatICareAbout = entity;
+             //Do something with it
+         }
+         </pre>
+         */
+        Model.prototype.getLocalEntity = function (entityId) {
+            return apCacheService.getEntity(this.list.guid, entityId);
+        };
+
+        /**
+         * @ngdoc function
          * @name Model.getAllListItems
          * @module modelFactoryModel
          * @description

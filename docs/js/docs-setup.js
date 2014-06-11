@@ -590,6 +590,15 @@ NG_DOCS={
     },
     {
       "section": "api",
+      "id": "Model.getLocalEntity",
+      "shortName": "Model.getLocalEntity",
+      "type": "function",
+      "moduleName": "Model",
+      "shortDescription": "Similar to Model.searchLocalCache but you don&#39;t need to specifiy a query, only searches by list item",
+      "keywords": "api cache don entity entityid fullfilled function getlocalentity item list listitem lookupid lookupvalue model object project projectmodel projectthaticareabout promise query referenced registered requested resolve returns searches searchlocalcache specifiy super task title var"
+    },
+    {
+      "section": "api",
       "id": "Model.getQuery",
       "shortName": "Model.getQuery",
       "type": "function",

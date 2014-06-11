@@ -1,0 +1,26 @@
+<h1><code ng:non-bindable="">getFieldDefinition</code>
+<div><span class="hint">service in module <code ng:non-bindable="">Model</code>
+</span>
+</div>
+</h1>
+<div><h2 id="description">Description</h2>
+<div class="description"><div class="model-getfielddefinition-page"><p>Returns the field definition from the definitions defined in the custom fields array within a model.
+<pre class="prettyprint linenums">
+var project = {
+   title: 'Project 1',
+   location: {
+       lookupId: 5,
+       lookupValue: 'Some Building'
+   }
+};
+
+//To get field metadata
+var locationDefinition = projectsModel.getFieldDefinition('location');
+</pre>
+</div></div>
+<h2 id="usage">Usage</h2>
+<div class="usage"><pre class="prettyprint linenums">getFieldDefinition(fieldName);</pre>
+<h4 id="usage_parameters">Parameters</h4><table class="variables-matrix table table-bordered table-striped"><thead><tr><th>Param</th><th>Type</th><th>Details</th></tr></thead><tbody><tr><td>fieldName</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="model-getfielddefinition-page"><p>Internal field name.</p>
+</div></td></tr></tbody></table><h4 id="usage_returns">Returns</h4><table class="variables-matrix"><tr><td><a href="" class="label type-hint type-hint-object">object</a></td><td><div class="model-getfielddefinition-page"><p>Field definition.</p>
+</div></td></tr></table></div>
+</div>
