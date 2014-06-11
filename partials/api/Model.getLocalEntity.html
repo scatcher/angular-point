@@ -1,0 +1,32 @@
+<h1><code ng:non-bindable="">getLocalEntity</code>
+<div><span class="hint">service in module <code ng:non-bindable="">Model</code>
+</span>
+</div>
+</h1>
+<div><h2 id="description">Description</h2>
+<div class="description"><div class="model-getlocalentity-page"><p>Similar to Model.searchLocalCache but you don&#39;t need to specifiy a query, only searches by list item
+id, and returns a promise that is fullfilled once the requested list item is registered in the cache</p>
+</div></div>
+<h2 id="usage">Usage</h2>
+<div class="usage"><pre class="prettyprint linenums">getLocalEntity(entityId);</pre>
+<h4 id="usage_parameters">Parameters</h4><table class="variables-matrix table table-bordered table-striped"><thead><tr><th>Param</th><th>Type</th><th>Details</th></tr></thead><tbody><tr><td>entityId</td><td><a href="" class="label type-hint type-hint-number">number</a></td><td><div class="model-getlocalentity-page"><p>The ListItem.id of the object.</p>
+</div></td></tr></tbody></table><h4 id="usage_returns">Returns</h4><table class="variables-matrix"><tr><td><a href="" class="label type-hint type-hint-promise">promise</a></td><td><div class="model-getlocalentity-page"><p>Will resolve once the item is registered in the cache.</p>
+</div></td></tr></table></div>
+<h2 id="example">Example</h2>
+<div class="example"><div class="model-getlocalentity-page"><pre class="prettyprint linenums">
+var task = {
+   title: 'A Task',
+   project: {
+       lookupId: 4,
+       lookupValue: 'Super Project'
+   }
+};
+
+//Now we'd like to get the project referenced in the task
+projectModel.getLocalEntity(task.project.lookupId).then(function(entity) {
+    var projectThatICareAbout = entity;
+    //Do something with it
+}
+</pre>
+</div></div>
+</div>
