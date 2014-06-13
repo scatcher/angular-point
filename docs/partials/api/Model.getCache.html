@@ -15,6 +15,12 @@ has already been resolved and there&#39;s no need to check SharePoint for change
 </div></td></tr></table></div>
 <h2 id="example">Example</h2>
 <div class="example"><div class="model-getcache-page"><pre class="prettyprint linenums">
+var primaryQueryCache = projectModel.getCache();
+</pre>
+<pre class="prettyprint linenums">
+var primaryQueryCache = projectModel.getCache('primary');
+</pre>
+<pre class="prettyprint linenums">
 var namedQueryCache = projectModel.getCache('customQuery');
 </pre>
 </div></div>

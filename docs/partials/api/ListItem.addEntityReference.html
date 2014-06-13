@@ -16,7 +16,8 @@ type of list item passed in using the list name in the list item model.</p>
 </div></td></tr></table></div>
 <h2 id="example">Example</h2>
 <div class="example"><div class="listitem-addentityreference-page"><pre class="prettyprint linenums">
-//Function to save references between a fictitious project and corresponding associated tasks
+// Function to save references between a fictitious project
+// and corresponding associated tasks
 function associateProjectTasks(project) {
    //Assuming project.tasks is a multi-lookup
    _.each(project.tasks, function(taskLookup) {

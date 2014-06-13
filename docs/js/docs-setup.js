@@ -424,7 +424,7 @@ NG_DOCS={
       "type": "function",
       "moduleName": "ListItem",
       "shortDescription": "Saves a named subset of fields back to SharePoint",
-      "keywords": "$q alternative api array automatically bother business cache cached currently data default ensure entire entity faster field fieldarray fields function intensive internal item items list listitem logic named names object optionally params pass process processed progresscounter promise promises push query queue request required resolves saved savefields saves saving search server service sharepoint single store stored subset title update updateallcaches updated updating var view"
+      "keywords": "$q alternative api array automatically bother business cache cached currently data default don ensure entire entity faster field fieldarray fields function intensive internal item items list listitem logic named names object optionally params pass process processed progresscounter promise promises push query queue request required resolves saved savefields saves saving search server service sharepoint single store stored subset title update updateallcaches updated updating var view"
     },
     {
       "section": "api",
@@ -594,8 +594,8 @@ NG_DOCS={
       "shortName": "Model.getLocalEntity",
       "type": "function",
       "moduleName": "Model",
-      "shortDescription": "Similar to Model.searchLocalCache but you don&#39;t need to specifiy a query, only searches by list item",
-      "keywords": "api cache don entity entityid fullfilled function getlocalentity item list listitem lookupid lookupvalue model object project projectmodel projectthaticareabout promise query referenced registered requested resolve returns searches searchlocalcache specifiy super task title var"
+      "shortDescription": "Similar to Model.searchLocalCache but you don&#39;t need to specify a query, only searches by list item",
+      "keywords": "api cache don entity entityid fulfilled function getlocalentity item list listitem lookupid lookupvalue model object project projectmodel projectthaticareabout promise query referenced registered requested resolve returns searches searchlocalcache super task title var"
     },
     {
       "section": "api",
@@ -621,8 +621,8 @@ NG_DOCS={
       "shortName": "Model.registerQuery",
       "type": "function",
       "moduleName": "Model",
-      "shortDescription": "Constructor that allows us create a static query with a reference to the parent model",
-      "keywords": "$scope allow allows api array ascending associated assume cache call changes check create creates custom dataservice default doesn dynamically entities execute executequery exist field function functionality inherit isobject items list listitem local lookup lookupid matching model object optional options param parent pass permissions pid prevents primary project projectid projectmodel projects projecttasksmodel prototype queries query querybyprojectid querykey records reference register registerquery return returned returns specific static stored title true type unique user var"
+      "shortDescription": "Constructor that allows us create a static query with the option to build dynamic queries as seen in the",
+      "keywords": "$scope advanced allow allows api array ascending aspx associated assume build cache cachexml call caml camlrowlimit changes check codeplex construct create creates custom default defaults doesn don dynamic dynamically entities example execute executequery exist false faster field function functionality getlistitemchangessincetoken good inherit isobject items josh js list listitem lists local lookup lookupid matching mccarty microsoft model modifications modified object objects operation option optional options param parsed pass passthrough payload permissions pid prevents primary project projectid projectmodel projects projecttasksmodel prototype queries query querybyprojectid querykey queryoptions quick recentchanges records reference register registerquery response retrieve return returned returns smaller specific static store stored third title true type typically unique user var xml"
     },
     {
       "section": "api",
@@ -676,7 +676,7 @@ NG_DOCS={
       "type": "function",
       "moduleName": "Query",
       "shortDescription": "Primary constructor that all queries inherit from.",
-      "keywords": "ability allows api ascending cachexml called caml camlrowlimit changes check control data doesn don efficient false fresh function getlistitems inherit initialization model modifications modified operation optionally options parameters parent passed permissions prevents primary project queries query queryoptions receive recentchanges records reference registerquery request response retrieve returned returns scope set sharepoint time user"
+      "keywords": "ability allows api ascending cachexml called caml camlrowlimit changes check control data doesn don efficient false fresh function getlistitems inherit initialization model modifications modified operation optionally options parameters parent passed permissions prevents primary project queries query queryoptions receive recentchanges records reference registerquery request response retrieve returned returns scope set sharepoint time true user"
     },
     {
       "section": "api",

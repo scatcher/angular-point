@@ -15,8 +15,9 @@ Alternative to saving all fields</p>
 var queue = [],
 progressCounter = 0;
 
-//We're only updating a single field on each entity so it's much faster to use ListItem.saveFields() so we
-//don't need to push the entire object back to the server.
+//We're only updating a single field on each entity so it's much
+// faster to use ListItem.saveFields() so we don't need to push the
+// entire object back to the server.
 _.each(selectedItems, function (entity) {
    entity.title = title + ': Now Updated!';
    var request = entity.saveFields('title').then(function() {
@@ -26,10 +27,10 @@ _.each(selectedItems, function (entity) {
  });
 
 $q.all(queue).then(function() {
-    //All items have now been processed so we can do something...but the view is automatically updated so we
-    //don't need to bother if there's no other required business logic.
-}
-
+    // All items have now been processed so we can do something...but
+    // the view is automatically updated so we don't need to bother
+    // if there's no other required business logic.
+});
 </pre>
 </div></td></tr><tr><td>[options]</td><td><a href="" class="label type-hint type-hint-object">object</a></td><td><div class="listitem-savefields-page"><p>Optionally pass params to the data service.</p>
 </div></td></tr><tr><td>options.updateAllCaches</td><td><a href="" class="label type-hint type-hint-boolean">boolean</a></td><td><div class="listitem-savefields-page"><p>Search through the cache for each query to ensure entity is

@@ -1866,27 +1866,72 @@ angular.module('angularPoint').factory('apModelFactory', [
          * @constructor
          *
          * @example
-         <pre>
-         //Taken from a fictitious projectsModel.js
-         var model = new modelFactory.Model({
-                 factory: Project,
-                 list: {
-                     guid: '{PROJECT LIST GUID}',
-                     title: 'Projects',
-                     customFields: [
-                         { internalName: 'Title', objectType: 'Text', mappedName: 'title', readOnly: false },
-                         { internalName: 'Customer', objectType: 'Lookup', mappedName: 'customer', readOnly: false },
-                         { internalName: 'ProjectDescription', objectType: 'Text', mappedName: 'projectDescription', readOnly: false },
-                         { internalName: 'Status', objectType: 'Text', mappedName: 'status', readOnly: false },
-                         { internalName: 'TaskManager', objectType: 'User', mappedName: 'taskManager', readOnly: false },
-                         { internalName: 'ProjectGroup', objectType: 'Lookup', mappedName: 'group', readOnly: false },
-                         { internalName: 'CostEstimate', objectType: 'Currency', mappedName: 'costEstimate', readOnly: false },
-                         { internalName: 'Active', objectType: 'Boolean', mappedName: 'active', readOnly: false },
-                         { internalName: 'Attachments', objectType: 'Attachments', mappedName: 'attachments', readOnly: true}
-                     ]
-                 }
-             });
-         </pre>
+         * <pre>
+         * //Taken from a fictitious projectsModel.js
+         * var model = new modelFactory.Model({
+         *     factory: Project,
+         *     list: {
+         *         guid: '{PROJECT LIST GUID}',
+         *         title: 'Projects',
+         *         customFields: [
+         *             {
+         *                internalName: 'Title',
+         *                objectType: 'Text',
+         *                mappedName: 'title',
+         *                readOnly: false
+         *             },
+         *             {
+         *                internalName: 'Customer',
+         *                objectType: 'Lookup',
+         *                mappedName: 'customer',
+         *                readOnly: false
+         *             },
+         *             {
+         *                internalName: 'ProjectDescription',
+         *                objectType: 'Text',
+         *                mappedName: 'projectDescription',
+         *                readOnly: false
+         *             },
+         *             {
+         *                internalName: 'Status',
+         *                objectType: 'Text',
+         *                mappedName: 'status',
+         *                readOnly: false
+         *             },
+         *             {
+         *                internalName: 'TaskManager',
+         *                objectType: 'User',
+         *                mappedName: 'taskManager',
+         *                readOnly: false
+         *             },
+         *             {
+         *                internalName: 'ProjectGroup',
+         *                objectType: 'Lookup',
+         *                mappedName: 'group',
+         *                readOnly: false
+         *             },
+         *             {
+         *                internalName: 'CostEstimate',
+         *                objectType: 'Currency',
+         *                mappedName: 'costEstimate',
+         *                readOnly: false
+         *             },
+         *             {
+         *                internalName: 'Active',
+         *                objectType: 'Boolean',
+         *                mappedName: 'active',
+         *                readOnly: false
+         *             },
+         *             {
+         *                internalName: 'Attachments',
+         *                objectType: 'Attachments',
+         *                mappedName: 'attachments',
+         *                readOnly: true
+         *             }
+         *         ]
+         *     }
+         * });
+         * </pre>
          */
     function Model(options) {
       var model = this;
@@ -1920,9 +1965,9 @@ angular.module('angularPoint').factory('apModelFactory', [
              * @param {*} value The value or array of values to compare against.
              * @param {object} [options] Object containing optional parameters.
              * @param {string} [options.propertyPath] The dot separated propertyPath.
-             <pre>
-             'project.lookupId'
-             </pre>
+             * <pre>
+             * 'project.lookupId'
+             * </pre>
              * @param {object} [options.cacheName] Required if using a data source other than primary cache.
              * @param {object} [options.localCache=model.getCache()] Array of objects to search (Default model.getCache()).
              * @param {boolean} [options.rebuildIndex=false] Ignore previous index and rebuild.
@@ -1975,27 +2020,27 @@ angular.module('angularPoint').factory('apModelFactory', [
          * @name Model.getLocalEntity
          * @module Model
          * @description
-         * Similar to Model.searchLocalCache but you don't need to specifiy a query, only searches by list item
-         * id, and returns a promise that is fullfilled once the requested list item is registered in the cache
+         * Similar to Model.searchLocalCache but you don't need to specify a query, only searches by list item
+         * id, and returns a promise that is fulfilled once the requested list item is registered in the cache
          *
          * @param {number} entityId The ListItem.id of the object.
          * @returns {promise} Will resolve once the item is registered in the cache.
          * @example
-         <pre>
-         var task = {
-            title: 'A Task',
-            project: {
-                lookupId: 4,
-                lookupValue: 'Super Project'
-            }
-         };
-
-         //Now we'd like to get the project referenced in the task
-         projectModel.getLocalEntity(task.project.lookupId).then(function(entity) {
-             var projectThatICareAbout = entity;
-             //Do something with it
-         }
-         </pre>
+         * <pre>
+         * var task = {
+         *    title: 'A Task',
+         *    project: {
+         *        lookupId: 4,
+         *        lookupValue: 'Super Project'
+         *    }
+         * };
+         *
+         * // Now we'd like to get the project referenced in the task
+         * projectModel.getLocalEntity(task.project.lookupId).then(function(entity) {
+         *     var projectThatICareAbout = entity;
+         *     //Do something with it
+         * }
+         * </pre>
          */
     Model.prototype.getLocalEntity = function (entityId) {
       return apCacheService.getEntity(this.list.guid, entityId);
@@ -2009,13 +2054,13 @@ angular.module('angularPoint').factory('apModelFactory', [
          * Gets all list items in the current list, processes the xml, and caches the data in model.
          * @returns {object} Promise returning all list items when resolved.
          * @example
-         <pre>
-         //Taken from a fictitious projectsModel.js
-         projectModel.getAllListItems().then(function(entities) {
-                  //Do something with all of the returned entities
-                  $scope.projects = entities;
-              };
-         </pre>
+         * <pre>
+         * //Taken from a fictitious projectsModel.js
+         * projectModel.getAllListItems().then(function(entities) {
+         *          //Do something with all of the returned entities
+         *          $scope.projects = entities;
+         *      };
+         * </pre>
          */
     Model.prototype.getAllListItems = function () {
       var deferred = $q.defer();
@@ -2037,16 +2082,16 @@ angular.module('angularPoint').factory('apModelFactory', [
          * This allows us to update the view with a valid new object that contains a unique list item id.
          *
          * @example
-         <pre>
-         //Taken from a fictitious projectsModel.js
-         projectModel.addNewItem({
-                    title: 'A Project',
-                    customer: {lookupValue: 'My Customer', lookupId: 123},
-                    description: 'This is the project description'
-                 }).then(function(newEntityFromServer) {
-                     //The local query cache is automatically updated but any other dependent logic can go here
-             };
-         </pre>
+         * <pre>
+         * //Taken from a fictitious projectsModel.js
+         * projectModel.addNewItem({
+         *            title: 'A Project',
+         *            customer: {lookupValue: 'My Customer', lookupId: 123},
+         *            description: 'This is the project description'
+         *         }).then(function(newEntityFromServer) {
+         *             //The local query cache is automatically updated but any other dependent logic can go here
+         *     };
+         * </pre>
          */
     Model.prototype.addNewItem = function (entity, options) {
       var model = this;
@@ -2063,73 +2108,129 @@ angular.module('angularPoint').factory('apModelFactory', [
          * @name Model.registerQuery
          * @module Model
          * @description
-         * Constructor that allows us create a static query with a reference to the parent model
-         * @param {object} [queryOptions] Optional options to pass through to the dataService.
+         * Constructor that allows us create a static query with the option to build dynamic queries as seen in the
+         * third example.  This construct is a passthrough to [SPServices](http://spservices.codeplex.com/)
+         * @param {object} [queryOptions] Optional options to pass through to the
+         * [dataService](#/api/dataService.executeQuery).
          * @param {string} [queryOptions.name=defaultQueryName] Optional name of the new query (recommended but will
          * default to 'Primary' if not specified)
+         * @param {string} [queryOptions.operation="GetListItemChangesSinceToken"] Defaults to
+         * [GetListItemChangesSinceToken](http://msdn.microsoft.com/en-us/library/lists.lists.getlistitemchangessincetoken%28v=office.12%29.aspx)
+         * but for a smaller payload and faster response you can use
+         * [GetListItems](http://spservices.codeplex.com/wikipage?title=GetListItems&referringTitle=Lists).
+         * @param {boolean} [queryOptions.cacheXML=false] Typically don't need to store the XML response because it
+         * has already been parsed into JS objects.
+         * @param {string} [queryOptions.query] CAML Query - Josh McCarty has a good quick reference
+         * [here](http://joshmccarty.com/2012/06/a-caml-query-quick-reference)
+         * @param {string} [queryOptions.queryOptions]
+         * <pre>
+         * // Default options
+         * '<QueryOptions>' +
+         * '   <IncludeMandatoryColumns>' +
+         *      'FALSE' +
+         *     '</IncludeMandatoryColumns>' +
+         * '   <IncludeAttachmentUrls>' +
+         *      'TRUE' +
+         *     '</IncludeAttachmentUrls>' +
+         * '   <IncludeAttachmentVersion>' +
+         *      'FALSE' +
+         *     '</IncludeAttachmentVersion>' +
+         * '   <ExpandUserField>' +
+         *      'FALSE' +
+         *     '</ExpandUserField>' +
+         * '</QueryOptions>',
+         * </pre>
+         *
+         *
          * @returns {object} Query Returns a new query object.
          *
          * @example
-         <pre>
-         //Could be placed on the projectModel and creates the query but doesn't call it
-         projectModel.registerQuery({
-             name: 'primary',
-             query: '' +
-                 '<Query>' +
-                 '   <OrderBy>' +
-                 '       <FieldRef Name="Title" Ascending="TRUE"/>' +
-                 '   </OrderBy>' +
-                 '</Query>'
-         });
-         </pre>
+         * <h4>Example #1</h4>
+         * <pre>
+         * // Query to retrieve the most recent 25 modifications
+         * model.registerQuery({
+         *    name: 'recentChanges',
+         *    CAMLRowLimit: 25,
+         *    query: '' +
+         *        '<Query>' +
+         *        '   <OrderBy>' +
+         *        '       <FieldRef Name="Modified" Ascending="FALSE"/>' +
+         *        '   </OrderBy>' +
+         *            //Prevents any records from being returned if user doesn't
+         *            // have permissions on project
+         *        '   <Where>' +
+         *        '       <IsNotNull>' +
+         *        '           <FieldRef Name="Project"/>' +
+         *        '       </IsNotNull>' +
+         *        '   </Where>' +
+         *        '</Query>'
+         * });
+         * </pre>
+         *
+         * <h4>Example #2</h4>
+         * <pre>
+         * // Could be placed on the projectModel and creates the query but doesn't
+         * // call it
+         * projectModel.registerQuery({
+         *     name: 'primary',
+         *     query: '' +
+         *         '<Query>' +
+         *         '   <OrderBy>' +
+         *         '       <FieldRef Name="Title" Ascending="TRUE"/>' +
+         *         '   </OrderBy>' +
+         *         '</Query>'
+         * });
+         *
+         * //To call the query or check for changes since the last call
+         * projectModel.executeQuery('primary').then(function(entities) {
+         *     // We now have a reference to array of entities stored in the local
+         *     // cache.  These inherit from the ListItem prototype as well as the
+         *     // Project prototype on the model
+         *     $scope.projects = entities;
+         * });
+         * </pre>
+         *
 
-         * @example
-         <pre>
-         //To call the query or check for changes since the last call
-         projectModel.executeQuery('primary').then(function(entities) {
-             //We now have a reference to array of entities stored in the local cache
-             //These inherit from the ListItem prototype as well as the Project prototype on the model
-             $scope.projects = entities;
-         });
-         </pre>
-
-         * @example
-         <pre>
-         //Advanced functionality that would allow us to dynamically create queries for list items with a
-         //lookup field associated with a specific project id.  Let's assume this is on the projectTasksModel.
-         model.queryByProjectId(projectId) {
-             // Unique query name
-             var queryKey = 'pid' + projectId;
-
-             // Register project query if it doesn't exist
-             if (!_.isObject(model.queries[queryKey])) {
-                 model.registerQuery({
-                     name: queryKey,
-                     query: '' +
-                         '<Query>' +
-                         '   <OrderBy>' +
-                         '       <FieldRef Name="ID" Ascending="TRUE"/>' +
-                         '   </OrderBy>' +
-                         '   <Where>' +
-                         '       <And>' +
-                     // Prevents any records from being returned if user doesn't have permissions on project
-                         '           <IsNotNull>' +
-                         '               <FieldRef Name="Project"/>' +
-                         '           </IsNotNull>' +
-                     // Return all records for the project matching param projectId
-                         '           <Eq>' +
-                         '               <FieldRef Name="Project" LookupId="TRUE"/>' +
-                         '               <Value Type="Lookup">' + projectId + '</Value>' +
-                         '           </Eq>' +
-                         '       </And>' +
-                         '   </Where>' +
-                         '</Query>'
-                 });
-             }
-             //Still using execute query but now we have a custom query
-             return model.executeQuery(queryKey);
-         };
-         </pre>
+         * <h4>Example #3</h4>
+         * <pre>
+         * // Advanced functionality that would allow us to dynamically create
+         * // queries for list items with a lookup field associated with a specific
+         * // project id.  Let's assume this is on the projectTasksModel.
+         * model.queryByProjectId(projectId) {
+         *     // Unique query name
+         *     var queryKey = 'pid' + projectId;
+         *
+         *     // Register project query if it doesn't exist
+         *     if (!_.isObject(model.queries[queryKey])) {
+         *         model.registerQuery({
+         *             name: queryKey,
+         *             query: '' +
+         *                 '<Query>' +
+         *                 '   <OrderBy>' +
+         *                 '       <FieldRef Name="ID" Ascending="TRUE"/>' +
+         *                 '   </OrderBy>' +
+         *                 '   <Where>' +
+         *                 '       <And>' +
+         *                              // Prevents any records from being returned
+         *                              //if user doesn't have permissions on project
+         *                 '           <IsNotNull>' +
+         *                 '               <FieldRef Name="Project"/>' +
+         *                 '           </IsNotNull>' +
+         *                              // Return all records for the project matching
+         *                              // param projectId
+         *                 '           <Eq>' +
+         *                 '               <FieldRef Name="Project" LookupId="TRUE"/>' +
+         *                 '               <Value Type="Lookup">' + projectId + '</Value>' +
+         *                 '           </Eq>' +
+         *                 '       </And>' +
+         *                 '   </Where>' +
+         *                 '</Query>'
+         *         });
+         *     }
+         *     //Still using execute query but now we have a custom query
+         *     return model.executeQuery(queryKey);
+         * };
+         * </pre>
          */
     Model.prototype.registerQuery = function (queryOptions) {
       var model = this;
@@ -2149,19 +2250,17 @@ angular.module('angularPoint').factory('apModelFactory', [
          * @returns {object} See Query prototype for additional details on what a Query looks like.
          *
          * @example
-         <pre>
-         var primaryQuery = projectModel.getQuery();
-         </pre>
-
-         * @example
-         <pre>
-         var primaryQuery = projectModel.getQuery('primary');
-         </pre>
-
-         * @example
-         <pre>
-         var namedQuery = projectModel.getQuery('customQuery');
-         </pre>
+         * <pre>
+         * var primaryQuery = projectModel.getQuery();
+         * </pre>
+         *
+         * <pre>
+         * var primaryQuery = projectModel.getQuery('primary');
+         * </pre>
+         *
+         * <pre>
+         * var namedQuery = projectModel.getQuery('customQuery');
+         * </pre>
          */
     Model.prototype.getQuery = function (queryName) {
       var model = this, query;
@@ -2183,18 +2282,18 @@ angular.module('angularPoint').factory('apModelFactory', [
          * @module Model
          * @description
          * Returns the field definition from the definitions defined in the custom fields array within a model.
-         <pre>
-         var project = {
-            title: 'Project 1',
-            location: {
-                lookupId: 5,
-                lookupValue: 'Some Building'
-            }
-         };
-
-         //To get field metadata
-         var locationDefinition = projectsModel.getFieldDefinition('location');
-         </pre>
+         * <pre>
+         * var project = {
+         *    title: 'Project 1',
+         *    location: {
+         *        lookupId: 5,
+         *        lookupValue: 'Some Building'
+         *    }
+         * };
+         *
+         * //To get field metadata
+         * var locationDefinition = projectsModel.getFieldDefinition('location');
+         * </pre>
          * @param {string} fieldName Internal field name.
          * @returns {object} Field definition.
          */
@@ -2214,19 +2313,17 @@ angular.module('angularPoint').factory('apModelFactory', [
          * @returns {Array} Returns the contents of the current cache for a named query.
          *
          * @example
-         <pre>
-         var primaryQueryCache = projectModel.getCache();
-         </pre>
-
-         * @example
-         <pre>
-         var primaryQueryCache = projectModel.getCache('primary');
-         </pre>
-
-         * @example
-         <pre>
-         var namedQueryCache = projectModel.getCache('customQuery');
-         </pre>
+         * <pre>
+         * var primaryQueryCache = projectModel.getCache();
+         * </pre>
+         *
+         * <pre>
+         * var primaryQueryCache = projectModel.getCache('primary');
+         * </pre>
+         *
+         * <pre>
+         * var namedQueryCache = projectModel.getCache('customQuery');
+         * </pre>
          */
     Model.prototype.getCache = function (queryName) {
       var model = this, query, cache;
@@ -2250,13 +2347,13 @@ angular.module('angularPoint').factory('apModelFactory', [
          * optionally go through a defined constructor on the model.
          *
          * @example To call the query or check for changes since the last call.
-         <pre>
-         projectModel.executeQuery('MyCustomQuery').then(function(entities) {
-              //We now have a reference to array of entities stored in the local cache
-              //These inherit from the ListItem prototype as well as the Project prototype on the model
-              $scope.subsetOfProjects = entities;
-          });
-         </pre>
+         * <pre>
+         * projectModel.executeQuery('MyCustomQuery').then(function(entities) {
+         *      //We now have a reference to array of entities stored in the local cache
+         *      //These inherit from the ListItem prototype as well as the Project prototype on the model
+         *      $scope.subsetOfProjects = entities;
+         *  });
+         * </pre>
          */
     Model.prototype.executeQuery = function (queryName, options) {
       var model = this;
@@ -2454,27 +2551,28 @@ angular.module('angularPoint').factory('apModelFactory', [
          * Saves a named subset of fields back to SharePoint
          * Alternative to saving all fields
          * @param {array} fieldArray Array of internal field names that should be saved to SharePoint.
-         <pre>
-         //Create an array to store all promises.
-         var queue = [],
-         progressCounter = 0;
-
-         //We're only updating a single field on each entity so it's much faster to use ListItem.saveFields() so we
-         //don't need to push the entire object back to the server.
-         _.each(selectedItems, function (entity) {
-            entity.title = title + ': Now Updated!';
-            var request = entity.saveFields('title').then(function() {
-                progressCounter++;
-            }
-            queue.push(request);
-          });
-
-         $q.all(queue).then(function() {
-             //All items have now been processed so we can do something...but the view is automatically updated so we
-             //don't need to bother if there's no other required business logic.
-         }
-
-         </pre>
+         * <pre>
+         * //Create an array to store all promises.
+         * var queue = [],
+         * progressCounter = 0;
+         *
+         * //We're only updating a single field on each entity so it's much
+         * // faster to use ListItem.saveFields() so we don't need to push the
+         * // entire object back to the server.
+         * _.each(selectedItems, function (entity) {
+         *    entity.title = title + ': Now Updated!';
+         *    var request = entity.saveFields('title').then(function() {
+         *        progressCounter++;
+         *    }
+         *    queue.push(request);
+         *  });
+         *
+         * $q.all(queue).then(function() {
+         *     // All items have now been processed so we can do something...but
+         *     // the view is automatically updated so we don't need to bother
+         *     // if there's no other required business logic.
+         * });
+         * </pre>
          * @param {object} [options] Optionally pass params to the data service.
          * @param {boolean} [options.updateAllCaches=false] Search through the cache for each query to ensure entity is
          * updated everywhere.  This is more process intensive so by default we only update the cached entity in the
@@ -2541,39 +2639,39 @@ angular.module('angularPoint').factory('apModelFactory', [
          * @param {number} [lookupId=listItem.fieldName.lookupId] The listItem.lookupId of the lookup object.  This allows us to also use this logic
          * on a multi-select by iterating over each of the lookups.
          * @example
-         <pre>
-         var project = {
-            title: 'Project 1',
-            location: {
-                lookupId: 5,
-                lookupValue: 'Some Building'
-            }
-         };
-
-         //To get the location entity
-         project.getLookupReference('location')
-             .then(function(entity) {
-                //Do something with the location entity
-
-             });
-         </pre>
-
-         <pre>
-         var project = {
-            title: 'Project 1',
-            location: [
-                { lookupId: 5, lookupValue: 'Some Building' },
-                { lookupId: 6, lookupValue: 'Some Other Building' },
-            ]
-         };
-
-         //To get the location entity
-         project.getLookupReference('location', project.location[0].lookupId)
-             .then(function(entity) {
-                //Do something with the location entity
-
-             });
-         </pre>
+         * <pre>
+         * var project = {
+         *    title: 'Project 1',
+         *    location: {
+         *        lookupId: 5,
+         *        lookupValue: 'Some Building'
+         *    }
+         * };
+         *
+         * //To get the location entity
+         * project.getLookupReference('location')
+         *     .then(function(entity) {
+         *        //Do something with the location entity
+         *
+         *     });
+         * </pre>
+         *
+         * <pre>
+         * var project = {
+         *    title: 'Project 1',
+         *    location: [
+         *        { lookupId: 5, lookupValue: 'Some Building' },
+         *        { lookupId: 6, lookupValue: 'Some Other Building' },
+         *    ]
+         * };
+         *
+         * //To get the location entity
+         * project.getLookupReference('location', project.location[0].lookupId)
+         *     .then(function(entity) {
+         *        //Do something with the location entity
+         *
+         *     });
+         * </pre>
          * @returns {promise} Resolves with the entity the lookup is referencing.
          */
     ListItem.prototype.getLookupReference = function (fieldName, lookupId) {
@@ -2619,18 +2717,18 @@ angular.module('angularPoint').factory('apModelFactory', [
          * @description
          * Returns the field definition from the definitions defined in the custom fields array within a model.
          * @example
-         <pre>
-         var project = {
-            title: 'Project 1',
-            location: {
-                lookupId: 5,
-                lookupValue: 'Some Building'
-            }
-         };
-
-         //To get field metadata
-         var locationDefinition = project.getFieldDefinition('location');
-         </pre>
+         * <pre>
+         * var project = {
+         *    title: 'Project 1',
+         *    location: {
+         *        lookupId: 5,
+         *        lookupValue: 'Some Building'
+         *    }
+         * };
+         *
+         * //To get field metadata
+         * var locationDefinition = project.getFieldDefinition('location');
+         * </pre>
          * @param {string} fieldName Internal field name.
          * @returns {object} Field definition.
          */
@@ -2679,9 +2777,9 @@ angular.module('angularPoint').factory('apModelFactory', [
          * See modelFactory.resolvePermissions for details on what we expect to have returned.
          * @returns {Object} Contains properties for each permission level evaluated for current user.
          * @example
-         <pre>
-         var permissionObject = myGenericListItem.resolvePermissions();
-         </pre>
+         * <pre>
+         * var permissionObject = myGenericListItem.resolvePermissions();
+         * </pre>
          */
     ListItem.prototype.resolvePermissions = function () {
       return resolvePermissions(this.permMask);
@@ -2701,32 +2799,34 @@ angular.module('angularPoint').factory('apModelFactory', [
          * @param {object} entity List item to associate.
          * @returns {Object} The cache for the list of the item passed in.
          * @example
-         <pre>
-         //Function to save references between a fictitious project and corresponding associated tasks
-         function associateProjectTasks(project) {
-            //Assuming project.tasks is a multi-lookup
-            _.each(project.tasks, function(taskLookup) {
-                var task = tasksModel.searchLocalCache(taskLookup.lookupId);
-                if(task) {
-                    task.addEntityReference(project);
-                    project.addEntityReference(task);
-                }
-            });
-        }
-         </pre>
-         <pre>
-         //Structure of cache
-         listItem._apCache = {
-            Projects: {
-                14: {id: 14, title: 'Some Project'},
-                15: {id: 15, title: 'Another Project'}
-            },
-            Tasks: {
-                300: {id: 300, title: 'Task 300'},
-                412: {id: 412, title: 'Some Important Tasks'}
-            }
-        }
-         </pre>
+         * <pre>
+         * // Function to save references between a fictitious project
+         * // and corresponding associated tasks
+         * function associateProjectTasks(project) {
+         *    //Assuming project.tasks is a multi-lookup
+         *    _.each(project.tasks, function(taskLookup) {
+         *        var task = tasksModel.searchLocalCache(taskLookup.lookupId);
+         *        if(task) {
+         *            task.addEntityReference(project);
+         *            project.addEntityReference(task);
+         *        }
+         *    });
+         * }
+         * </pre>
+         *
+         * <pre>
+         * //Structure of cache
+         * listItem._apCache = {
+         *    Projects: {
+         *        14: {id: 14, title: 'Some Project'},
+         *        15: {id: 15, title: 'Another Project'}
+         *    },
+         *    Tasks: {
+         *        300: {id: 300, title: 'Task 300'},
+         *        412: {id: 412, title: 'Some Important Tasks'}
+         *    }
+         * }
+         * </pre>
          */
     ListItem.prototype.addEntityReference = function (entity) {
       var self = this;
@@ -2772,12 +2872,12 @@ angular.module('angularPoint').factory('apModelFactory', [
          * field independently and then build the history by combining the server responses for each requests into a
          * snapshot of the object.
          * @param {string[]} [fieldNames] An array of field names that we're interested in.
-         <pre>
-         myGenericListItem.getFieldVersionHistory(['title', 'project'])
-         .then(function(versionHistory) {
-                //We now have an array of versions of the list item
-            };
-         </pre>
+         * <pre>
+         * myGenericListItem.getFieldVersionHistory(['title', 'project'])
+         * .then(function(versionHistory) {
+         *        //We now have an array of versions of the list item
+         *    };
+         * </pre>
          * @returns {object} promise - containing array of changes
          */
     ListItem.prototype.getFieldVersionHistory = function (fieldNames) {
@@ -2851,15 +2951,39 @@ angular.module('angularPoint').factory('apModelFactory', [
          * ex: 'ProjectsList' so the offline XML file would be located at dev/ProjectsList.xml
          * @param {object[]} [obj.customFields] Mapping of SharePoint field names to the internal names we'll be using
          * in our application.  Also contains field type, readonly attribute, and any other non-standard settings.
-         <pre>
-         [
-         { internalName: "Title", objectType: "Text", mappedName: "lastName", readOnly:false },
-         { internalName: "FirstName", objectType: "Text", mappedName: "firstName", readOnly:false },
-         { internalName: "Organization", objectType: "Lookup", mappedName: "organization", readOnly:false },
-         { internalName: "Account", objectType: "User", mappedName: "account", readOnly:false },
-         { internalName: "Details", objectType: "Text", mappedName: "details", readOnly:false }
-         ]
-         </pre>
+         * <pre>
+         * [
+         *   {
+         *       internalName: "Title",
+         *       objectType: "Text",
+         *       mappedName: "lastName",
+         *       readOnly:false },
+         *   {
+         *       internalName: "FirstName",
+         *       objectType: "Text",
+         *       mappedName: "firstName",
+         *       readOnly:false
+         *   },
+         *   {
+         *       internalName: "Organization",
+         *       objectType: "Lookup",
+         *       mappedName: "organization",
+         *       readOnly:false
+         *   },
+         *   {
+         *       internalName: "Account",
+         *       objectType: "User",
+         *       mappedName: "account",
+         *       readOnly:false
+         *   },
+         *   {
+         *       internalName: "Details",
+         *       objectType: "Text",
+         *       mappedName: "details",
+         *       readOnly:false
+         *   }
+         * ]
+         * </pre>
          * @constructor
          */
     function List(obj) {
@@ -2893,41 +3017,49 @@ angular.module('angularPoint').factory('apModelFactory', [
          * @param {string} [queryOptions.query=Ordered ascending by ID] CAML query passed to SharePoint to control
          * the data SharePoint returns.
          * @param {string} [queryOptions.queryOptions] SharePoint options.
-         <pre>
-         //Default
-         queryOptions: '' +
-         '<QueryOptions>' +
-         '   <IncludeMandatoryColumns>FALSE</IncludeMandatoryColumns>' +
-         '   <IncludeAttachmentUrls>TRUE</IncludeAttachmentUrls>' +
-         '   <IncludeAttachmentVersion>FALSE</IncludeAttachmentVersion>' +
-         '   <ExpandUserField>FALSE</ExpandUserField>' +
-         '</QueryOptions>',
-         </pre>
+         * <pre>
+         * //Default
+         * queryOptions: '' +
+         * '<QueryOptions>' +
+         * '   <IncludeMandatoryColumns>' +
+         *      'FALSE' +
+         *     '</IncludeMandatoryColumns>' +
+         * '   <IncludeAttachmentUrls>' +
+         *      'TRUE' +
+         *     '</IncludeAttachmentUrls>' +
+         * '   <IncludeAttachmentVersion>' +
+         *      'FALSE' +
+         *     '</IncludeAttachmentVersion>' +
+         * '   <ExpandUserField>' +
+         *      'FALSE' +
+         *     '</ExpandUserField>' +
+         * '</QueryOptions>',
+         * </pre>
          * @param {object} model Reference to the parent model for the query.  Allows us to reference when out of
          * scope.
          * @constructor
          *
          * @example
-         <pre>
-         // Query to retrieve the most recent 25 modifications
-         model.registerQuery({
-            name: 'recentChanges',
-            CAMLRowLimit: 25,
-            query: '' +
-                '<Query>' +
-                '   <OrderBy>' +
-                '       <FieldRef Name="Modified" Ascending="FALSE"/>' +
-                '   </OrderBy>' +
-                    // Prevents any records from being returned if user
-                    // doesn't have permissions on project
-                '   <Where>' +
-                '       <IsNotNull>' +
-                '           <FieldRef Name="Project"/>' +
-                '       </IsNotNull>' +
-                '   </Where>' +
-                '</Query>'
-        });
-         </pre>
+         * <pre>
+         * // Query to retrieve the most recent 25 modifications
+         * model.registerQuery({
+         *    name: 'recentChanges',
+         *    CAMLRowLimit: 25,
+         *    query: '' +
+         *        '<Query>' +
+         *        '   <OrderBy>' +
+         *        '       <FieldRef Name="Modified" Ascending="FALSE"/>' +
+         *        '   </OrderBy>' +
+         *            // Prevents any records from being returned if user
+         *            // doesn't have permissions on project
+         *        '   <Where>' +
+         *        '       <IsNotNull>' +
+         *        '           <FieldRef Name="Project"/>' +
+         *        '       </IsNotNull>' +
+         *        '   </Where>' +
+         *        '</Query>'
+         * });
+         * </pre>
          */
     function Query(queryOptions, model) {
       var query = this;
@@ -3064,15 +3196,15 @@ angular.module('angularPoint').factory('apModelFactory', [
          * @description
          * Converts permMask into something usable to determine permission level for current user.  Typically used
          * directly from a list item.  See ListItem.resolvePermissions.
-         <pre>
-         someListItem.resolvePermissions('0x0000000000000010');
-         </pre>
+         * <pre>
+         * someListItem.resolvePermissions('0x0000000000000010');
+         * </pre>
          * @param {string} permissionsMask The WSS Rights Mask is an 8-byte, unsigned integer that specifies
          * the rights that can be assigned to a user or site group. This bit mask can have zero or more flags set.
          * @example
-         <pre>
-         modelFactory.resolvePermissions('0x0000000000000010');
-         </pre>
+         * <pre>
+         * modelFactory.resolvePermissions('0x0000000000000010');
+         * </pre>
          * @returns {object} property for each permission level identifying if current user has rights (true || false)
          * @link: http://sympmarc.com/2009/02/03/permmask-in-sharepoint-dvwps/
          * @link: http://spservices.codeplex.com/discussions/208708
