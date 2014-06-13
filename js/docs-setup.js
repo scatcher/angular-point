@@ -621,8 +621,8 @@ NG_DOCS={
       "shortName": "Model.registerQuery",
       "type": "function",
       "moduleName": "Model",
-      "shortDescription": "Constructor that allows us create a static query with a reference to the parent model",
-      "keywords": "$scope allow allows api array ascending associated assume cache call camlrowlimit changes check create creates custom dataservice default doesn dynamically entities execute executequery exist false field function functionality inherit isobject items list listitem local lookup lookupid matching model modifications modified object optional options param parent pass permissions pid prevents primary project projectid projectmodel projects projecttasksmodel prototype queries query querybyprojectid querykey recentchanges records reference register registerquery retrieve return returned returns specific static stored title true type unique user var"
+      "shortDescription": "Constructor that allows us create a static query with the option to build dynamic queries as seen in the",
+      "keywords": "$scope allow allows api array ascending associated assume build cache cachexml call caml camlrowlimit changes check construct create creates custom dataservice default defaults doesn don dynamic dynamically entities example execute executequery exist false faster field function functionality getlistitemchangessincetoken getlistitems good href http inherit isobject items josh js list listitem local lookup lookupid matching mccarty model modifications modified object objects operation option optional options param parsed pass passthrough payload permissions pid prevents primary project projectid projectmodel projects projecttasksmodel prototype queries query querybyprojectid querykey quick recentchanges records reference register registerquery response retrieve return returned returns smaller specific spservices static store stored third title true type typically unique user var xml"
     },
     {
       "section": "api",
