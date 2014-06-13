@@ -14,7 +14,28 @@ default to &#39;Primary&#39; if not specified)</p>
 </div> <p><em>(default: defaultQueryName)</em></p></td></tr></tbody></table><h4 id="usage_returns">Returns</h4><table class="variables-matrix"><tr><td><a href="" class="label type-hint type-hint-object">object</a></td><td><div class="model-registerquery-page"><p>Query Returns a new query object.</p>
 </div></td></tr></table></div>
 <h2 id="example">Example</h2>
-<div class="example"><div class="model-registerquery-page"><pre class="prettyprint linenums">
+<div class="example"><div class="model-registerquery-page"><p><h6 id="example_example-#1">Example #1</h6>
+<pre class="prettyprint linenums">
+// Query to retrieve the most recent 25 modifications
+model.registerQuery({
+   name: 'recentChanges',
+   CAMLRowLimit: 25,
+   query: '' +
+       '&lt;Query&gt;' +
+       '   &lt;OrderBy&gt;' +
+       '       &lt;FieldRef Name="Modified" Ascending="FALSE"/&gt;' +
+       '   &lt;/OrderBy&gt;' +
+   //Prevents any records from being returned if user doesn't have permissions on project
+       '   &lt;Where&gt;' +
+       '       &lt;IsNotNull&gt;' +
+       '           &lt;FieldRef Name="Project"/&gt;' +
+       '       &lt;/IsNotNull&gt;' +
+       '   &lt;/Where&gt;' +
+       '&lt;/Query&gt;'
+});
+</pre>
+<p><h6 id="example_example-#2">Example #2</h6>
+<pre class="prettyprint linenums">
 //Could be placed on the projectModel and creates the query but doesn't call it
 projectModel.registerQuery({
     name: 'primary',
@@ -25,8 +46,7 @@ projectModel.registerQuery({
         '   &lt;/OrderBy&gt;' +
         '&lt;/Query&gt;'
 });
-</pre>
-<pre class="prettyprint linenums">
+
 //To call the query or check for changes since the last call
 projectModel.executeQuery('primary').then(function(entities) {
     //We now have a reference to array of entities stored in the local cache
@@ -34,6 +54,7 @@ projectModel.executeQuery('primary').then(function(entities) {
     $scope.projects = entities;
 });
 </pre>
+<p><h6 id="example_example-#3">Example #3</h6>
 <pre class="prettyprint linenums">
 //Advanced functionality that would allow us to dynamically create queries for list items with a
 //lookup field associated with a specific project id.  Let's assume this is on the projectTasksModel.
