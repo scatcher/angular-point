@@ -15,6 +15,26 @@ default to &#39;Primary&#39; if not specified)</p>
 </div></td></tr></table></div>
 <h2 id="example">Example</h2>
 <div class="example"><div class="model-registerquery-page"><pre class="prettyprint linenums">
+//Could be placed on the projectModel and creates the query but doesn't call it
+projectModel.registerQuery({
+    name: 'primary',
+    query: '' +
+        '&lt;Query&gt;' +
+        '   &lt;OrderBy&gt;' +
+        '       &lt;FieldRef Name="Title" Ascending="TRUE"/&gt;' +
+        '   &lt;/OrderBy&gt;' +
+        '&lt;/Query&gt;'
+});
+</pre>
+<pre class="prettyprint linenums">
+//To call the query or check for changes since the last call
+projectModel.executeQuery('primary').then(function(entities) {
+    //We now have a reference to array of entities stored in the local cache
+    //These inherit from the ListItem prototype as well as the Project prototype on the model
+    $scope.projects = entities;
+});
+</pre>
+<pre class="prettyprint linenums">
 //Advanced functionality that would allow us to dynamically create queries for list items with a
 //lookup field associated with a specific project id.  Let's assume this is on the projectTasksModel.
 model.queryByProjectId(projectId) {
