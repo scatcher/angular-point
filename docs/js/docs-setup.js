@@ -766,7 +766,7 @@ NG_DOCS={
       "type": "function",
       "moduleName": "utilityService",
       "shortDescription": "We REALLY don&#39;t want to lock the user&#39;s browser (blocking the UI thread) while iterating over an array of",
-      "keywords": "$q api aputilityservice array based batchprocess browser buildprojectsummary chunks complete create cuts defer deferred don easily entities example execute executed extendprojectsummary fictitious function getalllistitems hang intensive items iterate iterating javascript jayway js lock long number object performance performing problem process processed processing projectmodel projects projectsmodel promise reference resolve return running stuff sufficient summary summaryobject thread ui user utilityservice var"
+      "keywords": "$q api aputilityservice array article based batches batchprocess browser buildprojectsummary chunks complete context create cuts defer deferred delay don easily entities example execute executed extendprojectsummary fictitious function getalllistitems hang intensive items iterate iterating javascript js length lock long maximum milliseconds nczonline net number object pausing performing problem process processed processing projectmodel projects projectsmodel promise reference resolve return running stuff sufficient summary summaryobject thread ui user utilityservice var"
     },
     {
       "section": "api",

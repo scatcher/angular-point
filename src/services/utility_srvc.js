@@ -7,7 +7,7 @@
  * Provides shared utility functionality across the application.
  */
 angular.module('angularPoint')
-    .service('apUtilityService', function ($q) {
+    .service('apUtilityService', function ($q, $log) {
         // AngularJS will instantiate a singleton by calling "new" on this function
 
         /** Extend underscore with a simple helper function */
@@ -517,10 +517,14 @@ angular.module('angularPoint')
          * @description
          * We REALLY don't want to lock the user's browser (blocking the UI thread) while iterating over an array of
          * items and performing some process on them.  This function cuts the process into as many 50ms chunks as are
-         * necessary. Based on example found in [High Performance JavaScript](http://www.jayway.com/2011/03/28/high-performance-javascript/);
-         * @param {Object[]} entities The entities that need to be processed.
+         * necessary. Based on example found in the following article:
+         * [Timed array processing in JavaScript](http://www.nczonline.net/blog/2009/08/11/timed-array-processing-in-javascript/);
+         * @param {Object[]} items The entities that need to be processed.
+         * @param {Object} context this
          * @param {Function} process Reference to the process to be executed for each of the entities.
          * @param {Function} [callback] Function to execute when processing is complete.
+         * @param {Number} [delay=25] Number of milliseconds to delay between batches.
+         * @param {Number} [maxItems=items.length] Maximum number of items to process before pausing.
          * @example
          * <pre>
          * function buildProjectSummary = function() {
@@ -541,7 +545,7 @@ angular.module('angularPoint')
          *      apUtilityService.batchProcess(entities, extendProjectSummary, function() {
          *          // Long running process is complete so resolve promise
          *          deferred.resolve(summaryObject);
-         *      });
+         *      }, 25, 1000);
          *    };
          *
          *    return deferred.promise;
@@ -549,20 +553,31 @@ angular.module('angularPoint')
          *
          * </pre>
          */
-        function batchProcess(items, process, callback) {
-            var minTimeToStart = 50;
-            var copyOfItems = items.concat();
-            setTimeout(function() {
-                process(copyOfItems.shift());
-                if (copyOfItems.lengthÂ > 0) {
-                    setTimeout(batchProcess, minTimeToStart);
+
+        function batchProcess(items, process, context, callback, delay, maxItems) {
+            var n = items.length,
+                delay = delay || 25,
+                maxItems = maxItems || n,
+                i = 0;
+
+            setTimeout(function chunkTimer(){
+                var start = +new Date(),
+                    j = i;
+
+                while (i < n && (i - j) < maxItems && (new Date() - start < 50)) {
+                    process.call(context, items[i]);
+                    i += 1;
+                }
+
+                if (i < n) {
+                    $log.info("Batch Delayed");
+                    setTimeout(chunkTimer, delay);
                 }
                 else {
                     callback(items);
                 }
-            }, minTimeToStart);
+            }, 0);
         }
-
 
         return {
             attrToJson: attrToJson,
