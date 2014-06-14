@@ -1227,7 +1227,8 @@ angular.module('angularPoint')
          *       internalName: "Title",
          *       objectType: "Text",
          *       mappedName: "lastName",
-         *       readOnly:false },
+         *       readOnly:false
+         *   },
          *   {
          *       internalName: "FirstName",
          *       objectType: "Text",

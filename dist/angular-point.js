@@ -2957,7 +2957,8 @@ angular.module('angularPoint').factory('apModelFactory', [
          *       internalName: "Title",
          *       objectType: "Text",
          *       mappedName: "lastName",
-         *       readOnly:false },
+         *       readOnly:false
+         *   },
          *   {
          *       internalName: "FirstName",
          *       objectType: "Text",
@@ -3805,8 +3806,59 @@ angular.module('angularPoint').service('apUtilityService', [
       var dateToCheckInt = yyyymmdd(dateToCheck);
       return startInt <= dateToCheckInt && dateToCheckInt <= endInt;
     }
+    /**
+         * @ngdoc function
+         * @name utilityService.batchProcess
+         * @description
+         * We REALLY don't want to lock the user's browser (blocking the UI thread) while iterating over an array of
+         * items and performing some process on them.  This function cuts the process into as many 50ms chunks as are
+         * necessary. Based on example found in [High Performance JavaScript](http://www.jayway.com/2011/03/28/high-performance-javascript/);
+         * @param {Object[]} entities The entities that need to be processed.
+         * @param {Function} process Reference to the process to be executed for each of the entities.
+         * @param {Function} [callback] Function to execute when processing is complete.
+         * @example
+         * <pre>
+         * function buildProjectSummary = function() {
+         *    var deferred = $q.defer();
+         *
+         *    // Taken from a fictitious projectsModel.js
+         *    projectModel.getAllListItems().then(function(entities) {
+         *      var summaryObject = {};
+         *      var extendProjectSummary = function(project) {
+         *          // Do some process intensive stuff here
+         *
+         *      };
+         *
+         *      // Now that we have all of our projects we want to iterate
+         *      // over each to create our summary object. The problem is
+         *      // this could easily cause the page to hang with a sufficient
+         *      // number of entities.
+         *      apUtilityService.batchProcess(entities, extendProjectSummary, function() {
+         *          // Long running process is complete so resolve promise
+         *          deferred.resolve(summaryObject);
+         *      });
+         *    };
+         *
+         *    return deferred.promise;
+         * }
+         *
+         * </pre>
+         */
+    function batchProcess(items, process, callback) {
+      var minTimeToStart = 50;
+      var copyOfItems = items.concat();
+      setTimeout(function () {
+        process(copyOfItems.shift());
+        if (copyOfItems.lengthÂ > 0) {
+          setTimeout(batchProcess, minTimeToStart);
+        } else {
+          callback(items);
+        }
+      }, minTimeToStart);
+    }
     return {
       attrToJson: attrToJson,
+      batchProcess: batchProcess,
       dateWithinRange: dateWithinRange,
       fromCamelCase: fromCamelCase,
       lookupToJsonObject: lookupToJsonObject,
