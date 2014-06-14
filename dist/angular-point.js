@@ -244,20 +244,19 @@ angular.module('angularPoint').service('apDataService', [
       var opts = _.extend({}, defaults, options);
       /** Map returned XML to JS objects based on mapping from model */
       var filteredNodes = $(responseXML).SPFilterNode(opts.filter);
-      var query = opts.getQuery();
       opts.constructor = function (item) {
         /** Allow us to reference the originating query that generated this object */
         item.getQuery = function () {
-          return query;
+          return opts.getQuery();
         };
         /** Create Reference to the containing array */
         item.getContainer = function () {
           return opts.target;
         };
         var listItem = new model.factory(item);
-        /** Register in global application entity cache and return reference
-                 * to the item in the cache */
-        return apCacheService.registerEntity(listItem);
+        /** Register in global application entity cache */
+        apCacheService.registerEntity(listItem);
+        return listItem;
       };
       var entities = apUtilityService.xmlToJson(filteredNodes, opts);
       if (opts.mode === 'replace') {
