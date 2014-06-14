@@ -3865,7 +3865,7 @@ angular.module('angularPoint').service('apUtilityService', [
          */
     function batchProcess(items, process, context, callback, delay, maxItems) {
       var n = items.length, delay = delay || 25, maxItems = maxItems || n, i = 0;
-      setTimeout(function chunkTimer() {
+      function chunkTimer() {
         var start = +new Date(), j = i;
         while (i < n && i - j < maxItems && new Date() - start < 50) {
           process.call(context, items[i]);
@@ -3877,7 +3877,8 @@ angular.module('angularPoint').service('apUtilityService', [
         } else {
           callback(items);
         }
-      }, 0);
+      }
+      chunkTimer();
     }
     return {
       attrToJson: attrToJson,

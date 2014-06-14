@@ -572,7 +572,7 @@ angular.module('angularPoint')
                 maxItems = maxItems || n,
                 i = 0;
 
-            setTimeout(function chunkTimer(){
+            function chunkTimer() {
                 var start = +new Date(),
                     j = i;
 
@@ -588,7 +588,8 @@ angular.module('angularPoint')
                 else {
                     callback(items);
                 }
-            }, 0);
+            }
+            chunkTimer();
         }
 
         return {
