@@ -34,7 +34,7 @@ angular.module('angularPoint')
          * @param {Array} [options.target=model.getCache()] Optionally pass in array to update after processing.
          */
         var processListItems = function (model, responseXML, options) {
-            apQueueService.decrease();
+            var deferred = $q.defer();
 
             var defaults = {
                 factory: model.factory,
@@ -65,23 +65,26 @@ angular.module('angularPoint')
                 return listItem;
             };
 
-            var entities = apUtilityService.xmlToJson(filteredNodes, opts);
-
-            if (opts.mode === 'replace') {
-                /** Replace any existing data */
-                opts.target = entities;
-                if (offline) {
-                    console.log(model.list.title + ' Replaced with ' + opts.target.length + ' new records.');
+            apUtilityService.xmlToJson(filteredNodes, opts).then(function (entities) {
+                if (opts.mode === 'replace') {
+                    /** Replace any existing data */
+                    opts.target = entities;
+                    if (offline) {
+                        console.log(model.list.title + ' Replaced with ' + opts.target.length + ' new records.');
+                    }
+                } else if (opts.mode === 'update') {
+                    var updateStats = updateLocalCache(opts.target, entities);
+                    if (offline) {
+                        console.log(model.list.title + ' Changes (Create: ' + updateStats.created +
+                            ' | Update: ' + updateStats.updated + ')');
+                    }
                 }
-            } else if (opts.mode === 'update') {
-                var updateStats = updateLocalCache(opts.target, entities);
-                if (offline) {
-                    console.log(model.list.title + ' Changes (Create: ' + updateStats.created +
-                        ' | Update: ' + updateStats.updated + ')');
-                }
-            }
+                apQueueService.decrease();
+                deferred.resolve(entities);
+            });
 
-            return entities;
+            return deferred.promise;
+
         };
 
         /**
@@ -662,12 +665,12 @@ angular.module('angularPoint')
                         processDeletionsSinceToken(responseXML, opts.target);
                     }
                     /** Convert the XML into JS */
-                    var changes = processListItems(model, responseXML, opts);
-
-                    /** Set date time to allow for time based updates */
-                    query.lastRun = new Date();
-                    apQueueService.decrease();
-                    deferred.resolve(changes);
+                    processListItems(model, responseXML, opts).then(function (changes) {
+                        /** Set date time to allow for time based updates */
+                        query.lastRun = new Date();
+                        apQueueService.decrease();
+                        deferred.resolve(changes);
+                    });
                 });
             } else {
                 /** Simulate an web service call if working offline */
@@ -685,17 +688,18 @@ angular.module('angularPoint')
                      *  Get offline data stored in the src/dev folder
                      */
                     $.ajax(offlineData).then(function (responseXML) {
-                        var entities = processListItems(model, responseXML, opts);
-                        /** Set date time to allow for time based updates */
-                        query.lastRun = new Date();
-                        apQueueService.decrease();
+                        processListItems(model, responseXML, opts).then(function (entities) {
+                            /** Set date time to allow for time based updates */
+                            query.lastRun = new Date();
+                            apQueueService.decrease();
 
-                        /** Extend the field definition in the model with the offline data */
-                        if (query.operation === 'GetListItemChangesSinceToken') {
-                            model.list.extendedFieldDefinitions = parseFieldDefinitionXML(model.list.customFields, responseXML);
-                        }
+                            /** Extend the field definition in the model with the offline data */
+                            if (query.operation === 'GetListItemChangesSinceToken') {
+                                model.list.extendedFieldDefinitions = parseFieldDefinitionXML(model.list.customFields, responseXML);
+                            }
 
-                        deferred.resolve(entities);
+                            deferred.resolve(entities);
+                        });
                     }, function () {
                         var mockData = model.generateMockData();
                         deferred.resolve(mockData);
@@ -954,14 +958,15 @@ angular.module('angularPoint')
 
                 webServiceCall.then(function () {
                     /** Success */
-                    var output = processListItems(model, webServiceCall.responseXML, opts);
-                    var updatedEntity = output[0];
+                    processListItems(model, webServiceCall.responseXML, opts).then(function (output) {
+                        var updatedEntity = output[0];
 
-                    /** Optionally search through each cache on the model and update any other references to this entity */
-                    if (opts.updateAllCaches && _.isNumber(entity.id)) {
-                        updateAllCaches(model, updatedEntity, entity.getQuery());
-                    }
-                    deferred.resolve(updatedEntity);
+                        /** Optionally search through each cache on the model and update any other references to this entity */
+                        if (opts.updateAllCaches && _.isNumber(entity.id)) {
+                            updateAllCaches(model, updatedEntity, entity.getQuery());
+                        }
+                        deferred.resolve(updatedEntity);
+                    });
                 }, function (outcome) {
                     /** In the event of an error, display toast */
                     toastr.error('There was an error getting the requested data from ' + model.list.name);

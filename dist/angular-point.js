@@ -233,7 +233,7 @@ angular.module('angularPoint').service('apDataService', [
          * @param {Array} [options.target=model.getCache()] Optionally pass in array to update after processing.
          */
     var processListItems = function (model, responseXML, options) {
-      apQueueService.decrease();
+      var deferred = $q.defer();
       var defaults = {
           factory: model.factory,
           filter: 'z:row',
@@ -258,20 +258,23 @@ angular.module('angularPoint').service('apDataService', [
         apCacheService.registerEntity(listItem);
         return listItem;
       };
-      var entities = apUtilityService.xmlToJson(filteredNodes, opts);
-      if (opts.mode === 'replace') {
-        /** Replace any existing data */
-        opts.target = entities;
-        if (offline) {
-          console.log(model.list.title + ' Replaced with ' + opts.target.length + ' new records.');
+      apUtilityService.xmlToJson(filteredNodes, opts).then(function (entities) {
+        if (opts.mode === 'replace') {
+          /** Replace any existing data */
+          opts.target = entities;
+          if (offline) {
+            console.log(model.list.title + ' Replaced with ' + opts.target.length + ' new records.');
+          }
+        } else if (opts.mode === 'update') {
+          var updateStats = updateLocalCache(opts.target, entities);
+          if (offline) {
+            console.log(model.list.title + ' Changes (Create: ' + updateStats.created + ' | Update: ' + updateStats.updated + ')');
+          }
         }
-      } else if (opts.mode === 'update') {
-        var updateStats = updateLocalCache(opts.target, entities);
-        if (offline) {
-          console.log(model.list.title + ' Changes (Create: ' + updateStats.created + ' | Update: ' + updateStats.updated + ')');
-        }
-      }
-      return entities;
+        apQueueService.decrease();
+        deferred.resolve(entities);
+      });
+      return deferred.promise;
     };
     /**
          * @ngdoc function
@@ -777,11 +780,12 @@ angular.module('angularPoint').service('apDataService', [
             processDeletionsSinceToken(responseXML, opts.target);
           }
           /** Convert the XML into JS */
-          var changes = processListItems(model, responseXML, opts);
-          /** Set date time to allow for time based updates */
-          query.lastRun = new Date();
-          apQueueService.decrease();
-          deferred.resolve(changes);
+          processListItems(model, responseXML, opts).then(function (changes) {
+            /** Set date time to allow for time based updates */
+            query.lastRun = new Date();
+            apQueueService.decrease();
+            deferred.resolve(changes);
+          });
         });
       } else {
         /** Simulate an web service call if working offline */
@@ -798,15 +802,16 @@ angular.module('angularPoint').service('apDataService', [
                      *  Get offline data stored in the src/dev folder
                      */
           $.ajax(offlineData).then(function (responseXML) {
-            var entities = processListItems(model, responseXML, opts);
-            /** Set date time to allow for time based updates */
-            query.lastRun = new Date();
-            apQueueService.decrease();
-            /** Extend the field definition in the model with the offline data */
-            if (query.operation === 'GetListItemChangesSinceToken') {
-              model.list.extendedFieldDefinitions = parseFieldDefinitionXML(model.list.customFields, responseXML);
-            }
-            deferred.resolve(entities);
+            processListItems(model, responseXML, opts).then(function (entities) {
+              /** Set date time to allow for time based updates */
+              query.lastRun = new Date();
+              apQueueService.decrease();
+              /** Extend the field definition in the model with the offline data */
+              if (query.operation === 'GetListItemChangesSinceToken') {
+                model.list.extendedFieldDefinitions = parseFieldDefinitionXML(model.list.customFields, responseXML);
+              }
+              deferred.resolve(entities);
+            });
           }, function () {
             var mockData = model.generateMockData();
             deferred.resolve(mockData);
@@ -1074,13 +1079,14 @@ angular.module('angularPoint').service('apDataService', [
         var webServiceCall = $().SPServices(payload);
         webServiceCall.then(function () {
           /** Success */
-          var output = processListItems(model, webServiceCall.responseXML, opts);
-          var updatedEntity = output[0];
-          /** Optionally search through each cache on the model and update any other references to this entity */
-          if (opts.updateAllCaches && _.isNumber(entity.id)) {
-            updateAllCaches(model, updatedEntity, entity.getQuery());
-          }
-          deferred.resolve(updatedEntity);
+          processListItems(model, webServiceCall.responseXML, opts).then(function (output) {
+            var updatedEntity = output[0];
+            /** Optionally search through each cache on the model and update any other references to this entity */
+            if (opts.updateAllCaches && _.isNumber(entity.id)) {
+              updateAllCaches(model, updatedEntity, entity.getQuery());
+            }
+            deferred.resolve(updatedEntity);
+          });
         }, function (outcome) {
           /** In the event of an error, display toast */
           toastr.error('There was an error getting the requested data from ' + model.list.name);
@@ -3365,6 +3371,7 @@ angular.module('angularPoint').service('apUtilityService', [
          * Converts an XML node set to Javascript object array. This is a modified version of the SPServices
          * "SPXmlToJson" function.
          * @param {array} rows ["z:rows"] XML rows that need to be parsed.
+         * @param {object} options Options object.
          * @param {object[]} options.mapping [columnName: "mappedName", objectType: "objectType"]
          * @param {boolean} [options.includeAllAttrs=false] If true, return all attributes, regardless whether
          * they are in the mapping.
@@ -3378,10 +3385,11 @@ angular.module('angularPoint').service('apUtilityService', [
           includeAllAttrs: false,
           removeOws: true
         };
+      var deferred = $q.defer();
       var opts = _.extend({}, defaults, options);
       var attrNum;
-      var jsonObject = [];
-      _.each(rows, function (item) {
+      var entities = [];
+      var processRow = function (item) {
         var row = {};
         var rowAttrs = item.attributes;
         /** Bring back all mapped columns, even those with no value */
@@ -3404,13 +3412,16 @@ angular.module('angularPoint').service('apUtilityService', [
         }
         /** Push the newly created list item into the return array */
         if (_.isFunction(opts.constructor)) {
-          jsonObject.push(opts.constructor(row));
+          entities.push(opts.constructor(row));
         } else {
-          jsonObject.push(row);
+          entities.push(row);
         }
-      });
-      // Return the JSON object
-      return jsonObject;
+      };
+      var callback = function () {
+        deferred.resolve(entities);
+      };
+      batchProcess(rows, this, processRow, callback, 25, 1000);
+      return deferred.promise;
     };
     /**
          * @ngdoc function

@@ -28,6 +28,7 @@ angular.module('angularPoint')
          * Converts an XML node set to Javascript object array. This is a modified version of the SPServices
          * "SPXmlToJson" function.
          * @param {array} rows ["z:rows"] XML rows that need to be parsed.
+         * @param {object} options Options object.
          * @param {object[]} options.mapping [columnName: "mappedName", objectType: "objectType"]
          * @param {boolean} [options.includeAllAttrs=false] If true, return all attributes, regardless whether
          * they are in the mapping.
@@ -43,12 +44,15 @@ angular.module('angularPoint')
                 removeOws: true
             };
 
+            var deferred = $q.defer();
+
+
             var opts = _.extend({}, defaults, options);
 
             var attrNum;
-            var jsonObject = [];
+            var entities = [];
 
-            _.each(rows, function (item) {
+            var processRow = function (item) {
                 var row = {};
                 var rowAttrs = item.attributes;
 
@@ -69,15 +73,19 @@ angular.module('angularPoint')
                 }
                 /** Push the newly created list item into the return array */
                 if(_.isFunction(opts.constructor)) {
-                    jsonObject.push(opts.constructor(row));
+                    entities.push(opts.constructor(row));
                 } else {
-                    jsonObject.push(row);
+                    entities.push(row);
                 }
+            };
 
-            });
+            var callback = function () {
+                deferred.resolve(entities);
+            };
 
-            // Return the JSON object
-            return jsonObject;
+            batchProcess(rows, this, processRow, callback, 25, 1000);
+
+            return deferred.promise;
         };
 
         /**
