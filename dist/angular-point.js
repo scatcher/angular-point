@@ -3420,7 +3420,7 @@ angular.module('angularPoint').service('apUtilityService', [
       var callback = function () {
         deferred.resolve(entities);
       };
-      batchProcess(rows, this, processRow, callback, 25, 1000);
+      batchProcess(rows, processRow, this, callback, 25, 1000);
       return deferred.promise;
     };
     /**
@@ -3830,8 +3830,8 @@ angular.module('angularPoint').service('apUtilityService', [
          * necessary. Based on example found in the following article:
          * [Timed array processing in JavaScript](http://www.nczonline.net/blog/2009/08/11/timed-array-processing-in-javascript/);
          * @param {Object[]} items The entities that need to be processed.
-         * @param {Object} context this
          * @param {Function} process Reference to the process to be executed for each of the entities.
+         * @param {Object} context this
          * @param {Function} [callback] Function to execute when processing is complete.
          * @param {Number} [delay=25] Number of milliseconds to delay between batches.
          * @param {Number} [maxItems=items.length] Maximum number of items to process before pausing.
