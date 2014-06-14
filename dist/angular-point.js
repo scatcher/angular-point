@@ -244,10 +244,11 @@ angular.module('angularPoint').service('apDataService', [
       var opts = _.extend({}, defaults, options);
       /** Map returned XML to JS objects based on mapping from model */
       var filteredNodes = $(responseXML).SPFilterNode(opts.filter);
+      var query = opts.getQuery();
       opts.constructor = function (item) {
         /** Allow us to reference the originating query that generated this object */
         item.getQuery = function () {
-          return opts.getQuery();
+          return query;
         };
         /** Create Reference to the containing array */
         item.getContainer = function () {
@@ -258,20 +259,20 @@ angular.module('angularPoint').service('apDataService', [
                  * to the item in the cache */
         return apCacheService.registerEntity(listItem);
       };
-      return apUtilityService.xmlToJson(filteredNodes, opts);  //            if (opts.mode === 'replace') {
-                                                               //                /** Replace any existing data */
-                                                               //                opts.target = entities;
-                                                               //                if (offline) {
-                                                               //                    console.log(model.list.title + ' Replaced with ' + opts.target.length + ' new records.');
-                                                               //                }
-                                                               //            } else if (opts.mode === 'update') {
-                                                               //                var updateStats = updateLocalCache(opts.target, entities);
-                                                               //                if (offline) {
-                                                               //                    console.log(model.list.title + ' Changes (Create: ' + updateStats.created +
-                                                               //                        ' | Update: ' + updateStats.updated + ')');
-                                                               //                }
-                                                               //            }
-                                                               //            return entities;
+      var entities = apUtilityService.xmlToJson(filteredNodes, opts);
+      if (opts.mode === 'replace') {
+        /** Replace any existing data */
+        opts.target = entities;
+        if (offline) {
+          console.log(model.list.title + ' Replaced with ' + opts.target.length + ' new records.');
+        }
+      } else if (opts.mode === 'update') {
+        var updateStats = updateLocalCache(opts.target, entities);
+        if (offline) {
+          console.log(model.list.title + ' Changes (Create: ' + updateStats.created + ' | Update: ' + updateStats.updated + ')');
+        }
+      }
+      return entities;
     };
     /**
          * @ngdoc function
