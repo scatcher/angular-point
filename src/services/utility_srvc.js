@@ -83,7 +83,7 @@ angular.module('angularPoint')
                 deferred.resolve(entities);
             };
 
-            batchProcess(rows, processRow, this, callback, 25, 1000);
+            batchProcess(rows, processRow, this, callback, 25);
 
             return deferred.promise;
         };
@@ -576,7 +576,7 @@ angular.module('angularPoint')
                 var start = +new Date(),
                     j = i;
 
-                while (i < n && (i - j) < maxItems && (new Date() - start < 50)) {
+                while (i < n && (i - j) < maxItems && (new Date() - start < 100)) {
                     process.call(context, items[i]);
                     i += 1;
                 }
