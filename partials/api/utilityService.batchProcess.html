@@ -1,0 +1,45 @@
+<h1><code ng:non-bindable="">batchProcess</code>
+<div><span class="hint">service in module <code ng:non-bindable="">utilityService</code>
+</span>
+</div>
+</h1>
+<div><h2 id="description">Description</h2>
+<div class="description"><div class="utilityservice-batchprocess-page"><p>We REALLY don&#39;t want to lock the user&#39;s browser (blocking the UI thread) while iterating over an array of
+items and performing some process on them.  This function cuts the process into as many 50ms chunks as are
+necessary. Based on example found in <a href="http://www.jayway.com/2011/03/28/high-performance-javascript/">High Performance JavaScript</a>;</p>
+</div></div>
+<h2 id="usage">Usage</h2>
+<div class="usage"><pre class="prettyprint linenums">batchProcess(entities, process, [callback]);</pre>
+<h4 id="usage_parameters">Parameters</h4><table class="variables-matrix table table-bordered table-striped"><thead><tr><th>Param</th><th>Type</th><th>Details</th></tr></thead><tbody><tr><td>entities</td><td><a href="" class="label type-hint type-hint-object">Object[]</a></td><td><div class="utilityservice-batchprocess-page"><p>The entities that need to be processed.</p>
+</div></td></tr><tr><td>process</td><td><a href="" class="label type-hint type-hint-function">Function</a></td><td><div class="utilityservice-batchprocess-page"><p>Reference to the process to be executed for each of the entities.</p>
+</div></td></tr><tr><td>[callback]</td><td><a href="" class="label type-hint type-hint-function">Function</a></td><td><div class="utilityservice-batchprocess-page"><p>Function to execute when processing is complete.</p>
+</div></td></tr></tbody></table></div>
+<h2 id="example">Example</h2>
+<div class="example"><div class="utilityservice-batchprocess-page"><pre class="prettyprint linenums">
+function buildProjectSummary = function() {
+   var deferred = $q.defer();
+
+   // Taken from a fictitious projectsModel.js
+   projectModel.getAllListItems().then(function(entities) {
+     var summaryObject = {};
+     var extendProjectSummary = function(project) {
+         // Do some process intensive stuff here
+
+     };
+
+     // Now that we have all of our projects we want to iterate
+     // over each to create our summary object. The problem is
+     // this could easily cause the page to hang with a sufficient
+     // number of entities.
+     apUtilityService.batchProcess(entities, extendProjectSummary, function() {
+         // Long running process is complete so resolve promise
+         deferred.resolve(summaryObject);
+     });
+   };
+
+   return deferred.promise;
+}
+
+</pre>
+</div></div>
+</div>
