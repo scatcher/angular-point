@@ -52,7 +52,7 @@ angular.module('angularPoint')
                 var row = {};
                 var rowAttrs = item.attributes;
 
-                // Bring back all mapped columns, even those with no value
+                /** Bring back all mapped columns, even those with no value */
                 _.each(opts.mapping, function (prop) {
                     row[prop.mappedName] = '';
                 });
@@ -67,8 +67,12 @@ angular.module('angularPoint')
                         row[thisObjectName] = attrToJson(rowAttrs[attrNum].value, thisObjectType, {getQuery: opts.getQuery, entity: row, propertyName: thisObjectName});
                     }
                 }
-                // Push this item into the JSON Object
-                jsonObject.push(row);
+                /** Push the newly created list item into the return array */
+                if(_.isFunction(opts.constructor)) {
+                    jsonObject.push(opts.constructor(row));
+                } else {
+                    jsonObject.push(row);
+                }
 
             });
 

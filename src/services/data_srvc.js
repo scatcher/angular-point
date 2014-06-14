@@ -28,7 +28,7 @@ angular.module('angularPoint')
          * @param {object} [options] Optional configuration object.
          * @param {function} [options.factory=model.factory] Constructor function typically stored on the model.
          * @param {string} [options.filter='z:row'] XML filter string used to find the elements to iterate over.
-         * @param {Array} [options.mapping=model.list.mapping] Field definitions, typeically stored on the model.
+         * @param {Array} [options.mapping=model.list.mapping] Field definitions, typically stored on the model.
          * @param {string} [options.mode='update'] Options for what to do with local list data array in
          * store ['replace', 'update', 'return']
          * @param {Array} [options.target=model.getCache()] Optionally pass in array to update after processing.
@@ -48,12 +48,8 @@ angular.module('angularPoint')
 
             /** Map returned XML to JS objects based on mapping from model */
             var filteredNodes = $(responseXML).SPFilterNode(opts.filter);
-            var jsObjects = apUtilityService.xmlToJson(filteredNodes, opts);
 
-            var entities = [];
-
-            /** Use factory, typically on model, to create new object for each returned item */
-            _.each(jsObjects, function (item) {
+            opts.constructor = function (item) {
                 /** Allow us to reference the originating query that generated this object */
                 item.getQuery = function () {
                     return opts.getQuery();
@@ -63,11 +59,32 @@ angular.module('angularPoint')
                     return opts.target;
                 };
                 var listItem = new model.factory(item);
-                entities.push(listItem);
 
                 /** Register in global application entity cache */
                 apCacheService.registerEntity(listItem);
-            });
+                return listItem;
+            };
+
+            var entities = apUtilityService.xmlToJson(filteredNodes, opts);
+
+//            var entities = [];
+
+//            /** Use factory, typically on model, to create new object for each returned item */
+//            _.each(jsObjects, function (item) {
+//                /** Allow us to reference the originating query that generated this object */
+//                item.getQuery = function () {
+//                    return opts.getQuery();
+//                };
+//                /** Create Reference to the containing array */
+//                item.getContainer = function () {
+//                    return opts.target;
+//                };
+//                var listItem = new model.factory(item);
+//                entities.push(listItem);
+//
+//                /** Register in global application entity cache */
+//                apCacheService.registerEntity(listItem);
+//            });
 
             if (opts.mode === 'replace') {
                 /** Replace any existing data */
