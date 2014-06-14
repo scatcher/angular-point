@@ -101,6 +101,7 @@ angular.module('angularPoint')
                 /** Remove request from queue */
                 self.associationQueue.shift();
             });
+            return self.entity;
         };
 
         /**
@@ -113,7 +114,7 @@ angular.module('angularPoint')
         var registerEntity = function (entity) {
             var entityType = entity.getModel().list.guid;
             var entityCache = getEntityCache(entityType, entity.id);
-            entityCache.addEntity(entity);
+            return entityCache.addEntity(entity);
         };
 
 

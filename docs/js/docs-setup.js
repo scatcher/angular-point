@@ -181,7 +181,7 @@ NG_DOCS={
       "type": "function",
       "moduleName": "dataService",
       "shortDescription": "Post processing of data after returning list items from server",
-      "keywords": "allow api array call configuration data dataservice definitions elements factory field filter find function getcache items iterate list local mapping mode model object optional optionally options pass post processing processlistitems promise reference replace resolved responsexml return returning server service spservices store stored string target typeically typically update updating web xml"
+      "keywords": "allow api array call configuration data dataservice definitions elements factory field filter find function getcache items iterate list local mapping mode model object optional optionally options pass post processing processlistitems promise reference replace resolved responsexml return returning server service spservices store stored string target typically update updating web xml"
     },
     {
       "section": "api",

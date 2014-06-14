@@ -122,6 +122,7 @@ angular.module('angularPoint').service('apCacheService', [
         /** Remove request from queue */
         self.associationQueue.shift();
       });
+      return self.entity;
     };
     /**
          * @ngdoc function
@@ -133,7 +134,7 @@ angular.module('angularPoint').service('apCacheService', [
     var registerEntity = function (entity) {
       var entityType = entity.getModel().list.guid;
       var entityCache = getEntityCache(entityType, entity.id);
-      entityCache.addEntity(entity);
+      return entityCache.addEntity(entity);
     };
     EntityCache.prototype.removeEntity = function () {
       delete entityCache[this.entityType][this.entityId];
@@ -253,41 +254,24 @@ angular.module('angularPoint').service('apDataService', [
           return opts.target;
         };
         var listItem = new model.factory(item);
-        /** Register in global application entity cache */
-        apCacheService.registerEntity(listItem);
-        return listItem;
+        /** Register in global application entity cache and return reference
+                 * to the item in the cache */
+        return apCacheService.registerEntity(listItem);
       };
-      var entities = apUtilityService.xmlToJson(filteredNodes, opts);
-      //            var entities = [];
-      //            /** Use factory, typically on model, to create new object for each returned item */
-      //            _.each(jsObjects, function (item) {
-      //                /** Allow us to reference the originating query that generated this object */
-      //                item.getQuery = function () {
-      //                    return opts.getQuery();
-      //                };
-      //                /** Create Reference to the containing array */
-      //                item.getContainer = function () {
-      //                    return opts.target;
-      //                };
-      //                var listItem = new model.factory(item);
-      //                entities.push(listItem);
-      //
-      //                /** Register in global application entity cache */
-      //                apCacheService.registerEntity(listItem);
-      //            });
-      if (opts.mode === 'replace') {
-        /** Replace any existing data */
-        opts.target = entities;
-        if (offline) {
-          console.log(model.list.title + ' Replaced with ' + opts.target.length + ' new records.');
-        }
-      } else if (opts.mode === 'update') {
-        var updateStats = updateLocalCache(opts.target, entities);
-        if (offline) {
-          console.log(model.list.title + ' Changes (Create: ' + updateStats.created + ' | Update: ' + updateStats.updated + ')');
-        }
-      }
-      return entities;
+      return apUtilityService.xmlToJson(filteredNodes, opts);  //            if (opts.mode === 'replace') {
+                                                               //                /** Replace any existing data */
+                                                               //                opts.target = entities;
+                                                               //                if (offline) {
+                                                               //                    console.log(model.list.title + ' Replaced with ' + opts.target.length + ' new records.');
+                                                               //                }
+                                                               //            } else if (opts.mode === 'update') {
+                                                               //                var updateStats = updateLocalCache(opts.target, entities);
+                                                               //                if (offline) {
+                                                               //                    console.log(model.list.title + ' Changes (Create: ' + updateStats.created +
+                                                               //                        ' | Update: ' + updateStats.updated + ')');
+                                                               //                }
+                                                               //            }
+                                                               //            return entities;
     };
     /**
          * @ngdoc function
