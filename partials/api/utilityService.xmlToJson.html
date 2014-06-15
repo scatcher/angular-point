@@ -8,12 +8,14 @@
 &quot;SPXmlToJson&quot; function.</p>
 </div></div>
 <h2 id="usage">Usage</h2>
-<div class="usage"><pre class="prettyprint linenums">xmlToJson(rows);</pre>
+<div class="usage"><pre class="prettyprint linenums">xmlToJson(rows, options);</pre>
 <h4 id="usage_parameters">Parameters</h4><table class="variables-matrix table table-bordered table-striped"><thead><tr><th>Param</th><th>Type</th><th>Details</th></tr></thead><tbody><tr><td>rows</td><td><a href="" class="label type-hint type-hint-array">array</a></td><td><div class="utilityservice-xmltojson-page"><p>[&quot;z:rows&quot;] XML rows that need to be parsed.</p>
+</div></td></tr><tr><td>options</td><td><a href="" class="label type-hint type-hint-object">object</a></td><td><div class="utilityservice-xmltojson-page"><p>Options object.</p>
 </div></td></tr><tr><td>options.mapping</td><td><a href="" class="label type-hint type-hint-object">object[]</a></td><td><div class="utilityservice-xmltojson-page"><p>[columnName: &quot;mappedName&quot;, objectType: &quot;objectType&quot;]</p>
-</div></td></tr><tr><td>options.includeAllAttrs</td><td><a href="" class="label type-hint type-hint-boolean">boolean</a></td><td><div class="utilityservice-xmltojson-page"><p>If true, return all attributes, regardless whether
-they are in the mapping.</p>
-</div> <p><em>(default: false)</em></p></td></tr><tr><td>options.removeOws</td><td><a href="" class="label type-hint type-hint-boolean">boolean</a></td><td><div class="utilityservice-xmltojson-page"><p>Specifically for GetListItems, if true, the leading ows_ will
+</div></td></tr><tr><td>options.includeAllAttrs</td><td><a href="" class="label type-hint type-hint-boolean">boolean</a></td><td><div class="utilityservice-xmltojson-page"><p>If true, return all attributes, regardless whether</p>
+</div> <p><em>(default: false)</em></p></td></tr><tr><td>options.throttle</td><td><a href="" class="label type-hint type-hint-boolean">boolean</a></td><td><div class="utilityservice-xmltojson-page"><p>Cut long running conversions into chunks to prevent ui performance
+hit.  The downside is most evergreen browsers can handle it so it could slow them down unnecessarily.</p>
+</div> <p><em>(default: true)</em></p></td></tr><tr><td>options.removeOws</td><td><a href="" class="label type-hint type-hint-boolean">boolean</a></td><td><div class="utilityservice-xmltojson-page"><p>Specifically for GetListItems, if true, the leading ows_ will
 be stripped off the field name.</p>
 </div> <p><em>(default: true)</em></p></td></tr></tbody></table><h4 id="usage_returns">Returns</h4><table class="variables-matrix"><tr><td><a href="" class="label type-hint type-hint-array">Array</a></td><td><div class="utilityservice-xmltojson-page"><p>An array of JavaScript objects.</p>
 </div></td></tr></table></div>
