@@ -22,7 +22,8 @@ angular.module('angularPoint')
          * @ngdoc function
          * @name dataService.processListItems
          * @description
-         * Post processing of data after returning list items from server
+         * Post processing of data after returning list items from server.  Returns a promise that resolves with
+         * the processed entities.  Promise allows us to batch conversions of large lists to prevent ui slowdowns.
          * @param {object} model Reference to allow updating of model.
          * @param {xml} responseXML Resolved promise from SPServices web service call.
          * @param {object} [options] Optional configuration object.
@@ -32,6 +33,7 @@ angular.module('angularPoint')
          * @param {string} [options.mode='update'] Options for what to do with local list data array in
          * store ['replace', 'update', 'return']
          * @param {Array} [options.target=model.getCache()] Optionally pass in array to update after processing.
+         * @returns {object} Promise
          */
         var processListItems = function (model, responseXML, options) {
             var deferred = $q.defer();

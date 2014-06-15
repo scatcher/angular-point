@@ -221,7 +221,8 @@ angular.module('angularPoint').service('apDataService', [
          * @ngdoc function
          * @name dataService.processListItems
          * @description
-         * Post processing of data after returning list items from server
+         * Post processing of data after returning list items from server.  Returns a promise that resolves with
+         * the processed entities.  Promise allows us to batch conversions of large lists to prevent ui slowdowns.
          * @param {object} model Reference to allow updating of model.
          * @param {xml} responseXML Resolved promise from SPServices web service call.
          * @param {object} [options] Optional configuration object.
@@ -231,6 +232,7 @@ angular.module('angularPoint').service('apDataService', [
          * @param {string} [options.mode='update'] Options for what to do with local list data array in
          * store ['replace', 'update', 'return']
          * @param {Array} [options.target=model.getCache()] Optionally pass in array to update after processing.
+         * @returns {object} Promise
          */
     var processListItems = function (model, responseXML, options) {
       var deferred = $q.defer();
@@ -3374,7 +3376,8 @@ angular.module('angularPoint').service('apUtilityService', [
          * @param {object} options Options object.
          * @param {object[]} options.mapping [columnName: "mappedName", objectType: "objectType"]
          * @param {boolean} [options.includeAllAttrs=false] If true, return all attributes, regardless whether
-         * they are in the mapping.
+         * @param {boolean} [options.throttle=true] Cut long running conversions into chunks to prevent ui performance
+         * hit.  The downside is most evergreen browsers can handle it so it could slow them down unnecessarily.
          * @param {boolean} [options.removeOws=true] Specifically for GetListItems, if true, the leading ows_ will
          * be stripped off the field name.
          * @returns {Array} An array of JavaScript objects.
@@ -3383,7 +3386,8 @@ angular.module('angularPoint').service('apUtilityService', [
       var defaults = {
           mapping: {},
           includeAllAttrs: false,
-          removeOws: true
+          removeOws: true,
+          throttle: true
         };
       var deferred = $q.defer();
       var opts = _.extend({}, defaults, options);
@@ -3417,10 +3421,15 @@ angular.module('angularPoint').service('apUtilityService', [
           entities.push(row);
         }
       };
-      var callback = function () {
+      if (opts.throttle) {
+        var callback = function () {
+          deferred.resolve(entities);
+        };
+        batchProcess(rows, processRow, this, callback, 25);
+      } else {
+        _.each(rows, processRow);
         deferred.resolve(entities);
-      };
-      batchProcess(rows, processRow, this, callback, 25);
+      }
       return deferred.promise;
     };
     /**

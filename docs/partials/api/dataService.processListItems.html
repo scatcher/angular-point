@@ -4,7 +4,8 @@
 </div>
 </h1>
 <div><h2 id="description">Description</h2>
-<div class="description"><div class="dataservice-processlistitems-page"><p>Post processing of data after returning list items from server</p>
+<div class="description"><div class="dataservice-processlistitems-page"><p>Post processing of data after returning list items from server.  Returns a promise that resolves with
+the processed entities.  Promise allows us to batch conversions of large lists to prevent ui slowdowns.</p>
 </div></div>
 <h2 id="usage">Usage</h2>
 <div class="usage"><pre class="prettyprint linenums">processListItems(model, responseXML, [options]);</pre>
@@ -17,5 +18,6 @@
 </div> <p><em>(default: model.list.mapping)</em></p></td></tr><tr><td>options.mode</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="dataservice-processlistitems-page"><p>Options for what to do with local list data array in
 store [&#39;replace&#39;, &#39;update&#39;, &#39;return&#39;]</p>
 </div> <p><em>(default: 'update')</em></p></td></tr><tr><td>options.target</td><td><a href="" class="label type-hint type-hint-array">Array</a></td><td><div class="dataservice-processlistitems-page"><p>Optionally pass in array to update after processing.</p>
-</div> <p><em>(default: model.getCache())</em></p></td></tr></tbody></table></div>
+</div> <p><em>(default: model.getCache())</em></p></td></tr></tbody></table><h4 id="usage_returns">Returns</h4><table class="variables-matrix"><tr><td><a href="" class="label type-hint type-hint-object">object</a></td><td><div class="dataservice-processlistitems-page"><p>Promise</p>
+</div></td></tr></table></div>
 </div>

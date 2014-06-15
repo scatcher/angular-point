@@ -31,7 +31,8 @@ angular.module('angularPoint')
          * @param {object} options Options object.
          * @param {object[]} options.mapping [columnName: "mappedName", objectType: "objectType"]
          * @param {boolean} [options.includeAllAttrs=false] If true, return all attributes, regardless whether
-         * they are in the mapping.
+         * @param {boolean} [options.throttle=true] Cut long running conversions into chunks to prevent ui performance
+         * hit.  The downside is most evergreen browsers can handle it so it could slow them down unnecessarily.
          * @param {boolean} [options.removeOws=true] Specifically for GetListItems, if true, the leading ows_ will
          * be stripped off the field name.
          * @returns {Array} An array of JavaScript objects.
@@ -41,7 +42,8 @@ angular.module('angularPoint')
             var defaults = {
                 mapping: {},
                 includeAllAttrs: false,
-                removeOws: true
+                removeOws: true,
+                throttle: true
             };
 
             var deferred = $q.defer();
@@ -79,11 +81,17 @@ angular.module('angularPoint')
                 }
             };
 
-            var callback = function () {
-                deferred.resolve(entities);
-            };
+            if(opts.throttle) {
+                var callback = function () {
+                    deferred.resolve(entities);
+                };
 
-            batchProcess(rows, processRow, this, callback, 25);
+                batchProcess(rows, processRow, this, callback, 25);
+            } else {
+                _.each(rows, processRow);
+                deferred.resolve(entities);
+            }
+
 
             return deferred.promise;
         };

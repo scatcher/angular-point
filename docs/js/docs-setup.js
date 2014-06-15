@@ -180,8 +180,8 @@ NG_DOCS={
       "shortName": "dataService.processListItems",
       "type": "function",
       "moduleName": "dataService",
-      "shortDescription": "Post processing of data after returning list items from server",
-      "keywords": "allow api array call configuration data dataservice definitions elements factory field filter find function getcache items iterate list local mapping mode model object optional optionally options pass post processing processlistitems promise reference replace resolved responsexml return returning server service spservices store stored string target typically update updating web xml"
+      "shortDescription": "Post processing of data after returning list items from server.  Returns a promise that resolves with",
+      "keywords": "allow allows api array batch call configuration conversions data dataservice definitions elements entities factory field filter find function getcache items iterate large list lists local mapping mode model object optional optionally options pass post prevent processed processing processlistitems promise reference replace resolved resolves responsexml return returning returns server service slowdowns spservices store stored string target typically ui update updating web xml"
     },
     {
       "section": "api",
@@ -802,7 +802,7 @@ NG_DOCS={
       "type": "function",
       "moduleName": "utilityService",
       "shortDescription": "Converts an XML node set to Javascript object array. This is a modified version of the SPServices",
-      "keywords": "api array attributes converts field function getlistitems includeallattrs javascript leading mappedname mapping modified node object objects objecttype options ows_ parsed removeows return rows set spservices spxmltojson stripped true utilityservice version xml xmltojson"
+      "keywords": "api array attributes browsers chunks conversions converts cut downside evergreen field function getlistitems handle hit includeallattrs javascript leading long mappedname mapping modified node object objects objecttype options ows_ parsed performance prevent removeows return rows running set slow spservices spxmltojson stripped throttle true ui unnecessarily utilityservice version xml xmltojson"
     },
     {
       "section": "api",
