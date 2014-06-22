@@ -119,9 +119,10 @@ angular.module('angularPoint')
          *  Number,
          *  Calc,
          *  JSON,
+         *  HTML,
          *  Text [Default]
          * ]
-         * @param {obj} row Reference to the parent list item which can be used by child constructors.
+         * @param {obj} options Reference to the parent list item which can be used by child constructors.
          * @returns {*} The formatted JavaScript value based on field type.
          */
         function attrToJson(value, objectType, options) {
@@ -165,6 +166,9 @@ angular.module('angularPoint')
                 case 'MultiChoice':
                     colValue = choiceMultiToJsonObject(value);
                     break;
+                case 'HTML':
+                    colValue = parseHTML(value);
+                    break;
                 case 'JSON':
                     colValue = parseJSON(value);
                     break;
@@ -178,6 +182,10 @@ angular.module('angularPoint')
 
         function parseJSON(s) {
             return JSON.parse(s);
+        }
+
+        function parseHTML(s) {
+            return _.unescape(s);
         }
 
         function stringToJsonObject(s) {
