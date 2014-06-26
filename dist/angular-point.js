@@ -782,11 +782,11 @@ angular.module('angularPoint').service('apDataService', [
             processDeletionsSinceToken(responseXML, opts.target);
           }
           /** Convert the XML into JS */
-          processListItems(model, responseXML, opts).then(function (changes) {
+          processListItems(model, responseXML, opts).then(function (entities) {
             /** Set date time to allow for time based updates */
             query.lastRun = new Date();
             apQueueService.decrease();
-            deferred.resolve(changes);
+            deferred.resolve(entities);
           });
         });
       } else {
@@ -3422,10 +3422,10 @@ angular.module('angularPoint').service('apUtilityService', [
         }
       };
       if (opts.throttle) {
-        var callback = function () {
+        /** Action is async so wait until promise from batchProcess is resolved */
+        batchProcess(rows, processRow, this, 25).then(function () {
           deferred.resolve(entities);
-        };
-        batchProcess(rows, processRow, this, callback, 25);
+        });
       } else {
         _.each(rows, processRow);
         deferred.resolve(entities);
@@ -3855,7 +3855,6 @@ angular.module('angularPoint').service('apUtilityService', [
          * @param {Object[]} items The entities that need to be processed.
          * @param {Function} process Reference to the process to be executed for each of the entities.
          * @param {Object} context this
-         * @param {Function} [callback] Function to execute when processing is complete.
          * @param {Number} [delay=25] Number of milliseconds to delay between batches.
          * @param {Number} [maxItems=items.length] Maximum number of items to process before pausing.
          * @example
@@ -3886,8 +3885,8 @@ angular.module('angularPoint').service('apUtilityService', [
          *
          * </pre>
          */
-    function batchProcess(items, process, context, callback, delay, maxItems) {
-      var n = items.length, delay = delay || 25, maxItems = maxItems || n, i = 0;
+    function batchProcess(items, process, context, delay, maxItems) {
+      var n = items.length, delay = delay || 25, maxItems = maxItems || n, i = 0, deferred = $q.defer();
       function chunkTimer() {
         var start = +new Date(), j = i;
         while (i < n && i - j < maxItems && new Date() - start < 100) {
@@ -3898,10 +3897,11 @@ angular.module('angularPoint').service('apUtilityService', [
           $log.info('Batch Delayed');
           setTimeout(chunkTimer, delay);
         } else {
-          callback(items);
+          deferred.resolve(items);
         }
       }
       chunkTimer();
+      return deferred.promise;
     }
     return {
       attrToJson: attrToJson,

@@ -571,7 +571,7 @@ angular.module('angularPoint')
 
             /** Map all custom fields with keys of the internalName and values = field definition */
             _.each(customFields, function (field) {
-                if(field.internalName) {
+                if (field.internalName) {
                     fieldMap[field.internalName] = field;
                 }
             });
@@ -592,7 +592,7 @@ angular.module('angularPoint')
                     });
 
                     /** Additional processing for Choice fields to include the default value and choices */
-                    if(fieldMap[staticName].objectType === 'Choice') {
+                    if (fieldMap[staticName].objectType === 'Choice') {
                         row.choices = [];
                         $(this).find('CHOICE').each(function () {
                             row.choices.push($(this).text());
@@ -667,12 +667,13 @@ angular.module('angularPoint')
                         processDeletionsSinceToken(responseXML, opts.target);
                     }
                     /** Convert the XML into JS */
-                    processListItems(model, responseXML, opts).then(function (changes) {
-                        /** Set date time to allow for time based updates */
-                        query.lastRun = new Date();
-                        apQueueService.decrease();
-                        deferred.resolve(changes);
-                    });
+                    processListItems(model, responseXML, opts)
+                        .then(function (entities) {
+                            /** Set date time to allow for time based updates */
+                            query.lastRun = new Date();
+                            apQueueService.decrease();
+                            deferred.resolve(entities);
+                        });
                 });
             } else {
                 /** Simulate an web service call if working offline */
@@ -690,18 +691,19 @@ angular.module('angularPoint')
                      *  Get offline data stored in the src/dev folder
                      */
                     $.ajax(offlineData).then(function (responseXML) {
-                        processListItems(model, responseXML, opts).then(function (entities) {
-                            /** Set date time to allow for time based updates */
-                            query.lastRun = new Date();
-                            apQueueService.decrease();
+                        processListItems(model, responseXML, opts)
+                            .then(function (entities) {
+                                /** Set date time to allow for time based updates */
+                                query.lastRun = new Date();
+                                apQueueService.decrease();
 
-                            /** Extend the field definition in the model with the offline data */
-                            if (query.operation === 'GetListItemChangesSinceToken') {
-                                model.list.extendedFieldDefinitions = parseFieldDefinitionXML(model.list.customFields, responseXML);
-                            }
+                                /** Extend the field definition in the model with the offline data */
+                                if (query.operation === 'GetListItemChangesSinceToken') {
+                                    model.list.extendedFieldDefinitions = parseFieldDefinitionXML(model.list.customFields, responseXML);
+                                }
 
-                            deferred.resolve(entities);
-                        });
+                                deferred.resolve(entities);
+                            });
                     }, function () {
                         var mockData = model.generateMockData();
                         deferred.resolve(mockData);

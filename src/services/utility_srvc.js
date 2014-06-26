@@ -82,16 +82,15 @@ angular.module('angularPoint')
             };
 
             if(opts.throttle) {
-                var callback = function () {
-                    deferred.resolve(entities);
-                };
-
-                batchProcess(rows, processRow, this, callback, 25);
+                /** Action is async so wait until promise from batchProcess is resolved */
+                batchProcess(rows, processRow, this, 25)
+                    .then(function () {
+                        deferred.resolve(entities);
+                    });
             } else {
                 _.each(rows, processRow);
                 deferred.resolve(entities);
             }
-
 
             return deferred.promise;
         };
@@ -558,7 +557,6 @@ angular.module('angularPoint')
          * @param {Object[]} items The entities that need to be processed.
          * @param {Function} process Reference to the process to be executed for each of the entities.
          * @param {Object} context this
-         * @param {Function} [callback] Function to execute when processing is complete.
          * @param {Number} [delay=25] Number of milliseconds to delay between batches.
          * @param {Number} [maxItems=items.length] Maximum number of items to process before pausing.
          * @example
@@ -590,11 +588,12 @@ angular.module('angularPoint')
          * </pre>
          */
 
-        function batchProcess(items, process, context, callback, delay, maxItems) {
+        function batchProcess(items, process, context, delay, maxItems) {
             var n = items.length,
                 delay = delay || 25,
                 maxItems = maxItems || n,
-                i = 0;
+                i = 0, deferred = $q.defer();
+
 
             function chunkTimer() {
                 var start = +new Date(),
@@ -610,10 +609,11 @@ angular.module('angularPoint')
                     setTimeout(chunkTimer, delay);
                 }
                 else {
-                    callback(items);
+                    deferred.resolve(items);
                 }
             }
             chunkTimer();
+            return deferred.promise;
         }
 
         return {
