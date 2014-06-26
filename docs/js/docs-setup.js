@@ -757,7 +757,7 @@ NG_DOCS={
       "type": "function",
       "moduleName": "utilityService",
       "shortDescription": "Converts a SharePoint string representation of a field into the correctly formatted JavaScript version",
-      "keywords": "api attrtojson based boolean calc child constructors converts correctly counter currency datetime definition field float formatted function integer item javascript json list lookup lookupmulti multichoice number object options parent reference representation row sharepoint string text type user usermulti utilityservice version"
+      "keywords": "api attrtojson based boolean calc child constructors converts correctly counter currency datetime definition field float formatted function html integer item javascript json list lookup lookupmulti multichoice number object options parent reference representation sharepoint string text type user usermulti utilityservice version"
     },
     {
       "section": "api",

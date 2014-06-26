@@ -181,7 +181,15 @@ angular.module('angularPoint')
         }
 
         function parseJSON(s) {
-            return JSON.parse(s);
+            /** Ensure JSON is valid and if not throw error with additional detail */
+            var json = null;
+            try {
+                json = JSON.parse(s);
+            }
+            catch(err) {
+                $log.error('Invalid JSON: ', s);
+            }
+            return json;
         }
 
         function parseHTML(s) {
