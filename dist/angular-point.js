@@ -3421,15 +3421,17 @@ angular.module('angularPoint').service('apUtilityService', [
           entities.push(row);
         }
       };
-      if (opts.throttle) {
-        /** Action is async so wait until promise from batchProcess is resolved */
-        batchProcess(rows, processRow, this, 25).then(function () {
-          deferred.resolve(entities);
-        });
-      } else {
-        _.each(rows, processRow);
-        deferred.resolve(entities);
-      }
+      //TODO Find out why this caused issues with items being built using prototypes and get it working again
+      //            if(opts.throttle) {
+      //                /** Action is async so wait until promise from batchProcess is resolved */
+      //                batchProcess(rows, processRow, this, 25)
+      //                    .then(function () {
+      //                        deferred.resolve(entities);
+      //                    });
+      //            } else {
+      _.each(rows, processRow);
+      deferred.resolve(entities);
+      //            }
       return deferred.promise;
     };
     /**
@@ -3857,6 +3859,7 @@ angular.module('angularPoint').service('apUtilityService', [
          * @param {Object} context this
          * @param {Number} [delay=25] Number of milliseconds to delay between batches.
          * @param {Number} [maxItems=items.length] Maximum number of items to process before pausing.
+         * @returns {Object} Promise
          * @example
          * <pre>
          * function buildProjectSummary = function() {
