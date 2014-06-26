@@ -3422,16 +3422,15 @@ angular.module('angularPoint').service('apUtilityService', [
         }
       };
       //TODO Find out why this caused issues with items being built using prototypes and get it working again
-      //            if(opts.throttle) {
-      //                /** Action is async so wait until promise from batchProcess is resolved */
-      //                batchProcess(rows, processRow, this, 25)
-      //                    .then(function () {
-      //                        deferred.resolve(entities);
-      //                    });
-      //            } else {
-      _.each(rows, processRow);
-      deferred.resolve(entities);
-      //            }
+      if (opts.throttle) {
+        /** Action is async so wait until promise from batchProcess is resolved */
+        batchProcess(rows, processRow, this, 25).then(function () {
+          deferred.resolve(entities);
+        });
+      } else {
+        _.each(rows, processRow);
+        deferred.resolve(entities);
+      }
       return deferred.promise;
     };
     /**
