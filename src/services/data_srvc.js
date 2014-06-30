@@ -39,6 +39,22 @@ angular.module('angularPoint')
             var deferred = $q.defer();
 
             var defaults = {
+                /** Default list item constructor */
+                ctor: function (item) {
+                    /** Allow us to reference the originating query that generated this object */
+                    item.getQuery = function () {
+                        return opts.getQuery();
+                    };
+                    /** Create Reference to the containing array */
+                    item.getContainer = function () {
+                        return opts.target;
+                    };
+                    var listItem = new model.factory(item);
+
+                    /** Register in global application entity cache */
+                    apCacheService.registerEntity(listItem);
+                    return listItem;
+                },
                 factory: model.factory,
                 filter: 'z:row',
                 mapping: model.list.mapping,
@@ -50,22 +66,6 @@ angular.module('angularPoint')
 
             /** Map returned XML to JS objects based on mapping from model */
             var filteredNodes = $(responseXML).SPFilterNode(opts.filter);
-
-            opts.constructor = function (item) {
-                /** Allow us to reference the originating query that generated this object */
-                item.getQuery = function () {
-                    return opts.getQuery();
-                };
-                /** Create Reference to the containing array */
-                item.getContainer = function () {
-                    return opts.target;
-                };
-                var listItem = new model.factory(item);
-
-                /** Register in global application entity cache */
-                apCacheService.registerEntity(listItem);
-                return listItem;
-            };
 
             apUtilityService.xmlToJson(filteredNodes, opts).then(function (entities) {
                 if (opts.mode === 'replace') {

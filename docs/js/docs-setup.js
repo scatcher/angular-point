@@ -802,7 +802,7 @@ NG_DOCS={
       "type": "function",
       "moduleName": "utilityService",
       "shortDescription": "Converts an XML node set to Javascript object array. This is a modified version of the SPServices",
-      "keywords": "api array attributes browsers chunks conversions converts cut downside evergreen field function getlistitems handle hit includeallattrs javascript leading long mappedname mapping modified node object objects objecttype options ows_ parsed performance prevent removeows return rows running set slow spservices spxmltojson stripped throttle true ui unnecessarily utilityservice version xml xmltojson"
+      "keywords": "api array attributes browsers chunks conversions converts ctor cut downside evergreen field function getlistitems handle hit includeallattrs item javascript leading list long mappedname mapping modified node object objects objecttype options ows_ parsed performance prevent removeows return rows running set slow spservices spxmltojson stripped throttle true ui unnecessarily utilityservice version xml xmltojson"
     },
     {
       "section": "api",

@@ -31,6 +31,7 @@ angular.module('angularPoint')
          * @param {object} options Options object.
          * @param {object[]} options.mapping [columnName: "mappedName", objectType: "objectType"]
          * @param {boolean} [options.includeAllAttrs=false] If true, return all attributes, regardless whether
+         * @param {boolean} [options.ctor] List item constructor.
          * @param {boolean} [options.throttle=true] Cut long running conversions into chunks to prevent ui performance
          * hit.  The downside is most evergreen browsers can handle it so it could slow them down unnecessarily.
          * @param {boolean} [options.removeOws=true] Specifically for GetListItems, if true, the leading ows_ will
@@ -74,8 +75,9 @@ angular.module('angularPoint')
                     }
                 }
                 /** Push the newly created list item into the return array */
-                if(_.isFunction(opts.constructor)) {
-                    entities.push(opts.constructor(row));
+                if(_.isFunction(opts.ctor)) {
+                    /** Use provided list item constructor */
+                    entities.push(opts.ctor(row));
                 } else {
                     entities.push(row);
                 }
