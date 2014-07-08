@@ -592,8 +592,9 @@ angular.module('angularPoint')
                     });
 
                     /** Additional processing for Choice fields to include the default value and choices */
-                    if (fieldMap[staticName].objectType === 'Choice') {
+                    if (fieldMap[staticName].objectType === 'Choice' || fieldMap[staticName].objectType === 'MultiChoice') {
                         row.choices = [];
+                        /** Convert XML Choices object to an array of choices */
                         $(this).find('CHOICE').each(function () {
                             row.choices.push($(this).text());
                         });
