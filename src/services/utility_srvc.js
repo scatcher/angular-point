@@ -278,6 +278,27 @@ angular.module('angularPoint')
             }
         }
 
+        /**
+         * Converts an array of selected values into a SharePoint MultiChoice string
+         * @param {string[]} arr
+         * @returns {string}
+         */
+        function choiceMultiToString(arr) {
+            var str = '';
+            var delim = ';#';
+
+            if (arr.length > 0) {
+                /** String is required to begin with deliminator */
+                str += delim;
+
+                /** Append each item in the supplied array followed by deliminator */
+                _.each(arr, function(choice) {
+                    str += choice + delim;
+                });
+            }
+            return str;
+        }
+
         function calcToJsonObject(s) {
             if (s.length === 0) {
                 return null;
@@ -622,6 +643,7 @@ angular.module('angularPoint')
         return {
             attrToJson: attrToJson,
             batchProcess: batchProcess,
+            choiceMultiToString: choiceMultiToString,
             dateWithinRange: dateWithinRange,
             fromCamelCase: fromCamelCase,
             lookupToJsonObject: lookupToJsonObject,

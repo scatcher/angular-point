@@ -830,6 +830,9 @@ angular.module('angularPoint')
                         var stringifiedArray = apUtilityService.stringifySharePointMultiSelect(value, 'lookupId');
                         valuePair = [fieldDefinition.internalName, stringifiedArray];
                         break;
+                    case 'MultiChoice':
+                        valuePair = [fieldDefinition.internalName, apUtilityService.choiceMultiToString(value)];
+                        break;
                     case 'Boolean':
                         valuePair = [internalName, value ? 1 : 0];
                         break;
