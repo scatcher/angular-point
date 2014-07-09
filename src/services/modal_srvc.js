@@ -2,18 +2,19 @@
 
 /**
  * @ngdoc service
- * @name modalService
+ * @name apModalService
  * @description
  * Extends a modal form to include many standard functions
  *
- * @requires $modal from Angular Bootstrap.
+ * @requires {object} $modal From Angular Bootstrap.
+ * @requires {object} toastr
  */
 angular.module('angularPoint')
     .service('apModalService', function ($modal, toastr) {
 
         /**
          * @ngdoc function
-         * @name modalService.modalModelProvider
+         * @name apModalService.modalModelProvider
          * @description
          * Extends a model to allow us to easily attach a modal form that accepts and injects a
          * dynamic number of arguments.
@@ -21,11 +22,11 @@ angular.module('angularPoint')
          * @param {string} options.templateUrl Reference to the modal view.
          * @param {string} options.controller Name of the modal controller.
          * @param {string[]} [options.expectedArguments] First argument name should be the item being edited.
-         * @returns {promise} openModal
+         * @returns {object} Function which returns openModal that in turn returns a promise.
          *
          * @example
          <pre>
-            model.openModal = modalService.modalModelProvider({
+            model.openModal = apModalService.modalModelProvider({
                 templateUrl: 'modules/comp_request/views/comp_request_modal_view.html',
                 controller: 'compRequestModalCtrl',
                 expectedArguments: ['request']
@@ -75,27 +76,36 @@ angular.module('angularPoint')
 
         /**
          * @ngdoc function
-         * @name modalService.getPermissions
+         * @name apModalService.getPermissions
          * @description
          * Returns an object containing the permission levels for the current user
          * @param {object} entity JavaScript object representing the SharePoint list item.
+         * @param {object} [model] Fallback so we can use the model to determine the user's
+         * list permissions instead of the list item.
          * @returns {object} {userCanEdit: boolean, userCanDelete: boolean, userCanApprove: boolean, fullControl: boolean}
          */
-        function getPermissions(entity) {
+        function getPermissions(entity, model) {
             var userPermissions = {
                 /** Assume that if no item is passed in, the user can create one */
-                userCanEdit: true,
-                userCanDelete: false,
                 userCanApprove: false,
+                userCanDelete: false,
+                userCanEdit: false,
                 fullControl: false
             };
 
-            if (_.isObject(entity) && _.isFunction(entity.resolvePermissions)) {
-                var userPermMask = entity.resolvePermissions();
+            function resolvePermissions(permObj) {
+                var userPermMask = permObj.resolvePermissions();
                 userPermissions.userCanEdit = userPermMask.EditListItems;
                 userPermissions.userCanDelete = userPermMask.DeleteListItems;
                 userPermissions.userCanApprove = userPermMask.ApproveItems;
                 userPermissions.fullControl = userPermMask.FullMask;
+            }
+
+            if (_.isObject(entity) && _.isFunction(entity.resolvePermissions)) {
+                resolvePermissions(entity.resolvePermissions);
+            } else if(model && model.resolvePermissions) {
+                /** Fallback to retrieve permissions from the model when a list item isn't available */
+                resolvePermissions(model.resolvePermissions);
             }
 
             return userPermissions;
@@ -103,33 +113,53 @@ angular.module('angularPoint')
 
         /**
          * @ngdoc function
-         * @name modalService.initializeState
+         * @name apModalService.initializeState
          * @description
          * Creates a state object, populates permissions for current user, and sets display mode
          *
          * @param {object} entity JavaScript object representing the SharePoint list item.
          * @param {object} [options] Optional state params.
+         * @param {object} [model] Optional fallback to list permissions instead of using
+         * list item permissions.
          * @returns {object} Returns the extended state.
          *
          * @example
-         <pre>
-         $scope.state = modalService.initializeState(request, {
-             dateExceedsBoundary: false,
-             enableApproval: false
-         });
-         </pre>
+         * <pre>
+         * $scope.state = apModalService.initializeState(request, {
+         *     dateExceedsBoundary: false,
+         *     enableApproval: false
+         * });
+         * </pre>
+         * <pre>
+         * //Returns
+         * $scope.state = {
+         *    // Default "View" and once permissions are checked it
+         *    // can also be "New" || "Edit"
+         *    displayMode: "New",
+         *    // Below 2 options allow for locking with 3 way
+         *    // binding service like FireBase
+         *    locked: false,
+         *    lockedBy: '',
+         *    // Flag which can be used to disable form controls
+         *    negotiatingWithServer: false,
+         *    userCanApprove: false,
+         *    userCanDelete: false,
+         *    userCanEdit: false,
+         *    //User has admin rights
+         *    fullControl: false
+         * }
+         * </pre>
          */
-        function initializeState(entity, options) {
+        function initializeState(entity, options, model) {
             var state = {
-                userCanEdit: false,
-                userCanDelete: false,
-                negotiatingWithServer: false,
+                displayMode: 'View', // New || Edit || View
                 locked: false,
                 lockedBy: '',
-                displayMode: 'View' // New || Edit || View || Fork
+                negotiatingWithServer: false,
+                ready: false
             };
 
-            var permissions = getPermissions(entity);
+            var permissions = getPermissions(entity, model);
 
             /** Check if it's a new form */
             if (!entity || !entity.id) {
@@ -143,7 +173,7 @@ angular.module('angularPoint')
 
         /**
          * @ngdoc function
-         * @name modalService.deleteEntity
+         * @name apModalService.deleteEntity
          * @description
          * Prompts for confirmation of deletion, then deletes and closes modal
          * @param {object} entity JavaScript object representing the SharePoint list item.
@@ -154,7 +184,7 @@ angular.module('angularPoint')
          *
          <pre>
            $scope.deleteRequest = function () {
-               modalService.deleteEntity($scope.request, $scope.state, $modalInstance);
+               apModalService.deleteEntity($scope.request, $scope.state, $modalInstance);
            };
          </pre>
          */
@@ -174,7 +204,7 @@ angular.module('angularPoint')
 
         /**
          * @ngdoc function
-         * @name modalService.saveEntity
+         * @name apModalService.saveEntity
          * @description
          * Creates a new record if necessary, otherwise updates the existing record
          * @param {object} entity List item.
@@ -184,7 +214,7 @@ angular.module('angularPoint')
          *
          * @example
          *  $scope.saveRequest = function () {
-         *      modalService.saveEntity($scope.request, compRequestsModel, $scope.state, $modalInstance);
+         *      apModalService.saveEntity($scope.request, compRequestsModel, $scope.state, $modalInstance);
          *  };
          */
         function saveEntity(entity, model, state, $modalInstance) {

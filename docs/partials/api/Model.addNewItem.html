@@ -18,14 +18,16 @@ This allows us to update the view with a valid new object that contains a unique
 </div></td></tr></table></div>
 <h2 id="example">Example</h2>
 <div class="example"><div class="model-addnewitem-page"><pre class="prettyprint linenums">
-//Taken from a fictitious projectsModel.js
+&lt;file name="app/modules/project/projectsModel.js"&gt;
 projectModel.addNewItem({
-           title: 'A Project',
-           customer: {lookupValue: 'My Customer', lookupId: 123},
-           description: 'This is the project description'
-        }).then(function(newEntityFromServer) {
-            //The local query cache is automatically updated but any other dependent logic can go here
-    };
+       title: 'A Project',
+       customer: {lookupValue: 'My Customer', lookupId: 123},
+       description: 'This is the project description'
+    }).then(function(newEntityFromServer) {
+        //The local query cache is automatically updated but
+        //any other dependent logic can go here
+};
+&lt;/file&gt;
 </pre>
 </div></div>
 </div>

@@ -1630,11 +1630,12 @@ angular.module('angularPoint').service('apFieldService', [
 'use strict';
 /**
  * @ngdoc service
- * @name modalService
+ * @name apModalService
  * @description
  * Extends a modal form to include many standard functions
  *
- * @requires $modal from Angular Bootstrap.
+ * @requires {object} $modal From Angular Bootstrap.
+ * @requires {object} toastr
  */
 angular.module('angularPoint').service('apModalService', [
   '$modal',
@@ -1642,7 +1643,7 @@ angular.module('angularPoint').service('apModalService', [
   function ($modal, toastr) {
     /**
          * @ngdoc function
-         * @name modalService.modalModelProvider
+         * @name apModalService.modalModelProvider
          * @description
          * Extends a model to allow us to easily attach a modal form that accepts and injects a
          * dynamic number of arguments.
@@ -1650,11 +1651,11 @@ angular.module('angularPoint').service('apModalService', [
          * @param {string} options.templateUrl Reference to the modal view.
          * @param {string} options.controller Name of the modal controller.
          * @param {string[]} [options.expectedArguments] First argument name should be the item being edited.
-         * @returns {promise} openModal
+         * @returns {object} Function which returns openModal that in turn returns a promise.
          *
          * @example
          <pre>
-            model.openModal = modalService.modalModelProvider({
+            model.openModal = apModalService.modalModelProvider({
                 templateUrl: 'modules/comp_request/views/comp_request_modal_view.html',
                 controller: 'compRequestModalCtrl',
                 expectedArguments: ['request']
@@ -1697,56 +1698,84 @@ angular.module('angularPoint').service('apModalService', [
     }
     /**
          * @ngdoc function
-         * @name modalService.getPermissions
+         * @name apModalService.getPermissions
          * @description
          * Returns an object containing the permission levels for the current user
          * @param {object} entity JavaScript object representing the SharePoint list item.
+         * @param {object} [model] Fallback so we can use the model to determine the user's
+         * list permissions instead of the list item.
          * @returns {object} {userCanEdit: boolean, userCanDelete: boolean, userCanApprove: boolean, fullControl: boolean}
          */
-    function getPermissions(entity) {
+    function getPermissions(entity, model) {
       var userPermissions = {
-          userCanEdit: true,
-          userCanDelete: false,
           userCanApprove: false,
+          userCanDelete: false,
+          userCanEdit: false,
           fullControl: false
         };
-      if (_.isObject(entity) && _.isFunction(entity.resolvePermissions)) {
-        var userPermMask = entity.resolvePermissions();
+      function resolvePermissions(permObj) {
+        var userPermMask = permObj.resolvePermissions();
         userPermissions.userCanEdit = userPermMask.EditListItems;
         userPermissions.userCanDelete = userPermMask.DeleteListItems;
         userPermissions.userCanApprove = userPermMask.ApproveItems;
         userPermissions.fullControl = userPermMask.FullMask;
       }
+      if (_.isObject(entity) && _.isFunction(entity.resolvePermissions)) {
+        resolvePermissions(entity.resolvePermissions);
+      } else if (model && model.resolvePermissions) {
+        /** Fallback to retrieve permissions from the model when a list item isn't available */
+        resolvePermissions(model.resolvePermissions);
+      }
       return userPermissions;
     }
     /**
          * @ngdoc function
-         * @name modalService.initializeState
+         * @name apModalService.initializeState
          * @description
          * Creates a state object, populates permissions for current user, and sets display mode
          *
          * @param {object} entity JavaScript object representing the SharePoint list item.
          * @param {object} [options] Optional state params.
+         * @param {object} [model] Optional fallback to list permissions instead of using
+         * list item permissions.
          * @returns {object} Returns the extended state.
          *
          * @example
-         <pre>
-         $scope.state = modalService.initializeState(request, {
-             dateExceedsBoundary: false,
-             enableApproval: false
-         });
-         </pre>
+         * <pre>
+         * $scope.state = apModalService.initializeState(request, {
+         *     dateExceedsBoundary: false,
+         *     enableApproval: false
+         * });
+         * </pre>
+         * <pre>
+         * //Returns
+         * $scope.state = {
+         *    // Default "View" and once permissions are checked it
+         *    // can also be "New" || "Edit"
+         *    displayMode: "New",
+         *    // Below 2 options allow for locking with 3 way
+         *    // binding service like FireBase
+         *    locked: false,
+         *    lockedBy: '',
+         *    // Flag which can be used to disable form controls
+         *    negotiatingWithServer: false,
+         *    userCanApprove: false,
+         *    userCanDelete: false,
+         *    userCanEdit: false,
+         *    //User has admin rights
+         *    fullControl: false
+         * }
+         * </pre>
          */
-    function initializeState(entity, options) {
+    function initializeState(entity, options, model) {
       var state = {
-          userCanEdit: false,
-          userCanDelete: false,
-          negotiatingWithServer: false,
+          displayMode: 'View',
           locked: false,
           lockedBy: '',
-          displayMode: 'View'
+          negotiatingWithServer: false,
+          ready: false
         };
-      var permissions = getPermissions(entity);
+      var permissions = getPermissions(entity, model);
       /** Check if it's a new form */
       if (!entity || !entity.id) {
         state.displayMode = 'New';
@@ -1757,7 +1786,7 @@ angular.module('angularPoint').service('apModalService', [
     }
     /**
          * @ngdoc function
-         * @name modalService.deleteEntity
+         * @name apModalService.deleteEntity
          * @description
          * Prompts for confirmation of deletion, then deletes and closes modal
          * @param {object} entity JavaScript object representing the SharePoint list item.
@@ -1768,7 +1797,7 @@ angular.module('angularPoint').service('apModalService', [
          *
          <pre>
            $scope.deleteRequest = function () {
-               modalService.deleteEntity($scope.request, $scope.state, $modalInstance);
+               apModalService.deleteEntity($scope.request, $scope.state, $modalInstance);
            };
          </pre>
          */
@@ -1787,7 +1816,7 @@ angular.module('angularPoint').service('apModalService', [
     }
     /**
          * @ngdoc function
-         * @name modalService.saveEntity
+         * @name apModalService.saveEntity
          * @description
          * Creates a new record if necessary, otherwise updates the existing record
          * @param {object} entity List item.
@@ -1797,7 +1826,7 @@ angular.module('angularPoint').service('apModalService', [
          *
          * @example
          *  $scope.saveRequest = function () {
-         *      modalService.saveEntity($scope.request, compRequestsModel, $scope.state, $modalInstance);
+         *      apModalService.saveEntity($scope.request, compRequestsModel, $scope.state, $modalInstance);
          *  };
          */
     function saveEntity(entity, model, state, $modalInstance) {
@@ -1831,10 +1860,10 @@ angular.module('angularPoint').service('apModalService', [
 'use strict';
 /**
  * @ngdoc service
- * @name modelFactory
+ * @name apModelFactory
  * @module Model
  * @description
- * The 'modelFactory' provides a common base prototype for Model, Query, and List Item.
+ * The 'apModelFactory' provides a common base prototype for Model, Query, and List Item.
  *
  * @function
  */
@@ -1847,8 +1876,9 @@ angular.module('angularPoint').factory('apModelFactory', [
   'apDataService',
   'apCacheService',
   'apFieldService',
+  'apModalService',
   'toastr',
-  function ($q, $timeout, $cacheFactory, $log, apConfig, apDataService, apCacheService, apFieldService, toastr) {
+  function ($q, $timeout, $cacheFactory, $log, apConfig, apDataService, apCacheService, apFieldService, apModalService, toastr) {
     var defaultQueryName = 'primary';
     /** In the event that a factory isn't specified, just use a
          * standard constructor to allow it to inherit from ListItem */
@@ -1882,7 +1912,7 @@ angular.module('angularPoint').factory('apModelFactory', [
          * @example
          * <pre>
          * //Taken from a fictitious projectsModel.js
-         * var model = new modelFactory.Model({
+         * var model = new apModelFactory.Model({
          *     factory: Project,
          *     list: {
          *         guid: '{PROJECT LIST GUID}',
@@ -2062,7 +2092,7 @@ angular.module('angularPoint').factory('apModelFactory', [
     /**
          * @ngdoc function
          * @name Model.getAllListItems
-         * @module modelFactoryModel
+         * @module apModelFactoryModel
          * @description
          * Inherited from Model constructor
          * Gets all list items in the current list, processes the xml, and caches the data in model.
@@ -2097,14 +2127,16 @@ angular.module('angularPoint').factory('apModelFactory', [
          *
          * @example
          * <pre>
-         * //Taken from a fictitious projectsModel.js
+         * <file name="app/modules/project/projectsModel.js">
          * projectModel.addNewItem({
-         *            title: 'A Project',
-         *            customer: {lookupValue: 'My Customer', lookupId: 123},
-         *            description: 'This is the project description'
-         *         }).then(function(newEntityFromServer) {
-         *             //The local query cache is automatically updated but any other dependent logic can go here
-         *     };
+         *        title: 'A Project',
+         *        customer: {lookupValue: 'My Customer', lookupId: 123},
+         *        description: 'This is the project description'
+         *     }).then(function(newEntityFromServer) {
+         *         //The local query cache is automatically updated but
+         *         //any other dependent logic can go here
+         * };
+         * </file>
          * </pre>
          */
     Model.prototype.addNewItem = function (entity, options) {
@@ -2515,6 +2547,148 @@ angular.module('angularPoint').factory('apModelFactory', [
     };
     /**
          * @ngdoc function
+         * @name Model.initializeModalState
+         * @module Model
+         * @description
+         * Uses apModalService to return some general state information for a modal form using
+         * the current user's permissions if an entity is passed in.  Otherwise we attempt to
+         * return the user's permissions for the list.  We also include some additional flags
+         * and with the use of the options param extend any other custom attributes on the returned
+         * state object.
+         *
+         * @param {object} [entity] SharePoint list item.
+         * @param {object} [options] Object containing optional attributes that will be used
+         * to extend the returned state object.
+         * @returns {object} State object with flags.
+         *
+         * @example
+         * <pre>
+         * <file name="app/modules/project/project_modal_ctrl.js">
+         * //Controller
+         * 'use strict';
+         * angular.module('App')
+         *  .controller('projectModalCtrl', function (
+         *                                              $scope,
+         *                                              $modalInstance,
+         *                                              projectsModel,
+         *                                              apModalService,
+         *                                              project
+         *                                            ) {
+         *
+         *      $scope.state = projectsModel.initializeModalState(project, {
+         *           stateOption1: false,
+         *           stateOption2: true
+         *      });
+         *
+         *      $scope.cancel = function () {
+         *           $modalInstance.dismiss('cancel');
+         *      };
+         *
+         *      $scope.project = project;
+         *
+         *      $scope.saveRequest = function () {
+         *           apModalService.saveEntity(
+         *              $scope.request,
+         *              projectsModel,
+         *              $scope.state,
+         *              $modalInstance );
+         *      };
+         * });
+         * </file>
+
+         * <file name="app/modules/project/project_modal_view.html">
+         * //VIEW
+         * <div ng-form>
+         *     <div class="modal-header">
+         *         <button type="button" class="close"
+         *                ng-click="cancel()" aria-hidden="true">&times;</button>
+         *         <h4>Project Details</h4>
+         *     </div>
+         *     <div class="modal-body">
+         *         <div class="well">
+         *             <div ng-form>
+         *                 <div class="form-group">
+         *                     <label>Title</label>
+         *                     <input type="text"
+         *                        class="form-control" ng-model="project.title"/>
+         *                 </div>
+         *                 <div class="form-group">
+         *                     <label>Description</label>
+         *                     <textarea rows="6" cols="50" class="form-control"
+         *                               ng-model="project.description"></textarea>
+         *                 </div>
+         *             </div>
+         *         </div>
+         *     </div>
+         *     <div class="modal-footer">
+         *         <div class="pull-left">
+         *             <button class="btn btn-danger"
+         *                    ng-click="deleteRecord()"
+         *                   ng-show="project.id && state.canDelete"
+         *                   ng-disabled="state.negotiatingWithServer"
+         *                   title="Delete this task request">
+         *                 <i class="fa fa-trash-o"></i>
+         *             </button>
+         *         </div>
+         *         <button class="btn btn-primary"
+         *            ng-click="save()"
+         *            ng-disabled="project.title.length === 0 ||
+         *                state.negotiatingWithServer">OK</button>
+         *         <button class="btn btn-default"
+         *            ng-click="cancel()">Cancel</button>
+         *     </div>
+         * </div>
+         * </file>
+         * </pre>
+         *
+         * <pre>
+         * //Returns
+         * $scope.state = {
+         *    // Default "View" and once permissions are checked it
+         *    // can also be "New" || "Edit"
+         *    displayMode: "New",
+         *    // Below 2 options allow for locking with 3 way
+         *    // binding service like FireBase
+         *    locked: false,
+         *    lockedBy: '',
+         *    // Flag which can be used to disable form controls
+         *    negotiatingWithServer: false,
+         *    userCanApprove: false,
+         *    userCanDelete: false,
+         *    userCanEdit: false,
+         *    //User has admin rights
+         *    fullControl: false,
+         *    //Custom attributes passed in the options param
+         *    stateOption1: false,
+         *    stateOption2: true
+         * }
+         * </pre>
+         */
+    Model.prototype.initializeModalState = function (entity, options) {
+      return apModalService.initializeState(entity, options, this);
+    };
+    /**
+         * @ngdoc function
+         * @name Model.resolvePermissions
+         * @module Model
+         * @description
+         * See apModelFactory.resolvePermissions for details on what we expect to have returned.
+         * @returns {Object} Contains properties for each permission level evaluated for current user.
+         * @example
+         * <pre>
+         * var permissionObject = projectsModel.resolvePermissions();
+         * </pre>
+         */
+    Model.prototype.resolvePermissions = function () {
+      if (this.list && this.list.effectivePermMask) {
+        return resolvePermissions(this.list.effectivePermMask);
+      } else {
+        window.console.error('Attempted to resolve permissions of a model that hasn\'t been initialized.', this);
+        return resolvePermissions(null);
+      }
+    };
+    /**
+         * @ngdoc function
          * @name ListItem
          * @module ListItem
          * @description
@@ -2788,7 +2962,7 @@ angular.module('angularPoint').factory('apModelFactory', [
          * @name ListItem.resolvePermissions
          * @module ListItem
          * @description
-         * See modelFactory.resolvePermissions for details on what we expect to have returned.
+         * See apModelFactory.resolvePermissions for details on what we expect to have returned.
          * @returns {Object} Contains properties for each permission level evaluated for current user.
          * @example
          * <pre>
@@ -3193,7 +3367,7 @@ angular.module('angularPoint').factory('apModelFactory', [
     };
     /**
          * @ngdoc function
-         * @name modelFactory.registerChange
+         * @name apModelFactory.registerChange
          * @description
          * If online and sync is being used, notify all online users that a change has been made.
          * //Todo Break this functionality into FireBase module that can be used if desired.
@@ -3207,7 +3381,7 @@ angular.module('angularPoint').factory('apModelFactory', [
     }
     /**
          * @ngdoc function
-         * @name modelFactory.resolvePermissions
+         * @name apModelFactory.resolvePermissions
          * @description
          * Converts permMask into something usable to determine permission level for current user.  Typically used
          * directly from a list item.  See ListItem.resolvePermissions.
@@ -3218,7 +3392,7 @@ angular.module('angularPoint').factory('apModelFactory', [
          * the rights that can be assigned to a user or site group. This bit mask can have zero or more flags set.
          * @example
          * <pre>
-         * modelFactory.resolvePermissions('0x0000000000000010');
+         * apModelFactory.resolvePermissions('0x0000000000000010');
          * </pre>
          * @returns {object} property for each permission level identifying if current user has rights (true || false)
          * @link: http://sympmarc.com/2009/02/03/permmask-in-sharepoint-dvwps/
@@ -4201,6 +4375,6 @@ angular.module('angularPoint').run([
     $templateCache.put('src/directives/ap_comments/ap_recursive_comment.html', '<ul class=comments><li class=comment ng-repeat="response in comment.thread" style="border-top-width: 1px;border-top-color: grey"><div class=comment-content><div class=content><h5><small><span class=author>{{ response.author.lookupValue }}</span> <span>{{ response.modified | date:\'short\' }}</span> <button class="btn btn-link btn-xs" ng-click="state.respondingTo = response"><i class="fa fa-mail-reply"></i> Reply</button> <button class="btn btn-link btn-xs" ng-click=deleteComment(response)><i class="fa fa-trash-o"></i> Delete</button></small></h5><p class=comment-text>{{ response.comment }}</p></div></div><div ng-if="state.respondingTo === response"><div class=row><div class=col-xs-12><form><div class=form-group><h5><small>Response<label class=pull-right><button class="btn btn-link btn-xs" ng-click=createResponse(response)><i class="fa fa-save"></i> Save</button> <button class="btn btn-link btn-xs" ng-click=clearTempVars()><i class="fa fa-undo"></i> Cancel</button></label></small></h5><textarea class=form-control rows=2 ng-model=state.tempResponse></textarea></div></form></div></div></div><div ng-if="response.thread.length !== -1"><span ng-include="\'src/directives/ap_comments/ap_recursive_comment.html\'" ng-init="comment = response;"></span></div></li></ul>');
     $templateCache.put('src/directives/ap_select/ap_select_tmpl.html', '<span class=ng-cloak><span ng-if=!multi><select class=form-control ng-model=state.singleSelectID ng-change=updateSingleModel() style="width: 100%" ng-disabled=ngDisabled ng-options="lookup.id as lookup[state.lookupField] for lookup in arr"></select></span> <span ng-if=multi><select multiple ui-select2="" ng-model=state.multiSelectIDs ng-change=updateMultiModel() style="width: 100%" ng-disabled=ngDisabled><option></option><option ng-repeat="lookup in arr" value="{{ lookup.id }}" ng-bind=lookup[state.lookupField]>&nbsp;</option></select></span></span>');
     $templateCache.put('src/views/generate_offline_view.html', '<div class=container><h3>Offline XML Generator</h3><p>Fill in the basic information for a list and make the request to SharePoint. The xml response will appear at the bottom of the page where you can then copy by Ctrl + A.</p><hr><form role=form><div class=form-group><label>Site URL</label><div class=input-group><input type=url class=form-control ng-model=state.siteUrl><span class=input-group-btn><button title="Refresh list/libraries" class="btn btn-success" type=button ng-click=getLists()><i class="fa fa-refresh"></i></button></span></div></div><div class=row><div class=col-xs-5><div class=form-group><label>List Name or GUID</label><select ng-model=state.selectedList ng-options="list.Title for list in listCollection" class=form-control></select></div></div><div class=col-xs-3><div class=form-group><label>Number of Items to Return</label><input type=number class=form-control ng-model=state.itemLimit><p class=help-block>[0 = All Items]</p></div></div><div class=col-xs-4><div class=form-group><label>Operation</label><select class=form-control ng-model=state.operation ng-options="operation for operation in operations"></select><p class=help-block>Operation to query with.</p></div></div></div><div class=row><div class=col-xs-12><div class=form-group><label>Selected Fields</label><select multiple ui-select2="" ng-model=state.selectedListFields style="width: 100%" ng-disabled="listCollection.length < 1"><option ng-repeat="field in state.availableListFields" value={{field.Name}}>{{ field.Name }}</option></select><p class=help-block>Leaving this blank will return all fields visible in the default list view.</p></div></div></div><div class=form-group><label>CAML Query (Optional)</label><textarea class=form-control ng-model=state.query rows=3></textarea></div><br><button type=submit class="btn btn-primary" ng-click=getXML()>Make Request</button><hr><h4>XML Response</h4><ol><li>Create a new offline file under "app/dev" in angularPoint.</li><li>Use the same name as found in the model at "model.list.title" + .xml</li><li>Select the returned XML below by clicking in the textarea.</li><li>Add the XML to the newly created offline .xml file.</li></ol><div class="well well-sm"><textarea name=xmlResponse class=form-control cols=30 rows=10 ng-model=state.xmlResponse ng-click=onTextClick($event)></textarea></div></form></div>');
-    $templateCache.put('src/views/group_manager_view.html', '<style>select.multiselect {\n' + '        min-height: 400px;\n' + '    }\n' + '\n' + '    .ui-match {\n' + '        background: yellow;\n' + '    }</style><div class=container><ul class="nav nav-tabs"><li ng-class="{active: state.activeTab === \'Users\'}"><a href="" ng-click="updateTab(\'Users\')">Users</a></li><li ng-class="{active: state.activeTab === \'Groups\'}"><a href="" ng-click="updateTab(\'Groups\')">Groups</a></li><li ng-class="{active: state.activeTab === \'Merge\'}"><a href="" ng-click="state.activeTab = \'Merge\'">Merge</a></li><li ng-class="{active: state.activeTab === \'UserList\'}"><a href="" ng-click="state.activeTab = \'UserList\'">User List</a></li><li ng-class="{active: state.activeTab === \'GroupList\'}"><a href="" ng-click="state.activeTab = \'GroupList\'">Group List</a></li></ul><div ng-if="state.activeTab === \'Users\'"><div class="panel panel-default"><div class=panel-heading><div class=row><div class=col-xs-5><span style=font-weight:bold>Select a Group:</span><select class=form-control ng-model=users.filter ng-options="group.Name for group in groups.all" ng-change=updateAvailableUsers(users.filter) style="min-width: 100px"></select></div><div class=col-xs-7><span style=font-weight:bold>Site/Site Collection:</span><input class=form-control ng-model=state.siteUrl ng-change=updateAvailableUsers(users.filter)></div></div><div class=row ng-if=users.filter.Description><div class=col-xs-12><p class=help-block>Description: {{ users.filter.Description }}</p></div></div></div><div class=panel-body><div class=row><div class=col-xs-12><div colspan=3 class=description>This tab will allow you to quickly assign multiple users to a selected group.</div></div></div><hr class=hr-sm><div class=row><div class=col-xs-5><div class=form-group><label>Available Users ({{users.available.length}})</label><select ng-model=users.selectedAvailable ng-options="user.Name for user in users.available" multiple class="multiselect form-control"></select></div></div><div class="col-xs-2 text-center" style="padding-top: 175px"><button class="btn btn-default" style=width:80px ng-click="updatePermissions(\'AddUserToGroup\', users.selectedAvailable, [users.filter])" title="Add user"><i class="fa fa-2x fa-angle-double-right"></i></button><br><br><button class="btn btn-default" style=width:80px ng-click="updatePermissions(\'RemoveUserFromGroup\', users.selectedAssigned, [users.filter])"><i class="fa fa-2x fa-angle-double-left"></i></button></div><div class=col-xs-5><div class=form-group><label>Assigned Users ({{users.assigned.length}})</label><select ng-model=users.selectedAssigned ng-options="user.Name for user in users.assigned" multiple class="multiselect form-control"></select></div></div></div></div></div></div><div ng-if="state.activeTab === \'Groups\'"><div class="panel panel-default"><div class=panel-heading><div class=row><div class=col-xs-5><span style=font-weight:bold>Select a User:</span><select class=form-control ng-model=groups.filter ng-options="user.Name for user in users.all" ng-change=updateAvailableGroups(groups.filter) style="min-width: 100px"></select></div><div class=col-xs-7><span style=font-weight:bold>Site/Site Collection:</span><input class=form-control ng-model=state.siteUrl ng-change=updateAvailableGroups(groups.filter)></div></div></div><div class=panel-body><div class=row><div class=col-xs-12><div colspan=3 class=description>This page was created to make the process of managing users/groups within the site collection more manageable. When a user is selected, the available groups are displayed on the left and the groups that the user is currently a member of will show on the right. Selecting multiple groups is supported.</div></div></div><hr class=hr-sm><div class=row><div class=col-xs-5><div class=form-group><label>Available Groups ({{groups.available.length}})</label><select ng-model=groups.selectedAvailable ng-options="group.Name for group in groups.available" multiple class="multiselect form-control"></select></div></div><div class="col-xs-2 text-center" style="padding-top: 175px"><button class="btn btn-default" style=width:80px ng-click="updatePermissions(\'AddUserToGroup\', [groups.filter], groups.selectedAvailable)" title="Add to group"><i class="fa fa-2x fa-angle-double-right"></i></button><br><br><button class="btn btn-default" style=width:80px ng-click="updatePermissions(\'RemoveUserFromGroup\', [groups.filter], groups.selectedAssigned)"><i class="fa fa-2x fa-angle-double-left"></i></button></div><div class=col-xs-5><div class=form-group><label>Assigned Users ({{users.assigned.length}})</label><select ng-model=groups.selectedAssigned ng-options="group.Name for group in groups.assigned" multiple class="multiselect form-control"></select></div></div></div></div></div></div><div ng-if="state.activeTab === \'Merge\'"><div class="panel panel-default"><div class=panel-body><div class=row><div class=col-xs-12><div class=description>This tab allows us to copy the members from the "Source" group over to the "Target" group. It\'s not a problem if any of the users already exist in the destination group. Note: This is a onetime operation so any additional members added to the Source group will not automatically be added to the destination group. You will need to repeat this process.</div></div></div><hr class=hr-sm><div class=row><div class=col-xs-5><fieldset><legend>Step 1</legend><div class=well><div class=form-group><label>Source Group</label><select class=form-control ng-model=state.sourceGroup ng-options="group.Name for group in groups.all" ng-change=updateAvailableUsers(state.sourceGroup) style="min-width: 100px"></select></div></div></fieldset></div><div class=col-xs-5><fieldset><legend>Step 2</legend><div class=well><div class=form-group><label>Source Group</label><select class=form-control ng-model=state.targetGroup ng-options="group.Name for group in groups.all" style="min-width: 100px"></select></div></div></fieldset></div><div class=col-xs-2><fieldset><legend>Step 3</legend><button class="btn btn-success" ng-disabled="state.sourceGroup.length < 1 || state.targetGroup.length < 1" ng-click=mergeGroups() title="Copy all members from the source group over to the destination group."><i class="fa fa-2x fa-magic"></i> Merge</button></fieldset></div></div></div></div></div><div ng-if="state.activeTab === \'UserList\'"><div class="panel panel-default"><div class=panel-heading><span style=font-weight:bold>User Filter</span><input class=form-control ng-model=state.userFilter ng-change=usersTable.reload()></div><table ng-table=usersTable class=table template-pagination=custom/pager><tr ng-repeat="user in $data"><td data-title="\'ID\'">{{ user.ID }}</td><td data-title="\'Name\'"><a href="" ng-click=userDetailsLink(user) ng-bind-html="user.Name |  highlight:state.userFilter"></a></td><td data-title="\'Email\'">{{ user.Email }}</td></tr></table></div></div><div ng-if="state.activeTab === \'GroupList\'"><div class="panel panel-default"><div class=panel-heading><span style=font-weight:bold>Group Filter</span><input class=form-control ng-model=state.groupFilter ng-change=groupsTable.reload()></div><table ng-table=groupsTable class=table template-pagination=custom/pager><tr ng-repeat="group in $data"><td data-title="\'ID\'">{{ group.ID }}</td><td data-title="\'Name\'"><a href="" ng-click=groupDetailsLink(group) ng-bind-html="group.Name |  highlight:state.groupFilter"></a></td><td data-title="\'Description\'">{{ group.Description }}</td></tr></table></div></div></div><script type=text/ng-template id=custom/pager><div class="row">\n' + '        <div class="col-xs-12">\n' + '            <ul class="pager ng-cloak">\n' + '                <li ng-repeat="page in pages"\n' + '                    ng-class="{\'disabled\': !page.active}"\n' + '                    ng-show="page.type == \'prev\' || page.type == \'next\'" ng-switch="page.type">\n' + '                    <a ng-switch-when="prev" ng-click="params.page(page.number)" href="">\n' + '                        <i class="fa fa-chevron-left"></i>\n' + '                    </a>\n' + '                    <a ng-switch-when="next" ng-click="params.page(page.number)" href="">\n' + '                        <i class="fa fa-chevron-right"></i>\n' + '                    </a>\n' + '                </li>\n' + '            </ul>\n' + '        </div>\n' + '    </div></script>');
+    $templateCache.put('src/views/group_manager_view.html', '<style>select.multiselect {\r' + '\n' + '        min-height: 400px;\r' + '\n' + '    }\r' + '\n' + '\r' + '\n' + '    .ui-match {\r' + '\n' + '        background: yellow;\r' + '\n' + '    }</style><div class=container><ul class="nav nav-tabs"><li ng-class="{active: state.activeTab === \'Users\'}"><a href="" ng-click="updateTab(\'Users\')">Users</a></li><li ng-class="{active: state.activeTab === \'Groups\'}"><a href="" ng-click="updateTab(\'Groups\')">Groups</a></li><li ng-class="{active: state.activeTab === \'Merge\'}"><a href="" ng-click="state.activeTab = \'Merge\'">Merge</a></li><li ng-class="{active: state.activeTab === \'UserList\'}"><a href="" ng-click="state.activeTab = \'UserList\'">User List</a></li><li ng-class="{active: state.activeTab === \'GroupList\'}"><a href="" ng-click="state.activeTab = \'GroupList\'">Group List</a></li></ul><div ng-if="state.activeTab === \'Users\'"><div class="panel panel-default"><div class=panel-heading><div class=row><div class=col-xs-5><span style=font-weight:bold>Select a Group:</span><select class=form-control ng-model=users.filter ng-options="group.Name for group in groups.all" ng-change=updateAvailableUsers(users.filter) style="min-width: 100px"></select></div><div class=col-xs-7><span style=font-weight:bold>Site/Site Collection:</span><input class=form-control ng-model=state.siteUrl ng-change=updateAvailableUsers(users.filter)></div></div><div class=row ng-if=users.filter.Description><div class=col-xs-12><p class=help-block>Description: {{ users.filter.Description }}</p></div></div></div><div class=panel-body><div class=row><div class=col-xs-12><div colspan=3 class=description>This tab will allow you to quickly assign multiple users to a selected group.</div></div></div><hr class=hr-sm><div class=row><div class=col-xs-5><div class=form-group><label>Available Users ({{users.available.length}})</label><select ng-model=users.selectedAvailable ng-options="user.Name for user in users.available" multiple class="multiselect form-control"></select></div></div><div class="col-xs-2 text-center" style="padding-top: 175px"><button class="btn btn-default" style=width:80px ng-click="updatePermissions(\'AddUserToGroup\', users.selectedAvailable, [users.filter])" title="Add user"><i class="fa fa-2x fa-angle-double-right"></i></button><br><br><button class="btn btn-default" style=width:80px ng-click="updatePermissions(\'RemoveUserFromGroup\', users.selectedAssigned, [users.filter])"><i class="fa fa-2x fa-angle-double-left"></i></button></div><div class=col-xs-5><div class=form-group><label>Assigned Users ({{users.assigned.length}})</label><select ng-model=users.selectedAssigned ng-options="user.Name for user in users.assigned" multiple class="multiselect form-control"></select></div></div></div></div></div></div><div ng-if="state.activeTab === \'Groups\'"><div class="panel panel-default"><div class=panel-heading><div class=row><div class=col-xs-5><span style=font-weight:bold>Select a User:</span><select class=form-control ng-model=groups.filter ng-options="user.Name for user in users.all" ng-change=updateAvailableGroups(groups.filter) style="min-width: 100px"></select></div><div class=col-xs-7><span style=font-weight:bold>Site/Site Collection:</span><input class=form-control ng-model=state.siteUrl ng-change=updateAvailableGroups(groups.filter)></div></div></div><div class=panel-body><div class=row><div class=col-xs-12><div colspan=3 class=description>This page was created to make the process of managing users/groups within the site collection more manageable. When a user is selected, the available groups are displayed on the left and the groups that the user is currently a member of will show on the right. Selecting multiple groups is supported.</div></div></div><hr class=hr-sm><div class=row><div class=col-xs-5><div class=form-group><label>Available Groups ({{groups.available.length}})</label><select ng-model=groups.selectedAvailable ng-options="group.Name for group in groups.available" multiple class="multiselect form-control"></select></div></div><div class="col-xs-2 text-center" style="padding-top: 175px"><button class="btn btn-default" style=width:80px ng-click="updatePermissions(\'AddUserToGroup\', [groups.filter], groups.selectedAvailable)" title="Add to group"><i class="fa fa-2x fa-angle-double-right"></i></button><br><br><button class="btn btn-default" style=width:80px ng-click="updatePermissions(\'RemoveUserFromGroup\', [groups.filter], groups.selectedAssigned)"><i class="fa fa-2x fa-angle-double-left"></i></button></div><div class=col-xs-5><div class=form-group><label>Assigned Users ({{users.assigned.length}})</label><select ng-model=groups.selectedAssigned ng-options="group.Name for group in groups.assigned" multiple class="multiselect form-control"></select></div></div></div></div></div></div><div ng-if="state.activeTab === \'Merge\'"><div class="panel panel-default"><div class=panel-body><div class=row><div class=col-xs-12><div class=description>This tab allows us to copy the members from the "Source" group over to the "Target" group. It\'s not a problem if any of the users already exist in the destination group. Note: This is a onetime operation so any additional members added to the Source group will not automatically be added to the destination group. You will need to repeat this process.</div></div></div><hr class=hr-sm><div class=row><div class=col-xs-5><fieldset><legend>Step 1</legend><div class=well><div class=form-group><label>Source Group</label><select class=form-control ng-model=state.sourceGroup ng-options="group.Name for group in groups.all" ng-change=updateAvailableUsers(state.sourceGroup) style="min-width: 100px"></select></div></div></fieldset></div><div class=col-xs-5><fieldset><legend>Step 2</legend><div class=well><div class=form-group><label>Source Group</label><select class=form-control ng-model=state.targetGroup ng-options="group.Name for group in groups.all" style="min-width: 100px"></select></div></div></fieldset></div><div class=col-xs-2><fieldset><legend>Step 3</legend><button class="btn btn-success" ng-disabled="state.sourceGroup.length < 1 || state.targetGroup.length < 1" ng-click=mergeGroups() title="Copy all members from the source group over to the destination group."><i class="fa fa-2x fa-magic"></i> Merge</button></fieldset></div></div></div></div></div><div ng-if="state.activeTab === \'UserList\'"><div class="panel panel-default"><div class=panel-heading><span style=font-weight:bold>User Filter</span><input class=form-control ng-model=state.userFilter ng-change=usersTable.reload()></div><table ng-table=usersTable class=table template-pagination=custom/pager><tr ng-repeat="user in $data"><td data-title="\'ID\'">{{ user.ID }}</td><td data-title="\'Name\'"><a href="" ng-click=userDetailsLink(user) ng-bind-html="user.Name |  highlight:state.userFilter"></a></td><td data-title="\'Email\'">{{ user.Email }}</td></tr></table></div></div><div ng-if="state.activeTab === \'GroupList\'"><div class="panel panel-default"><div class=panel-heading><span style=font-weight:bold>Group Filter</span><input class=form-control ng-model=state.groupFilter ng-change=groupsTable.reload()></div><table ng-table=groupsTable class=table template-pagination=custom/pager><tr ng-repeat="group in $data"><td data-title="\'ID\'">{{ group.ID }}</td><td data-title="\'Name\'"><a href="" ng-click=groupDetailsLink(group) ng-bind-html="group.Name |  highlight:state.groupFilter"></a></td><td data-title="\'Description\'">{{ group.Description }}</td></tr></table></div></div></div><script type=text/ng-template id=custom/pager><div class="row">\r' + '\n' + '        <div class="col-xs-12">\r' + '\n' + '            <ul class="pager ng-cloak">\r' + '\n' + '                <li ng-repeat="page in pages"\r' + '\n' + '                    ng-class="{\'disabled\': !page.active}"\r' + '\n' + '                    ng-show="page.type == \'prev\' || page.type == \'next\'" ng-switch="page.type">\r' + '\n' + '                    <a ng-switch-when="prev" ng-click="params.page(page.number)" href="">\r' + '\n' + '                        <i class="fa fa-chevron-left"></i>\r' + '\n' + '                    </a>\r' + '\n' + '                    <a ng-switch-when="next" ng-click="params.page(page.number)" href="">\r' + '\n' + '                        <i class="fa fa-chevron-right"></i>\r' + '\n' + '                    </a>\r' + '\n' + '                </li>\r' + '\n' + '            </ul>\r' + '\n' + '        </div>\r' + '\n' + '    </div></script>');
   }
 ]);
