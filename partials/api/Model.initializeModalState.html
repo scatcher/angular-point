@@ -19,7 +19,7 @@ to extend the returned state object.</p>
 </div></td></tr></table></div>
 <h2 id="example">Example</h2>
 <div class="example"><div class="model-initializemodalstate-page"><pre class="prettyprint linenums">
-Controller: app/modules/project/project_modal_ctrl.js
+//CONTROLLER: app/modules/project/project_modal_ctrl.js
 'use strict';
 angular.module('App')
  .controller('projectModalCtrl', function (
@@ -51,7 +51,7 @@ angular.module('App')
 });
 </pre>
 <pre class="prettyprint linenums">
-View: app/modules/project/project_modal_view.html
+//VIEW: app/modules/project/project_modal_view.html
 
 &lt;div ng-form&gt;
     &lt;div class="modal-header"&gt;
@@ -110,7 +110,10 @@ $scope.state = {
    userCanDelete: false,
    userCanEdit: false,
    //User has admin rights
-   fullControl: false
+   fullControl: false,
+   //Custom attributes passed in the options param
+   stateOption1: false,
+   stateOption2: true
 }
 </pre>
 </div></div>
