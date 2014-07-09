@@ -559,7 +559,7 @@ NG_DOCS={
       "type": "function",
       "moduleName": "Model",
       "shortDescription": "Using the definition of a list stored in a model, create a new list item in SharePoint.",
-      "keywords": "additional addnewitem allows api app automatically based cache converted create created customer data defined definition definitions dependent description entity fictitious field function item js key list local logic lookupid model newly object options pairs pass project projectmodel projectsmodel promise query resolved returned server service sharepoint stored title unique update updated valid view"
+      "keywords": "additional addnewitem allows api app automatically based cache converted create created customer data defined definition definitions dependent description entity field function item js key list local logic lookupid model newly object options pairs pass project projectmodel promise query resolved returned server service sharepoint stored title unique update updated valid view"
     },
     {
       "section": "api",
