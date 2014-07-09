@@ -1,0 +1,44 @@
+<h1><code ng:non-bindable="">initializeState</code>
+<div><span class="hint">service in module <code ng:non-bindable="">apModalService</code>
+</span>
+</div>
+</h1>
+<div><h2 id="description">Description</h2>
+<div class="description"><div class="apmodalservice-initializestate-page"><p>Creates a state object, populates permissions for current user, and sets display mode</p>
+</div></div>
+<h2 id="usage">Usage</h2>
+<div class="usage"><pre class="prettyprint linenums">initializeState(entity, [options], [model]);</pre>
+<h4 id="usage_parameters">Parameters</h4><table class="variables-matrix table table-bordered table-striped"><thead><tr><th>Param</th><th>Type</th><th>Details</th></tr></thead><tbody><tr><td>entity</td><td><a href="" class="label type-hint type-hint-object">object</a></td><td><div class="apmodalservice-initializestate-page"><p>JavaScript object representing the SharePoint list item.</p>
+</div></td></tr><tr><td>[options]</td><td><a href="" class="label type-hint type-hint-object">object</a></td><td><div class="apmodalservice-initializestate-page"><p>Optional state params.</p>
+</div></td></tr><tr><td>[model]</td><td><a href="" class="label type-hint type-hint-object">object</a></td><td><div class="apmodalservice-initializestate-page"><p>Optional fallback to list permissions instead of using
+list item permissions.</p>
+</div></td></tr></tbody></table><h4 id="usage_returns">Returns</h4><table class="variables-matrix"><tr><td><a href="" class="label type-hint type-hint-object">object</a></td><td><div class="apmodalservice-initializestate-page"><p>Returns the extended state.</p>
+</div></td></tr></table></div>
+<h2 id="example">Example</h2>
+<div class="example"><div class="apmodalservice-initializestate-page"><pre class="prettyprint linenums">
+$scope.state = apModalService.initializeState(request, {
+    dateExceedsBoundary: false,
+    enableApproval: false
+});
+</pre>
+<pre class="prettyprint linenums">
+//Returns
+$scope.state = {
+   // Default "View" and once permissions are checked it
+   // can also be "New" || "Edit"
+   displayMode: "New",
+   // Below 2 options allow for locking with 3 way
+   // binding service like FireBase
+   locked: false,
+   lockedBy: '',
+   // Flag which can be used to disable form controls
+   negotiatingWithServer: false,
+   userCanApprove: false,
+   userCanDelete: false,
+   userCanEdit: false,
+   //User has admin rights
+   fullControl: false
+}
+</pre>
+</div></div>
+</div>

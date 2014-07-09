@@ -59,6 +59,60 @@ NG_DOCS={
     },
     {
       "section": "api",
+      "id": "apModalService",
+      "shortName": "apModalService",
+      "type": "service",
+      "moduleName": "apModalService",
+      "shortDescription": "Extends a modal form to include many standard functions",
+      "keywords": "$modal angular api apmodalservice bootstrap extends form functions include modal service standard"
+    },
+    {
+      "section": "api",
+      "id": "apModalService.deleteEntity",
+      "shortName": "apModalService.deleteEntity",
+      "type": "function",
+      "moduleName": "apModalService",
+      "shortDescription": "Prompts for confirmation of deletion, then deletes and closes modal",
+      "keywords": "$modalinstance $scope api apmodalservice closes confirmation controllers deleteentity deleterequest deletes deletion dialog entity function instance item javascript list modal object prompts reference representing request sharepoint"
+    },
+    {
+      "section": "api",
+      "id": "apModalService.getPermissions",
+      "shortName": "apModalService.getPermissions",
+      "type": "function",
+      "moduleName": "apModalService",
+      "shortDescription": "Returns an object containing the permission levels for the current user",
+      "keywords": "api apmodalservice boolean current determine entity fallback fullcontrol function getpermissions item javascript levels list model object permission permissions representing returns sharepoint user usercanapprove usercandelete"
+    },
+    {
+      "section": "api",
+      "id": "apModalService.initializeState",
+      "shortName": "apModalService.initializeState",
+      "type": "function",
+      "moduleName": "apModalService",
+      "shortDescription": "Creates a state object, populates permissions for current user, and sets display mode",
+      "keywords": "$scope admin allow api apmodalservice binding checked controls creates current dateexceedsboundary default disable display displaymode edit enableapproval entity extended fallback false firebase flag form fullcontrol function initializestate item javascript list locked lockedby locking mode negotiatingwithserver object optional options params permissions populates representing returns rights service sets sharepoint user usercanapprove usercandelete usercanedit view"
+    },
+    {
+      "section": "api",
+      "id": "apModalService.modalModelProvider",
+      "shortName": "apModalService.modalModelProvider",
+      "type": "function",
+      "moduleName": "apModalService",
+      "shortDescription": "Extends a model to allow us to easily attach a modal form that accepts and injects a",
+      "keywords": "accepts allow api apmodalservice argument arguments attach comprequestmodalctrl configuration controller dynamic easily edited expectedarguments extends form function html injects item modal modalmodelprovider model modules number object openmodal options reference request templateurl view"
+    },
+    {
+      "section": "api",
+      "id": "apModalService.saveEntity",
+      "shortName": "apModalService.saveEntity",
+      "type": "function",
+      "moduleName": "apModalService",
+      "shortDescription": "Creates a new record if necessary, otherwise updates the existing record",
+      "keywords": "$modalinstance $scope api apmodalservice comprequestsmodel creates depricated dialog entity existing function instance item list modal model record reference request saveentity saverequest updates"
+    },
+    {
+      "section": "api",
       "id": "dataService",
       "shortName": "dataService",
       "type": "service",
@@ -464,60 +518,6 @@ NG_DOCS={
     },
     {
       "section": "api",
-      "id": "modalService",
-      "shortName": "modalService",
-      "type": "service",
-      "moduleName": "modalService",
-      "shortDescription": "Extends a modal form to include many standard functions",
-      "keywords": "$modal angular api bootstrap extends form functions include modal modalservice service standard"
-    },
-    {
-      "section": "api",
-      "id": "modalService.deleteEntity",
-      "shortName": "modalService.deleteEntity",
-      "type": "function",
-      "moduleName": "modalService",
-      "shortDescription": "Prompts for confirmation of deletion, then deletes and closes modal",
-      "keywords": "$modalinstance $scope api closes confirmation controllers deleteentity deleterequest deletes deletion dialog entity function instance item javascript list modal modalservice object prompts reference representing request sharepoint"
-    },
-    {
-      "section": "api",
-      "id": "modalService.getPermissions",
-      "shortName": "modalService.getPermissions",
-      "type": "function",
-      "moduleName": "modalService",
-      "shortDescription": "Returns an object containing the permission levels for the current user",
-      "keywords": "api boolean current entity fullcontrol function getpermissions item javascript levels list modalservice object permission representing returns sharepoint user usercanapprove usercandelete"
-    },
-    {
-      "section": "api",
-      "id": "modalService.initializeState",
-      "shortName": "modalService.initializeState",
-      "type": "function",
-      "moduleName": "modalService",
-      "shortDescription": "Creates a state object, populates permissions for current user, and sets display mode",
-      "keywords": "$scope api creates current dateexceedsboundary display enableapproval entity extended false function initializestate item javascript list modalservice mode object optional params permissions populates representing returns sets sharepoint user"
-    },
-    {
-      "section": "api",
-      "id": "modalService.modalModelProvider",
-      "shortName": "modalService.modalModelProvider",
-      "type": "function",
-      "moduleName": "modalService",
-      "shortDescription": "Extends a model to allow us to easily attach a modal form that accepts and injects a",
-      "keywords": "accepts allow api argument arguments attach comprequestmodalctrl configuration controller dynamic easily edited expectedarguments extends form function html injects item modal modalmodelprovider modalservice model modules number object openmodal options reference request templateurl view"
-    },
-    {
-      "section": "api",
-      "id": "modalService.saveEntity",
-      "shortName": "modalService.saveEntity",
-      "type": "function",
-      "moduleName": "modalService",
-      "shortDescription": "Creates a new record if necessary, otherwise updates the existing record",
-      "keywords": "$modalinstance $scope api comprequestsmodel creates depricated dialog entity existing function instance item list modal modalservice model record reference request saveentity saverequest updates"
-    },
-    {
-      "section": "api",
       "id": "Model",
       "shortName": "Model",
       "type": "function",
@@ -608,6 +608,15 @@ NG_DOCS={
     },
     {
       "section": "api",
+      "id": "Model.initializeModalState",
+      "shortName": "Model.initializeModalState",
+      "type": "function",
+      "moduleName": "Model",
+      "shortDescription": "Uses apModalService to return some general state information for a modal form using",
+      "keywords": "$modalinstance $scope additional admin allow angular api apmodalservice app aria-hidden attempt attributes binding btn btn-danger btn-default btn-primary button cancel candelete checked class close cols controller controls current custom default delete deleterecord description details disable dismiss displaymode edit entity extend fa fa-trash-o false firebase flag flags form form-control form-group fullcontrol function general html include initializemodalstate item js length list locked lockedby locking modal modal-body modal-footer modal-header model module negotiatingwithserver ng-click ng-disabled ng-form ng-model ng-show object optional options param passed permissions project projectmodalctrl projectsmodel pull-left request return returned rights rows save saveentity saverequest service sharepoint stateoption1 stateoption2 strict task text title true type user usercanapprove usercandelete usercanedit view"
+    },
+    {
+      "section": "api",
       "id": "Model.isInitialised",
       "shortName": "Model.isInitialised",
       "type": "function",
@@ -623,6 +632,15 @@ NG_DOCS={
       "moduleName": "Model",
       "shortDescription": "Constructor that allows us create a static query with the option to build dynamic queries as seen in the",
       "keywords": "$scope advanced allow allows api array ascending aspx associated assume build cache cachexml call caml camlrowlimit changes check codeplex construct create creates custom default defaults doesn don dynamic dynamically entities example execute executequery exist false faster field function functionality getlistitemchangessincetoken good inherit isobject items josh js list listitem lists local lookup lookupid matching mccarty microsoft model modifications modified object objects operation option optional options param parsed pass passthrough payload permissions pid prevents primary project projectid projectmodel projects projecttasksmodel prototype queries query querybyprojectid querykey queryoptions quick recentchanges records reference register registerquery response retrieve return returned returns smaller specific static store stored third title true type typically unique user var xml"
+    },
+    {
+      "section": "api",
+      "id": "Model.resolvePermissions",
+      "shortName": "Model.resolvePermissions",
+      "type": "function",
+      "moduleName": "Model",
+      "shortDescription": "See modelFactory.resolvePermissions for details on what we expect to have returned.",
+      "keywords": "api current details evaluated expect function level model modelfactory permission permissionobject projectsmodel properties resolvepermissions returned user var"
     },
     {
       "section": "api",
@@ -729,8 +747,8 @@ NG_DOCS={
       "shortName": "queueService.reset",
       "type": "function",
       "moduleName": "queueService",
-      "shortDescription": "Reset counter to 0.",
-      "keywords": "api count counter current function incrementing queueservice reset"
+      "shortDescription": "Decrease the counter by 1.",
+      "keywords": "api count counter current decrease decrementing function queueservice reset"
     },
     {
       "section": "api",
@@ -738,8 +756,8 @@ NG_DOCS={
       "shortName": "queueService.reset",
       "type": "function",
       "moduleName": "queueService",
-      "shortDescription": "Decrease the counter by 1.",
-      "keywords": "api count counter current decrease decrementing function queueservice reset"
+      "shortDescription": "Reset counter to 0.",
+      "keywords": "api count counter current function incrementing queueservice reset"
     },
     {
       "section": "api",
@@ -757,7 +775,7 @@ NG_DOCS={
       "type": "function",
       "moduleName": "utilityService",
       "shortDescription": "Converts a SharePoint string representation of a field into the correctly formatted JavaScript version",
-      "keywords": "api attrtojson based boolean calc child constructors converts correctly counter currency datetime definition field float formatted function integer item javascript json list lookup lookupmulti multichoice number object options parent reference representation row sharepoint string text type user usermulti utilityservice version"
+      "keywords": "api attrtojson based boolean calc child constructors converts correctly counter currency datetime definition field float formatted function html integer item javascript json list lookup lookupmulti multichoice number object options parent reference representation sharepoint string text type user usermulti utilityservice version"
     },
     {
       "section": "api",
@@ -766,7 +784,7 @@ NG_DOCS={
       "type": "function",
       "moduleName": "utilityService",
       "shortDescription": "We REALLY don&#39;t want to lock the user&#39;s browser (blocking the UI thread) while iterating over an array of",
-      "keywords": "$q api aputilityservice array article based batches batchprocess browser buildprojectsummary chunks complete context create cuts defer deferred delay don easily entities example execute executed extendprojectsummary fictitious function getalllistitems hang intensive items iterate iterating javascript js length lock long maximum milliseconds nczonline net number object pausing performing problem process processed processing projectmodel projects projectsmodel promise reference resolve return running stuff sufficient summary summaryobject thread ui user utilityservice var"
+      "keywords": "$q api aputilityservice array article based batches batchprocess browser buildprojectsummary chunks complete context create cuts defer deferred delay don easily entities example executed extendprojectsummary fictitious function getalllistitems hang intensive items iterate iterating javascript js length lock long maximum milliseconds nczonline net number object pausing performing problem process processed processing projectmodel projects projectsmodel promise reference resolve return running stuff sufficient summary summaryobject thread ui user utilityservice var"
     },
     {
       "section": "api",
@@ -802,7 +820,7 @@ NG_DOCS={
       "type": "function",
       "moduleName": "utilityService",
       "shortDescription": "Converts an XML node set to Javascript object array. This is a modified version of the SPServices",
-      "keywords": "api array attributes browsers chunks conversions converts cut downside evergreen field function getlistitems handle hit includeallattrs javascript leading long mappedname mapping modified node object objects objecttype options ows_ parsed performance prevent removeows return rows running set slow spservices spxmltojson stripped throttle true ui unnecessarily utilityservice version xml xmltojson"
+      "keywords": "api array attributes browsers chunks conversions converts ctor cut downside evergreen field function getlistitems handle hit includeallattrs item javascript leading list long mappedname mapping modified node object objects objecttype options ows_ parsed performance prevent removeows return rows running set slow spservices spxmltojson stripped throttle true ui unnecessarily utilityservice version xml xmltojson"
     },
     {
       "section": "api",

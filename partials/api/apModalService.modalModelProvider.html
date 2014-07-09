@@ -1,0 +1,27 @@
+<h1><code ng:non-bindable="">modalModelProvider</code>
+<div><span class="hint">service in module <code ng:non-bindable="">apModalService</code>
+</span>
+</div>
+</h1>
+<div><h2 id="description">Description</h2>
+<div class="description"><div class="apmodalservice-modalmodelprovider-page"><p>Extends a model to allow us to easily attach a modal form that accepts and injects a
+dynamic number of arguments.</p>
+</div></div>
+<h2 id="usage">Usage</h2>
+<div class="usage"><pre class="prettyprint linenums">modalModelProvider(options);</pre>
+<h4 id="usage_parameters">Parameters</h4><table class="variables-matrix table table-bordered table-striped"><thead><tr><th>Param</th><th>Type</th><th>Details</th></tr></thead><tbody><tr><td>options</td><td><a href="" class="label type-hint type-hint-object">object</a></td><td><div class="apmodalservice-modalmodelprovider-page"><p>Configuration object.</p>
+</div></td></tr><tr><td>options.templateUrl</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="apmodalservice-modalmodelprovider-page"><p>Reference to the modal view.</p>
+</div></td></tr><tr><td>options.controller</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="apmodalservice-modalmodelprovider-page"><p>Name of the modal controller.</p>
+</div></td></tr><tr><td>[options.expectedArguments]</td><td><a href="" class="label type-hint type-hint-string">string[]</a></td><td><div class="apmodalservice-modalmodelprovider-page"><p>First argument name should be the item being edited.</p>
+</div></td></tr></tbody></table><h4 id="usage_returns">Returns</h4><table class="variables-matrix"><tr><td><a href="" class="label type-hint type-hint-promise">promise</a></td><td><div class="apmodalservice-modalmodelprovider-page"><p>openModal</p>
+</div></td></tr></table></div>
+<h2 id="example">Example</h2>
+<div class="example"><div class="apmodalservice-modalmodelprovider-page"><pre class="prettyprint linenums">
+model.openModal = apModalService.modalModelProvider({
+    templateUrl: 'modules/comp_request/views/comp_request_modal_view.html',
+    controller: 'compRequestModalCtrl',
+    expectedArguments: ['request']
+});
+</pre>
+</div></div>
+</div>
