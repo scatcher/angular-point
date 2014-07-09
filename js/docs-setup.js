@@ -64,7 +64,7 @@ NG_DOCS={
       "type": "service",
       "moduleName": "apModalService",
       "shortDescription": "Extends a modal form to include many standard functions",
-      "keywords": "$modal angular api apmodalservice bootstrap extends form functions include modal service standard"
+      "keywords": "$modal angular api apmodalservice bootstrap extends form functions include modal service standard toastr"
     },
     {
       "section": "api",
@@ -100,7 +100,7 @@ NG_DOCS={
       "type": "function",
       "moduleName": "apModalService",
       "shortDescription": "Extends a model to allow us to easily attach a modal form that accepts and injects a",
-      "keywords": "accepts allow api apmodalservice argument arguments attach comprequestmodalctrl configuration controller dynamic easily edited expectedarguments extends form function html injects item modal modalmodelprovider model modules number object openmodal options reference request templateurl view"
+      "keywords": "accepts allow api apmodalservice argument arguments attach comprequestmodalctrl configuration controller dynamic easily edited expectedarguments extends form function html injects item modal modalmodelprovider model modules number object openmodal options promise reference request returns templateurl turn view"
     },
     {
       "section": "api",
@@ -110,6 +110,33 @@ NG_DOCS={
       "moduleName": "apModalService",
       "shortDescription": "Creates a new record if necessary, otherwise updates the existing record",
       "keywords": "$modalinstance $scope api apmodalservice comprequestsmodel creates depricated dialog entity existing function instance item list modal model record reference request saveentity saverequest updates"
+    },
+    {
+      "section": "api",
+      "id": "apModelFactory",
+      "shortName": "apModelFactory",
+      "type": "service",
+      "moduleName": "Model",
+      "shortDescription": "The &#39;apModelFactory&#39; provides a common base prototype for Model, Query, and List Item.",
+      "keywords": "api apmodelfactory base common item list model prototype query service"
+    },
+    {
+      "section": "api",
+      "id": "apModelFactory.registerChange",
+      "shortName": "apModelFactory.registerChange",
+      "type": "function",
+      "moduleName": "apModelFactory",
+      "shortDescription": "If online and sync is being used, notify all online users that a change has been made.",
+      "keywords": "api apmodelfactory break change desired event firebase function functionality model module notify online registerchange sync users"
+    },
+    {
+      "section": "api",
+      "id": "apModelFactory.resolvePermissions",
+      "shortName": "apModelFactory.resolvePermissions",
+      "type": "function",
+      "moduleName": "apModelFactory",
+      "shortDescription": "Converts permMask into something usable to determine permission level for current user.  Typically used",
+      "keywords": "api apmodelfactory assigned bit codeplex converts current determine directly false flags function group http identifying integer item level list listitem mask permission permissionsmask permmask property resolvepermissions rights set site somelistitem specifies typically unsigned usable user wss"
     },
     {
       "section": "api",
@@ -459,8 +486,8 @@ NG_DOCS={
       "shortName": "ListItem.resolvePermissions",
       "type": "function",
       "moduleName": "ListItem",
-      "shortDescription": "See modelFactory.resolvePermissions for details on what we expect to have returned.",
-      "keywords": "api current details evaluated expect function level listitem modelfactory mygenericlistitem permission permissionobject properties resolvepermissions returned user var"
+      "shortDescription": "See apModelFactory.resolvePermissions for details on what we expect to have returned.",
+      "keywords": "api apmodelfactory current details evaluated expect function level listitem mygenericlistitem permission permissionobject properties resolvepermissions returned user var"
     },
     {
       "section": "api",
@@ -523,7 +550,7 @@ NG_DOCS={
       "type": "function",
       "moduleName": "Model",
       "shortDescription": "Model Constructor",
-      "keywords": "active addnewitem adds api application array attachments boolean builds costestimate currency customer customfields customlist data deferred definition denotes empty extend factory false fictitious field fields file formats function getalllistitems group guid identifies individual internalname items js list ll lookup mappedname maps model modelfactory named names obj object objecttype offline optional options params passed project projectdescription projectgroup projects projectsmodel queries read readonly ready sharepoint spaces status taskmanager text title true types unique user var xml"
+      "keywords": "active addnewitem adds api apmodelfactory application array attachments boolean builds costestimate currency customer customfields customlist data deferred definition denotes empty extend factory false fictitious field fields file formats function getalllistitems group guid identifies individual internalname items js list ll lookup mappedname maps model named names obj object objecttype offline optional options params passed project projectdescription projectgroup projects projectsmodel queries read readonly ready sharepoint spaces status taskmanager text title true types unique user var xml"
     },
     {
       "section": "api",
@@ -532,7 +559,7 @@ NG_DOCS={
       "type": "function",
       "moduleName": "Model",
       "shortDescription": "Using the definition of a list stored in a model, create a new list item in SharePoint.",
-      "keywords": "additional addnewitem allows api automatically based cache converted create created customer data defined definition definitions dependent description entity fictitious field function item js key list local logic lookupid model newly object options pairs pass project projectmodel projectsmodel promise query resolved returned server service sharepoint stored title unique update updated valid view"
+      "keywords": "additional addnewitem allows api app automatically based cache converted create created customer data defined definition definitions dependent description entity fictitious field function item js key list local logic lookupid model newly object options pairs pass project projectmodel projectsmodel promise query resolved returned server service sharepoint stored title unique update updated valid view"
     },
     {
       "section": "api",
@@ -566,9 +593,9 @@ NG_DOCS={
       "id": "Model.getAllListItems",
       "shortName": "Model.getAllListItems",
       "type": "function",
-      "moduleName": "modelFactoryModel",
+      "moduleName": "apModelFactoryModel",
       "shortDescription": "Inherited from Model constructor",
-      "keywords": "$scope api caches current data entities fictitious function getalllistitems inherited items js list model modelfactorymodel processes projectmodel projects projectsmodel promise resolved returned returning xml"
+      "keywords": "$scope api apmodelfactorymodel caches current data entities fictitious function getalllistitems inherited items js list model processes projectmodel projects projectsmodel promise resolved returned returning xml"
     },
     {
       "section": "api",
@@ -639,8 +666,8 @@ NG_DOCS={
       "shortName": "Model.resolvePermissions",
       "type": "function",
       "moduleName": "Model",
-      "shortDescription": "See modelFactory.resolvePermissions for details on what we expect to have returned.",
-      "keywords": "api current details evaluated expect function level model modelfactory permission permissionobject projectsmodel properties resolvepermissions returned user var"
+      "shortDescription": "See apModelFactory.resolvePermissions for details on what we expect to have returned.",
+      "keywords": "api apmodelfactory current details evaluated expect function level model permission permissionobject projectsmodel properties resolvepermissions returned user var"
     },
     {
       "section": "api",
@@ -659,33 +686,6 @@ NG_DOCS={
       "moduleName": "Model",
       "shortDescription": "Uses the custom fields defined in an model to ensure each field (required = true) is evaluated",
       "keywords": "alert api based custom defined ensure entity evaluated evaluation field fields function generated issues item list model object optional parameters sharepoint toast toasts true type user validateentity validity"
-    },
-    {
-      "section": "api",
-      "id": "modelFactory",
-      "shortName": "modelFactory",
-      "type": "service",
-      "moduleName": "Model",
-      "shortDescription": "The &#39;modelFactory&#39; provides a common base prototype for Model, Query, and List Item.",
-      "keywords": "api base common item list model modelfactory prototype query service"
-    },
-    {
-      "section": "api",
-      "id": "modelFactory.registerChange",
-      "shortName": "modelFactory.registerChange",
-      "type": "function",
-      "moduleName": "modelFactory",
-      "shortDescription": "If online and sync is being used, notify all online users that a change has been made.",
-      "keywords": "api break change desired event firebase function functionality model modelfactory module notify online registerchange sync users"
-    },
-    {
-      "section": "api",
-      "id": "modelFactory.resolvePermissions",
-      "shortName": "modelFactory.resolvePermissions",
-      "type": "function",
-      "moduleName": "modelFactory",
-      "shortDescription": "Converts permMask into something usable to determine permission level for current user.  Typically used",
-      "keywords": "api assigned bit codeplex converts current determine directly false flags function group http identifying integer item level list listitem mask modelfactory permission permissionsmask permmask property resolvepermissions rights set site somelistitem specifies typically unsigned usable user wss"
     },
     {
       "section": "api",

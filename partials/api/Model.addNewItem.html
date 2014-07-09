@@ -18,6 +18,7 @@ This allows us to update the view with a valid new object that contains a unique
 </div></td></tr></table></div>
 <h2 id="example">Example</h2>
 <div class="example"><div class="model-addnewitem-page"><pre class="prettyprint linenums">
+&lt;file name="app/modules/project/projectsModel.js"&gt;
 //Taken from a fictitious projectsModel.js
 projectModel.addNewItem({
            title: 'A Project',
@@ -26,6 +27,7 @@ projectModel.addNewItem({
         }).then(function(newEntityFromServer) {
             //The local query cache is automatically updated but any other dependent logic can go here
     };
+&lt;/file&gt;
 </pre>
 </div></div>
 </div>
