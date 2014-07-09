@@ -19,7 +19,8 @@ to extend the returned state object.</p>
 </div></td></tr></table></div>
 <h2 id="example">Example</h2>
 <div class="example"><div class="model-initializemodalstate-page"><pre class="prettyprint linenums">
-//CONTROLLER: app/modules/project/project_modal_ctrl.js
+&lt;file name="app/modules/project/project_modal_ctrl.js"&gt;
+//Controller
 'use strict';
 angular.module('App')
  .controller('projectModalCtrl', function (
@@ -49,10 +50,10 @@ angular.module('App')
              $modalInstance );
      };
 });
-</pre>
-<pre class="prettyprint linenums">
-//VIEW: app/modules/project/project_modal_view.html
+&lt;/file&gt;
 
+&lt;file name="app/modules/project/project_modal_view.html"&gt;
+//VIEW
 &lt;div ng-form&gt;
     &lt;div class="modal-header"&gt;
         &lt;button type="button" class="close"
@@ -93,6 +94,7 @@ angular.module('App')
            ng-click="cancel()"&gt;Cancel&lt;/button&gt;
     &lt;/div&gt;
 &lt;/div&gt;
+&lt;/file&gt;
 </pre>
 <pre class="prettyprint linenums">
 //Returns
