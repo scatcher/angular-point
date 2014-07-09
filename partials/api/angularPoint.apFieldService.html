@@ -1,0 +1,70 @@
+<h1><code ng:non-bindable="">apFieldService</code>
+<div><span class="hint">service in module <code ng:non-bindable="">angularPoint</code>
+</span>
+</div>
+</h1>
+<div><h2 id="description">Description</h2>
+<div class="description"><div class="angularpoint-apfieldservice-page"><p>Handles the mapping of the various types of fields used within a SharePoint list</p>
+</div></div>
+<h2 id="dependencies">Dependencies</h2>
+<ul class="dependencies"><li><code ng:non-bindable=""><a href="#/api/angularPoint.apUtilityService">apUtilityService</a></code>
+</li>
+</ul>
+<div class="member method"><h2 id="methods">Methods</h2>
+<ul class="methods"><li><h3 id="methods_field">Field(obj)</h3>
+<div class="field"><div class="angularpoint-apfieldservice-page angularpoint-apfieldservice-field-page"><p>Decorates field with optional defaults</p>
+</div><h5 id="methods_field_parameters">Parameters</h5><table class="variables-matrix table table-bordered table-striped"><thead><tr><th>Param</th><th>Type</th><th>Details</th></tr></thead><tbody><tr><td>obj</td><td><a href="" class="label type-hint type-hint-object">object</a></td><td><div class="angularpoint-apfieldservice-page angularpoint-apfieldservice-field-page"><p>Field definition.</p>
+</div></td></tr></tbody></table><h5 id="methods_field_returns">Returns</h5><table class="variables-matrix"><tr><td><a href="" class="label type-hint type-hint-object">object</a></td><td><div class="angularpoint-apfieldservice-page angularpoint-apfieldservice-field-page"><p>Field</p>
+</div></td></tr></table></div>
+</li>
+<li><h3 id="methods_defaultfields">defaultFields()</h3>
+<div class="defaultfields"><div class="angularpoint-apfieldservice-page angularpoint-apfieldservice-defaultfields-page"><p>Read only fields that should be included in all lists</p>
+</div></div>
+</li>
+<li><h3 id="methods_extendfielddefinitions">extendFieldDefinitions(list)</h3>
+<div class="extendfielddefinitions"><div class="angularpoint-apfieldservice-page angularpoint-apfieldservice-extendfielddefinitions-page"><ol>
+<li>Populates the fields array which uses the Field constructor to combine the default
+SharePoint fields with those defined in the list definition on the model</li>
+<li>Creates the list.viewFields XML string that defines the fields to be requested on a query</li>
+</ol>
+</div><h5 id="methods_extendfielddefinitions_parameters">Parameters</h5><table class="variables-matrix table table-bordered table-striped"><thead><tr><th>Param</th><th>Type</th><th>Details</th></tr></thead><tbody><tr><td>list</td><td><a href="" class="label type-hint type-hint-object">object</a></td><td><div class="angularpoint-apfieldservice-page angularpoint-apfieldservice-extendfielddefinitions-page"><p>Reference to the list within a model.</p>
+</div></td></tr></tbody></table></div>
+</li>
+<li><h3 id="methods_getdefaultvaluefortype">getDefaultValueForType(fieldType)</h3>
+<div class="getdefaultvaluefortype"><div class="angularpoint-apfieldservice-page angularpoint-apfieldservice-getdefaultvaluefortype-page"><p>Returns the empty value expected for a field type</p>
+</div><h5 id="methods_getdefaultvaluefortype_parameters">Parameters</h5><table class="variables-matrix table table-bordered table-striped"><thead><tr><th>Param</th><th>Type</th><th>Details</th></tr></thead><tbody><tr><td>fieldType</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="angularpoint-apfieldservice-page angularpoint-apfieldservice-getdefaultvaluefortype-page"><p>Type of field.</p>
+</div></td></tr></tbody></table><h5 id="methods_getdefaultvaluefortype_returns">Returns</h5><table class="variables-matrix"><tr><td><a href="" class="label type-hint type-hint-object">*</a></td><td><div class="angularpoint-apfieldservice-page angularpoint-apfieldservice-getdefaultvaluefortype-page"><p>Default value based on field type.</p>
+</div></td></tr></table></div>
+</li>
+<li><h3 id="methods_getmockdata">getMockData(fieldType, [options])</h3>
+<div class="getmockdata"><div class="angularpoint-apfieldservice-page angularpoint-apfieldservice-getmockdata-page"><p>Can return mock data appropriate for the field type, by default it dynamically generates data but
+the staticValue param will instead return a hard coded type specific value</p>
+</div><h5 id="methods_getmockdata_parameters">Parameters</h5><table class="variables-matrix table table-bordered table-striped"><thead><tr><th>Param</th><th>Type</th><th>Details</th></tr></thead><tbody><tr><td>fieldType</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="angularpoint-apfieldservice-page angularpoint-apfieldservice-getmockdata-page"><p>Field type from the field definition.</p>
+</div></td></tr><tr><td>[options]</td><td><a href="" class="label type-hint type-hint-object">object</a></td><td><div class="angularpoint-apfieldservice-page angularpoint-apfieldservice-getmockdata-page"><p>Optional params.</p>
+</div></td></tr><tr><td>options.staticValue</td><td><a href="" class="label type-hint type-hint-boolean">boolean</a></td><td><div class="angularpoint-apfieldservice-page angularpoint-apfieldservice-getmockdata-page"><p>Default to dynamically build mock data.</p>
+</div> <p><em>(default: false)</em></p></td></tr></tbody></table><h5 id="methods_getmockdata_returns">Returns</h5><table class="variables-matrix"><tr><td><a href="" class="label type-hint type-hint-object">*</a></td><td><div class="angularpoint-apfieldservice-page angularpoint-apfieldservice-getmockdata-page"><p>mockData</p>
+</div></td></tr></table></div>
+</li>
+<li><h3 id="methods_mockpermmask">mockPermMask([options])</h3>
+<div class="mockpermmask"><div class="angularpoint-apfieldservice-page angularpoint-apfieldservice-mockpermmask-page"><p>Defaults to a full mask but allows simulation of each of main permission levels</p>
+</div><h5 id="methods_mockpermmask_parameters">Parameters</h5><table class="variables-matrix table table-bordered table-striped"><thead><tr><th>Param</th><th>Type</th><th>Details</th></tr></thead><tbody><tr><td>[options]</td><td><a href="" class="label type-hint type-hint-object">object</a></td><td><div class="angularpoint-apfieldservice-page angularpoint-apfieldservice-mockpermmask-page"><p>Options container.</p>
+</div></td></tr><tr><td>options.permissionLevel</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="angularpoint-apfieldservice-page angularpoint-apfieldservice-mockpermmask-page"><p>Optional mask.</p>
+</div> <p><em>(default: FullMask)</em></p></td></tr></tbody></table><h5 id="methods_mockpermmask_returns">Returns</h5><table class="variables-matrix"><tr><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="angularpoint-apfieldservice-page angularpoint-apfieldservice-mockpermmask-page"><p>Values for mask.</p>
+</div></td></tr></table></div>
+</li>
+<li><h3 id="methods_resolvevalueforeffectivepermmask">resolveValueForEffectivePermMask(perMask)</h3>
+<div class="resolvevalueforeffectivepermmask"><div class="angularpoint-apfieldservice-page angularpoint-apfieldservice-resolvevalueforeffectivepermmask-page"><p>Takes the name of a permission mask and returns a permission value which can then be used
+to generate a permission object using modelService.resolvePermissions(outputfromthis)</p>
+</div><h5 id="methods_resolvevalueforeffectivepermmask_parameters">Parameters</h5><table class="variables-matrix table table-bordered table-striped"><thead><tr><th>Param</th><th>Type</th><th>Details</th></tr></thead><tbody><tr><td>perMask</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="angularpoint-apfieldservice-page angularpoint-apfieldservice-resolvevalueforeffectivepermmask-page"><p>Options:
+- AddListItems
+- EditListItems
+- DeleteListItems
+- ApproveItems
+- FullMask
+- ViewListItems</p>
+</div></td></tr></tbody></table><h5 id="methods_resolvevalueforeffectivepermmask_returns">Returns</h5><table class="variables-matrix"><tr><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="angularpoint-apfieldservice-page angularpoint-apfieldservice-resolvevalueforeffectivepermmask-page"><p>value</p>
+</div></td></tr></table></div>
+</li>
+</ul>
+</div>
+</div>

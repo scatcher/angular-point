@@ -1,0 +1,32 @@
+<h1><code ng:non-bindable="">apCacheService</code>
+<div><span class="hint">service in module <code ng:non-bindable="">angularPoint</code>
+</span>
+</div>
+</h1>
+<div><h2 id="description">Description</h2>
+<div class="description"><div class="angularpoint-apcacheservice-page"><p>Stores a reference for all list items based on list GUID and list item id.  Allows us to then register promises that
+resolve once a requested list item is registered in the future.</p>
+</div></div>
+<div class="member method"><h2 id="methods">Methods</h2>
+<ul class="methods"><li><h3 id="methods_getentity">getEntity(entityType, entityId)</h3>
+<div class="getentity"><div class="angularpoint-apcacheservice-page angularpoint-apcacheservice-getentity-page"><p>Returns a deferred object that resolves with the requested entity immediately if already present or at some
+point in the future assuming the entity is eventually registered.</p>
+</div><h5 id="methods_getentity_parameters">Parameters</h5><table class="variables-matrix table table-bordered table-striped"><thead><tr><th>Param</th><th>Type</th><th>Details</th></tr></thead><tbody><tr><td>entityType</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="angularpoint-apcacheservice-page angularpoint-apcacheservice-getentity-page"><p>GUID for list the list item belongs to.</p>
+</div></td></tr><tr><td>entityId</td><td><a href="" class="label type-hint type-hint-number">number</a></td><td><div class="angularpoint-apcacheservice-page angularpoint-apcacheservice-getentity-page"><p>The entity.id.</p>
+</div></td></tr></tbody></table><h5 id="methods_getentity_returns">Returns</h5><table class="variables-matrix"><tr><td><a href="" class="label type-hint type-hint-promise">promise</a></td><td><div class="angularpoint-apcacheservice-page angularpoint-apcacheservice-getentity-page"><p>entity</p>
+</div></td></tr></table></div>
+</li>
+<li><h3 id="methods_registerentity">registerEntity(entity)</h3>
+<div class="registerentity"><div class="angularpoint-apcacheservice-page angularpoint-apcacheservice-registerentity-page"><p>Registers an entity in the cache and fulfills any pending deferred requests for the entity.</p>
+</div><h5 id="methods_registerentity_parameters">Parameters</h5><table class="variables-matrix table table-bordered table-striped"><thead><tr><th>Param</th><th>Type</th><th>Details</th></tr></thead><tbody><tr><td>entity</td><td><a href="" class="label type-hint type-hint-object">object</a></td><td><div class="angularpoint-apcacheservice-page angularpoint-apcacheservice-registerentity-page"><p>Pass in a newly created entity to add to the cache.</p>
+</div></td></tr></tbody></table></div>
+</li>
+<li><h3 id="methods_removeentity">removeEntity(entityType, entityId)</h3>
+<div class="removeentity"><div class="angularpoint-apcacheservice-page angularpoint-apcacheservice-removeentity-page"><p>Removes the entity from the local entity cache.</p>
+</div><h5 id="methods_removeentity_parameters">Parameters</h5><table class="variables-matrix table table-bordered table-striped"><thead><tr><th>Param</th><th>Type</th><th>Details</th></tr></thead><tbody><tr><td>entityType</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="angularpoint-apcacheservice-page angularpoint-apcacheservice-removeentity-page"><p>GUID for list the list item belongs to.</p>
+</div></td></tr><tr><td>entityId</td><td><a href="" class="label type-hint type-hint-number">number</a></td><td><div class="angularpoint-apcacheservice-page angularpoint-apcacheservice-removeentity-page"><p>The entity.id.</p>
+</div></td></tr></tbody></table></div>
+</li>
+</ul>
+</div>
+</div>

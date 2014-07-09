@@ -5,120 +5,57 @@ NG_DOCS={
   "pages": [
     {
       "section": "api",
-      "id": "apCacheService",
-      "shortName": "apCacheService",
+      "id": "angularPoint.apCacheService",
+      "shortName": "angularPoint.apCacheService",
       "type": "service",
-      "moduleName": "apCacheService",
+      "moduleName": "angularPoint",
       "shortDescription": "Stores a reference for all list items based on list GUID and list item id.  Allows us to then register promises that",
-      "keywords": "allows apcacheservice api based future guid item items list promises reference register registered requested resolve service stores"
+      "keywords": "add allows angularpoint apcacheservice api assuming based belongs cache created deferred entity entityid entitytype eventually fulfills function future guid item items list local newly object pass pending point promises reference register registered registers removes requested requests resolve resolves returns service stores"
     },
     {
       "section": "api",
-      "id": "apCacheService.EntityCache",
-      "shortName": "apCacheService.EntityCache",
-      "type": "function",
-      "moduleName": "apCacheService",
-      "shortDescription": "Cache constructor that maintains a queue of all requests for a list item, counter for the number of times",
-      "keywords": "add apcacheservice api belongs cache counter entity entitycache entityid entitytype function functionality guid item list maintains number queue requests times timestamp update updated"
-    },
-    {
-      "section": "api",
-      "id": "apCacheService.EntityCache:getEntity",
-      "shortName": "getEntity",
-      "type": "function",
-      "moduleName": "apCacheService",
-      "shortDescription": "Promise which returns the requested entity once it has been registered in the cache.",
-      "keywords": "apcacheservice api cache entity entitycache function promise registered requested returns"
-    },
-    {
-      "section": "api",
-      "id": "apCacheService.getEntity",
-      "shortName": "apCacheService.getEntity",
-      "type": "function",
-      "moduleName": "apCacheService",
-      "shortDescription": "Returns a deferred object that resolves with the requested entity immediately if already present or at some",
-      "keywords": "apcacheservice api assuming belongs deferred entity entityid entitytype eventually function future getentity guid item list object point registered requested resolves returns"
-    },
-    {
-      "section": "api",
-      "id": "apCacheService.registerEntity",
-      "shortName": "apCacheService.registerEntity",
-      "type": "function",
-      "moduleName": "apCacheService",
-      "shortDescription": "Registers an entity in the cache and fulfills any pending deferred requests for the entity.",
-      "keywords": "add apcacheservice api cache created deferred entity fulfills function newly pass pending registerentity registers requests"
-    },
-    {
-      "section": "api",
-      "id": "apCacheService.removeEntity",
-      "shortName": "apCacheService.removeEntity",
-      "type": "function",
-      "moduleName": "apCacheService",
-      "shortDescription": "Removes the entity from the local entity cache.",
-      "keywords": "apcacheservice api belongs cache entity entityid entitytype function guid item list local removeentity removes"
-    },
-    {
-      "section": "api",
-      "id": "apModalService",
-      "shortName": "apModalService",
+      "id": "angularPoint.apFieldService",
+      "shortName": "angularPoint.apFieldService",
       "type": "service",
-      "moduleName": "apModalService",
+      "moduleName": "angularPoint",
+      "shortDescription": "Handles the mapping of the various types of fields used within a SharePoint list",
+      "keywords": "addlistitems allows angularpoint apfieldservice api appropriate approveitems aputilityservice array based build chancejs coded combine container creates data decorates default defaults defined defines definition deletelistitems dynamic dynamically editlistitems empty expected field fields fieldtype full fullmask function generate generates handles hard https included levels list lists main mapping mask mock mockdata model modelservice obj object optional options param params permask permission permissionlevel populates produce query read reference requested resolvepermissions return returns service sharepoint simulation specific staticvalue string takes type types values viewfields viewlistitems xml"
+    },
+    {
+      "section": "api",
+      "id": "angularPoint.apModalService",
+      "shortName": "angularPoint.apModalService",
+      "type": "service",
+      "moduleName": "angularPoint",
       "shortDescription": "Extends a modal form to include many standard functions",
-      "keywords": "$modal angular api apmodalservice bootstrap extends form functions include modal service standard toastr"
+      "keywords": "$modalinstance $scope accepts admin allow angularpoint api apmodalservice argument arguments attach binding boolean checked closes comprequestmodalctrl comprequestsmodel configuration confirmation controller controllers controls creates current dateexceedsboundary default deleteentity deleterequest deletes deletion deprecated determine dialog disable display displaymode dynamic easily edit edited enableapproval entity existing expectedarguments extended extends fallback false firebase flag form fullcontrol function functions html include initializestate injects instance item javascript levels list locked lockedby locking modal modalmodelprovider mode model modules negotiatingwithserver number object openmodal optional options params permission permissions populates promise prompts record reference representing request returns rights saveentity saverequest service sets sharepoint standard templateurl turn updates user usercanapprove usercandelete usercanedit view"
     },
     {
       "section": "api",
-      "id": "apModalService.deleteEntity",
-      "shortName": "apModalService.deleteEntity",
-      "type": "function",
-      "moduleName": "apModalService",
-      "shortDescription": "Prompts for confirmation of deletion, then deletes and closes modal",
-      "keywords": "$modalinstance $scope api apmodalservice closes confirmation controllers deleteentity deleterequest deletes deletion dialog entity function instance item javascript list modal object prompts reference representing request sharepoint"
+      "id": "angularPoint.apQueueService",
+      "shortName": "angularPoint.apQueueService",
+      "type": "service",
+      "moduleName": "angularPoint",
+      "shortDescription": "Simple service to monitor the number of active requests we have open with SharePoint",
+      "keywords": "active angularpoint animation api apqueueservice call callback change count counter current decrease decrementing display function increase incrementing loading monitor number observer open register requests reset service sharepoint simple sort typical"
     },
     {
       "section": "api",
-      "id": "apModalService.getPermissions",
-      "shortName": "apModalService.getPermissions",
-      "type": "function",
-      "moduleName": "apModalService",
-      "shortDescription": "Returns an object containing the permission levels for the current user",
-      "keywords": "api apmodalservice boolean current determine entity fallback fullcontrol function getpermissions item javascript levels list model object permission permissions representing returns sharepoint user usercanapprove usercandelete"
-    },
-    {
-      "section": "api",
-      "id": "apModalService.initializeState",
-      "shortName": "apModalService.initializeState",
-      "type": "function",
-      "moduleName": "apModalService",
-      "shortDescription": "Creates a state object, populates permissions for current user, and sets display mode",
-      "keywords": "$scope admin allow api apmodalservice binding checked controls creates current dateexceedsboundary default disable display displaymode edit enableapproval entity extended fallback false firebase flag form fullcontrol function initializestate item javascript list locked lockedby locking mode negotiatingwithserver object optional options params permissions populates representing returns rights service sets sharepoint user usercanapprove usercandelete usercanedit view"
-    },
-    {
-      "section": "api",
-      "id": "apModalService.modalModelProvider",
-      "shortName": "apModalService.modalModelProvider",
-      "type": "function",
-      "moduleName": "apModalService",
-      "shortDescription": "Extends a model to allow us to easily attach a modal form that accepts and injects a",
-      "keywords": "accepts allow api apmodalservice argument arguments attach comprequestmodalctrl configuration controller dynamic easily edited expectedarguments extends form function html injects item modal modalmodelprovider model modules number object openmodal options promise reference request returns templateurl turn view"
-    },
-    {
-      "section": "api",
-      "id": "apModalService.saveEntity",
-      "shortName": "apModalService.saveEntity",
-      "type": "function",
-      "moduleName": "apModalService",
-      "shortDescription": "Creates a new record if necessary, otherwise updates the existing record",
-      "keywords": "$modalinstance $scope api apmodalservice comprequestsmodel creates depricated dialog entity existing function instance item list modal model record reference request saveentity saverequest updates"
+      "id": "angularPoint.apUtilityService",
+      "shortName": "angularPoint.apUtilityService",
+      "type": "service",
+      "moduleName": "angularPoint",
+      "shortDescription": "Provides shared utility functionality across the application.",
+      "keywords": "$q angularpoint api application aputilityservice array article attributes based batches batchprocess boolean browser browsers buildprojectsummary calc child chunks comparison complete constructors context conversions convert converts correctly counter create ctor currency current cut cuts dates datetime datetocheck defaults defer deferred definition delay delimited determine doesn don downside easier easily enddate entities evaluate evaluates evergreen example executed extendprojectsummary fall falls fictitious field find float format formatted function functionality getalllistitems getlistitems handle hang hit html includeallattrs int integer intensive ints iso8601 item items iterate iterating javascript js json leading length list ll lock long lookup lookupid lookupmulti lookupvalue mappedname mapping maximum milliseconds modified multi multichoice multiselectvalue nczonline net node number object objects objecttype offset options ows_ parent parsed pass passed pausing performance performing portion prevent problem process processed processing projectmodel projects projectsmodel promise property provided range reference removeows representation resolve return rows running select selection service set shared sharepoint slow someid somevalue spservices spxmltojson startdate starting string stripped stuff sufficient summary summaryobject text thread throttle time timezone true turns type typically ui unnecessarily user usermulti utility valid values var version xml yyyymmdd"
     },
     {
       "section": "api",
       "id": "apModelFactory",
       "shortName": "apModelFactory",
       "type": "service",
-      "moduleName": "Model",
+      "moduleName": "apModelFactory",
       "shortDescription": "The &#39;apModelFactory&#39; provides a common base prototype for Model, Query, and List Item.",
-      "keywords": "api apmodelfactory base common item list model prototype query service"
+      "keywords": "angularpoint apcacheservice apdataservice apfieldservice api apmodalservice apmodelfactory base common item list model prototype query service"
     },
     {
       "section": "api",
@@ -145,7 +82,7 @@ NG_DOCS={
       "type": "service",
       "moduleName": "dataService",
       "shortDescription": "Handles all interaction with SharePoint web services",
-      "keywords": "additional anderson api calls codeplex dataservice documentation handles http interaction marc service services sharepoint spservices web"
+      "keywords": "additional anderson angularpoint apcacheservice apconfig apfieldservice api apqueueservice aputilityservice calls codeplex dataservice documentation handles http interaction marc service services sharepoint spservices web"
     },
     {
       "section": "api",
@@ -320,75 +257,21 @@ NG_DOCS={
     },
     {
       "section": "api",
-      "id": "fieldService",
-      "shortName": "fieldService",
-      "type": "service",
-      "moduleName": "fieldService",
-      "shortDescription": "Handles the mapping of the various types of fields used within a SharePoint list",
-      "keywords": "api fields fieldservice handles list mapping service sharepoint types"
+      "id": "EntityCache",
+      "shortName": "EntityCache",
+      "type": "object",
+      "moduleName": "EntityCache",
+      "shortDescription": "Cache constructor that maintains a queue of all requests for a list item, counter for the number of times",
+      "keywords": "add angularpoint apcacheservice api belongs cache counter entity entitycache entityid entitytype functionality guid item list maintains number object queue requests times timestamp update updated"
     },
     {
       "section": "api",
-      "id": "fieldService.defaultFields",
-      "shortName": "fieldService.defaultFields",
+      "id": "EntityCache.getEntity",
+      "shortName": "EntityCache.getEntity",
       "type": "function",
-      "moduleName": "fieldService",
-      "shortDescription": "Read only fields that should be included in all lists",
-      "keywords": "api defaultfields fields fieldservice function included lists read"
-    },
-    {
-      "section": "api",
-      "id": "fieldService.extendFieldDefinitions",
-      "shortName": "fieldService.extendFieldDefinitions",
-      "type": "function",
-      "moduleName": "fieldService",
-      "shortDescription": "",
-      "keywords": "api array combine creates default defined defines definition extendfielddefinitions field fields fieldservice function list model populates query reference requested sharepoint string viewfields xml"
-    },
-    {
-      "section": "api",
-      "id": "fieldService.Field",
-      "shortName": "fieldService.Field",
-      "type": "function",
-      "moduleName": "fieldService",
-      "shortDescription": "Decorates field with optional defaults",
-      "keywords": "api decorates defaults definition field fieldservice function obj optional"
-    },
-    {
-      "section": "api",
-      "id": "fieldService.getDefaultValueForType",
-      "shortName": "fieldService.getDefaultValueForType",
-      "type": "function",
-      "moduleName": "fieldService",
-      "shortDescription": "Returns the empty value expected for a field type",
-      "keywords": "api based default empty expected field fieldservice fieldtype function getdefaultvaluefortype returns type"
-    },
-    {
-      "section": "api",
-      "id": "fieldService.getMockData",
-      "shortName": "fieldService.getMockData",
-      "type": "function",
-      "moduleName": "fieldService",
-      "shortDescription": "Can return mock data appropriate for the field type, by default it dynamically generates data but",
-      "keywords": "api appropriate build chancejs coded data default definition dynamic dynamically field fieldservice fieldtype function generates getmockdata hard https mock mockdata optional param params produce return specific staticvalue type"
-    },
-    {
-      "section": "api",
-      "id": "fieldService.mockPermMask",
-      "shortName": "fieldService.mockPermMask",
-      "type": "function",
-      "moduleName": "fieldService",
-      "shortDescription": "Defaults to a full mask but allows simulation of each of main permission levels",
-      "keywords": "allows api container defaults fieldservice full function levels main mask mockpermmask optional options permission permissionlevel simulation values"
-    },
-    {
-      "section": "api",
-      "id": "fieldService.resolveValueForEffectivePermMask",
-      "shortName": "fieldService.resolveValueForEffectivePermMask",
-      "type": "function",
-      "moduleName": "fieldService",
-      "shortDescription": "Takes the name of a permission mask and returns a permission value which can then be used",
-      "keywords": "addlistitems api approveitems deletelistitems editlistitems fieldservice fullmask function generate mask modelservice object options permask permission resolvepermissions resolvevalueforeffectivepermmask returns takes viewlistitems"
+      "moduleName": "EntityCache",
+      "shortDescription": "Promise which returns the requested entity once it has been registered in the cache.",
+      "keywords": "api cache entity entitycache function getentity promise registered requested returns"
     },
     {
       "section": "api",
@@ -593,9 +476,9 @@ NG_DOCS={
       "id": "Model.getAllListItems",
       "shortName": "Model.getAllListItems",
       "type": "function",
-      "moduleName": "apModelFactoryModel",
+      "moduleName": "Model",
       "shortDescription": "Inherited from Model constructor",
-      "keywords": "$scope api apmodelfactorymodel caches current data entities fictitious function getalllistitems inherited items js list model processes projectmodel projects projectsmodel promise resolved returned returning xml"
+      "keywords": "$scope api caches current data entities fictitious function getalllistitems inherited items js list model processes projectmodel projects projectsmodel promise resolved returned returning xml"
     },
     {
       "section": "api",
@@ -713,123 +596,6 @@ NG_DOCS={
       "moduleName": "Query",
       "shortDescription": "Simple wrapper that by default sets the search location to the local query cache.",
       "keywords": "api cache default evaluate function local location model object options pass prototype query search searching searchlocalcache sets simple undefined wrapper"
-    },
-    {
-      "section": "api",
-      "id": "queueService",
-      "shortName": "queueService",
-      "type": "service",
-      "moduleName": "queueService",
-      "shortDescription": "Simple service to monitor the number of active requests we have open with SharePoint",
-      "keywords": "active animation api display loading monitor number open queueservice requests service sharepoint simple sort typical"
-    },
-    {
-      "section": "api",
-      "id": "queueService.increase",
-      "shortName": "queueService.increase",
-      "type": "function",
-      "moduleName": "queueService",
-      "shortDescription": "Increase the counter by 1.",
-      "keywords": "api counter function increase queueservice"
-    },
-    {
-      "section": "api",
-      "id": "queueService.registerObserverCallback",
-      "shortName": "queueService.registerObserverCallback",
-      "type": "function",
-      "moduleName": "queueService",
-      "shortDescription": "Register an observer",
-      "keywords": "api call callback change function observer queueservice register registerobservercallback"
-    },
-    {
-      "section": "api",
-      "id": "queueService.reset",
-      "shortName": "queueService.reset",
-      "type": "function",
-      "moduleName": "queueService",
-      "shortDescription": "Decrease the counter by 1.",
-      "keywords": "api count counter current decrease decrementing function queueservice reset"
-    },
-    {
-      "section": "api",
-      "id": "queueService.reset",
-      "shortName": "queueService.reset",
-      "type": "function",
-      "moduleName": "queueService",
-      "shortDescription": "Reset counter to 0.",
-      "keywords": "api count counter current function incrementing queueservice reset"
-    },
-    {
-      "section": "api",
-      "id": "utilityService",
-      "shortName": "utilityService",
-      "type": "service",
-      "moduleName": "utilityService",
-      "shortDescription": "Provides shared utility functionality across the application.",
-      "keywords": "api application functionality service shared utility utilityservice"
-    },
-    {
-      "section": "api",
-      "id": "utilityService.attrToJson",
-      "shortName": "utilityService.attrToJson",
-      "type": "function",
-      "moduleName": "utilityService",
-      "shortDescription": "Converts a SharePoint string representation of a field into the correctly formatted JavaScript version",
-      "keywords": "api attrtojson based boolean calc child constructors converts correctly counter currency datetime definition field float formatted function html integer item javascript json list lookup lookupmulti multichoice number object options parent reference representation sharepoint string text type user usermulti utilityservice version"
-    },
-    {
-      "section": "api",
-      "id": "utilityService.batchProcess",
-      "shortName": "utilityService.batchProcess",
-      "type": "function",
-      "moduleName": "utilityService",
-      "shortDescription": "We REALLY don&#39;t want to lock the user&#39;s browser (blocking the UI thread) while iterating over an array of",
-      "keywords": "$q api aputilityservice array article based batches batchprocess browser buildprojectsummary chunks complete context create cuts defer deferred delay don easily entities example executed extendprojectsummary fictitious function getalllistitems hang intensive items iterate iterating javascript js length lock long maximum milliseconds nczonline net number object pausing performing problem process processed processing projectmodel projects projectsmodel promise reference resolve return running stuff sufficient summary summaryobject thread ui user utilityservice var"
-    },
-    {
-      "section": "api",
-      "id": "utilityService.dateWithinRange",
-      "shortName": "utilityService.dateWithinRange",
-      "type": "function",
-      "moduleName": "utilityService",
-      "shortDescription": "Converts dates into yyyymmdd formatted ints and evaluates to determine if the dateToCheck",
-      "keywords": "api converts current dates datetocheck datewithinrange defaults determine enddate evaluates fall falls formatted function ints provided range startdate starting utilityservice yyyymmdd"
-    },
-    {
-      "section": "api",
-      "id": "utilityService.stringifySharePointDate",
-      "shortName": "utilityService.stringifySharePointDate",
-      "type": "function",
-      "moduleName": "utilityService",
-      "shortDescription": "Converts a JavaScript date into a modified ISO8601 date string using the TimeZone offset for the current user.",
-      "keywords": "api converts current function iso8601 javascript js modified offset string stringifysharepointdate timezone user utilityservice valid"
-    },
-    {
-      "section": "api",
-      "id": "utilityService.stringifySharePointMultiSelect",
-      "shortName": "utilityService.stringifySharePointMultiSelect",
-      "type": "function",
-      "moduleName": "utilityService",
-      "shortDescription": "Turns an array of, typically &#123;lookupId: someId, lookupValue: someValue&#125;, objects into a string",
-      "keywords": "api array delimited doesn field find format function ll lookup lookupid lookupvalue multi multiselectvalue objects pass passed property select selection sharepoint someid somevalue string stringifysharepointmultiselect turns typically user utilityservice values"
-    },
-    {
-      "section": "api",
-      "id": "utilityService.xmlToJson",
-      "shortName": "utilityService.xmlToJson",
-      "type": "function",
-      "moduleName": "utilityService",
-      "shortDescription": "Converts an XML node set to Javascript object array. This is a modified version of the SPServices",
-      "keywords": "api array attributes browsers chunks conversions converts ctor cut downside evergreen field function getlistitems handle hit includeallattrs item javascript leading list long mappedname mapping modified node object objects objecttype options ows_ parsed performance prevent removeows return rows running set slow spservices spxmltojson stripped throttle true ui unnecessarily utilityservice version xml xmltojson"
-    },
-    {
-      "section": "api",
-      "id": "utilityService.yyyymmdd",
-      "shortName": "utilityService.yyyymmdd",
-      "type": "function",
-      "moduleName": "utilityService",
-      "shortDescription": "Convert date into a int formatted as yyyymmdd",
-      "keywords": "api comparison convert don easier evaluate formatted function int portion time utilityservice yyyymmdd"
     }
   ],
   "apis": {

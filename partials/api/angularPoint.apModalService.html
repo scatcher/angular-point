@@ -1,0 +1,104 @@
+<h1><code ng:non-bindable="">apModalService</code>
+<div><span class="hint">service in module <code ng:non-bindable="">angularPoint</code>
+</span>
+</div>
+</h1>
+<div><h2 id="description">Description</h2>
+<div class="description"><div class="angularpoint-apmodalservice-page"><p>Extends a modal form to include many standard functions</p>
+</div></div>
+<div class="member method"><h2 id="methods">Methods</h2>
+<ul class="methods"><li><h3 id="methods_deleteentity">deleteEntity(entity, state, $modalInstance)</h3>
+<div class="deleteentity"><div class="angularpoint-apmodalservice-page angularpoint-apmodalservice-deleteentity-page"><p>Prompts for confirmation of deletion, then deletes and closes modal</p>
+</div><h5 id="methods_deleteentity_parameters">Parameters</h5><table class="variables-matrix table table-bordered table-striped"><thead><tr><th>Param</th><th>Type</th><th>Details</th></tr></thead><tbody><tr><td>entity</td><td><a href="" class="label type-hint type-hint-object">object</a></td><td><div class="angularpoint-apmodalservice-page angularpoint-apmodalservice-deleteentity-page"><p>JavaScript object representing the SharePoint list item.</p>
+</div></td></tr><tr><td>state</td><td><a href="" class="label type-hint type-hint-object">object</a></td><td><div class="angularpoint-apmodalservice-page angularpoint-apmodalservice-deleteentity-page"><p>Controllers state object.</p>
+</div></td></tr><tr><td>$modalInstance</td><td><a href="" class="label type-hint type-hint-object">object</a></td><td><div class="angularpoint-apmodalservice-page angularpoint-apmodalservice-deleteentity-page"><p>Reference to the modal instance for the modal dialog.</p>
+</div></td></tr></tbody></table><h4 id="methods_deleteentity_example">Example</h4>
+<div class="example"><div class="angularpoint-apmodalservice-page angularpoint-apmodalservice-deleteentity-page"><pre class="prettyprint linenums">
+$scope.deleteRequest = function () {
+    apModalService.deleteEntity($scope.request, $scope.state, $modalInstance);
+};
+</pre>
+</div></div>
+</div>
+</li>
+<li><h3 id="methods_getpermissions">getPermissions(entity, [model])</h3>
+<div class="getpermissions"><div class="angularpoint-apmodalservice-page angularpoint-apmodalservice-getpermissions-page"><p>Returns an object containing the permission levels for the current user</p>
+</div><h5 id="methods_getpermissions_parameters">Parameters</h5><table class="variables-matrix table table-bordered table-striped"><thead><tr><th>Param</th><th>Type</th><th>Details</th></tr></thead><tbody><tr><td>entity</td><td><a href="" class="label type-hint type-hint-object">object</a></td><td><div class="angularpoint-apmodalservice-page angularpoint-apmodalservice-getpermissions-page"><p>JavaScript object representing the SharePoint list item.</p>
+</div></td></tr><tr><td>[model]</td><td><a href="" class="label type-hint type-hint-object">object</a></td><td><div class="angularpoint-apmodalservice-page angularpoint-apmodalservice-getpermissions-page"><p>Fallback so we can use the model to determine the user&#39;s
+list permissions instead of the list item.</p>
+</div></td></tr></tbody></table><h5 id="methods_getpermissions_returns">Returns</h5><table class="variables-matrix"><tr><td><a href="" class="label type-hint type-hint-object">object</a></td><td><div class="angularpoint-apmodalservice-page angularpoint-apmodalservice-getpermissions-page"><p>{userCanEdit: boolean, userCanDelete: boolean, userCanApprove: boolean, fullControl: boolean}</p>
+</div></td></tr></table></div>
+</li>
+<li><h3 id="methods_initializestate">initializeState(entity, [options], [model])</h3>
+<div class="initializestate"><div class="angularpoint-apmodalservice-page angularpoint-apmodalservice-initializestate-page"><p>Creates a state object, populates permissions for current user, and sets display mode</p>
+</div><h5 id="methods_initializestate_parameters">Parameters</h5><table class="variables-matrix table table-bordered table-striped"><thead><tr><th>Param</th><th>Type</th><th>Details</th></tr></thead><tbody><tr><td>entity</td><td><a href="" class="label type-hint type-hint-object">object</a></td><td><div class="angularpoint-apmodalservice-page angularpoint-apmodalservice-initializestate-page"><p>JavaScript object representing the SharePoint list item.</p>
+</div></td></tr><tr><td>[options]</td><td><a href="" class="label type-hint type-hint-object">object</a></td><td><div class="angularpoint-apmodalservice-page angularpoint-apmodalservice-initializestate-page"><p>Optional state params.</p>
+</div></td></tr><tr><td>[model]</td><td><a href="" class="label type-hint type-hint-object">object</a></td><td><div class="angularpoint-apmodalservice-page angularpoint-apmodalservice-initializestate-page"><p>Optional fallback to list permissions instead of using
+list item permissions.</p>
+</div></td></tr></tbody></table><h5 id="methods_initializestate_returns">Returns</h5><table class="variables-matrix"><tr><td><a href="" class="label type-hint type-hint-object">object</a></td><td><div class="angularpoint-apmodalservice-page angularpoint-apmodalservice-initializestate-page"><p>Returns the extended state.</p>
+</div></td></tr></table><h4 id="methods_initializestate_example">Example</h4>
+<div class="example"><div class="angularpoint-apmodalservice-page angularpoint-apmodalservice-initializestate-page"><pre class="prettyprint linenums">
+$scope.state = apModalService.initializeState(request, {
+    dateExceedsBoundary: false,
+    enableApproval: false
+});
+</pre>
+<pre class="prettyprint linenums">
+//Returns
+$scope.state = {
+   // Default "View" and once permissions are checked it
+   // can also be "New" || "Edit"
+   displayMode: "New",
+   // Below 2 options allow for locking with 3 way
+   // binding service like FireBase
+   locked: false,
+   lockedBy: '',
+   // Flag which can be used to disable form controls
+   negotiatingWithServer: false,
+   userCanApprove: false,
+   userCanDelete: false,
+   userCanEdit: false,
+   //User has admin rights
+   fullControl: false
+}
+</pre>
+</div></div>
+</div>
+</li>
+<li><h3 id="methods_modalmodelprovider">modalModelProvider(options)</h3>
+<div class="modalmodelprovider"><div class="angularpoint-apmodalservice-page angularpoint-apmodalservice-modalmodelprovider-page"><p>Extends a model to allow us to easily attach a modal form that accepts and injects a
+dynamic number of arguments.</p>
+</div><h5 id="methods_modalmodelprovider_parameters">Parameters</h5><table class="variables-matrix table table-bordered table-striped"><thead><tr><th>Param</th><th>Type</th><th>Details</th></tr></thead><tbody><tr><td>options</td><td><a href="" class="label type-hint type-hint-object">object</a></td><td><div class="angularpoint-apmodalservice-page angularpoint-apmodalservice-modalmodelprovider-page"><p>Configuration object.</p>
+</div></td></tr><tr><td>options.templateUrl</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="angularpoint-apmodalservice-page angularpoint-apmodalservice-modalmodelprovider-page"><p>Reference to the modal view.</p>
+</div></td></tr><tr><td>options.controller</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="angularpoint-apmodalservice-page angularpoint-apmodalservice-modalmodelprovider-page"><p>Name of the modal controller.</p>
+</div></td></tr><tr><td>[options.expectedArguments]</td><td><a href="" class="label type-hint type-hint-string">string[]</a></td><td><div class="angularpoint-apmodalservice-page angularpoint-apmodalservice-modalmodelprovider-page"><p>First argument name should be the item being edited.</p>
+</div></td></tr></tbody></table><h5 id="methods_modalmodelprovider_returns">Returns</h5><table class="variables-matrix"><tr><td><a href="" class="label type-hint type-hint-object">object</a></td><td><div class="angularpoint-apmodalservice-page angularpoint-apmodalservice-modalmodelprovider-page"><p>Function which returns openModal that in turn returns a promise.</p>
+</div></td></tr></table><h4 id="methods_modalmodelprovider_example">Example</h4>
+<div class="example"><div class="angularpoint-apmodalservice-page angularpoint-apmodalservice-modalmodelprovider-page"><pre class="prettyprint linenums">
+model.openModal = apModalService.modalModelProvider({
+    templateUrl: 'modules/comp_request/views/comp_request_modal_view.html',
+    controller: 'compRequestModalCtrl',
+    expectedArguments: ['request']
+});
+</pre>
+</div></div>
+</div>
+</li>
+<li><h3 id="methods_saveentity">saveEntity(entity, model, state, $modalInstance)</h3>
+<div class="saveentity"><div class="angularpoint-apmodalservice-page angularpoint-apmodalservice-saveentity-page"><p>Creates a new record if necessary, otherwise updates the existing record</p>
+</div><h5 id="methods_saveentity_parameters">Parameters</h5><table class="variables-matrix table table-bordered table-striped"><thead><tr><th>Param</th><th>Type</th><th>Details</th></tr></thead><tbody><tr><td>entity</td><td><a href="" class="label type-hint type-hint-object">object</a></td><td><div class="angularpoint-apmodalservice-page angularpoint-apmodalservice-saveentity-page"><p>List item.</p>
+</div></td></tr><tr><td>model</td><td><a href="" class="label type-hint type-hint-object">object</a></td><td><div class="angularpoint-apmodalservice-page angularpoint-apmodalservice-saveentity-page"><p>Reference to the model for the list item.</p>
+</div></td></tr><tr><td>state</td><td><a href="" class="label type-hint type-hint-object">object</a></td><td><div class="angularpoint-apmodalservice-page angularpoint-apmodalservice-saveentity-page"><p>Deprecated....</p>
+</div></td></tr><tr><td>$modalInstance</td><td><a href="" class="label type-hint type-hint-object">object</a></td><td><div class="angularpoint-apmodalservice-page angularpoint-apmodalservice-saveentity-page"><p>Reference to the modal instance for the modal dialog.</p>
+</div></td></tr></tbody></table><h4 id="methods_saveentity_example">Example</h4>
+<div class="example"><div class="angularpoint-apmodalservice-page angularpoint-apmodalservice-saveentity-page"><pre class="prettyprint linenums">
+$scope.saveRequest = function () {
+    apModalService.saveEntity($scope.request, compRequestsModel, $scope.state, $modalInstance);
+};
+</pre>
+</div></div>
+</div>
+</li>
+</ul>
+</div>
+</div>
