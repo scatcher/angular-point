@@ -2,7 +2,7 @@
 
 /**
  * @ngdoc service
- * @name queueService
+ * @name angularPoint.apQueueService
  * @description
  * Simple service to monitor the number of active requests we have open with SharePoint
  * Typical use is to display a loading animation of some sort
@@ -14,7 +14,8 @@ angular.module('angularPoint')
 
         /**
          * @ngdoc function
-         * @name queueService.increase
+         * @name angularPoint.apQueueService:increase
+         * @methodOf angularPoint.apQueueService
          * @description
          * Increase the counter by 1.
          */
@@ -26,7 +27,8 @@ angular.module('angularPoint')
 
         /**
          * @ngdoc function
-         * @name queueService.reset
+         * @name angularPoint.apQueueService:decrease
+         * @methodOf angularPoint.apQueueService
          * @description
          * Decrease the counter by 1.
          * @returns {number} Current count after decrementing.
@@ -41,7 +43,8 @@ angular.module('angularPoint')
 
         /**
          * @ngdoc function
-         * @name queueService.reset
+         * @name angularPoint.apQueueService:reset
+         * @methodOf angularPoint.apQueueService
          * @description
          * Reset counter to 0.
          * @returns {number} Current count after incrementing.
@@ -56,7 +59,8 @@ angular.module('angularPoint')
 
         /**
          * @ngdoc function
-         * @name queueService.registerObserverCallback
+         * @name angularPoint.apQueueService:registerObserverCallback
+         * @methodOf angularPoint.apQueueService
          * @description
          * Register an observer
          * @param {function} callback Function to call when a change is made.

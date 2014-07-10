@@ -2,7 +2,7 @@
 
 /**
  * @ngdoc service
- * @name apCacheService
+ * @name angularPoint.apCacheService
  * @description
  * Stores a reference for all list items based on list GUID and list item id.  Allows us to then register promises that
  * resolve once a requested list item is registered in the future.
@@ -41,14 +41,14 @@ angular.module('angularPoint')
         };
         
         /**
-         * @ngdoc function
-         * @name apCacheService.EntityCache
+         * @ngdoc object
+         * @name EntityCache
          * @description
          * Cache constructor that maintains a queue of all requests for a list item, counter for the number of times
          * the cache has been updated, timestamp of last update, and add/update/remove functionality.
          * @param {string} entityType GUID for list the list item belongs to.
          * @param {number} entityId The entity.id.
-         * @constructor
+         * @requires angularPoint.apCacheService
          */
         var EntityCache = function (entityType, entityId) {
             var self = this;
@@ -60,7 +60,8 @@ angular.module('angularPoint')
 
         /**
          * @ngdoc function
-         * @name apCacheService.EntityCache:getEntity
+         * @name EntityCache.getEntity
+         * @mthodOf EntityCache
          * @description
          * Promise which returns the requested entity once it has been registered in the cache.
          */
@@ -78,7 +79,8 @@ angular.module('angularPoint')
 
         /**
          * @ngdoc function
-         * @name apCacheService.getEntity
+         * @name angularPoint.apCacheService:getEntity
+         * @methodOf angularPoint.apCacheService
          * @description
          * Returns a deferred object that resolves with the requested entity immediately if already present or at some
          * point in the future assuming the entity is eventually registered.
@@ -106,7 +108,8 @@ angular.module('angularPoint')
 
         /**
          * @ngdoc function
-         * @name apCacheService.registerEntity
+         * @name angularPoint.apCacheService:registerEntity
+         * @methodOf angularPoint.apCacheService
          * @description
          * Registers an entity in the cache and fulfills any pending deferred requests for the entity.
          * @param {object} entity Pass in a newly created entity to add to the cache.
@@ -124,7 +127,8 @@ angular.module('angularPoint')
 
         /**
          * @ngdoc function
-         * @name apCacheService.removeEntity
+         * @name angularPoint.apCacheService:removeEntity
+         * @methodOf angularPoint.apCacheService
          * @description
          * Removes the entity from the local entity cache.
          * @param {string} entityType GUID for list the list item belongs to.

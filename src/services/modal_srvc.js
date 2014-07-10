@@ -2,19 +2,18 @@
 
 /**
  * @ngdoc service
- * @name apModalService
+ * @name angularPoint.apModalService
  * @description
  * Extends a modal form to include many standard functions
  *
- * @requires {object} $modal From Angular Bootstrap.
- * @requires {object} toastr
  */
 angular.module('angularPoint')
     .service('apModalService', function ($modal, toastr) {
 
         /**
          * @ngdoc function
-         * @name apModalService.modalModelProvider
+         * @name angularPoint.apModalService:modalModelProvider
+         * @methodOf angularPoint.apModalService
          * @description
          * Extends a model to allow us to easily attach a modal form that accepts and injects a
          * dynamic number of arguments.
@@ -25,13 +24,13 @@ angular.module('angularPoint')
          * @returns {object} Function which returns openModal that in turn returns a promise.
          *
          * @example
-         <pre>
-            model.openModal = apModalService.modalModelProvider({
-                templateUrl: 'modules/comp_request/views/comp_request_modal_view.html',
-                controller: 'compRequestModalCtrl',
-                expectedArguments: ['request']
-            });
-         </pre>
+         * <pre>
+         *    model.openModal = apModalService.modalModelProvider({
+         *        templateUrl: 'modules/comp_request/views/comp_request_modal_view.html',
+         *        controller: 'compRequestModalCtrl',
+         *        expectedArguments: ['request']
+         *    });
+         * </pre>
          */
         function modalModelProvider(options) {
             return function openModal() {
@@ -76,7 +75,8 @@ angular.module('angularPoint')
 
         /**
          * @ngdoc function
-         * @name apModalService.getPermissions
+         * @name angularPoint.apModalService:getPermissions
+         * @methodOf angularPoint.apModalService
          * @description
          * Returns an object containing the permission levels for the current user
          * @param {object} entity JavaScript object representing the SharePoint list item.
@@ -113,7 +113,8 @@ angular.module('angularPoint')
 
         /**
          * @ngdoc function
-         * @name apModalService.initializeState
+         * @name angularPoint.apModalService:initializeState
+         * @methodOf angularPoint.apModalService
          * @description
          * Creates a state object, populates permissions for current user, and sets display mode
          *
@@ -173,7 +174,8 @@ angular.module('angularPoint')
 
         /**
          * @ngdoc function
-         * @name apModalService.deleteEntity
+         * @name angularPoint.apModalService:deleteEntity
+         * @methodOf angularPoint.apModalService
          * @description
          * Prompts for confirmation of deletion, then deletes and closes modal
          * @param {object} entity JavaScript object representing the SharePoint list item.
@@ -182,11 +184,11 @@ angular.module('angularPoint')
          *
          * @example
          *
-         <pre>
-           $scope.deleteRequest = function () {
-               apModalService.deleteEntity($scope.request, $scope.state, $modalInstance);
-           };
-         </pre>
+         * <pre>
+         *   $scope.deleteRequest = function () {
+         *       apModalService.deleteEntity($scope.request, $scope.state, $modalInstance);
+         *   };
+         * </pre>
          */
         function deleteEntity(entity, state, $modalInstance) {
             var confirmation = window.confirm('Are you sure you want to delete this record?');
@@ -204,18 +206,21 @@ angular.module('angularPoint')
 
         /**
          * @ngdoc function
-         * @name apModalService.saveEntity
+         * @name angularPoint.apModalService:saveEntity
+         * @methodOf angularPoint.apModalService
          * @description
          * Creates a new record if necessary, otherwise updates the existing record
          * @param {object} entity List item.
          * @param {object} model Reference to the model for the list item.
-         * @param {object} state Depricated....
+         * @param {object} state Deprecated....
          * @param {object} $modalInstance Reference to the modal instance for the modal dialog.
          *
          * @example
+         * <pre>
          *  $scope.saveRequest = function () {
          *      apModalService.saveEntity($scope.request, compRequestsModel, $scope.state, $modalInstance);
          *  };
+         *  </pre>
          */
         function saveEntity(entity, model, state, $modalInstance) {
             if (entity.id) {

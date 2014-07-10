@@ -2,7 +2,7 @@
 
 /**
  * @ngdoc service
- * @name utilityService
+ * @name angularPoint.apUtilityService
  * @description
  * Provides shared utility functionality across the application.
  */
@@ -23,7 +23,8 @@ angular.module('angularPoint')
 
         /**
          * @ngdoc function
-         * @name utilityService.xmlToJson
+         * @name angularPoint.apUtilityService:xmlToJson
+         * @methodOf angularPoint.apUtilityService
          * @description
          * Converts an XML node set to Javascript object array. This is a modified version of the SPServices
          * "SPXmlToJson" function.
@@ -99,7 +100,8 @@ angular.module('angularPoint')
 
         /**
          * @ngdoc function
-         * @name utilityService.attrToJson
+         * @name angularPoint.apUtilityService:attrToJson
+         * @methodOf angularPoint.apUtilityService
          * @description
          * Converts a SharePoint string representation of a field into the correctly formatted JavaScript version
          * based on object type.
@@ -462,7 +464,8 @@ angular.module('angularPoint')
 
         /**
          * @ngdoc function
-         * @name utilityService.stringifySharePointDate
+         * @name angularPoint.apUtilityService:stringifySharePointDate
+         * @methodOf angularPoint.apUtilityService
          * @description
          * Converts a JavaScript date into a modified ISO8601 date string using the TimeZone offset for the current user.
          * @example
@@ -503,7 +506,8 @@ angular.module('angularPoint')
 
         /**
          * @ngdoc function
-         * @name utilityService.stringifySharePointMultiSelect
+         * @name angularPoint.apUtilityService:stringifySharePointMultiSelect
+         * @methodOf angularPoint.apUtilityService
          * @description
          * Turns an array of, typically {lookupId: someId, lookupValue: someValue}, objects into a string
          * of delimited id's that can be passed to SharePoint for a multi select lookup or multi user selection
@@ -528,7 +532,8 @@ angular.module('angularPoint')
 
         /**
          * @ngdoc function
-         * @name utilityService.yyyymmdd
+         * @name angularPoint.apUtilityService:yyyymmdd
+         * @methodOf angularPoint.apUtilityService
          * @description
          * Convert date into a int formatted as yyyymmdd
          * We don't need the time portion of comparison so an int makes this easier to evaluate
@@ -543,7 +548,8 @@ angular.module('angularPoint')
 
         /**
          * @ngdoc function
-         * @name utilityService.dateWithinRange
+         * @name angularPoint.apUtilityService:dateWithinRange
+         * @methodOf angularPoint.apUtilityService
          * @description
          * Converts dates into yyyymmdd formatted ints and evaluates to determine if the dateToCheck
          * falls within the date range provided
@@ -571,7 +577,8 @@ angular.module('angularPoint')
 
         /**
          * @ngdoc function
-         * @name utilityService.batchProcess
+         * @name angularPoint.apUtilityService:batchProcess
+         * @methodOf angularPoint.apUtilityService
          * @description
          * We REALLY don't want to lock the user's browser (blocking the UI thread) while iterating over an array of
          * items and performing some process on them.  This function cuts the process into as many 50ms chunks as are

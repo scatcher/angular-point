@@ -8,6 +8,12 @@
  *
  * For additional information on many of these web service calls, see Marc Anderson's SPServices documentation
  *  http://spservices.codeplex.com/documentation
+ *
+ *  @requires angularPoint.apQueueService
+ *  @requires angularPoint.apConfig
+ *  @requires angularPoint.apUtilityService
+ *  @requires angularPoint.apCacheService
+ *  @requires angularPoint.apFieldService
  */
 angular.module('angularPoint')
     .service('apDataService', function ($q, $timeout, apQueueService, apConfig, apUtilityService, apCacheService, apFieldService, toastr) {

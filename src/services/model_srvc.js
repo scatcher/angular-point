@@ -3,9 +3,13 @@
 /**
  * @ngdoc service
  * @name apModelFactory
- * @module Model
  * @description
  * The 'apModelFactory' provides a common base prototype for Model, Query, and List Item.
+ *
+ * @requires angularPoint.apDataService
+ * @requires angularPoint.apCacheService
+ * @requires angularPoint.apFieldService
+ * @requires angularPoint.apModalService
  *
  * @function
  */
@@ -239,7 +243,6 @@ angular.module('angularPoint')
         /**
          * @ngdoc function
          * @name Model.getAllListItems
-         * @module apModelFactoryModel
          * @description
          * Inherited from Model constructor
          * Gets all list items in the current list, processes the xml, and caches the data in model.
@@ -248,9 +251,9 @@ angular.module('angularPoint')
          * <pre>
          * //Taken from a fictitious projectsModel.js
          * projectModel.getAllListItems().then(function(entities) {
-         *          //Do something with all of the returned entities
-         *          $scope.projects = entities;
-         *      };
+         *     //Do something with all of the returned entities
+         *     $scope.projects = entities;
+         * };
          * </pre>
          */
         Model.prototype.getAllListItems = function () {

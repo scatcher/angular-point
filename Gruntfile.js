@@ -182,7 +182,7 @@ module.exports = function (grunt) {
     ]);
 
     grunt.registerTask('doc', [
-//        'clean:docs',
+        'clean:docs',
         'ngdocs'
     ]);
 

@@ -2,9 +2,10 @@
 
 /**
  * @ngdoc service
- * @name fieldService
+ * @name angularPoint.apFieldService
  * @description
  * Handles the mapping of the various types of fields used within a SharePoint list
+ * @requires angularPoint.apUtilityService
  */
 angular.module('angularPoint')
     .service('apFieldService', function (apUtilityService) {
@@ -42,7 +43,8 @@ angular.module('angularPoint')
 
         /**
          * @ngdoc function
-         * @name fieldService.resolveValueForEffectivePermMask
+         * @name angularPoint.apFieldService:resolveValueForEffectivePermMask
+         * @methodOf angularPoint.apFieldService
          * @description
          * Takes the name of a permission mask and returns a permission value which can then be used
          * to generate a permission object using modelService.resolvePermissions(outputfromthis)
@@ -83,7 +85,8 @@ angular.module('angularPoint')
 
         /**
          * @ngdoc function
-         * @name fieldService.mockPermMask
+         * @name angularPoint.apFieldService:mockPermMask
+         * @methodOf angularPoint.apFieldService
          * @description
          * Defaults to a full mask but allows simulation of each of main permission levels
          * @param {object} [options] Options container.
@@ -130,7 +133,8 @@ angular.module('angularPoint')
 
         /**
          * @ngdoc function
-         * @name fieldService.Field
+         * @name angularPoint.apFieldService:Field
+         * @methodOf angularPoint.apFieldService
          * @description
          * Decorates field with optional defaults
          * @param {object} obj Field definition.
@@ -196,7 +200,8 @@ angular.module('angularPoint')
 
         /**
          * @ngdoc function
-         * @name fieldService.getDefaultValueForType
+         * @name angularPoint.apFieldService:getDefaultValueForType
+         * @methodOf angularPoint.apFieldService
          * @description
          * Returns the empty value expected for a field type
          * @param {string} fieldType Type of field.
@@ -212,7 +217,8 @@ angular.module('angularPoint')
 
         /**
          * @ngdoc function
-         * @name fieldService.getMockData
+         * @name angularPoint.apFieldService:getMockData
+         * @methodOf angularPoint.apFieldService
          * @description
          * Can return mock data appropriate for the field type, by default it dynamically generates data but
          * the staticValue param will instead return a hard coded type specific value
@@ -236,7 +242,8 @@ angular.module('angularPoint')
 
         /**
          * @ngdoc function
-         * @name fieldService.defaultFields
+         * @name angularPoint.apFieldService:defaultFields
+         * @methodOf angularPoint.apFieldService
          * @description
          * Read only fields that should be included in all lists
          */
@@ -252,7 +259,8 @@ angular.module('angularPoint')
 
         /**
          * @ngdoc function
-         * @name fieldService.extendFieldDefinitions
+         * @name angularPoint.apFieldService:extendFieldDefinitions
+         * @methodOf angularPoint.apFieldService
          * @description
          * 1. Populates the fields array which uses the Field constructor to combine the default
          * SharePoint fields with those defined in the list definition on the model
