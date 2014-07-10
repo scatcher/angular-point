@@ -28,7 +28,7 @@ angular.module('angularPoint', ['toastr']).constant('apConfig', {
 'use strict';
 /**
  * @ngdoc service
- * @name apCacheService
+ * @name angularPoint.apCacheService
  * @description
  * Stores a reference for all list items based on list GUID and list item id.  Allows us to then register promises that
  * resolve once a requested list item is registered in the future.
@@ -65,14 +65,14 @@ angular.module('angularPoint').service('apCacheService', [
       }
     };
     /**
-         * @ngdoc function
-         * @name apCacheService.EntityCache
+         * @ngdoc object
+         * @name angularPoint.apCacheService.EntityCache
          * @description
          * Cache constructor that maintains a queue of all requests for a list item, counter for the number of times
          * the cache has been updated, timestamp of last update, and add/update/remove functionality.
          * @param {string} entityType GUID for list the list item belongs to.
          * @param {number} entityId The entity.id.
-         * @constructor
+         * @requires angularPoint.apCacheService
          */
     var EntityCache = function (entityType, entityId) {
       var self = this;
@@ -83,7 +83,8 @@ angular.module('angularPoint').service('apCacheService', [
     };
     /**
          * @ngdoc function
-         * @name apCacheService.EntityCache:getEntity
+         * @name angularPoint.apCacheService.EntityCache:getEntity
+         * @mthodOf angularPoint.apCacheService.EntityCache
          * @description
          * Promise which returns the requested entity once it has been registered in the cache.
          */
@@ -100,7 +101,8 @@ angular.module('angularPoint').service('apCacheService', [
     };
     /**
          * @ngdoc function
-         * @name apCacheService.getEntity
+         * @name angularPoint.apCacheService:getEntity
+         * @methodOf angularPoint.apCacheService
          * @description
          * Returns a deferred object that resolves with the requested entity immediately if already present or at some
          * point in the future assuming the entity is eventually registered.
@@ -126,7 +128,8 @@ angular.module('angularPoint').service('apCacheService', [
     };
     /**
          * @ngdoc function
-         * @name apCacheService.registerEntity
+         * @name angularPoint.apCacheService:registerEntity
+         * @methodOf angularPoint.apCacheService
          * @description
          * Registers an entity in the cache and fulfills any pending deferred requests for the entity.
          * @param {object} entity Pass in a newly created entity to add to the cache.
@@ -141,7 +144,8 @@ angular.module('angularPoint').service('apCacheService', [
     };
     /**
          * @ngdoc function
-         * @name apCacheService.removeEntity
+         * @name angularPoint.apCacheService:removeEntity
+         * @methodOf angularPoint.apCacheService
          * @description
          * Removes the entity from the local entity cache.
          * @param {string} entityType GUID for list the list item belongs to.
@@ -195,12 +199,18 @@ angular.module('angularPoint').service('apCacheService', [
 'use strict';
 /**
  * @ngdoc service
- * @name dataService
+ * @name apDataService
  * @description
  * Handles all interaction with SharePoint web services
  *
  * For additional information on many of these web service calls, see Marc Anderson's SPServices documentation
  *  http://spservices.codeplex.com/documentation
+ *
+ *  @requires angularPoint.apQueueService
+ *  @requires angularPoint.apConfig
+ *  @requires angularPoint.apUtilityService
+ *  @requires angularPoint.apCacheService
+ *  @requires angularPoint.apFieldService
  */
 angular.module('angularPoint').service('apDataService', [
   '$q',
@@ -219,7 +229,7 @@ angular.module('angularPoint').service('apDataService', [
     var online = !offline;
     /**
          * @ngdoc function
-         * @name dataService.processListItems
+         * @name apDataService.processListItems
          * @description
          * Post processing of data after returning list items from server.  Returns a promise that resolves with
          * the processed entities.  Promise allows us to batch conversions of large lists to prevent ui slowdowns.
@@ -280,7 +290,7 @@ angular.module('angularPoint').service('apDataService', [
     };
     /**
          * @ngdoc function
-         * @name dataService.updateLocalCache
+         * @name apDataService.updateLocalCache
          * @description
          * Maps a cache by entity id.  All provided entities are then either added if they don't already exist
          * or replaced if they do.
@@ -312,7 +322,7 @@ angular.module('angularPoint').service('apDataService', [
     }
     /**
          * @ngdoc function
-         * @name dataService.parseFieldVersionHistoryResponse
+         * @name apDataService.parseFieldVersionHistoryResponse
          * @description
          * Takes an XML response from SharePoint webservice and returns an array of field versions.
          *
@@ -341,7 +351,7 @@ angular.module('angularPoint').service('apDataService', [
     }
     /**
          * @ngdoc function
-         * @name dataService.getFieldVersionHistory
+         * @name apDataService.getFieldVersionHistory
          * @description
          * Returns the version history for a field in a list item.
          * @param {object} payload Configuration object passed to SPServices.
@@ -383,7 +393,7 @@ angular.module('angularPoint').service('apDataService', [
     };
     /**
          * @ngdoc function
-         * @name dataService.getCollection
+         * @name apDataService.getCollection
          * @description
          * Used to handle any of the Get[filterNode]Collection calls to SharePoint
          *
@@ -404,7 +414,7 @@ angular.module('angularPoint').service('apDataService', [
          *
          * @example
          <pre>
-         dataService.getCollection({
+         apDataService.getCollection({
                 operation: "GetGroupCollectionFromUser",
                 userLoginName: $scope.state.selectedUser.LoginName
                 }).then(function (response) {
@@ -497,7 +507,7 @@ angular.module('angularPoint').service('apDataService', [
     };
     /**
          * @ngdoc function
-         * @name dataService.serviceWrapper
+         * @name apDataService.serviceWrapper
          * @description
          * Generic wrapper for any SPServices web service call.  The big benefit to this function is it allows us
          * to continue to use the $q promise model throughout the application instead of using the promise
@@ -564,7 +574,7 @@ angular.module('angularPoint').service('apDataService', [
     };
     /**
          * @ngdoc function
-         * @name dataService.getList
+         * @name apDataService.getList
          * @description
          * Returns all list settings for each list on the site
          * @param {object} options Configuration parameters.
@@ -602,7 +612,7 @@ angular.module('angularPoint').service('apDataService', [
     };
     /**
          * @ngdoc function
-         * @name dataService.deleteAttachment
+         * @name apDataService.deleteAttachment
          * @description
          * Deletes and attachment on a list item.  Most commonly used by ListItem.deleteAttachment which is shown
          * in the example.
@@ -619,7 +629,7 @@ angular.module('angularPoint').service('apDataService', [
          <pre>
          ListItem.prototype.deleteAttachment = function (url) {
             var listItem = this;
-            return dataService.deleteAttachment({
+            return apDataService.deleteAttachment({
                 listItemId: listItem.id,
                 url: url,
                 listName: listItem.getModel().list.guid
@@ -660,7 +670,7 @@ angular.module('angularPoint').service('apDataService', [
     };
     /**
          * @ngdoc function
-         * @name dataService.getView
+         * @name apDataService.getView
          * @description
          * Returns details of a SharePoint list view
          * @param {object} options Configuration parameters.
@@ -739,7 +749,7 @@ angular.module('angularPoint').service('apDataService', [
     };
     /**
          * @ngdoc function
-         * @name dataService.executeQuery
+         * @name apDataService.executeQuery
          * @description
          * Primary method of retrieving list items from SharePoint.  Look at Query and Model for specifics.
          * @param {object} model Reference to the model where the Query resides.
@@ -826,7 +836,7 @@ angular.module('angularPoint').service('apDataService', [
     };
     /**
          * @ngdoc function
-         * @name dataService.removeEntityFromLocalCache
+         * @name apDataService.removeEntityFromLocalCache
          * @description
          * Searches for an entity based on list item ID and removes it from the cached array if it exists.
          * @param {Array} entityArray Cached array of list items for a query.
@@ -847,7 +857,7 @@ angular.module('angularPoint').service('apDataService', [
     }
     /**
          * @ngdoc function
-         * @name dataService.retrieveChangeToken
+         * @name apDataService.retrieveChangeToken
          * @description
          * Returns the change token from the xml response of a GetListItemChangesSinceToken query
          * Note: this attribute is only found when using 'GetListItemChangesSinceToken'
@@ -858,7 +868,7 @@ angular.module('angularPoint').service('apDataService', [
     }
     /**
          * @ngdoc function
-         * @name dataService.retrievePermMask
+         * @name apDataService.retrievePermMask
          * @description
          * Returns the text representation of the users permission mask
          * Note: this attribute is only found when using 'GetListItemChangesSinceToken'
@@ -869,7 +879,7 @@ angular.module('angularPoint').service('apDataService', [
     }
     /**
          * @ngdoc function
-         * @name dataService.processDeletionsSinceToken
+         * @name apDataService.processDeletionsSinceToken
          * @description
          * GetListItemChangesSinceToken returns items that have been added as well as deleted so we need
          * to remove the deleted items from the local cache.
@@ -897,7 +907,7 @@ angular.module('angularPoint').service('apDataService', [
     }
     /**
          * @ngdoc function
-         * @name dataService.createValuePair
+         * @name apDataService.createValuePair
          * @description
          * Uses a field definition from a model to properly format a value for submission to SharePoint.  Typically
          * used prior to saving a list item, we iterate over each of the non-readonly properties defined in the model
@@ -993,7 +1003,7 @@ angular.module('angularPoint').service('apDataService', [
     };
     /**
          * @ngdoc function
-         * @name dataService.generateValuePairs
+         * @name apDataService.generateValuePairs
          * @description
          * Typically used to iterate over the non-readonly field definitions stored in a model and convert a
          * given list item entity into value pairs that we can pass to SPServices for saving.
@@ -1014,7 +1024,7 @@ angular.module('angularPoint').service('apDataService', [
     }
     /**
          * @ngdoc function
-         * @name dataService.updateAllCaches
+         * @name apDataService.updateAllCaches
          * @description
          * Propagates a change to all duplicate entities in all cached queries within a given model.
          * @param {object} model Reference to the entities model.
@@ -1038,7 +1048,7 @@ angular.module('angularPoint').service('apDataService', [
     }
     /**
          * @ngdoc function
-         * @name dataService.addUpdateItemModel
+         * @name apDataService.addUpdateItemModel
          * @description
          * Adds or updates a list item based on if the item passed in contains an id attribute.
          * @param {object} model Reference to the entities model.
@@ -1151,7 +1161,7 @@ angular.module('angularPoint').service('apDataService', [
     };
     /**
          * @ngdoc function
-         * @name dataService.deleteItemModel
+         * @name apDataService.deleteItemModel
          * @description
          * Typically called directly from a list item, removes the list item from SharePoint
          * and the local cache.
@@ -1242,9 +1252,10 @@ angular.module('angularPoint').service('apDataService', [
 'use strict';
 /**
  * @ngdoc service
- * @name fieldService
+ * @name angularPoint.apFieldService
  * @description
  * Handles the mapping of the various types of fields used within a SharePoint list
+ * @requires angularPoint.apUtilityService
  */
 angular.module('angularPoint').service('apFieldService', [
   'apUtilityService',
@@ -1275,7 +1286,8 @@ angular.module('angularPoint').service('apFieldService', [
     }
     /**
          * @ngdoc function
-         * @name fieldService.resolveValueForEffectivePermMask
+         * @name angularPoint.apFieldService:resolveValueForEffectivePermMask
+         * @methodOf angularPoint.apFieldService
          * @description
          * Takes the name of a permission mask and returns a permission value which can then be used
          * to generate a permission object using modelService.resolvePermissions(outputfromthis)
@@ -1315,7 +1327,8 @@ angular.module('angularPoint').service('apFieldService', [
     }
     /**
          * @ngdoc function
-         * @name fieldService.mockPermMask
+         * @name angularPoint.apFieldService:mockPermMask
+         * @methodOf angularPoint.apFieldService
          * @description
          * Defaults to a full mask but allows simulation of each of main permission levels
          * @param {object} [options] Options container.
@@ -1357,7 +1370,8 @@ angular.module('angularPoint').service('apFieldService', [
     }
     /**
          * @ngdoc function
-         * @name fieldService.Field
+         * @name angularPoint.apFieldService:Field
+         * @methodOf angularPoint.apFieldService
          * @description
          * Decorates field with optional defaults
          * @param {object} obj Field definition.
@@ -1490,7 +1504,8 @@ angular.module('angularPoint').service('apFieldService', [
     }
     /**
          * @ngdoc function
-         * @name fieldService.getDefaultValueForType
+         * @name angularPoint.apFieldService:getDefaultValueForType
+         * @methodOf angularPoint.apFieldService
          * @description
          * Returns the empty value expected for a field type
          * @param {string} fieldType Type of field.
@@ -1505,7 +1520,8 @@ angular.module('angularPoint').service('apFieldService', [
     }
     /**
          * @ngdoc function
-         * @name fieldService.getMockData
+         * @name angularPoint.apFieldService:getMockData
+         * @methodOf angularPoint.apFieldService
          * @description
          * Can return mock data appropriate for the field type, by default it dynamically generates data but
          * the staticValue param will instead return a hard coded type specific value
@@ -1528,7 +1544,8 @@ angular.module('angularPoint').service('apFieldService', [
     }
     /**
          * @ngdoc function
-         * @name fieldService.defaultFields
+         * @name angularPoint.apFieldService:defaultFields
+         * @methodOf angularPoint.apFieldService
          * @description
          * Read only fields that should be included in all lists
          */
@@ -1578,7 +1595,8 @@ angular.module('angularPoint').service('apFieldService', [
       ];
     /**
          * @ngdoc function
-         * @name fieldService.extendFieldDefinitions
+         * @name angularPoint.apFieldService:extendFieldDefinitions
+         * @methodOf angularPoint.apFieldService
          * @description
          * 1. Populates the fields array which uses the Field constructor to combine the default
          * SharePoint fields with those defined in the list definition on the model
@@ -1630,12 +1648,10 @@ angular.module('angularPoint').service('apFieldService', [
 'use strict';
 /**
  * @ngdoc service
- * @name apModalService
+ * @name angularPoint.apModalService
  * @description
  * Extends a modal form to include many standard functions
  *
- * @requires {object} $modal From Angular Bootstrap.
- * @requires {object} toastr
  */
 angular.module('angularPoint').service('apModalService', [
   '$modal',
@@ -1643,7 +1659,8 @@ angular.module('angularPoint').service('apModalService', [
   function ($modal, toastr) {
     /**
          * @ngdoc function
-         * @name apModalService.modalModelProvider
+         * @name angularPoint.apModalService:modalModelProvider
+         * @methodOf angularPoint.apModalService
          * @description
          * Extends a model to allow us to easily attach a modal form that accepts and injects a
          * dynamic number of arguments.
@@ -1654,13 +1671,13 @@ angular.module('angularPoint').service('apModalService', [
          * @returns {object} Function which returns openModal that in turn returns a promise.
          *
          * @example
-         <pre>
-            model.openModal = apModalService.modalModelProvider({
-                templateUrl: 'modules/comp_request/views/comp_request_modal_view.html',
-                controller: 'compRequestModalCtrl',
-                expectedArguments: ['request']
-            });
-         </pre>
+         * <pre>
+         *    model.openModal = apModalService.modalModelProvider({
+         *        templateUrl: 'modules/comp_request/views/comp_request_modal_view.html',
+         *        controller: 'compRequestModalCtrl',
+         *        expectedArguments: ['request']
+         *    });
+         * </pre>
          */
     function modalModelProvider(options) {
       return function openModal() {
@@ -1698,7 +1715,8 @@ angular.module('angularPoint').service('apModalService', [
     }
     /**
          * @ngdoc function
-         * @name apModalService.getPermissions
+         * @name angularPoint.apModalService:getPermissions
+         * @methodOf angularPoint.apModalService
          * @description
          * Returns an object containing the permission levels for the current user
          * @param {object} entity JavaScript object representing the SharePoint list item.
@@ -1730,7 +1748,8 @@ angular.module('angularPoint').service('apModalService', [
     }
     /**
          * @ngdoc function
-         * @name apModalService.initializeState
+         * @name angularPoint.apModalService:initializeState
+         * @methodOf angularPoint.apModalService
          * @description
          * Creates a state object, populates permissions for current user, and sets display mode
          *
@@ -1786,7 +1805,8 @@ angular.module('angularPoint').service('apModalService', [
     }
     /**
          * @ngdoc function
-         * @name apModalService.deleteEntity
+         * @name angularPoint.apModalService:deleteEntity
+         * @methodOf angularPoint.apModalService
          * @description
          * Prompts for confirmation of deletion, then deletes and closes modal
          * @param {object} entity JavaScript object representing the SharePoint list item.
@@ -1795,11 +1815,11 @@ angular.module('angularPoint').service('apModalService', [
          *
          * @example
          *
-         <pre>
-           $scope.deleteRequest = function () {
-               apModalService.deleteEntity($scope.request, $scope.state, $modalInstance);
-           };
-         </pre>
+         * <pre>
+         *   $scope.deleteRequest = function () {
+         *       apModalService.deleteEntity($scope.request, $scope.state, $modalInstance);
+         *   };
+         * </pre>
          */
     function deleteEntity(entity, state, $modalInstance) {
       var confirmation = window.confirm('Are you sure you want to delete this record?');
@@ -1816,18 +1836,21 @@ angular.module('angularPoint').service('apModalService', [
     }
     /**
          * @ngdoc function
-         * @name apModalService.saveEntity
+         * @name angularPoint.apModalService:saveEntity
+         * @methodOf angularPoint.apModalService
          * @description
          * Creates a new record if necessary, otherwise updates the existing record
          * @param {object} entity List item.
          * @param {object} model Reference to the model for the list item.
-         * @param {object} state Depricated....
+         * @param {object} state Deprecated....
          * @param {object} $modalInstance Reference to the modal instance for the modal dialog.
          *
          * @example
+         * <pre>
          *  $scope.saveRequest = function () {
          *      apModalService.saveEntity($scope.request, compRequestsModel, $scope.state, $modalInstance);
          *  };
+         *  </pre>
          */
     function saveEntity(entity, model, state, $modalInstance) {
       if (entity.id) {
@@ -1860,25 +1883,1319 @@ angular.module('angularPoint').service('apModalService', [
 'use strict';
 /**
  * @ngdoc service
- * @name apModelFactory
- * @module Model
+ * @name angularPoint.apQueueService
  * @description
- * The 'apModelFactory' provides a common base prototype for Model, Query, and List Item.
- *
- * @function
+ * Simple service to monitor the number of active requests we have open with SharePoint
+ * Typical use is to display a loading animation of some sort
+ */
+angular.module('angularPoint').service('apQueueService', function () {
+  var counter = 0;
+  /**
+         * @ngdoc function
+         * @name angularPoint.apQueueService:increase
+         * @methodOf angularPoint.apQueueService
+         * @description
+         * Increase the counter by 1.
+         */
+  var increase = function () {
+    counter++;
+    notifyObservers();
+    return counter;
+  };
+  /**
+         * @ngdoc function
+         * @name angularPoint.apQueueService:decrease
+         * @methodOf angularPoint.apQueueService
+         * @description
+         * Decrease the counter by 1.
+         * @returns {number} Current count after decrementing.
+         */
+  var decrease = function () {
+    if (counter > 0) {
+      counter--;
+      notifyObservers();
+      return counter;
+    }
+  };
+  /**
+         * @ngdoc function
+         * @name angularPoint.apQueueService:reset
+         * @methodOf angularPoint.apQueueService
+         * @description
+         * Reset counter to 0.
+         * @returns {number} Current count after incrementing.
+         */
+  var reset = function () {
+    counter = 0;
+    notifyObservers();
+    return counter;
+  };
+  var observerCallbacks = [];
+  /**
+         * @ngdoc function
+         * @name angularPoint.apQueueService:registerObserverCallback
+         * @methodOf angularPoint.apQueueService
+         * @description
+         * Register an observer
+         * @param {function} callback Function to call when a change is made.
+         */
+  var registerObserverCallback = function (callback) {
+    observerCallbacks.push(callback);
+  };
+  /** call this when queue changes */
+  var notifyObservers = function () {
+    angular.forEach(observerCallbacks, function (callback) {
+      callback(counter);
+    });
+  };
+  return {
+    count: counter,
+    decrease: decrease,
+    increase: increase,
+    registerObserverCallback: registerObserverCallback,
+    reset: reset
+  };
+});
+;
+'use strict';
+/**
+ * @ngdoc service
+ * @name angularPoint.apUtilityService
+ * @description
+ * Provides shared utility functionality across the application.
+ */
+angular.module('angularPoint').service('apUtilityService', [
+  '$q',
+  'apConfig',
+  '$log',
+  function ($q, apConfig, $log) {
+    // AngularJS will instantiate a singleton by calling "new" on this function
+    /** Extend underscore with a simple helper function */
+    _.mixin({
+      isDefined: function (value) {
+        return !_.isUndefined(value);
+      },
+      isGuid: function (value) {
+        return typeof value === 'string' && /[a-fA-F\d]{8}-(?:[a-fA-F\d]{4}-){3}[a-fA-F\d]{12}/.test(value);
+      }
+    });
+    /**
+         * @ngdoc function
+         * @name angularPoint.apUtilityService:xmlToJson
+         * @methodOf angularPoint.apUtilityService
+         * @description
+         * Converts an XML node set to Javascript object array. This is a modified version of the SPServices
+         * "SPXmlToJson" function.
+         * @param {array} rows ["z:rows"] XML rows that need to be parsed.
+         * @param {object} options Options object.
+         * @param {object[]} options.mapping [columnName: "mappedName", objectType: "objectType"]
+         * @param {boolean} [options.includeAllAttrs=false] If true, return all attributes, regardless whether
+         * @param {boolean} [options.ctor] List item constructor.
+         * @param {boolean} [options.throttle=true] Cut long running conversions into chunks to prevent ui performance
+         * hit.  The downside is most evergreen browsers can handle it so it could slow them down unnecessarily.
+         * @param {boolean} [options.removeOws=true] Specifically for GetListItems, if true, the leading ows_ will
+         * be stripped off the field name.
+         * @returns {Array} An array of JavaScript objects.
+         */
+    var xmlToJson = function (rows, options) {
+      var defaults = {
+          mapping: {},
+          includeAllAttrs: false,
+          removeOws: true,
+          throttle: true
+        };
+      var deferred = $q.defer();
+      var opts = _.extend({}, defaults, options);
+      var attrNum;
+      var entities = [];
+      var processRow = function (item) {
+        var row = {};
+        var rowAttrs = item.attributes;
+        /** Bring back all mapped columns, even those with no value */
+        _.each(opts.mapping, function (prop) {
+          row[prop.mappedName] = '';
+        });
+        // Parse through the element's attributes
+        for (attrNum = 0; attrNum < rowAttrs.length; attrNum++) {
+          var thisAttrName = rowAttrs[attrNum].name;
+          var thisMapping = opts.mapping[thisAttrName];
+          var thisObjectName = typeof thisMapping !== 'undefined' ? thisMapping.mappedName : opts.removeOws ? thisAttrName.split('ows_')[1] : thisAttrName;
+          var thisObjectType = typeof thisMapping !== 'undefined' ? thisMapping.objectType : undefined;
+          if (opts.includeAllAttrs || thisMapping !== undefined) {
+            row[thisObjectName] = attrToJson(rowAttrs[attrNum].value, thisObjectType, {
+              getQuery: opts.getQuery,
+              entity: row,
+              propertyName: thisObjectName
+            });
+          }
+        }
+        /** Push the newly created list item into the return array */
+        if (_.isFunction(opts.ctor)) {
+          /** Use provided list item constructor */
+          entities.push(opts.ctor(row));
+        } else {
+          entities.push(row);
+        }
+      };
+      if (opts.throttle) {
+        /** Action is async so wait until promise from batchProcess is resolved */
+        batchProcess(rows, processRow, this, 25).then(function () {
+          deferred.resolve(entities);
+        });
+      } else {
+        _.each(rows, processRow);
+        deferred.resolve(entities);
+      }
+      return deferred.promise;
+    };
+    /**
+         * @ngdoc function
+         * @name angularPoint.apUtilityService:attrToJson
+         * @methodOf angularPoint.apUtilityService
+         * @description
+         * Converts a SharePoint string representation of a field into the correctly formatted JavaScript version
+         * based on object type.
+         * @param {string} value SharePoint string.
+         * @param {string} [objectType='Text'] The type based on field definition.
+         * Options:[
+         *  DateTime,
+         *  Lookup,
+         *  User,
+         *  LookupMulti,
+         *  UserMulti,
+         *  Boolean,
+         *  Integer,
+         *  Float,
+         *  Counter,
+         *  MultiChoice,
+         *  Currency,
+         *  Number,
+         *  Calc,
+         *  JSON,
+         *  HTML,
+         *  Text [Default]
+         * ]
+         * @param {obj} options Reference to the parent list item which can be used by child constructors.
+         * @returns {*} The formatted JavaScript value based on field type.
+         */
+    function attrToJson(value, objectType, options) {
+      var colValue;
+      switch (objectType) {
+      case 'DateTime':
+      case 'datetime':
+        // For calculated columns, stored as datetime;#value
+        // Dates have dashes instead of slashes: ows_Created='2009-08-25 14:24:48'
+        colValue = dateToJsonObject(value);
+        break;
+      case 'Lookup':
+        colValue = lookupToJsonObject(value, options);
+        break;
+      case 'User':
+        colValue = userToJsonObject(value);
+        break;
+      case 'LookupMulti':
+        colValue = lookupMultiToJsonObject(value, options);
+        break;
+      case 'UserMulti':
+        colValue = userMultiToJsonObject(value);
+        break;
+      case 'Boolean':
+        colValue = booleanToJsonObject(value);
+        break;
+      case 'Integer':
+      case 'Counter':
+        colValue = intToJsonObject(value);
+        break;
+      case 'Currency':
+      case 'Number':
+      case 'Float':
+      case 'float':
+        // For calculated columns, stored as float;#value
+        colValue = floatToJsonObject(value);
+        break;
+      case 'Calc':
+        colValue = calcToJsonObject(value);
+        break;
+      case 'MultiChoice':
+        colValue = choiceMultiToJsonObject(value);
+        break;
+      case 'HTML':
+        colValue = parseHTML(value);
+        break;
+      case 'JSON':
+        colValue = parseJSON(value);
+        break;
+      default:
+        // All other objectTypes will be simple strings
+        colValue = stringToJsonObject(value);
+        break;
+      }
+      return colValue;
+    }
+    function parseJSON(s) {
+      /** Ensure JSON is valid and if not throw error with additional detail */
+      var json = null;
+      try {
+        json = JSON.parse(s);
+      } catch (err) {
+        $log.error('Invalid JSON: ', s);
+      }
+      return json;
+    }
+    function parseHTML(s) {
+      return _.unescape(s);
+    }
+    function stringToJsonObject(s) {
+      return s;
+    }
+    function intToJsonObject(s) {
+      return parseInt(s, 10);
+    }
+    function floatToJsonObject(s) {
+      return parseFloat(s);
+    }
+    function booleanToJsonObject(s) {
+      return s === '0' || s === 'False' ? false : true;
+    }
+    function dateToJsonObject(s) {
+      /** Replace dashes with slashes and the "T" deliminator with a space if found */
+      return new Date(s.replace(/-/g, '/').replace(/T/i, ' '));
+    }
+    function userToJsonObject(s) {
+      if (s.length === 0) {
+        return null;
+      }
+      //Send to constructor
+      return new User(s);
+    }
+    function userMultiToJsonObject(s) {
+      if (s.length === 0) {
+        return null;
+      } else {
+        var thisUserMultiObject = [];
+        var thisUserMulti = s.split(';#');
+        for (var i = 0; i < thisUserMulti.length; i = i + 2) {
+          var thisUser = userToJsonObject(thisUserMulti[i] + ';#' + thisUserMulti[i + 1]);
+          thisUserMultiObject.push(thisUser);
+        }
+        return thisUserMultiObject;
+      }
+    }
+    function lookupToJsonObject(s, options) {
+      if (s.length === 0) {
+        return null;
+      } else {
+        //Send to constructor
+        return new Lookup(s, options);
+      }
+    }
+    function lookupMultiToJsonObject(s, options) {
+      if (s.length === 0) {
+        return [];
+      } else {
+        var thisLookupMultiObject = [];
+        var thisLookupMulti = s.split(';#');
+        for (var i = 0; i < thisLookupMulti.length; i = i + 2) {
+          var thisLookup = lookupToJsonObject(thisLookupMulti[i] + ';#' + thisLookupMulti[i + 1], options);
+          thisLookupMultiObject.push(thisLookup);
+        }
+        return thisLookupMultiObject;
+      }
+    }
+    function choiceMultiToJsonObject(s) {
+      if (s.length === 0) {
+        return [];
+      } else {
+        var thisChoiceMultiObject = [];
+        var thisChoiceMulti = s.split(';#');
+        for (var i = 0; i < thisChoiceMulti.length; i++) {
+          if (thisChoiceMulti[i].length !== 0) {
+            thisChoiceMultiObject.push(thisChoiceMulti[i]);
+          }
+        }
+        return thisChoiceMultiObject;
+      }
+    }
+    /**
+         * Converts an array of selected values into a SharePoint MultiChoice string
+         * @param {string[]} arr
+         * @returns {string}
+         */
+    function choiceMultiToString(arr) {
+      var str = '';
+      var delim = ';#';
+      if (arr.length > 0) {
+        /** String is required to begin with deliminator */
+        str += delim;
+        /** Append each item in the supplied array followed by deliminator */
+        _.each(arr, function (choice) {
+          str += choice + delim;
+        });
+      }
+      return str;
+    }
+    function calcToJsonObject(s) {
+      if (s.length === 0) {
+        return null;
+      } else {
+        var thisCalc = s.split(';#');
+        // The first value will be the calculated column value type, the second will be the value
+        return attrToJson(thisCalc[1], thisCalc[0]);
+      }
+    }
+    // Split values like 1;#value into id and value
+    function SplitIndex(s) {
+      var spl = s.split(';#');
+      this.id = parseInt(spl[0], 10);
+      this.value = spl[1];
+    }
+    function toCamelCase(s) {
+      return s.replace(/(?:^\w|[A-Z]|\b\w)/g, function (letter, index) {
+        return index == 0 ? letter.toLowerCase() : letter.toUpperCase();
+      }).replace(/\s+/g, '');
+    }
+    function fromCamelCase(s) {
+      // insert a space before all caps
+      s.replace(/([A-Z])/g, ' $1').replace(/^./, function (str) {
+        return str.toUpperCase();
+      });
+    }
+    /**Constructors for user and lookup fields*/
+    /**Allows for easier distinction when debugging if object type is shown as either Lookup or User**/
+    /**
+         * @ngdoc function
+         * @name Lookup
+         * @description
+         * Allows for easier distinction when debugging if object type is shown as either Lookup or User.  Also allows us
+         * to create an async request for the entity being referenced by the lookup
+         * @param {string} s String to split into lookupValue and lookupId
+         * @param {object} options Contains a reference to the parent list item and the property name.
+         * @param {object} options.entity Reference to parent list item.
+         * @param {object} options.propertyName Key on list item object.
+         * @constructor
+         */
+    function Lookup(s, options) {
+      var lookup = this;
+      var thisLookup = new SplitIndex(s);
+      lookup.lookupId = thisLookup.id;
+      lookup.lookupValue = thisLookup.value;
+      lookup._props = function () {
+        return options;
+      };
+    }
+    /**
+         * @ngdoc function
+         * @name Lookup.getEntity
+         * @description
+         * Allows us to create a promise that will resolve with the entity referenced in the lookup whenever that list
+         * item is registered.
+         * @example
+         <pre>
+         var project = {
+            title: 'Project 1',
+            location: {
+                lookupId: 5,
+                lookupValue: 'Some Building'
+            }
+         };
+
+         //To get the location entity
+         project.location.getEntity().then(function(entity) {
+             //Resolves with the full location entity once it's registered in the cache
+
+            });
+         </pre>
+         * @returns {promise} Resolves with the object the lookup is referencing.
+         */
+    Lookup.prototype.getEntity = function () {
+      var self = this;
+      var props = self._props();
+      if (!props.getEntity) {
+        var query = props.getQuery();
+        var listItem = query.searchLocalCache(props.entity.id);
+        /** Create a new deferred object if this is the first run */
+        props.getEntity = $q.defer();
+        listItem.getLookupReference(props.propertyName, self.lookupId).then(function (entity) {
+          props.getEntity.resolve(entity);
+        });
+      }
+      return props.getEntity.promise;
+    };
+    /**
+         * @ngdoc function
+         * @name Lookup.getProperty
+         * @description
+         * Returns a promise which resolves with the value of a property in the referenced object.
+         * @param {string} propertyPath The dot separated propertyPath.
+         * @example
+         <pre>
+         var project = {
+            title: 'Project 1',
+            location: {
+                lookupId: 5,
+                lookupValue: 'Some Building'
+            }
+         };
+
+         //To get the location.city
+         project.location.getProperty('city').then(function(city) {
+            //Resolves with the city property from the referenced location entity
+
+            });
+         </pre>
+         * @returns {promise} Resolves with the value, or undefined if it doesn't exists.
+         */
+    Lookup.prototype.getProperty = function (propertyPath) {
+      var self = this;
+      var deferred = $q.defer();
+      self.getEntity().then(function (entity) {
+        deferred.resolve(_.deepGetOwnValue(entity, propertyPath));
+      });
+      return deferred.promise;
+    };
+
+    function User(s) {
+      var self = this;
+      var thisUser = new SplitIndex(s);
+      var thisUserExpanded = thisUser.value.split(',#');
+      if (thisUserExpanded.length === 1) {
+        //Standard user columns only return a id,#value pair
+        self.lookupId = thisUser.id;
+        self.lookupValue = thisUser.value;
+      } else {
+        //Allow for case where user adds additional properties when setting up field
+        self.lookupId = thisUser.id;
+        self.lookupValue = thisUserExpanded[0].replace(/(,,)/g, ',');
+        self.loginName = thisUserExpanded[1].replace(/(,,)/g, ',');
+        self.email = thisUserExpanded[2].replace(/(,,)/g, ',');
+        self.sipAddress = thisUserExpanded[3].replace(/(,,)/g, ',');
+        self.title = thisUserExpanded[4].replace(/(,,)/g, ',');
+      }
+    }
+    /**
+         * Add a leading zero if a number/string only contains a single character
+         * @param {number|string} val
+         * @returns {string} Two digit string.
+         */
+    function doubleDigit(val) {
+      return val > 9 ? val.toString() : '0' + val;
+    }
+    /**
+         * @ngdoc function
+         * @name angularPoint.apUtilityService:stringifySharePointDate
+         * @methodOf angularPoint.apUtilityService
+         * @description
+         * Converts a JavaScript date into a modified ISO8601 date string using the TimeZone offset for the current user.
+         * @example
+         <pre>'2014-05-08T08:12:18Z-07:00'</pre>
+         * @param {Date} date Valid JS date.
+         * @returns {string} ISO8601 date string.
+         */
+    function stringifySharePointDate(date) {
+      if (!_.isDate(date)) {
+        return '';
+      }
+      var self = this;
+      var dateString = '';
+      dateString += date.getFullYear();
+      dateString += '-';
+      dateString += doubleDigit(date.getMonth() + 1);
+      dateString += '-';
+      dateString += doubleDigit(date.getDate());
+      dateString += 'T';
+      dateString += doubleDigit(date.getHours());
+      dateString += ':';
+      dateString += doubleDigit(date.getMinutes());
+      dateString += ':';
+      dateString += doubleDigit(date.getSeconds());
+      dateString += 'Z-';
+      if (!self.timeZone) {
+        //Get difference between UTC time and local time in minutes and convert to hours
+        //Store so we only need to do this once
+        window.console.log('Calculating');
+        self.timeZone = new Date().getTimezoneOffset() / 60;
+      }
+      dateString += doubleDigit(self.timeZone);
+      dateString += ':00';
+      return dateString;
+    }
+    /**
+         * @ngdoc function
+         * @name angularPoint.apUtilityService:stringifySharePointMultiSelect
+         * @methodOf angularPoint.apUtilityService
+         * @description
+         * Turns an array of, typically {lookupId: someId, lookupValue: someValue}, objects into a string
+         * of delimited id's that can be passed to SharePoint for a multi select lookup or multi user selection
+         * field.  SharePoint doesn't need the lookup values so we only need to pass the ID's back.
+         *
+         * @param {object[]} multiSelectValue Array of {lookupId: #, lookupValue: 'Some Value'} objects.
+         * @param {string} [idProperty='lookupId'] Property name where we'll find the ID value on each of the objects.
+         * @returns {string} Need to format string of id's in following format [ID0];#;#[ID1];#;#[ID1]
+         */
+    function stringifySharePointMultiSelect(multiSelectValue, idProperty) {
+      var stringifiedValues = '';
+      var idProp = idProperty || 'lookupId';
+      _.each(multiSelectValue, function (lookupObject, iteration) {
+        /** Need to format string of id's in following format [ID0];#;#[ID1];#;#[ID1] */
+        stringifiedValues += lookupObject[idProp];
+        if (iteration < multiSelectValue.length) {
+          stringifiedValues += ';#;#';
+        }
+      });
+      return stringifiedValues;
+    }
+    /**
+         * @ngdoc function
+         * @name angularPoint.apUtilityService:yyyymmdd
+         * @methodOf angularPoint.apUtilityService
+         * @description
+         * Convert date into a int formatted as yyyymmdd
+         * We don't need the time portion of comparison so an int makes this easier to evaluate
+         */
+    function yyyymmdd(date) {
+      var yyyy = date.getFullYear().toString();
+      var mm = (date.getMonth() + 1).toString();
+      var dd = date.getDate().toString();
+      /** Add leading 0's to month and day if necessary */
+      return parseInt(yyyy + doubleDigit(mm) + doubleDigit(dd));
+    }
+    /**
+         * @ngdoc function
+         * @name angularPoint.apUtilityService:dateWithinRange
+         * @methodOf angularPoint.apUtilityService
+         * @description
+         * Converts dates into yyyymmdd formatted ints and evaluates to determine if the dateToCheck
+         * falls within the date range provided
+         * @param {Date} startDate Starting date.
+         * @param {Date} endDate Ending date.
+         * @param {Date} [dateToCheck=new Date()] Defaults to the current date.
+         * @returns {boolean} Does the date fall within the range?
+         */
+    function dateWithinRange(startDate, endDate, dateToCheck) {
+      /** Ensure both a start and end date are provided **/
+      if (!startDate || !endDate) {
+        return false;
+      }
+      /** Use the current date as the default if one isn't provided */
+      dateToCheck = dateToCheck || new Date();
+      /** Create an int representation of each of the dates */
+      var startInt = yyyymmdd(startDate);
+      var endInt = yyyymmdd(endDate);
+      var dateToCheckInt = yyyymmdd(dateToCheck);
+      return startInt <= dateToCheckInt && dateToCheckInt <= endInt;
+    }
+    /**
+         * @ngdoc function
+         * @name angularPoint.apUtilityService:batchProcess
+         * @methodOf angularPoint.apUtilityService
+         * @description
+         * We REALLY don't want to lock the user's browser (blocking the UI thread) while iterating over an array of
+         * items and performing some process on them.  This function cuts the process into as many 50ms chunks as are
+         * necessary. Based on example found in the following article:
+         * [Timed array processing in JavaScript](http://www.nczonline.net/blog/2009/08/11/timed-array-processing-in-javascript/);
+         * @param {Object[]} items The entities that need to be processed.
+         * @param {Function} process Reference to the process to be executed for each of the entities.
+         * @param {Object} context this
+         * @param {Number} [delay=25] Number of milliseconds to delay between batches.
+         * @param {Number} [maxItems=items.length] Maximum number of items to process before pausing.
+         * @returns {Object} Promise
+         * @example
+         * <pre>
+         * function buildProjectSummary = function() {
+         *    var deferred = $q.defer();
+         *
+         *    // Taken from a fictitious projectsModel.js
+         *    projectModel.getAllListItems().then(function(entities) {
+         *      var summaryObject = {};
+         *      var extendProjectSummary = function(project) {
+         *          // Do some process intensive stuff here
+         *
+         *      };
+         *
+         *      // Now that we have all of our projects we want to iterate
+         *      // over each to create our summary object. The problem is
+         *      // this could easily cause the page to hang with a sufficient
+         *      // number of entities.
+         *      apUtilityService.batchProcess(entities, extendProjectSummary, function() {
+         *          // Long running process is complete so resolve promise
+         *          deferred.resolve(summaryObject);
+         *      }, 25, 1000);
+         *    };
+         *
+         *    return deferred.promise;
+         * }
+         *
+         * </pre>
+         */
+    function batchProcess(items, process, context, delay, maxItems) {
+      var n = items.length, delay = delay || 25, maxItems = maxItems || n, i = 0, deferred = $q.defer();
+      function chunkTimer() {
+        var start = +new Date(), j = i;
+        while (i < n && i - j < maxItems && new Date() - start < 100) {
+          process.call(context, items[i]);
+          i += 1;
+        }
+        if (i < n) {
+          $log.info('Batch Delayed');
+          setTimeout(chunkTimer, delay);
+        } else {
+          deferred.resolve(items);
+        }
+      }
+      chunkTimer();
+      return deferred.promise;
+    }
+    /**
+         * @ngdoc function
+         * @name angularPoint.apUtilityService:resolvePermissions
+         * @methodOf angularPoint.apUtilityService
+         * @description
+         * Converts permMask into something usable to determine permission level for current user.  Typically used
+         * directly from a list item.  See ListItem.resolvePermissions.
+         * <pre>
+         * someListItem.resolvePermissions('0x0000000000000010');
+         * </pre>
+         * @param {string} permissionsMask The WSS Rights Mask is an 8-byte, unsigned integer that specifies
+         * the rights that can be assigned to a user or site group. This bit mask can have zero or more flags set.
+         * @example
+         * <pre>
+         * apUtilityService.resolvePermissions('0x0000000000000010');
+         * </pre>
+         * @returns {object} property for each permission level identifying if current user has rights (true || false)
+         * @link: http://sympmarc.com/2009/02/03/permmask-in-sharepoint-dvwps/
+         * @link: http://spservices.codeplex.com/discussions/208708
+         */
+    function resolvePermissions(permissionsMask) {
+      var permissionSet = {};
+      permissionSet.ViewListItems = (1 & permissionsMask) > 0;
+      permissionSet.AddListItems = (2 & permissionsMask) > 0;
+      permissionSet.EditListItems = (4 & permissionsMask) > 0;
+      permissionSet.DeleteListItems = (8 & permissionsMask) > 0;
+      permissionSet.ApproveItems = (16 & permissionsMask) > 0;
+      permissionSet.OpenItems = (32 & permissionsMask) > 0;
+      permissionSet.ViewVersions = (64 & permissionsMask) > 0;
+      permissionSet.DeleteVersions = (128 & permissionsMask) > 0;
+      permissionSet.CancelCheckout = (256 & permissionsMask) > 0;
+      permissionSet.PersonalViews = (512 & permissionsMask) > 0;
+      permissionSet.ManageLists = (2048 & permissionsMask) > 0;
+      permissionSet.ViewFormPages = (4096 & permissionsMask) > 0;
+      permissionSet.Open = (permissionsMask & 65536) > 0;
+      permissionSet.ViewPages = (permissionsMask & 131072) > 0;
+      permissionSet.AddAndCustomizePages = (permissionsMask & 262144) > 0;
+      permissionSet.ApplyThemeAndBorder = (permissionsMask & 524288) > 0;
+      permissionSet.ApplyStyleSheets = (1048576 & permissionsMask) > 0;
+      permissionSet.ViewUsageData = (permissionsMask & 2097152) > 0;
+      permissionSet.CreateSSCSite = (permissionsMask & 4194314) > 0;
+      permissionSet.ManageSubwebs = (permissionsMask & 8388608) > 0;
+      permissionSet.CreateGroups = (permissionsMask & 16777216) > 0;
+      permissionSet.ManagePermissions = (permissionsMask & 33554432) > 0;
+      permissionSet.BrowseDirectories = (permissionsMask & 67108864) > 0;
+      permissionSet.BrowseUserInfo = (permissionsMask & 134217728) > 0;
+      permissionSet.AddDelPrivateWebParts = (permissionsMask & 268435456) > 0;
+      permissionSet.UpdatePersonalWebParts = (permissionsMask & 536870912) > 0;
+      permissionSet.ManageWeb = (permissionsMask & 1073741824) > 0;
+      permissionSet.UseRemoteAPIs = (permissionsMask & 137438953472) > 0;
+      permissionSet.ManageAlerts = (permissionsMask & 274877906944) > 0;
+      permissionSet.CreateAlerts = (permissionsMask & 549755813888) > 0;
+      permissionSet.EditMyUserInfo = (permissionsMask & 1099511627776) > 0;
+      permissionSet.EnumeratePermissions = (permissionsMask & 4611686018427388000) > 0;
+      permissionSet.FullMask = permissionsMask == 9223372036854776000;
+      /**
+             * Full Mask only resolves correctly for the Full Mask level
+             * so in that case, set everything to true
+             */
+      if (permissionSet.FullMask) {
+        _.each(permissionSet, function (perm, key) {
+          permissionSet[key] = true;
+        });
+      }
+      return permissionSet;
+    }
+    /**
+         * @ngdoc function
+         * @name angularPoint.apUtilityService:registerChange
+         * @methodOf angularPoint.apUtilityService
+         * @description
+         * If online and sync is being used, notify all online users that a change has been made.
+         * //Todo Break this functionality into FireBase module that can be used if desired.
+         * @param {object} model event
+         */
+    function registerChange(model) {
+      if (!apConfig.offline && model.sync && _.isFunction(model.sync.registerChange)) {
+        /** Register change after successful update */
+        model.sync.registerChange();
+      }
+    }
+    return {
+      attrToJson: attrToJson,
+      batchProcess: batchProcess,
+      choiceMultiToString: choiceMultiToString,
+      dateWithinRange: dateWithinRange,
+      fromCamelCase: fromCamelCase,
+      lookupToJsonObject: lookupToJsonObject,
+      registerChange: registerChange,
+      resolvePermissions: resolvePermissions,
+      SplitIndex: SplitIndex,
+      stringifySharePointDate: stringifySharePointDate,
+      stringifySharePointMultiSelect: stringifySharePointMultiSelect,
+      toCamelCase: toCamelCase,
+      xmlToJson: xmlToJson
+    };
+  }
+]);
+;
+'use strict';
+/**
+ * @ngdoc object
+ * @name List
+ * @description
+ */
+angular.module('angularPoint').factory('apListFactory', [
+  'apConfig',
+  'apFieldService',
+  function (apConfig, apFieldService) {
+    /**
+         * @ngdoc function
+         * @name List
+         * @description
+         * List Object Constructor.  This is handled automatically when creating a new model so there shouldn't be
+         * any reason to manually call.
+         * @param {object} obj Initialization parameters.
+         * @param {string} obj.guid Unique SharePoint GUID for the list we'll be basing the model on
+         * ex:'{4D74831A-42B2-4558-A67F-B0B5ADBC0EAC}'
+         * @param {string} obj.title Maps to the offline XML file in dev folder (no spaces)
+         * ex: 'ProjectsList' so the offline XML file would be located at dev/ProjectsList.xml
+         * @param {object[]} [obj.customFields] Mapping of SharePoint field names to the internal names we'll be using
+         * in our application.  Also contains field type, readonly attribute, and any other non-standard settings.
+         * <pre>
+         * [
+         *   {
+         *       internalName: "Title",
+         *       objectType: "Text",
+         *       mappedName: "lastName",
+         *       readOnly:false
+         *   },
+         *   {
+         *       internalName: "FirstName",
+         *       objectType: "Text",
+         *       mappedName: "firstName",
+         *       readOnly:false
+         *   },
+         *   {
+         *       internalName: "Organization",
+         *       objectType: "Lookup",
+         *       mappedName: "organization",
+         *       readOnly:false
+         *   },
+         *   {
+         *       internalName: "Account",
+         *       objectType: "User",
+         *       mappedName: "account",
+         *       readOnly:false
+         *   },
+         *   {
+         *       internalName: "Details",
+         *       objectType: "Text",
+         *       mappedName: "details",
+         *       readOnly:false
+         *   }
+         * ]
+         * </pre>
+         * @constructor
+         */
+    function List(obj) {
+      var defaults = {
+          viewFields: '',
+          customFields: [],
+          isReady: false,
+          fields: [],
+          guid: '',
+          mapping: {},
+          title: ''
+        };
+      /** Manually set site url if defined, prevents SPServices from making a blocking call to fetch it. */
+      if (apConfig.defaultUrl) {
+        defaults.webURL = apConfig.defaultUrl;
+      }
+      var list = _.extend({}, defaults, obj);
+      apFieldService.extendFieldDefinitions(list);
+      return list;
+    }
+    return { List: List };
+  }
+]);
+;
+'use strict';
+/**
+ * @ngdoc object
+ * @name ListItem
+ * @description
+ */
+angular.module('angularPoint').factory('apListItemFactory', [
+  'apCacheService',
+  'apDataService',
+  'apUtilityService',
+  function (apCacheService, apDataService, apUtilityService) {
+    /**
+         * @ngdoc function
+         * @name ListItem
+         * @module ListItem
+         * @description
+         * Base prototype which all list items inherit CRUD functionality that can be called directly from obj.
+         * @constructor
+         */
+    function ListItem() {
+    }
+    /**
+         * @ngdoc function
+         * @name ListItem.getDataService
+         * @module ListItem
+         * @description
+         * Allows us to reference when out of scope
+         * @returns {object} Reference to the dataService in the event that it's out of scope.
+         */
+    ListItem.prototype.getDataService = function () {
+      return apDataService;
+    };
+    /**
+         * @ngdoc function
+         * @name ListItem.saveChanges
+         * @module ListItem
+         * @description
+         * Updates record directly from the object
+         * @param {object} [options] Optionally pass params to the data service.
+         * @param {boolean} [options.updateAllCaches=false] Search through the cache for each query to ensure entity is
+         * updated everywhere.  This is more process intensive so by default we only update the cached entity in the
+         * cache where this entity is currently stored.
+         * @returns {object} Promise which resolved with the updated list item from the server.
+         */
+    ListItem.prototype.saveChanges = function (options) {
+      var listItem = this;
+      var model = listItem.getModel();
+      var deferred = $q.defer();
+      apDataService.addUpdateItemModel(model, listItem, options).then(function (response) {
+        deferred.resolve(response);
+        /** Optionally broadcast change event */
+        apUtilityService.registerChange(model);
+      });
+      return deferred.promise;
+    };
+    /**
+         * @ngdoc function
+         * @name ListItem.saveFields
+         * @module ListItem
+         * @description
+         * Saves a named subset of fields back to SharePoint
+         * Alternative to saving all fields
+         * @param {array} fieldArray Array of internal field names that should be saved to SharePoint.
+         * <pre>
+         * //Create an array to store all promises.
+         * var queue = [],
+         * progressCounter = 0;
+         *
+         * //We're only updating a single field on each entity so it's much
+         * // faster to use ListItem.saveFields() so we don't need to push the
+         * // entire object back to the server.
+         * _.each(selectedItems, function (entity) {
+         *    entity.title = title + ': Now Updated!';
+         *    var request = entity.saveFields('title').then(function() {
+         *        progressCounter++;
+         *    }
+         *    queue.push(request);
+         *  });
+         *
+         * $q.all(queue).then(function() {
+         *     // All items have now been processed so we can do something...but
+         *     // the view is automatically updated so we don't need to bother
+         *     // if there's no other required business logic.
+         * });
+         * </pre>
+         * @param {object} [options] Optionally pass params to the data service.
+         * @param {boolean} [options.updateAllCaches=false] Search through the cache for each query to ensure entity is
+         * updated everywhere.  This is more process intensive so by default we only update the cached entity in the
+         * cache where this entity is currently stored.
+         * @returns {object} Promise which resolves with the updated list item from the server.
+         */
+    ListItem.prototype.saveFields = function (fieldArray, options) {
+      var listItem = this;
+      var model = listItem.getModel();
+      var deferred = $q.defer();
+      var definitions = [];
+      /** Find the field definition for each of the requested fields */
+      _.each(fieldArray, function (field) {
+        var match = _.findWhere(model.list.customFields, { mappedName: field });
+        if (match) {
+          definitions.push(match);
+        }
+      });
+      /** Generate value pairs for specified fields */
+      var valuePairs = apDataService.generateValuePairs(definitions, listItem);
+      var defaults = {
+          buildValuePairs: false,
+          valuePairs: valuePairs
+        };
+      /** Extend defaults with any provided options */
+      var opts = _.extend({}, defaults, options);
+      apDataService.addUpdateItemModel(model, listItem, opts).then(function (response) {
+        deferred.resolve(response);
+        /** Optionally broadcast change event */
+        apUtilityService.registerChange(model);
+      });
+      return deferred.promise;
+    };
+    /**
+         * @ngdoc function
+         * @name ListItem.deleteItem
+         * @module ListItem
+         * @description
+         * Deletes record directly from the object and removes record from user cache.
+         * @param {object} [options] Optionally pass params to the dataService.
+         * @param {boolean} [options.updateAllCaches=false] Iterate over each of the query cache's and ensure the entity is
+         * removed everywhere.  This is more process intensive so by default we only remove the cached entity in the
+         * cache where this entity is currently stored.
+         * @returns {object} Promise which really only lets us know the request is complete.
+         */
+    ListItem.prototype.deleteItem = function (options) {
+      var listItem = this;
+      var model = listItem.getModel();
+      var deferred = $q.defer();
+      apDataService.deleteItemModel(model, listItem, options).then(function (response) {
+        deferred.resolve(response);
+        /** Optionally broadcast change event */
+        apUtilityService.registerChange(model);
+      });
+      return deferred.promise;
+    };
+    /**
+         * @ngdoc function
+         * @name ListItem.getLookupReference
+         * @module ListItem
+         * @description
+         * Allows us to retrieve the entity being referenced in a given lookup field.
+         * @param {string} fieldName Name of the lookup property on the list item that references an entity.
+         * @param {number} [lookupId=listItem.fieldName.lookupId] The listItem.lookupId of the lookup object.  This allows us to also use this logic
+         * on a multi-select by iterating over each of the lookups.
+         * @example
+         * <pre>
+         * var project = {
+         *    title: 'Project 1',
+         *    location: {
+         *        lookupId: 5,
+         *        lookupValue: 'Some Building'
+         *    }
+         * };
+         *
+         * //To get the location entity
+         * project.getLookupReference('location')
+         *     .then(function(entity) {
+         *        //Do something with the location entity
+         *
+         *     });
+         * </pre>
+         *
+         * <pre>
+         * var project = {
+         *    title: 'Project 1',
+         *    location: [
+         *        { lookupId: 5, lookupValue: 'Some Building' },
+         *        { lookupId: 6, lookupValue: 'Some Other Building' },
+         *    ]
+         * };
+         *
+         * //To get the location entity
+         * project.getLookupReference('location', project.location[0].lookupId)
+         *     .then(function(entity) {
+         *        //Do something with the location entity
+         *
+         *     });
+         * </pre>
+         * @returns {promise} Resolves with the entity the lookup is referencing.
+         */
+    ListItem.prototype.getLookupReference = function (fieldName, lookupId) {
+      var listItem = this;
+      var deferred = $q.defer();
+      var targetId = lookupId || listItem[fieldName].lookupId;
+      if (fieldName) {
+        var model = listItem.getModel();
+        var fieldDefinition = model.getFieldDefinition(fieldName);
+        /** Ensure the field definition has the List attribute which contains the GUID of the list
+                 *  that a lookup is referencing.
+                 */
+        if (fieldDefinition && fieldDefinition.List) {
+          apCacheService.getEntity(fieldDefinition.List, targetId).then(function (entity) {
+            deferred.resolve(entity);
+          });
+        } else {
+          deferred.fail('Need a List GUID before we can find this in cache.');
+        }
+      } else {
+        deferred.fail('Need both fieldName && lookupId params');
+      }
+      return deferred.promise;
+    };
+    /**
+         * @ngdoc function
+         * @name ListItem.validateEntity
+         * @module ListItem
+         * @description
+         * Helper function that passes the current item to Model.validateEntity
+         * @param {object} [options] Optionally pass params to the dataService.
+         * @param {boolean} [options.toast=true] Set to false to prevent toastr messages from being displayed.
+         * @returns {boolean} Evaluation of validity.
+         */
+    ListItem.prototype.validateEntity = function (options) {
+      var listItem = this, model = listItem.getModel();
+      return model.validateEntity(listItem, options);
+    };
+    /**
+         * @ngdoc function
+         * @name ListItem.getFieldDefinition
+         * @module ListItem
+         * @description
+         * Returns the field definition from the definitions defined in the custom fields array within a model.
+         * @example
+         * <pre>
+         * var project = {
+         *    title: 'Project 1',
+         *    location: {
+         *        lookupId: 5,
+         *        lookupValue: 'Some Building'
+         *    }
+         * };
+         *
+         * //To get field metadata
+         * var locationDefinition = project.getFieldDefinition('location');
+         * </pre>
+         * @param {string} fieldName Internal field name.
+         * @returns {object} Field definition.
+         */
+    ListItem.prototype.getFieldDefinition = function (fieldName) {
+      return this.getModel().getFieldDefinition(fieldName);
+    };
+    /**
+         * @ngdoc function
+         * @name ListItem.getAttachmentCollection
+         * @module ListItem
+         * @description
+         * Requests all attachments for a given list item.
+         * @returns {object} Promise which resolves with all attachments for a list item.
+         */
+    ListItem.prototype.getAttachmentCollection = function () {
+      return apDataService.getCollection({
+        operation: 'GetAttachmentCollection',
+        listName: this.getModel().list.guid,
+        webURL: this.getModel().list.webURL,
+        ID: this.id,
+        filterNode: 'Attachment'
+      });
+    };
+    /**
+         * @ngdoc function
+         * @name ListItem.deleteAttachment
+         * @module ListItem
+         * @description
+         * Delete an attachment from a list item.
+         * @param {string} url Requires the URL for the attachment we want to delete.
+         * @returns {object} Promise which resolves with the updated attachment collection.
+         */
+    ListItem.prototype.deleteAttachment = function (url) {
+      var listItem = this;
+      return apDataService.deleteAttachment({
+        listItemId: listItem.id,
+        url: url,
+        listName: listItem.getModel().list.guid
+      });
+    };
+    /**
+         * @ngdoc function
+         * @name ListItem.resolvePermissions
+         * @module ListItem
+         * @description
+         * See apModelService.resolvePermissions for details on what we expect to have returned.
+         * @returns {Object} Contains properties for each permission level evaluated for current user.
+         * @example
+         * <pre>
+         * var permissionObject = myGenericListItem.resolvePermissions();
+         * </pre>
+         */
+    ListItem.prototype.resolvePermissions = function () {
+      return apUtilityService.resolvePermissions(this.permMask);
+    };
+    ListItem.prototype.getEntityReferenceCache = function () {
+      return apCacheService.listItem.get(this.uniqueId);
+    };
+    /**
+         * @ngdoc function
+         * @name ListItem.addEntityReference
+         * @module ListItem
+         * @description
+         * Allows us to pass in another entity to associate superficially, only persists for the current session and
+         * no data is saved but it allows us to iterate over all of the references much faster than doing a lookup each
+         * on each digest.  Creates a item._apCache property on the list item object.  It then creates an object for each
+         * type of list item passed in using the list name in the list item model.
+         * @param {object} entity List item to associate.
+         * @returns {Object} The cache for the list of the item passed in.
+         * @example
+         * <pre>
+         * // Function to save references between a fictitious project
+         * // and corresponding associated tasks
+         * function associateProjectTasks(project) {
+         *    //Assuming project.tasks is a multi-lookup
+         *    _.each(project.tasks, function(taskLookup) {
+         *        var task = tasksModel.searchLocalCache(taskLookup.lookupId);
+         *        if(task) {
+         *            task.addEntityReference(project);
+         *            project.addEntityReference(task);
+         *        }
+         *    });
+         * }
+         * </pre>
+         *
+         * <pre>
+         * //Structure of cache
+         * listItem._apCache = {
+         *    Projects: {
+         *        14: {id: 14, title: 'Some Project'},
+         *        15: {id: 15, title: 'Another Project'}
+         *    },
+         *    Tasks: {
+         *        300: {id: 300, title: 'Task 300'},
+         *        412: {id: 412, title: 'Some Important Tasks'}
+         *    }
+         * }
+         * </pre>
+         */
+    ListItem.prototype.addEntityReference = function (entity) {
+      var self = this;
+      /** Verify that a valid entity is being provided */
+      if (entity && entity.constructor.name === 'ListItem') {
+        var uniqueId = self.uniqueId;
+        var constructorName = entity.getModel().list.title;
+        return apCacheService.listItem.add(uniqueId, constructorName, entity);
+      } else {
+        $log.warn('Please verify that a valid entity is being used: ', self, entity);
+      }
+    };
+    ListItem.prototype.getEntityReferences = function (constructorName) {
+      var self = this;
+      var cache = self.getEntityReferenceCache();
+      //          var cache = self._apCache.entityReference;
+      if (constructorName && !cache[constructorName]) {
+        return {};
+      } else if (constructorName && cache[constructorName]) {
+        return cache[constructorName];
+      } else {
+        return cache;
+      }
+    };
+    ListItem.prototype.removeEntityReference = function (entity) {
+      var uniqueId = this.uniqueId;
+      var constructorName = entity.getModel().list.title;
+      return apCacheService.listItem.remove(uniqueId, constructorName, entity);
+      var pType = entity.getModel().list.title;
+      var cache = self.getEntityReferenceCache();
+      if (entity.id && cache[pType] && cache[pType][entity.id]) {
+        delete cache[pType][entity.id];
+      }
+    };
+    /**
+         * @ngdoc function
+         * @name ListItem.getFieldVersionHistory
+         * @module ListItem
+         * @description
+         * Takes an array of field names, finds the version history for field, and returns a snapshot of the object at each
+         * version.  If no fields are provided, we look at the field definitions in the model and pull all non-readonly
+         * fields.  The only way to do this that I've been able to get working is to get the version history for each
+         * field independently and then build the history by combining the server responses for each requests into a
+         * snapshot of the object.
+         * @param {string[]} [fieldNames] An array of field names that we're interested in.
+         * <pre>
+         * myGenericListItem.getFieldVersionHistory(['title', 'project'])
+         * .then(function(versionHistory) {
+         *        //We now have an array of versions of the list item
+         *    };
+         * </pre>
+         * @returns {object} promise - containing array of changes
+         */
+    ListItem.prototype.getFieldVersionHistory = function (fieldNames) {
+      var deferred = $q.defer();
+      var promiseArray = [];
+      var listItem = this;
+      var model = listItem.getModel();
+      /** Constructor that creates a promise for each field */
+      var createPromise = function (fieldName) {
+        var fieldDefinition = _.findWhere(model.list.fields, { mappedName: fieldName });
+        var payload = {
+            operation: 'GetVersionCollection',
+            strlistID: model.list.guid,
+            strlistItemID: listItem.id,
+            strFieldName: fieldDefinition.internalName
+          };
+        /** Manually set site url if defined, prevents SPServices from making a blocking call to fetch it. */
+        if (apConfig.defaultUrl) {
+          payload.webURL = apConfig.defaultUrl;
+        }
+        promiseArray.push(apDataService.getFieldVersionHistory(payload, fieldDefinition));
+      };
+      if (!fieldNames) {
+        /** If fields aren't provided, pull the version history for all NON-readonly fields */
+        var targetFields = _.where(model.list.fields, { readOnly: false });
+        fieldNames = [];
+        _.each(targetFields, function (field) {
+          fieldNames.push(field.mappedName);
+        });
+      } else if (_.isString(fieldNames)) {
+        /** If a single field name is provided, add it to an array so we can process it more easily */
+        fieldNames = [fieldNames];
+      }
+      /** Generate promises for each field */
+      _.each(fieldNames, function (fieldName) {
+        createPromise(fieldName);
+      });
+      /** Pause until all requests are resolved */
+      $q.all(promiseArray).then(function (changes) {
+        var versionHistory = {};
+        /** All fields should have the same number of versions */
+        _.each(changes, function (fieldVersions) {
+          _.each(fieldVersions, function (fieldVersion) {
+            if (!versionHistory[fieldVersion.modified.toJSON()]) {
+              versionHistory[fieldVersion.modified.toJSON()] = {};
+            }
+            /** Add field to the version history for this version */
+            _.extend(versionHistory[fieldVersion.modified.toJSON()], fieldVersion);
+          });
+        });
+        var versionArray = [];
+        /** Add a version prop on each version to identify the numeric sequence */
+        _.each(versionHistory, function (ver, num) {
+          ver.version = num;
+          versionArray.push(ver);
+        });
+        deferred.resolve(versionArray);
+      });
+      return deferred.promise;
+    };
+    return { ListItem: ListItem };
+  }
+]);
+;
+'use strict';
+/**
+ * @ngdoc object
+ * @name Model
+ * @description
  */
 angular.module('angularPoint').factory('apModelFactory', [
-  '$q',
-  '$timeout',
-  '$cacheFactory',
-  '$log',
-  'apConfig',
-  'apDataService',
-  'apCacheService',
-  'apFieldService',
   'apModalService',
+  'apCacheService',
+  'apDataService',
+  'apListFactory',
+  'apListItemFactory',
+  'apQueryFactory',
+  'apUtilityService',
+  '$q',
   'toastr',
-  function ($q, $timeout, $cacheFactory, $log, apConfig, apDataService, apCacheService, apFieldService, apModalService, toastr) {
+  function (apModalService, apCacheService, apDataService, apListFactory, apListItemFactory, apQueryFactory, apUtilityService, $q, toastr) {
     var defaultQueryName = 'primary';
     /** In the event that a factory isn't specified, just use a
          * standard constructor to allow it to inherit from ListItem */
@@ -1987,9 +3304,9 @@ angular.module('angularPoint').factory('apModelFactory', [
         };
       _.extend(model, defaults, options);
       /** Use list constructor to decorate */
-      model.list = new List(model.list);
+      model.list = new apListFactory.List(model.list);
       /** Set the constructor's prototype to inherit from ListItem so we can inherit functionality */
-      model.factory.prototype = new ListItem();
+      model.factory.prototype = new apListItemFactory.ListItem();
       /** Make the model directly accessible from the list item */
       model.factory.prototype.getModel = function () {
         return model;
@@ -2092,7 +3409,6 @@ angular.module('angularPoint').factory('apModelFactory', [
     /**
          * @ngdoc function
          * @name Model.getAllListItems
-         * @module apModelFactoryModel
          * @description
          * Inherited from Model constructor
          * Gets all list items in the current list, processes the xml, and caches the data in model.
@@ -2101,9 +3417,9 @@ angular.module('angularPoint').factory('apModelFactory', [
          * <pre>
          * //Taken from a fictitious projectsModel.js
          * projectModel.getAllListItems().then(function(entities) {
-         *          //Do something with all of the returned entities
-         *          $scope.projects = entities;
-         *      };
+         *     //Do something with all of the returned entities
+         *     $scope.projects = entities;
+         * };
          * </pre>
          */
     Model.prototype.getAllListItems = function () {
@@ -2145,7 +3461,7 @@ angular.module('angularPoint').factory('apModelFactory', [
       apDataService.addUpdateItemModel(model, entity, options).then(function (response) {
         deferred.resolve(response);
         /** Optionally broadcast change event */
-        registerChange(model);
+        apUtilityService.registerChange(model);
       });
       return deferred.promise;
     };
@@ -2282,7 +3598,7 @@ angular.module('angularPoint').factory('apModelFactory', [
       var model = this;
       var defaults = { name: defaultQueryName };
       queryOptions = _.extend({}, defaults, queryOptions);
-      model.queries[queryOptions.name] = new Query(queryOptions, model);
+      model.queries[queryOptions.name] = new apQueryFactory.Query(queryOptions, model);
       /** Return the newly created query */
       return model.queries[queryOptions.name];
     };
@@ -2681,518 +3997,29 @@ angular.module('angularPoint').factory('apModelFactory', [
          */
     Model.prototype.resolvePermissions = function () {
       if (this.list && this.list.effectivePermMask) {
-        return resolvePermissions(this.list.effectivePermMask);
+        return utilityService.resolvePermissions(this.list.effectivePermMask);
       } else {
         window.console.error('Attempted to resolve permissions of a model that hasn\'t been initialized.', this);
-        return resolvePermissions(null);
+        return utilityService.resolvePermissions(null);
       }
     };
-    /**
-         * @ngdoc function
-         * @name ListItem
-         * @module ListItem
-         * @description
-         * Base prototype which all list items inherit CRUD functionality that can be called directly from obj.
-         * @constructor
-         */
-    function ListItem() {
-    }
-    /**
-         * @ngdoc function
-         * @name ListItem.getDataService
-         * @module ListItem
-         * @description
-         * Allows us to reference when out of scope
-         * @returns {object} Reference to the dataService in the event that it's out of scope.
-         */
-    ListItem.prototype.getDataService = function () {
-      return apDataService;
-    };
-    /**
-         * @ngdoc function
-         * @name ListItem.saveChanges
-         * @module ListItem
-         * @description
-         * Updates record directly from the object
-         * @param {object} [options] Optionally pass params to the data service.
-         * @param {boolean} [options.updateAllCaches=false] Search through the cache for each query to ensure entity is
-         * updated everywhere.  This is more process intensive so by default we only update the cached entity in the
-         * cache where this entity is currently stored.
-         * @returns {object} Promise which resolved with the updated list item from the server.
-         */
-    ListItem.prototype.saveChanges = function (options) {
-      var listItem = this;
-      var model = listItem.getModel();
-      var deferred = $q.defer();
-      apDataService.addUpdateItemModel(model, listItem, options).then(function (response) {
-        deferred.resolve(response);
-        /** Optionally broadcast change event */
-        registerChange(model);
-      });
-      return deferred.promise;
-    };
-    /**
-         * @ngdoc function
-         * @name ListItem.saveFields
-         * @module ListItem
-         * @description
-         * Saves a named subset of fields back to SharePoint
-         * Alternative to saving all fields
-         * @param {array} fieldArray Array of internal field names that should be saved to SharePoint.
-         * <pre>
-         * //Create an array to store all promises.
-         * var queue = [],
-         * progressCounter = 0;
-         *
-         * //We're only updating a single field on each entity so it's much
-         * // faster to use ListItem.saveFields() so we don't need to push the
-         * // entire object back to the server.
-         * _.each(selectedItems, function (entity) {
-         *    entity.title = title + ': Now Updated!';
-         *    var request = entity.saveFields('title').then(function() {
-         *        progressCounter++;
-         *    }
-         *    queue.push(request);
-         *  });
-         *
-         * $q.all(queue).then(function() {
-         *     // All items have now been processed so we can do something...but
-         *     // the view is automatically updated so we don't need to bother
-         *     // if there's no other required business logic.
-         * });
-         * </pre>
-         * @param {object} [options] Optionally pass params to the data service.
-         * @param {boolean} [options.updateAllCaches=false] Search through the cache for each query to ensure entity is
-         * updated everywhere.  This is more process intensive so by default we only update the cached entity in the
-         * cache where this entity is currently stored.
-         * @returns {object} Promise which resolves with the updated list item from the server.
-         */
-    ListItem.prototype.saveFields = function (fieldArray, options) {
-      var listItem = this;
-      var model = listItem.getModel();
-      var deferred = $q.defer();
-      var definitions = [];
-      /** Find the field definition for each of the requested fields */
-      _.each(fieldArray, function (field) {
-        var match = _.findWhere(model.list.customFields, { mappedName: field });
-        if (match) {
-          definitions.push(match);
-        }
-      });
-      /** Generate value pairs for specified fields */
-      var valuePairs = apDataService.generateValuePairs(definitions, listItem);
-      var defaults = {
-          buildValuePairs: false,
-          valuePairs: valuePairs
-        };
-      /** Extend defaults with any provided options */
-      var opts = _.extend({}, defaults, options);
-      apDataService.addUpdateItemModel(model, listItem, opts).then(function (response) {
-        deferred.resolve(response);
-        /** Optionally broadcast change event */
-        registerChange(model);
-      });
-      return deferred.promise;
-    };
-    /**
-         * @ngdoc function
-         * @name ListItem.deleteItem
-         * @module ListItem
-         * @description
-         * Deletes record directly from the object and removes record from user cache.
-         * @param {object} [options] Optionally pass params to the dataService.
-         * @param {boolean} [options.updateAllCaches=false] Iterate over each of the query cache's and ensure the entity is
-         * removed everywhere.  This is more process intensive so by default we only remove the cached entity in the
-         * cache where this entity is currently stored.
-         * @returns {object} Promise which really only lets us know the request is complete.
-         */
-    ListItem.prototype.deleteItem = function (options) {
-      var listItem = this;
-      var model = listItem.getModel();
-      var deferred = $q.defer();
-      apDataService.deleteItemModel(model, listItem, options).then(function (response) {
-        deferred.resolve(response);
-        /** Optionally broadcast change event */
-        registerChange(model);
-      });
-      return deferred.promise;
-    };
-    /**
-         * @ngdoc function
-         * @name ListItem.getLookupReference
-         * @module ListItem
-         * @description
-         * Allows us to retrieve the entity being referenced in a given lookup field.
-         * @param {string} fieldName Name of the lookup property on the list item that references an entity.
-         * @param {number} [lookupId=listItem.fieldName.lookupId] The listItem.lookupId of the lookup object.  This allows us to also use this logic
-         * on a multi-select by iterating over each of the lookups.
-         * @example
-         * <pre>
-         * var project = {
-         *    title: 'Project 1',
-         *    location: {
-         *        lookupId: 5,
-         *        lookupValue: 'Some Building'
-         *    }
-         * };
-         *
-         * //To get the location entity
-         * project.getLookupReference('location')
-         *     .then(function(entity) {
-         *        //Do something with the location entity
-         *
-         *     });
-         * </pre>
-         *
-         * <pre>
-         * var project = {
-         *    title: 'Project 1',
-         *    location: [
-         *        { lookupId: 5, lookupValue: 'Some Building' },
-         *        { lookupId: 6, lookupValue: 'Some Other Building' },
-         *    ]
-         * };
-         *
-         * //To get the location entity
-         * project.getLookupReference('location', project.location[0].lookupId)
-         *     .then(function(entity) {
-         *        //Do something with the location entity
-         *
-         *     });
-         * </pre>
-         * @returns {promise} Resolves with the entity the lookup is referencing.
-         */
-    ListItem.prototype.getLookupReference = function (fieldName, lookupId) {
-      var listItem = this;
-      var deferred = $q.defer();
-      var targetId = lookupId || listItem[fieldName].lookupId;
-      if (fieldName) {
-        var model = listItem.getModel();
-        var fieldDefinition = model.getFieldDefinition(fieldName);
-        /** Ensure the field definition has the List attribute which contains the GUID of the list
-                 *  that a lookup is referencing.
-                 */
-        if (fieldDefinition && fieldDefinition.List) {
-          apCacheService.getEntity(fieldDefinition.List, targetId).then(function (entity) {
-            deferred.resolve(entity);
-          });
-        } else {
-          deferred.fail('Need a List GUID before we can find this in cache.');
-        }
-      } else {
-        deferred.fail('Need both fieldName && lookupId params');
-      }
-      return deferred.promise;
-    };
-    /**
-         * @ngdoc function
-         * @name ListItem.validateEntity
-         * @module ListItem
-         * @description
-         * Helper function that passes the current item to Model.validateEntity
-         * @param {object} [options] Optionally pass params to the dataService.
-         * @param {boolean} [options.toast=true] Set to false to prevent toastr messages from being displayed.
-         * @returns {boolean} Evaluation of validity.
-         */
-    ListItem.prototype.validateEntity = function (options) {
-      var listItem = this, model = listItem.getModel();
-      return model.validateEntity(listItem, options);
-    };
-    /**
-         * @ngdoc function
-         * @name ListItem.getFieldDefinition
-         * @module ListItem
-         * @description
-         * Returns the field definition from the definitions defined in the custom fields array within a model.
-         * @example
-         * <pre>
-         * var project = {
-         *    title: 'Project 1',
-         *    location: {
-         *        lookupId: 5,
-         *        lookupValue: 'Some Building'
-         *    }
-         * };
-         *
-         * //To get field metadata
-         * var locationDefinition = project.getFieldDefinition('location');
-         * </pre>
-         * @param {string} fieldName Internal field name.
-         * @returns {object} Field definition.
-         */
-    ListItem.prototype.getFieldDefinition = function (fieldName) {
-      return this.getModel().getFieldDefinition(fieldName);
-    };
-    /**
-         * @ngdoc function
-         * @name ListItem.getAttachmentCollection
-         * @module ListItem
-         * @description
-         * Requests all attachments for a given list item.
-         * @returns {object} Promise which resolves with all attachments for a list item.
-         */
-    ListItem.prototype.getAttachmentCollection = function () {
-      return apDataService.getCollection({
-        operation: 'GetAttachmentCollection',
-        listName: this.getModel().list.guid,
-        webURL: this.getModel().list.webURL,
-        ID: this.id,
-        filterNode: 'Attachment'
-      });
-    };
-    /**
-         * @ngdoc function
-         * @name ListItem.deleteAttachment
-         * @module ListItem
-         * @description
-         * Delete an attachment from a list item.
-         * @param {string} url Requires the URL for the attachment we want to delete.
-         * @returns {object} Promise which resolves with the updated attachment collection.
-         */
-    ListItem.prototype.deleteAttachment = function (url) {
-      var listItem = this;
-      return apDataService.deleteAttachment({
-        listItemId: listItem.id,
-        url: url,
-        listName: listItem.getModel().list.guid
-      });
-    };
-    /**
-         * @ngdoc function
-         * @name ListItem.resolvePermissions
-         * @module ListItem
-         * @description
-         * See apModelFactory.resolvePermissions for details on what we expect to have returned.
-         * @returns {Object} Contains properties for each permission level evaluated for current user.
-         * @example
-         * <pre>
-         * var permissionObject = myGenericListItem.resolvePermissions();
-         * </pre>
-         */
-    ListItem.prototype.resolvePermissions = function () {
-      return resolvePermissions(this.permMask);
-    };
-    ListItem.prototype.getEntityReferenceCache = function () {
-      return apCacheService.listItem.get(this.uniqueId);
-    };
-    /**
-         * @ngdoc function
-         * @name ListItem.addEntityReference
-         * @module ListItem
-         * @description
-         * Allows us to pass in another entity to associate superficially, only persists for the current session and
-         * no data is saved but it allows us to iterate over all of the references much faster than doing a lookup each
-         * on each digest.  Creates a item._apCache property on the list item object.  It then creates an object for each
-         * type of list item passed in using the list name in the list item model.
-         * @param {object} entity List item to associate.
-         * @returns {Object} The cache for the list of the item passed in.
-         * @example
-         * <pre>
-         * // Function to save references between a fictitious project
-         * // and corresponding associated tasks
-         * function associateProjectTasks(project) {
-         *    //Assuming project.tasks is a multi-lookup
-         *    _.each(project.tasks, function(taskLookup) {
-         *        var task = tasksModel.searchLocalCache(taskLookup.lookupId);
-         *        if(task) {
-         *            task.addEntityReference(project);
-         *            project.addEntityReference(task);
-         *        }
-         *    });
-         * }
-         * </pre>
-         *
-         * <pre>
-         * //Structure of cache
-         * listItem._apCache = {
-         *    Projects: {
-         *        14: {id: 14, title: 'Some Project'},
-         *        15: {id: 15, title: 'Another Project'}
-         *    },
-         *    Tasks: {
-         *        300: {id: 300, title: 'Task 300'},
-         *        412: {id: 412, title: 'Some Important Tasks'}
-         *    }
-         * }
-         * </pre>
-         */
-    ListItem.prototype.addEntityReference = function (entity) {
-      var self = this;
-      /** Verify that a valid entity is being provided */
-      if (entity && entity.constructor.name === 'ListItem') {
-        var uniqueId = self.uniqueId;
-        var constructorName = entity.getModel().list.title;
-        return apCacheService.listItem.add(uniqueId, constructorName, entity);
-      } else {
-        $log.warn('Please verify that a valid entity is being used: ', self, entity);
-      }
-    };
-    ListItem.prototype.getEntityReferences = function (constructorName) {
-      var self = this;
-      var cache = self.getEntityReferenceCache();
-      //          var cache = self._apCache.entityReference;
-      if (constructorName && !cache[constructorName]) {
-        return {};
-      } else if (constructorName && cache[constructorName]) {
-        return cache[constructorName];
-      } else {
-        return cache;
-      }
-    };
-    ListItem.prototype.removeEntityReference = function (entity) {
-      var uniqueId = this.uniqueId;
-      var constructorName = entity.getModel().list.title;
-      return apCacheService.listItem.remove(uniqueId, constructorName, entity);
-      var pType = entity.getModel().list.title;
-      var cache = self.getEntityReferenceCache();
-      if (entity.id && cache[pType] && cache[pType][entity.id]) {
-        delete cache[pType][entity.id];
-      }
-    };
-    /**
-         * @ngdoc function
-         * @name ListItem.getFieldVersionHistory
-         * @module ListItem
-         * @description
-         * Takes an array of field names, finds the version history for field, and returns a snapshot of the object at each
-         * version.  If no fields are provided, we look at the field definitions in the model and pull all non-readonly
-         * fields.  The only way to do this that I've been able to get working is to get the version history for each
-         * field independently and then build the history by combining the server responses for each requests into a
-         * snapshot of the object.
-         * @param {string[]} [fieldNames] An array of field names that we're interested in.
-         * <pre>
-         * myGenericListItem.getFieldVersionHistory(['title', 'project'])
-         * .then(function(versionHistory) {
-         *        //We now have an array of versions of the list item
-         *    };
-         * </pre>
-         * @returns {object} promise - containing array of changes
-         */
-    ListItem.prototype.getFieldVersionHistory = function (fieldNames) {
-      var deferred = $q.defer();
-      var promiseArray = [];
-      var listItem = this;
-      var model = listItem.getModel();
-      /** Constructor that creates a promise for each field */
-      var createPromise = function (fieldName) {
-        var fieldDefinition = _.findWhere(model.list.fields, { mappedName: fieldName });
-        var payload = {
-            operation: 'GetVersionCollection',
-            strlistID: model.list.guid,
-            strlistItemID: listItem.id,
-            strFieldName: fieldDefinition.internalName
-          };
-        /** Manually set site url if defined, prevents SPServices from making a blocking call to fetch it. */
-        if (apConfig.defaultUrl) {
-          payload.webURL = apConfig.defaultUrl;
-        }
-        promiseArray.push(apDataService.getFieldVersionHistory(payload, fieldDefinition));
-      };
-      if (!fieldNames) {
-        /** If fields aren't provided, pull the version history for all NON-readonly fields */
-        var targetFields = _.where(model.list.fields, { readOnly: false });
-        fieldNames = [];
-        _.each(targetFields, function (field) {
-          fieldNames.push(field.mappedName);
-        });
-      } else if (_.isString(fieldNames)) {
-        /** If a single field name is provided, add it to an array so we can process it more easily */
-        fieldNames = [fieldNames];
-      }
-      /** Generate promises for each field */
-      _.each(fieldNames, function (fieldName) {
-        createPromise(fieldName);
-      });
-      /** Pause until all requests are resolved */
-      $q.all(promiseArray).then(function (changes) {
-        var versionHistory = {};
-        /** All fields should have the same number of versions */
-        _.each(changes, function (fieldVersions) {
-          _.each(fieldVersions, function (fieldVersion) {
-            if (!versionHistory[fieldVersion.modified.toJSON()]) {
-              versionHistory[fieldVersion.modified.toJSON()] = {};
-            }
-            /** Add field to the version history for this version */
-            _.extend(versionHistory[fieldVersion.modified.toJSON()], fieldVersion);
-          });
-        });
-        var versionArray = [];
-        /** Add a version prop on each version to identify the numeric sequence */
-        _.each(versionHistory, function (ver, num) {
-          ver.version = num;
-          versionArray.push(ver);
-        });
-        deferred.resolve(versionArray);
-      });
-      return deferred.promise;
-    };
-    /**
-         * @ngdoc function
-         * @name List
-         * @description
-         * List Object Constructor.  This is handled automatically when creating a new model so there shouldn't be
-         * any reason to manually call.
-         * @param {object} obj Initialization parameters.
-         * @param {string} obj.guid Unique SharePoint GUID for the list we'll be basing the model on
-         * ex:'{4D74831A-42B2-4558-A67F-B0B5ADBC0EAC}'
-         * @param {string} obj.title Maps to the offline XML file in dev folder (no spaces)
-         * ex: 'ProjectsList' so the offline XML file would be located at dev/ProjectsList.xml
-         * @param {object[]} [obj.customFields] Mapping of SharePoint field names to the internal names we'll be using
-         * in our application.  Also contains field type, readonly attribute, and any other non-standard settings.
-         * <pre>
-         * [
-         *   {
-         *       internalName: "Title",
-         *       objectType: "Text",
-         *       mappedName: "lastName",
-         *       readOnly:false
-         *   },
-         *   {
-         *       internalName: "FirstName",
-         *       objectType: "Text",
-         *       mappedName: "firstName",
-         *       readOnly:false
-         *   },
-         *   {
-         *       internalName: "Organization",
-         *       objectType: "Lookup",
-         *       mappedName: "organization",
-         *       readOnly:false
-         *   },
-         *   {
-         *       internalName: "Account",
-         *       objectType: "User",
-         *       mappedName: "account",
-         *       readOnly:false
-         *   },
-         *   {
-         *       internalName: "Details",
-         *       objectType: "Text",
-         *       mappedName: "details",
-         *       readOnly:false
-         *   }
-         * ]
-         * </pre>
-         * @constructor
-         */
-    function List(obj) {
-      var defaults = {
-          viewFields: '',
-          customFields: [],
-          isReady: false,
-          fields: [],
-          guid: '',
-          mapping: {},
-          title: ''
-        };
-      /** Manually set site url if defined, prevents SPServices from making a blocking call to fetch it. */
-      if (apConfig.defaultUrl) {
-        defaults.webURL = apConfig.defaultUrl;
-      }
-      var list = _.extend({}, defaults, obj);
-      apFieldService.extendFieldDefinitions(list);
-      return list;
-    }
+    return { Model: Model };
+  }
+]);
+;
+'use strict';
+/**
+ * @ngdoc object
+ * @name apQueryFactory
+ * @description
+ */
+angular.module('angularPoint').factory('apQueryFactory', [
+  'apModalService',
+  'apCacheService',
+  'apDataService',
+  'apConfig',
+  '$q',
+  function (apModalService, apCacheService, apDataService, apConfig, $q) {
     /**
          * @ngdoc function
          * @name Query
@@ -3306,7 +4133,6 @@ angular.module('angularPoint').factory('apModelFactory', [
     /**
          * @ngdoc function
          * @name Query.execute
-         * @module Query
          * @description
          * Query SharePoint, pull down all initial records on first call along with list definition if using
          * "GetListItemChangesSinceToken".  Note: this is  substantially larger than "GetListItems" on first call.
@@ -3348,7 +4174,7 @@ angular.module('angularPoint').factory('apModelFactory', [
     /**
          * @ngdoc function
          * @name Query.searchLocalCache
-         * @module Query
+         * @methodOf Query
          * @description
          * Simple wrapper that by default sets the search location to the local query cache.
          * @param {*} value Value to evaluate against.
@@ -3365,759 +4191,7 @@ angular.module('angularPoint').factory('apModelFactory', [
       var opts = _.extend({}, defaults, options);
       return model.searchLocalCache(value, opts);
     };
-    /**
-         * @ngdoc function
-         * @name apModelFactory.registerChange
-         * @description
-         * If online and sync is being used, notify all online users that a change has been made.
-         * //Todo Break this functionality into FireBase module that can be used if desired.
-         * @param {object} model event
-         */
-    function registerChange(model) {
-      if (!apConfig.offline && model.sync && _.isFunction(model.sync.registerChange)) {
-        /** Register change after successful update */
-        model.sync.registerChange();
-      }
-    }
-    /**
-         * @ngdoc function
-         * @name apModelFactory.resolvePermissions
-         * @description
-         * Converts permMask into something usable to determine permission level for current user.  Typically used
-         * directly from a list item.  See ListItem.resolvePermissions.
-         * <pre>
-         * someListItem.resolvePermissions('0x0000000000000010');
-         * </pre>
-         * @param {string} permissionsMask The WSS Rights Mask is an 8-byte, unsigned integer that specifies
-         * the rights that can be assigned to a user or site group. This bit mask can have zero or more flags set.
-         * @example
-         * <pre>
-         * apModelFactory.resolvePermissions('0x0000000000000010');
-         * </pre>
-         * @returns {object} property for each permission level identifying if current user has rights (true || false)
-         * @link: http://sympmarc.com/2009/02/03/permmask-in-sharepoint-dvwps/
-         * @link: http://spservices.codeplex.com/discussions/208708
-         */
-    function resolvePermissions(permissionsMask) {
-      var permissionSet = {};
-      permissionSet.ViewListItems = (1 & permissionsMask) > 0;
-      permissionSet.AddListItems = (2 & permissionsMask) > 0;
-      permissionSet.EditListItems = (4 & permissionsMask) > 0;
-      permissionSet.DeleteListItems = (8 & permissionsMask) > 0;
-      permissionSet.ApproveItems = (16 & permissionsMask) > 0;
-      permissionSet.OpenItems = (32 & permissionsMask) > 0;
-      permissionSet.ViewVersions = (64 & permissionsMask) > 0;
-      permissionSet.DeleteVersions = (128 & permissionsMask) > 0;
-      permissionSet.CancelCheckout = (256 & permissionsMask) > 0;
-      permissionSet.PersonalViews = (512 & permissionsMask) > 0;
-      permissionSet.ManageLists = (2048 & permissionsMask) > 0;
-      permissionSet.ViewFormPages = (4096 & permissionsMask) > 0;
-      permissionSet.Open = (permissionsMask & 65536) > 0;
-      permissionSet.ViewPages = (permissionsMask & 131072) > 0;
-      permissionSet.AddAndCustomizePages = (permissionsMask & 262144) > 0;
-      permissionSet.ApplyThemeAndBorder = (permissionsMask & 524288) > 0;
-      permissionSet.ApplyStyleSheets = (1048576 & permissionsMask) > 0;
-      permissionSet.ViewUsageData = (permissionsMask & 2097152) > 0;
-      permissionSet.CreateSSCSite = (permissionsMask & 4194314) > 0;
-      permissionSet.ManageSubwebs = (permissionsMask & 8388608) > 0;
-      permissionSet.CreateGroups = (permissionsMask & 16777216) > 0;
-      permissionSet.ManagePermissions = (permissionsMask & 33554432) > 0;
-      permissionSet.BrowseDirectories = (permissionsMask & 67108864) > 0;
-      permissionSet.BrowseUserInfo = (permissionsMask & 134217728) > 0;
-      permissionSet.AddDelPrivateWebParts = (permissionsMask & 268435456) > 0;
-      permissionSet.UpdatePersonalWebParts = (permissionsMask & 536870912) > 0;
-      permissionSet.ManageWeb = (permissionsMask & 1073741824) > 0;
-      permissionSet.UseRemoteAPIs = (permissionsMask & 137438953472) > 0;
-      permissionSet.ManageAlerts = (permissionsMask & 274877906944) > 0;
-      permissionSet.CreateAlerts = (permissionsMask & 549755813888) > 0;
-      permissionSet.EditMyUserInfo = (permissionsMask & 1099511627776) > 0;
-      permissionSet.EnumeratePermissions = (permissionsMask & 4611686018427388000) > 0;
-      permissionSet.FullMask = permissionsMask == 9223372036854776000;
-      /**
-             * Full Mask only resolves correctly for the Full Mask level
-             * so in that case, set everything to true
-             */
-      if (permissionSet.FullMask) {
-        _.each(permissionSet, function (perm, key) {
-          permissionSet[key] = true;
-        });
-      }
-      return permissionSet;
-    }
-    return {
-      ListItem: ListItem,
-      Model: Model,
-      Query: Query,
-      resolvePermissions: resolvePermissions
-    };
-  }
-]);
-;
-'use strict';
-/**
- * @ngdoc service
- * @name queueService
- * @description
- * Simple service to monitor the number of active requests we have open with SharePoint
- * Typical use is to display a loading animation of some sort
- */
-angular.module('angularPoint').service('apQueueService', function () {
-  var counter = 0;
-  /**
-         * @ngdoc function
-         * @name queueService.increase
-         * @description
-         * Increase the counter by 1.
-         */
-  var increase = function () {
-    counter++;
-    notifyObservers();
-    return counter;
-  };
-  /**
-         * @ngdoc function
-         * @name queueService.reset
-         * @description
-         * Decrease the counter by 1.
-         * @returns {number} Current count after decrementing.
-         */
-  var decrease = function () {
-    if (counter > 0) {
-      counter--;
-      notifyObservers();
-      return counter;
-    }
-  };
-  /**
-         * @ngdoc function
-         * @name queueService.reset
-         * @description
-         * Reset counter to 0.
-         * @returns {number} Current count after incrementing.
-         */
-  var reset = function () {
-    counter = 0;
-    notifyObservers();
-    return counter;
-  };
-  var observerCallbacks = [];
-  /**
-         * @ngdoc function
-         * @name queueService.registerObserverCallback
-         * @description
-         * Register an observer
-         * @param {function} callback Function to call when a change is made.
-         */
-  var registerObserverCallback = function (callback) {
-    observerCallbacks.push(callback);
-  };
-  /** call this when queue changes */
-  var notifyObservers = function () {
-    angular.forEach(observerCallbacks, function (callback) {
-      callback(counter);
-    });
-  };
-  return {
-    count: counter,
-    decrease: decrease,
-    increase: increase,
-    registerObserverCallback: registerObserverCallback,
-    reset: reset
-  };
-});
-;
-'use strict';
-/**
- * @ngdoc service
- * @name utilityService
- * @description
- * Provides shared utility functionality across the application.
- */
-angular.module('angularPoint').service('apUtilityService', [
-  '$q',
-  '$log',
-  function ($q, $log) {
-    // AngularJS will instantiate a singleton by calling "new" on this function
-    /** Extend underscore with a simple helper function */
-    _.mixin({
-      isDefined: function (value) {
-        return !_.isUndefined(value);
-      },
-      isGuid: function (value) {
-        return typeof value === 'string' && /[a-fA-F\d]{8}-(?:[a-fA-F\d]{4}-){3}[a-fA-F\d]{12}/.test(value);
-      }
-    });
-    /**
-         * @ngdoc function
-         * @name utilityService.xmlToJson
-         * @description
-         * Converts an XML node set to Javascript object array. This is a modified version of the SPServices
-         * "SPXmlToJson" function.
-         * @param {array} rows ["z:rows"] XML rows that need to be parsed.
-         * @param {object} options Options object.
-         * @param {object[]} options.mapping [columnName: "mappedName", objectType: "objectType"]
-         * @param {boolean} [options.includeAllAttrs=false] If true, return all attributes, regardless whether
-         * @param {boolean} [options.ctor] List item constructor.
-         * @param {boolean} [options.throttle=true] Cut long running conversions into chunks to prevent ui performance
-         * hit.  The downside is most evergreen browsers can handle it so it could slow them down unnecessarily.
-         * @param {boolean} [options.removeOws=true] Specifically for GetListItems, if true, the leading ows_ will
-         * be stripped off the field name.
-         * @returns {Array} An array of JavaScript objects.
-         */
-    var xmlToJson = function (rows, options) {
-      var defaults = {
-          mapping: {},
-          includeAllAttrs: false,
-          removeOws: true,
-          throttle: true
-        };
-      var deferred = $q.defer();
-      var opts = _.extend({}, defaults, options);
-      var attrNum;
-      var entities = [];
-      var processRow = function (item) {
-        var row = {};
-        var rowAttrs = item.attributes;
-        /** Bring back all mapped columns, even those with no value */
-        _.each(opts.mapping, function (prop) {
-          row[prop.mappedName] = '';
-        });
-        // Parse through the element's attributes
-        for (attrNum = 0; attrNum < rowAttrs.length; attrNum++) {
-          var thisAttrName = rowAttrs[attrNum].name;
-          var thisMapping = opts.mapping[thisAttrName];
-          var thisObjectName = typeof thisMapping !== 'undefined' ? thisMapping.mappedName : opts.removeOws ? thisAttrName.split('ows_')[1] : thisAttrName;
-          var thisObjectType = typeof thisMapping !== 'undefined' ? thisMapping.objectType : undefined;
-          if (opts.includeAllAttrs || thisMapping !== undefined) {
-            row[thisObjectName] = attrToJson(rowAttrs[attrNum].value, thisObjectType, {
-              getQuery: opts.getQuery,
-              entity: row,
-              propertyName: thisObjectName
-            });
-          }
-        }
-        /** Push the newly created list item into the return array */
-        if (_.isFunction(opts.ctor)) {
-          /** Use provided list item constructor */
-          entities.push(opts.ctor(row));
-        } else {
-          entities.push(row);
-        }
-      };
-      if (opts.throttle) {
-        /** Action is async so wait until promise from batchProcess is resolved */
-        batchProcess(rows, processRow, this, 25).then(function () {
-          deferred.resolve(entities);
-        });
-      } else {
-        _.each(rows, processRow);
-        deferred.resolve(entities);
-      }
-      return deferred.promise;
-    };
-    /**
-         * @ngdoc function
-         * @name utilityService.attrToJson
-         * @description
-         * Converts a SharePoint string representation of a field into the correctly formatted JavaScript version
-         * based on object type.
-         * @param {string} value SharePoint string.
-         * @param {string} [objectType='Text'] The type based on field definition.
-         * Options:[
-         *  DateTime,
-         *  Lookup,
-         *  User,
-         *  LookupMulti,
-         *  UserMulti,
-         *  Boolean,
-         *  Integer,
-         *  Float,
-         *  Counter,
-         *  MultiChoice,
-         *  Currency,
-         *  Number,
-         *  Calc,
-         *  JSON,
-         *  HTML,
-         *  Text [Default]
-         * ]
-         * @param {obj} options Reference to the parent list item which can be used by child constructors.
-         * @returns {*} The formatted JavaScript value based on field type.
-         */
-    function attrToJson(value, objectType, options) {
-      var colValue;
-      switch (objectType) {
-      case 'DateTime':
-      case 'datetime':
-        // For calculated columns, stored as datetime;#value
-        // Dates have dashes instead of slashes: ows_Created='2009-08-25 14:24:48'
-        colValue = dateToJsonObject(value);
-        break;
-      case 'Lookup':
-        colValue = lookupToJsonObject(value, options);
-        break;
-      case 'User':
-        colValue = userToJsonObject(value);
-        break;
-      case 'LookupMulti':
-        colValue = lookupMultiToJsonObject(value, options);
-        break;
-      case 'UserMulti':
-        colValue = userMultiToJsonObject(value);
-        break;
-      case 'Boolean':
-        colValue = booleanToJsonObject(value);
-        break;
-      case 'Integer':
-      case 'Counter':
-        colValue = intToJsonObject(value);
-        break;
-      case 'Currency':
-      case 'Number':
-      case 'Float':
-      case 'float':
-        // For calculated columns, stored as float;#value
-        colValue = floatToJsonObject(value);
-        break;
-      case 'Calc':
-        colValue = calcToJsonObject(value);
-        break;
-      case 'MultiChoice':
-        colValue = choiceMultiToJsonObject(value);
-        break;
-      case 'HTML':
-        colValue = parseHTML(value);
-        break;
-      case 'JSON':
-        colValue = parseJSON(value);
-        break;
-      default:
-        // All other objectTypes will be simple strings
-        colValue = stringToJsonObject(value);
-        break;
-      }
-      return colValue;
-    }
-    function parseJSON(s) {
-      /** Ensure JSON is valid and if not throw error with additional detail */
-      var json = null;
-      try {
-        json = JSON.parse(s);
-      } catch (err) {
-        $log.error('Invalid JSON: ', s);
-      }
-      return json;
-    }
-    function parseHTML(s) {
-      return _.unescape(s);
-    }
-    function stringToJsonObject(s) {
-      return s;
-    }
-    function intToJsonObject(s) {
-      return parseInt(s, 10);
-    }
-    function floatToJsonObject(s) {
-      return parseFloat(s);
-    }
-    function booleanToJsonObject(s) {
-      return s === '0' || s === 'False' ? false : true;
-    }
-    function dateToJsonObject(s) {
-      /** Replace dashes with slashes and the "T" deliminator with a space if found */
-      return new Date(s.replace(/-/g, '/').replace(/T/i, ' '));
-    }
-    function userToJsonObject(s) {
-      if (s.length === 0) {
-        return null;
-      }
-      //Send to constructor
-      return new User(s);
-    }
-    function userMultiToJsonObject(s) {
-      if (s.length === 0) {
-        return null;
-      } else {
-        var thisUserMultiObject = [];
-        var thisUserMulti = s.split(';#');
-        for (var i = 0; i < thisUserMulti.length; i = i + 2) {
-          var thisUser = userToJsonObject(thisUserMulti[i] + ';#' + thisUserMulti[i + 1]);
-          thisUserMultiObject.push(thisUser);
-        }
-        return thisUserMultiObject;
-      }
-    }
-    function lookupToJsonObject(s, options) {
-      if (s.length === 0) {
-        return null;
-      } else {
-        //Send to constructor
-        return new Lookup(s, options);
-      }
-    }
-    function lookupMultiToJsonObject(s, options) {
-      if (s.length === 0) {
-        return [];
-      } else {
-        var thisLookupMultiObject = [];
-        var thisLookupMulti = s.split(';#');
-        for (var i = 0; i < thisLookupMulti.length; i = i + 2) {
-          var thisLookup = lookupToJsonObject(thisLookupMulti[i] + ';#' + thisLookupMulti[i + 1], options);
-          thisLookupMultiObject.push(thisLookup);
-        }
-        return thisLookupMultiObject;
-      }
-    }
-    function choiceMultiToJsonObject(s) {
-      if (s.length === 0) {
-        return [];
-      } else {
-        var thisChoiceMultiObject = [];
-        var thisChoiceMulti = s.split(';#');
-        for (var i = 0; i < thisChoiceMulti.length; i++) {
-          if (thisChoiceMulti[i].length !== 0) {
-            thisChoiceMultiObject.push(thisChoiceMulti[i]);
-          }
-        }
-        return thisChoiceMultiObject;
-      }
-    }
-    /**
-         * Converts an array of selected values into a SharePoint MultiChoice string
-         * @param {string[]} arr
-         * @returns {string}
-         */
-    function choiceMultiToString(arr) {
-      var str = '';
-      var delim = ';#';
-      if (arr.length > 0) {
-        /** String is required to begin with deliminator */
-        str += delim;
-        /** Append each item in the supplied array followed by deliminator */
-        _.each(arr, function (choice) {
-          str += choice + delim;
-        });
-      }
-      return str;
-    }
-    function calcToJsonObject(s) {
-      if (s.length === 0) {
-        return null;
-      } else {
-        var thisCalc = s.split(';#');
-        // The first value will be the calculated column value type, the second will be the value
-        return attrToJson(thisCalc[1], thisCalc[0]);
-      }
-    }
-    // Split values like 1;#value into id and value
-    function SplitIndex(s) {
-      var spl = s.split(';#');
-      this.id = parseInt(spl[0], 10);
-      this.value = spl[1];
-    }
-    function toCamelCase(s) {
-      return s.replace(/(?:^\w|[A-Z]|\b\w)/g, function (letter, index) {
-        return index == 0 ? letter.toLowerCase() : letter.toUpperCase();
-      }).replace(/\s+/g, '');
-    }
-    function fromCamelCase(s) {
-      // insert a space before all caps
-      s.replace(/([A-Z])/g, ' $1').replace(/^./, function (str) {
-        return str.toUpperCase();
-      });
-    }
-    /**Constructors for user and lookup fields*/
-    /**Allows for easier distinction when debugging if object type is shown as either Lookup or User**/
-    /**
-         * @ngdoc function
-         * @name Lookup
-         * @description
-         * Allows for easier distinction when debugging if object type is shown as either Lookup or User.  Also allows us
-         * to create an async request for the entity being referenced by the lookup
-         * @param {string} s String to split into lookupValue and lookupId
-         * @param {object} options Contains a reference to the parent list item and the property name.
-         * @param {object} options.entity Reference to parent list item.
-         * @param {object} options.propertyName Key on list item object.
-         * @constructor
-         */
-    function Lookup(s, options) {
-      var lookup = this;
-      var thisLookup = new SplitIndex(s);
-      lookup.lookupId = thisLookup.id;
-      lookup.lookupValue = thisLookup.value;
-      lookup._props = function () {
-        return options;
-      };
-    }
-    /**
-         * @ngdoc function
-         * @name Lookup.getEntity
-         * @description
-         * Allows us to create a promise that will resolve with the entity referenced in the lookup whenever that list
-         * item is registered.
-         * @example
-         <pre>
-         var project = {
-            title: 'Project 1',
-            location: {
-                lookupId: 5,
-                lookupValue: 'Some Building'
-            }
-         };
-
-         //To get the location entity
-         project.location.getEntity().then(function(entity) {
-             //Resolves with the full location entity once it's registered in the cache
-
-            });
-         </pre>
-         * @returns {promise} Resolves with the object the lookup is referencing.
-         */
-    Lookup.prototype.getEntity = function () {
-      var self = this;
-      var props = self._props();
-      if (!props.getEntity) {
-        var query = props.getQuery();
-        var listItem = query.searchLocalCache(props.entity.id);
-        /** Create a new deferred object if this is the first run */
-        props.getEntity = $q.defer();
-        listItem.getLookupReference(props.propertyName, self.lookupId).then(function (entity) {
-          props.getEntity.resolve(entity);
-        });
-      }
-      return props.getEntity.promise;
-    };
-    /**
-         * @ngdoc function
-         * @name Lookup.getProperty
-         * @description
-         * Returns a promise which resolves with the value of a property in the referenced object.
-         * @param {string} propertyPath The dot separated propertyPath.
-         * @example
-         <pre>
-         var project = {
-            title: 'Project 1',
-            location: {
-                lookupId: 5,
-                lookupValue: 'Some Building'
-            }
-         };
-
-         //To get the location.city
-         project.location.getProperty('city').then(function(city) {
-            //Resolves with the city property from the referenced location entity
-
-            });
-         </pre>
-         * @returns {promise} Resolves with the value, or undefined if it doesn't exists.
-         */
-    Lookup.prototype.getProperty = function (propertyPath) {
-      var self = this;
-      var deferred = $q.defer();
-      self.getEntity().then(function (entity) {
-        deferred.resolve(_.deepGetOwnValue(entity, propertyPath));
-      });
-      return deferred.promise;
-    };
-    function User(s) {
-      var self = this;
-      var thisUser = new SplitIndex(s);
-      var thisUserExpanded = thisUser.value.split(',#');
-      if (thisUserExpanded.length === 1) {
-        //Standard user columns only return a id,#value pair
-        self.lookupId = thisUser.id;
-        self.lookupValue = thisUser.value;
-      } else {
-        //Allow for case where user adds additional properties when setting up field
-        self.lookupId = thisUser.id;
-        self.lookupValue = thisUserExpanded[0].replace(/(,,)/g, ',');
-        self.loginName = thisUserExpanded[1].replace(/(,,)/g, ',');
-        self.email = thisUserExpanded[2].replace(/(,,)/g, ',');
-        self.sipAddress = thisUserExpanded[3].replace(/(,,)/g, ',');
-        self.title = thisUserExpanded[4].replace(/(,,)/g, ',');
-      }
-    }
-    /**
-         * Add a leading zero if a number/string only contains a single character
-         * @param {number|string} val
-         * @returns {string} Two digit string.
-         */
-    function doubleDigit(val) {
-      return val > 9 ? val.toString() : '0' + val;
-    }
-    /**
-         * @ngdoc function
-         * @name utilityService.stringifySharePointDate
-         * @description
-         * Converts a JavaScript date into a modified ISO8601 date string using the TimeZone offset for the current user.
-         * @example
-         <pre>'2014-05-08T08:12:18Z-07:00'</pre>
-         * @param {Date} date Valid JS date.
-         * @returns {string} ISO8601 date string.
-         */
-    function stringifySharePointDate(date) {
-      if (!_.isDate(date)) {
-        return '';
-      }
-      var self = this;
-      var dateString = '';
-      dateString += date.getFullYear();
-      dateString += '-';
-      dateString += doubleDigit(date.getMonth() + 1);
-      dateString += '-';
-      dateString += doubleDigit(date.getDate());
-      dateString += 'T';
-      dateString += doubleDigit(date.getHours());
-      dateString += ':';
-      dateString += doubleDigit(date.getMinutes());
-      dateString += ':';
-      dateString += doubleDigit(date.getSeconds());
-      dateString += 'Z-';
-      if (!self.timeZone) {
-        //Get difference between UTC time and local time in minutes and convert to hours
-        //Store so we only need to do this once
-        window.console.log('Calculating');
-        self.timeZone = new Date().getTimezoneOffset() / 60;
-      }
-      dateString += doubleDigit(self.timeZone);
-      dateString += ':00';
-      return dateString;
-    }
-    /**
-         * @ngdoc function
-         * @name utilityService.stringifySharePointMultiSelect
-         * @description
-         * Turns an array of, typically {lookupId: someId, lookupValue: someValue}, objects into a string
-         * of delimited id's that can be passed to SharePoint for a multi select lookup or multi user selection
-         * field.  SharePoint doesn't need the lookup values so we only need to pass the ID's back.
-         *
-         * @param {object[]} multiSelectValue Array of {lookupId: #, lookupValue: 'Some Value'} objects.
-         * @param {string} [idProperty='lookupId'] Property name where we'll find the ID value on each of the objects.
-         * @returns {string} Need to format string of id's in following format [ID0];#;#[ID1];#;#[ID1]
-         */
-    function stringifySharePointMultiSelect(multiSelectValue, idProperty) {
-      var stringifiedValues = '';
-      var idProp = idProperty || 'lookupId';
-      _.each(multiSelectValue, function (lookupObject, iteration) {
-        /** Need to format string of id's in following format [ID0];#;#[ID1];#;#[ID1] */
-        stringifiedValues += lookupObject[idProp];
-        if (iteration < multiSelectValue.length) {
-          stringifiedValues += ';#;#';
-        }
-      });
-      return stringifiedValues;
-    }
-    /**
-         * @ngdoc function
-         * @name utilityService.yyyymmdd
-         * @description
-         * Convert date into a int formatted as yyyymmdd
-         * We don't need the time portion of comparison so an int makes this easier to evaluate
-         */
-    function yyyymmdd(date) {
-      var yyyy = date.getFullYear().toString();
-      var mm = (date.getMonth() + 1).toString();
-      var dd = date.getDate().toString();
-      /** Add leading 0's to month and day if necessary */
-      return parseInt(yyyy + doubleDigit(mm) + doubleDigit(dd));
-    }
-    /**
-         * @ngdoc function
-         * @name utilityService.dateWithinRange
-         * @description
-         * Converts dates into yyyymmdd formatted ints and evaluates to determine if the dateToCheck
-         * falls within the date range provided
-         * @param {Date} startDate Starting date.
-         * @param {Date} endDate Ending date.
-         * @param {Date} [dateToCheck=new Date()] Defaults to the current date.
-         * @returns {boolean} Does the date fall within the range?
-         */
-    function dateWithinRange(startDate, endDate, dateToCheck) {
-      /** Ensure both a start and end date are provided **/
-      if (!startDate || !endDate) {
-        return false;
-      }
-      /** Use the current date as the default if one isn't provided */
-      dateToCheck = dateToCheck || new Date();
-      /** Create an int representation of each of the dates */
-      var startInt = yyyymmdd(startDate);
-      var endInt = yyyymmdd(endDate);
-      var dateToCheckInt = yyyymmdd(dateToCheck);
-      return startInt <= dateToCheckInt && dateToCheckInt <= endInt;
-    }
-    /**
-         * @ngdoc function
-         * @name utilityService.batchProcess
-         * @description
-         * We REALLY don't want to lock the user's browser (blocking the UI thread) while iterating over an array of
-         * items and performing some process on them.  This function cuts the process into as many 50ms chunks as are
-         * necessary. Based on example found in the following article:
-         * [Timed array processing in JavaScript](http://www.nczonline.net/blog/2009/08/11/timed-array-processing-in-javascript/);
-         * @param {Object[]} items The entities that need to be processed.
-         * @param {Function} process Reference to the process to be executed for each of the entities.
-         * @param {Object} context this
-         * @param {Number} [delay=25] Number of milliseconds to delay between batches.
-         * @param {Number} [maxItems=items.length] Maximum number of items to process before pausing.
-         * @returns {Object} Promise
-         * @example
-         * <pre>
-         * function buildProjectSummary = function() {
-         *    var deferred = $q.defer();
-         *
-         *    // Taken from a fictitious projectsModel.js
-         *    projectModel.getAllListItems().then(function(entities) {
-         *      var summaryObject = {};
-         *      var extendProjectSummary = function(project) {
-         *          // Do some process intensive stuff here
-         *
-         *      };
-         *
-         *      // Now that we have all of our projects we want to iterate
-         *      // over each to create our summary object. The problem is
-         *      // this could easily cause the page to hang with a sufficient
-         *      // number of entities.
-         *      apUtilityService.batchProcess(entities, extendProjectSummary, function() {
-         *          // Long running process is complete so resolve promise
-         *          deferred.resolve(summaryObject);
-         *      }, 25, 1000);
-         *    };
-         *
-         *    return deferred.promise;
-         * }
-         *
-         * </pre>
-         */
-    function batchProcess(items, process, context, delay, maxItems) {
-      var n = items.length, delay = delay || 25, maxItems = maxItems || n, i = 0, deferred = $q.defer();
-      function chunkTimer() {
-        var start = +new Date(), j = i;
-        while (i < n && i - j < maxItems && new Date() - start < 100) {
-          process.call(context, items[i]);
-          i += 1;
-        }
-        if (i < n) {
-          $log.info('Batch Delayed');
-          setTimeout(chunkTimer, delay);
-        } else {
-          deferred.resolve(items);
-        }
-      }
-      chunkTimer();
-      return deferred.promise;
-    }
-    return {
-      attrToJson: attrToJson,
-      batchProcess: batchProcess,
-      choiceMultiToString: choiceMultiToString,
-      dateWithinRange: dateWithinRange,
-      fromCamelCase: fromCamelCase,
-      lookupToJsonObject: lookupToJsonObject,
-      SplitIndex: SplitIndex,
-      stringifySharePointDate: stringifySharePointDate,
-      stringifySharePointMultiSelect: stringifySharePointMultiSelect,
-      toCamelCase: toCamelCase,
-      xmlToJson: xmlToJson
-    };
+    return { Query: Query };
   }
 ]);
 ;

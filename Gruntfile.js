@@ -22,7 +22,9 @@ module.exports = function (grunt) {
             // configurable paths
             src: 'src',
             dist: 'dist',
+            factories: 'src/factories',
             services: 'src/services'
+
         },
 
         // Empties folders to start fresh
@@ -71,6 +73,7 @@ module.exports = function (grunt) {
                 src: [
                     '<%= config.src %>/app.js',
                     '<%= config.services %>/*.js',
+                    '<%= config.factories %>/*.js',
                     '<%= config.src %>/models/user_model.js',
                     '<%= config.src %>/directives/**/*.js',
                     '!<%= config.src %>/directives/ap_comments/*.js',
@@ -149,7 +152,8 @@ module.exports = function (grunt) {
                 '<%= config.services %>/queue_srvc.js',
                 '<%= config.services %>/utility_srvc.js',
                 '<%= config.services %>/cache_srvc.js',
-                '<%= config.services %>/field_srvc.js'
+                '<%= config.services %>/field_srvc.js',
+                '<%= config.factories %>/*.js'
             ]
 //            model: {
 //                src: ['<%= config.services %>/model_srvc.js'],

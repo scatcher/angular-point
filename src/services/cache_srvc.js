@@ -42,7 +42,7 @@ angular.module('angularPoint')
         
         /**
          * @ngdoc object
-         * @name EntityCache
+         * @name angularPoint.apCacheService.EntityCache
          * @description
          * Cache constructor that maintains a queue of all requests for a list item, counter for the number of times
          * the cache has been updated, timestamp of last update, and add/update/remove functionality.
@@ -60,8 +60,8 @@ angular.module('angularPoint')
 
         /**
          * @ngdoc function
-         * @name EntityCache.getEntity
-         * @mthodOf EntityCache
+         * @name angularPoint.apCacheService.EntityCache:getEntity
+         * @mthodOf angularPoint.apCacheService.EntityCache
          * @description
          * Promise which returns the requested entity once it has been registered in the cache.
          */

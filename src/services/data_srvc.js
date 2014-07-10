@@ -2,7 +2,7 @@
 
 /**
  * @ngdoc service
- * @name dataService
+ * @name apDataService
  * @description
  * Handles all interaction with SharePoint web services
  *
@@ -26,7 +26,7 @@ angular.module('angularPoint')
 
         /**
          * @ngdoc function
-         * @name dataService.processListItems
+         * @name apDataService.processListItems
          * @description
          * Post processing of data after returning list items from server.  Returns a promise that resolves with
          * the processed entities.  Promise allows us to batch conversions of large lists to prevent ui slowdowns.
@@ -97,7 +97,7 @@ angular.module('angularPoint')
 
         /**
          * @ngdoc function
-         * @name dataService.updateLocalCache
+         * @name apDataService.updateLocalCache
          * @description
          * Maps a cache by entity id.  All provided entities are then either added if they don't already exist
          * or replaced if they do.
@@ -130,7 +130,7 @@ angular.module('angularPoint')
 
         /**
          * @ngdoc function
-         * @name dataService.parseFieldVersionHistoryResponse
+         * @name apDataService.parseFieldVersionHistoryResponse
          * @description
          * Takes an XML response from SharePoint webservice and returns an array of field versions.
          *
@@ -167,7 +167,7 @@ angular.module('angularPoint')
 
         /**
          * @ngdoc function
-         * @name dataService.getFieldVersionHistory
+         * @name apDataService.getFieldVersionHistory
          * @description
          * Returns the version history for a field in a list item.
          * @param {object} payload Configuration object passed to SPServices.
@@ -211,7 +211,7 @@ angular.module('angularPoint')
 
         /**
          * @ngdoc function
-         * @name dataService.getCollection
+         * @name apDataService.getCollection
          * @description
          * Used to handle any of the Get[filterNode]Collection calls to SharePoint
          *
@@ -232,7 +232,7 @@ angular.module('angularPoint')
          *
          * @example
          <pre>
-         dataService.getCollection({
+         apDataService.getCollection({
                 operation: "GetGroupCollectionFromUser",
                 userLoginName: $scope.state.selectedUser.LoginName
                 }).then(function (response) {
@@ -337,7 +337,7 @@ angular.module('angularPoint')
 
         /**
          * @ngdoc function
-         * @name dataService.serviceWrapper
+         * @name apDataService.serviceWrapper
          * @description
          * Generic wrapper for any SPServices web service call.  The big benefit to this function is it allows us
          * to continue to use the $q promise model throughout the application instead of using the promise
@@ -414,7 +414,7 @@ angular.module('angularPoint')
 
         /**
          * @ngdoc function
-         * @name dataService.getList
+         * @name apDataService.getList
          * @description
          * Returns all list settings for each list on the site
          * @param {object} options Configuration parameters.
@@ -457,7 +457,7 @@ angular.module('angularPoint')
 
         /**
          * @ngdoc function
-         * @name dataService.deleteAttachment
+         * @name apDataService.deleteAttachment
          * @description
          * Deletes and attachment on a list item.  Most commonly used by ListItem.deleteAttachment which is shown
          * in the example.
@@ -474,7 +474,7 @@ angular.module('angularPoint')
          <pre>
          ListItem.prototype.deleteAttachment = function (url) {
             var listItem = this;
-            return dataService.deleteAttachment({
+            return apDataService.deleteAttachment({
                 listItemId: listItem.id,
                 url: url,
                 listName: listItem.getModel().list.guid
@@ -522,7 +522,7 @@ angular.module('angularPoint')
 
         /**
          * @ngdoc function
-         * @name dataService.getView
+         * @name apDataService.getView
          * @description
          * Returns details of a SharePoint list view
          * @param {object} options Configuration parameters.
@@ -617,7 +617,7 @@ angular.module('angularPoint')
 
         /**
          * @ngdoc function
-         * @name dataService.executeQuery
+         * @name apDataService.executeQuery
          * @description
          * Primary method of retrieving list items from SharePoint.  Look at Query and Model for specifics.
          * @param {object} model Reference to the model where the Query resides.
@@ -725,7 +725,7 @@ angular.module('angularPoint')
 
         /**
          * @ngdoc function
-         * @name dataService.removeEntityFromLocalCache
+         * @name apDataService.removeEntityFromLocalCache
          * @description
          * Searches for an entity based on list item ID and removes it from the cached array if it exists.
          * @param {Array} entityArray Cached array of list items for a query.
@@ -750,7 +750,7 @@ angular.module('angularPoint')
 
         /**
          * @ngdoc function
-         * @name dataService.retrieveChangeToken
+         * @name apDataService.retrieveChangeToken
          * @description
          * Returns the change token from the xml response of a GetListItemChangesSinceToken query
          * Note: this attribute is only found when using 'GetListItemChangesSinceToken'
@@ -762,7 +762,7 @@ angular.module('angularPoint')
 
         /**
          * @ngdoc function
-         * @name dataService.retrievePermMask
+         * @name apDataService.retrievePermMask
          * @description
          * Returns the text representation of the users permission mask
          * Note: this attribute is only found when using 'GetListItemChangesSinceToken'
@@ -774,7 +774,7 @@ angular.module('angularPoint')
 
         /**
          * @ngdoc function
-         * @name dataService.processDeletionsSinceToken
+         * @name apDataService.processDeletionsSinceToken
          * @description
          * GetListItemChangesSinceToken returns items that have been added as well as deleted so we need
          * to remove the deleted items from the local cache.
@@ -805,7 +805,7 @@ angular.module('angularPoint')
 
         /**
          * @ngdoc function
-         * @name dataService.createValuePair
+         * @name apDataService.createValuePair
          * @description
          * Uses a field definition from a model to properly format a value for submission to SharePoint.  Typically
          * used prior to saving a list item, we iterate over each of the non-readonly properties defined in the model
@@ -870,7 +870,7 @@ angular.module('angularPoint')
 
         /**
          * @ngdoc function
-         * @name dataService.generateValuePairs
+         * @name apDataService.generateValuePairs
          * @description
          * Typically used to iterate over the non-readonly field definitions stored in a model and convert a
          * given list item entity into value pairs that we can pass to SPServices for saving.
@@ -892,7 +892,7 @@ angular.module('angularPoint')
 
         /**
          * @ngdoc function
-         * @name dataService.updateAllCaches
+         * @name apDataService.updateAllCaches
          * @description
          * Propagates a change to all duplicate entities in all cached queries within a given model.
          * @param {object} model Reference to the entities model.
@@ -917,7 +917,7 @@ angular.module('angularPoint')
 
         /**
          * @ngdoc function
-         * @name dataService.addUpdateItemModel
+         * @name apDataService.addUpdateItemModel
          * @description
          * Adds or updates a list item based on if the item passed in contains an id attribute.
          * @param {object} model Reference to the entities model.
@@ -1042,7 +1042,7 @@ angular.module('angularPoint')
 
         /**
          * @ngdoc function
-         * @name dataService.deleteItemModel
+         * @name apDataService.deleteItemModel
          * @description
          * Typically called directly from a list item, removes the list item from SharePoint
          * and the local cache.

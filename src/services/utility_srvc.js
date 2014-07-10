@@ -7,7 +7,7 @@
  * Provides shared utility functionality across the application.
  */
 angular.module('angularPoint')
-    .service('apUtilityService', function ($q, $log) {
+    .service('apUtilityService', function ($q, apConfig, $log) {
         // AngularJS will instantiate a singleton by calling "new" on this function
 
         /** Extend underscore with a simple helper function */
@@ -647,6 +647,94 @@ angular.module('angularPoint')
             return deferred.promise;
         }
 
+        /**
+         * @ngdoc function
+         * @name angularPoint.apUtilityService:resolvePermissions
+         * @methodOf angularPoint.apUtilityService
+         * @description
+         * Converts permMask into something usable to determine permission level for current user.  Typically used
+         * directly from a list item.  See ListItem.resolvePermissions.
+         * <pre>
+         * someListItem.resolvePermissions('0x0000000000000010');
+         * </pre>
+         * @param {string} permissionsMask The WSS Rights Mask is an 8-byte, unsigned integer that specifies
+         * the rights that can be assigned to a user or site group. This bit mask can have zero or more flags set.
+         * @example
+         * <pre>
+         * apUtilityService.resolvePermissions('0x0000000000000010');
+         * </pre>
+         * @returns {object} property for each permission level identifying if current user has rights (true || false)
+         * @link: http://sympmarc.com/2009/02/03/permmask-in-sharepoint-dvwps/
+         * @link: http://spservices.codeplex.com/discussions/208708
+         */
+        function resolvePermissions(permissionsMask) {
+            var permissionSet = {};
+            permissionSet.ViewListItems = (1 & permissionsMask) > 0;
+            permissionSet.AddListItems = (2 & permissionsMask) > 0;
+            permissionSet.EditListItems = (4 & permissionsMask) > 0;
+            permissionSet.DeleteListItems = (8 & permissionsMask) > 0;
+            permissionSet.ApproveItems = (16 & permissionsMask) > 0;
+            permissionSet.OpenItems = (32 & permissionsMask) > 0;
+            permissionSet.ViewVersions = (64 & permissionsMask) > 0;
+            permissionSet.DeleteVersions = (128 & permissionsMask) > 0;
+            permissionSet.CancelCheckout = (256 & permissionsMask) > 0;
+            permissionSet.PersonalViews = (512 & permissionsMask) > 0;
+
+            permissionSet.ManageLists = (2048 & permissionsMask) > 0;
+            permissionSet.ViewFormPages = (4096 & permissionsMask) > 0;
+
+            permissionSet.Open = (permissionsMask & 65536) > 0;
+            permissionSet.ViewPages = (permissionsMask & 131072) > 0;
+            permissionSet.AddAndCustomizePages = (permissionsMask & 262144) > 0;
+            permissionSet.ApplyThemeAndBorder = (permissionsMask & 524288) > 0;
+            permissionSet.ApplyStyleSheets = (1048576 & permissionsMask) > 0;
+            permissionSet.ViewUsageData = (permissionsMask & 2097152) > 0;
+            permissionSet.CreateSSCSite = (permissionsMask & 4194314) > 0;
+            permissionSet.ManageSubwebs = (permissionsMask & 8388608) > 0;
+            permissionSet.CreateGroups = (permissionsMask & 16777216) > 0;
+            permissionSet.ManagePermissions = (permissionsMask & 33554432) > 0;
+            permissionSet.BrowseDirectories = (permissionsMask & 67108864) > 0;
+            permissionSet.BrowseUserInfo = (permissionsMask & 134217728) > 0;
+            permissionSet.AddDelPrivateWebParts = (permissionsMask & 268435456) > 0;
+            permissionSet.UpdatePersonalWebParts = (permissionsMask & 536870912) > 0;
+            permissionSet.ManageWeb = (permissionsMask & 1073741824) > 0;
+            permissionSet.UseRemoteAPIs = (permissionsMask & 137438953472) > 0;
+            permissionSet.ManageAlerts = (permissionsMask & 274877906944) > 0;
+            permissionSet.CreateAlerts = (permissionsMask & 549755813888) > 0;
+            permissionSet.EditMyUserInfo = (permissionsMask & 1099511627776) > 0;
+            permissionSet.EnumeratePermissions = (permissionsMask & 4611686018427387904) > 0;
+            permissionSet.FullMask = (permissionsMask == 9223372036854775807);
+
+            /**
+             * Full Mask only resolves correctly for the Full Mask level
+             * so in that case, set everything to true
+             */
+            if (permissionSet.FullMask) {
+                _.each(permissionSet, function (perm, key) {
+                    permissionSet[key] = true;
+                });
+            }
+
+            return permissionSet;
+        }
+
+
+        /**
+         * @ngdoc function
+         * @name angularPoint.apUtilityService:registerChange
+         * @methodOf angularPoint.apUtilityService
+         * @description
+         * If online and sync is being used, notify all online users that a change has been made.
+         * //Todo Break this functionality into FireBase module that can be used if desired.
+         * @param {object} model event
+         */
+        function registerChange(model) {
+            if (!apConfig.offline && model.sync && _.isFunction(model.sync.registerChange)) {
+                /** Register change after successful update */
+                model.sync.registerChange();
+            }
+        }
+
         return {
             attrToJson: attrToJson,
             batchProcess: batchProcess,
@@ -654,6 +742,8 @@ angular.module('angularPoint')
             dateWithinRange: dateWithinRange,
             fromCamelCase: fromCamelCase,
             lookupToJsonObject: lookupToJsonObject,
+            registerChange: registerChange,
+            resolvePermissions: resolvePermissions,
             SplitIndex: SplitIndex,
             stringifySharePointDate: stringifySharePointDate,
             stringifySharePointMultiSelect: stringifySharePointMultiSelect,
