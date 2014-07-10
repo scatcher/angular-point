@@ -84,6 +84,28 @@ falls within the date range provided</p>
 </div> <p><em>(default: new Date())</em></p></td></tr></tbody></table><h5 id="methods_datewithinrange_returns">Returns</h5><table class="variables-matrix"><tr><td><a href="" class="label type-hint type-hint-boolean">boolean</a></td><td><div class="angularpoint-aputilityservice-page angularpoint-aputilityservice-datewithinrange-page"><p>Does the date fall within the range?</p>
 </div></td></tr></table></div>
 </li>
+<li><h3 id="methods_registerchange">registerChange(model)</h3>
+<div class="registerchange"><div class="angularpoint-aputilityservice-page angularpoint-aputilityservice-registerchange-page"><p>If online and sync is being used, notify all online users that a change has been made.
+//Todo Break this functionality into FireBase module that can be used if desired.</p>
+</div><h5 id="methods_registerchange_parameters">Parameters</h5><table class="variables-matrix table table-bordered table-striped"><thead><tr><th>Param</th><th>Type</th><th>Details</th></tr></thead><tbody><tr><td>model</td><td><a href="" class="label type-hint type-hint-object">object</a></td><td><div class="angularpoint-aputilityservice-page angularpoint-aputilityservice-registerchange-page"><p>event</p>
+</div></td></tr></tbody></table></div>
+</li>
+<li><h3 id="methods_resolvepermissions">resolvePermissions(permissionsMask)</h3>
+<div class="resolvepermissions"><div class="angularpoint-aputilityservice-page angularpoint-aputilityservice-resolvepermissions-page"><p>Converts permMask into something usable to determine permission level for current user.  Typically used
+directly from a list item.  See ListItem.resolvePermissions.
+<pre class="prettyprint linenums">
+someListItem.resolvePermissions('0x0000000000000010');
+</pre>
+</div><h5 id="methods_resolvepermissions_parameters">Parameters</h5><table class="variables-matrix table table-bordered table-striped"><thead><tr><th>Param</th><th>Type</th><th>Details</th></tr></thead><tbody><tr><td>permissionsMask</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="angularpoint-aputilityservice-page angularpoint-aputilityservice-resolvepermissions-page"><p>The WSS Rights Mask is an 8-byte, unsigned integer that specifies
+the rights that can be assigned to a user or site group. This bit mask can have zero or more flags set.</p>
+</div></td></tr></tbody></table><h5 id="methods_resolvepermissions_returns">Returns</h5><table class="variables-matrix"><tr><td><a href="" class="label type-hint type-hint-object">object</a></td><td><div class="angularpoint-aputilityservice-page angularpoint-aputilityservice-resolvepermissions-page"><p>property for each permission level identifying if current user has rights (true || false)</p>
+</div></td></tr></table><h4 id="methods_resolvepermissions_example">Example</h4>
+<div class="example"><div class="angularpoint-aputilityservice-page angularpoint-aputilityservice-resolvepermissions-page"><pre class="prettyprint linenums">
+apUtilityService.resolvePermissions('0x0000000000000010');
+</pre>
+</div></div>
+</div>
+</li>
 <li><h3 id="methods_stringifysharepointdate">stringifySharePointDate(date)</h3>
 <div class="stringifysharepointdate"><div class="angularpoint-aputilityservice-page angularpoint-aputilityservice-stringifysharepointdate-page"><p>Converts a JavaScript date into a modified ISO8601 date string using the TimeZone offset for the current user.</p>
 </div><h5 id="methods_stringifysharepointdate_parameters">Parameters</h5><table class="variables-matrix table table-bordered table-striped"><thead><tr><th>Param</th><th>Type</th><th>Details</th></tr></thead><tbody><tr><td>date</td><td><a href="" class="label type-hint type-hint-date">Date</a></td><td><div class="angularpoint-aputilityservice-page angularpoint-aputilityservice-stringifysharepointdate-page"><p>Valid JS date.</p>

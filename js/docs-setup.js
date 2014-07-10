@@ -46,34 +46,7 @@ NG_DOCS={
       "type": "service",
       "moduleName": "angularPoint",
       "shortDescription": "Provides shared utility functionality across the application.",
-      "keywords": "$q angularpoint api application aputilityservice array article attributes based batches batchprocess boolean browser browsers buildprojectsummary calc child chunks comparison complete constructors context conversions convert converts correctly counter create ctor currency current cut cuts dates datetime datetocheck defaults defer deferred definition delay delimited determine doesn don downside easier easily enddate entities evaluate evaluates evergreen example executed extendprojectsummary fall falls fictitious field find float format formatted function functionality getalllistitems getlistitems handle hang hit html includeallattrs int integer intensive ints iso8601 item items iterate iterating javascript js json leading length list ll lock long lookup lookupid lookupmulti lookupvalue mappedname mapping maximum milliseconds modified multi multichoice multiselectvalue nczonline net node number object objects objecttype offset options ows_ parent parsed pass passed pausing performance performing portion prevent problem process processed processing projectmodel projects projectsmodel promise property provided range reference removeows representation resolve return rows running select selection service set shared sharepoint slow someid somevalue spservices spxmltojson startdate starting string stripped stuff sufficient summary summaryobject text thread throttle time timezone true turns type typically ui unnecessarily user usermulti utility valid values var version xml yyyymmdd"
-    },
-    {
-      "section": "api",
-      "id": "apModelFactory",
-      "shortName": "apModelFactory",
-      "type": "service",
-      "moduleName": "apModelFactory",
-      "shortDescription": "The &#39;apModelFactory&#39; provides a common base prototype for Model, Query, and List Item.",
-      "keywords": "angularpoint apcacheservice apdataservice apfieldservice api apmodalservice apmodelfactory base common item list model prototype query service"
-    },
-    {
-      "section": "api",
-      "id": "apModelFactory.registerChange",
-      "shortName": "apModelFactory.registerChange",
-      "type": "function",
-      "moduleName": "apModelFactory",
-      "shortDescription": "If online and sync is being used, notify all online users that a change has been made.",
-      "keywords": "api apmodelfactory break change desired event firebase function functionality model module notify online registerchange sync users"
-    },
-    {
-      "section": "api",
-      "id": "apModelFactory.resolvePermissions",
-      "shortName": "apModelFactory.resolvePermissions",
-      "type": "function",
-      "moduleName": "apModelFactory",
-      "shortDescription": "Converts permMask into something usable to determine permission level for current user.  Typically used",
-      "keywords": "api apmodelfactory assigned bit codeplex converts current determine directly false flags function group http identifying integer item level list listitem mask permission permissionsmask permmask property resolvepermissions rights set site somelistitem specifies typically unsigned usable user wss"
+      "keywords": "$q angularpoint api application aputilityservice array article assigned attributes based batches batchprocess bit boolean break browser browsers buildprojectsummary calc change child chunks codeplex comparison complete constructors context conversions convert converts correctly counter create ctor currency current cut cuts dates datetime datetocheck defaults defer deferred definition delay delimited desired determine directly doesn don downside easier easily enddate entities evaluate evaluates event evergreen example executed extendprojectsummary fall falls false fictitious field find firebase flags float format formatted function functionality getalllistitems getlistitems group handle hang hit html http identifying includeallattrs int integer intensive ints iso8601 item items iterate iterating javascript js json leading length level list listitem ll lock long lookup lookupid lookupmulti lookupvalue mappedname mapping mask maximum milliseconds model modified module multi multichoice multiselectvalue nczonline net node notify number object objects objecttype offset online options ows_ parent parsed pass passed pausing performance performing permission permissionsmask permmask portion prevent problem process processed processing projectmodel projects projectsmodel promise property provided range reference removeows representation resolve resolvepermissions return rights rows running select selection service set shared sharepoint site slow someid somelistitem somevalue specifies spservices spxmltojson startdate starting string stripped stuff sufficient summary summaryobject sync text thread throttle time timezone true turns type typically ui unnecessarily unsigned usable user usermulti users utility valid values var version wss xml yyyymmdd"
     },
     {
       "section": "api",
@@ -277,6 +250,15 @@ NG_DOCS={
       "section": "api",
       "id": "List",
       "shortName": "List",
+      "type": "object",
+      "moduleName": "List",
+      "shortDescription": "",
+      "keywords": "api list object"
+    },
+    {
+      "section": "api",
+      "id": "List",
+      "shortName": "List",
       "type": "function",
       "moduleName": "List",
       "shortDescription": "List Object Constructor.  This is handled automatically when creating a new model so there shouldn&#39;t be",
@@ -290,6 +272,15 @@ NG_DOCS={
       "moduleName": "ListItem",
       "shortDescription": "Base prototype which all list items inherit CRUD functionality that can be called directly from obj.",
       "keywords": "api base called crud directly function functionality inherit items list listitem obj prototype"
+    },
+    {
+      "section": "api",
+      "id": "ListItem",
+      "shortName": "ListItem",
+      "type": "object",
+      "moduleName": "ListItem",
+      "shortDescription": "",
+      "keywords": "api listitem object"
     },
     {
       "section": "api",
@@ -369,8 +360,8 @@ NG_DOCS={
       "shortName": "ListItem.resolvePermissions",
       "type": "function",
       "moduleName": "ListItem",
-      "shortDescription": "See apModelFactory.resolvePermissions for details on what we expect to have returned.",
-      "keywords": "api apmodelfactory current details evaluated expect function level listitem mygenericlistitem permission permissionobject properties resolvepermissions returned user var"
+      "shortDescription": "See apModelService.resolvePermissions for details on what we expect to have returned.",
+      "keywords": "api apmodelservice current details evaluated expect function level listitem mygenericlistitem permission permissionobject properties resolvepermissions returned user var"
     },
     {
       "section": "api",
@@ -434,6 +425,15 @@ NG_DOCS={
       "moduleName": "Model",
       "shortDescription": "Model Constructor",
       "keywords": "active addnewitem adds api apmodelfactory application array attachments boolean builds costestimate currency customer customfields customlist data deferred definition denotes empty extend factory false fictitious field fields file formats function getalllistitems group guid identifies individual internalname items js list ll lookup mappedname maps model named names obj object objecttype offline optional options params passed project projectdescription projectgroup projects projectsmodel queries read readonly ready sharepoint spaces status taskmanager text title true types unique user var xml"
+    },
+    {
+      "section": "api",
+      "id": "Model",
+      "shortName": "Model",
+      "type": "object",
+      "moduleName": "Model",
+      "shortDescription": "",
+      "keywords": "api model object"
     },
     {
       "section": "api",
@@ -569,6 +569,15 @@ NG_DOCS={
       "moduleName": "Model",
       "shortDescription": "Uses the custom fields defined in an model to ensure each field (required = true) is evaluated",
       "keywords": "alert api based custom defined ensure entity evaluated evaluation field fields function generated issues item list model object optional parameters sharepoint toast toasts true type user validateentity validity"
+    },
+    {
+      "section": "api",
+      "id": "Query",
+      "shortName": "Query",
+      "type": "object",
+      "moduleName": "Query",
+      "shortDescription": "",
+      "keywords": "api object query"
     },
     {
       "section": "api",
