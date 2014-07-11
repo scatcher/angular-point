@@ -37,7 +37,7 @@ NG_DOCS={
       "type": "service",
       "moduleName": "angularPoint",
       "shortDescription": "Processes the XML received from SharePoint and converts it into JavaScript objects based on predefined field types.",
-      "keywords": "angularpoint apdecodeservice api array attributes based boolean browsers calc child chunks constructors conversions converts correctly counter ctor currency cut datetime definition downside evergreen field float formatted function getlistitems handle hit html includeallattrs integer item javascript json leading list long lookup lookupmulti mappedname mapping modified multichoice node number object objects objecttype options ows_ parent parsed pass performance predefined prevent processes received reference removeows representation return rows running service set sharepoint slow spservices spxmltojson string stripped text throttle true type types ui unnecessarily user usermulti version xml"
+      "keywords": "allow allows angularpoint apdecodeservice api array attributes based batch boolean browsers cache calc call child chunks configuration constructors conversions converts correctly counter ctor currency cut data datetime definition definitions don downside elements entities entity evergreen exist factory field filter find float formatted function getcache getlistitems handle hit html includeallattrs integer item items iterate javascript json large leading list lists local localcache long lookup lookupmulti mappedname mapping maps merged mode model modified multichoice node number object objects objecttype optional optionally options ows_ parent parsed pass performance post predefined prevent processed processes processing promise provided query received reference removeows replace replaced representation resolved resolves responsexml return returning returns rows running server service set sharepoint slow slowdowns spservices spxmltojson store stored string stripped target text throttle true type types typically ui unnecessarily update updated updating user usermulti version web xml"
     },
     {
       "section": "api",
@@ -127,7 +127,7 @@ NG_DOCS={
       "type": "service",
       "moduleName": "apDataService",
       "shortDescription": "Handles all interaction with SharePoint web services",
-      "keywords": "additional anderson angularpoint apcacheservice apconfig apdataservice apfieldservice api apqueueservice aputilityservice calls codeplex documentation handles http interaction marc service services sharepoint spservices web"
+      "keywords": "additional anderson angularpoint apconfig apdataservice apfieldservice api apqueueservice aputilityservice calls codeplex documentation handles http interaction marc service services sharepoint spservices web"
     },
     {
       "section": "api",
@@ -221,15 +221,6 @@ NG_DOCS={
     },
     {
       "section": "api",
-      "id": "apDataService.processListItems",
-      "shortName": "apDataService.processListItems",
-      "type": "function",
-      "moduleName": "apDataService",
-      "shortDescription": "Post processing of data after returning list items from server.  Returns a promise that resolves with",
-      "keywords": "allow allows apdataservice api array batch call configuration conversions data definitions elements entities factory field filter find function getcache items iterate large list lists local mapping mode model object optional optionally options pass post prevent processed processing processlistitems promise reference replace resolved resolves responsexml return returning returns server service slowdowns spservices store stored string target typically ui update updating web xml"
-    },
-    {
-      "section": "api",
       "id": "apDataService.removeEntityFromLocalCache",
       "shortName": "apDataService.removeEntityFromLocalCache",
       "type": "function",
@@ -272,15 +263,6 @@ NG_DOCS={
       "moduleName": "apDataService",
       "shortDescription": "Propagates a change to all duplicate entities in all cached queries within a given model.",
       "keywords": "apdataservice api automatically cached change don duplicate entities entity function item javascript list model number object process propagates queries query reference representing sharepoint updateallcaches updated"
-    },
-    {
-      "section": "api",
-      "id": "apDataService.updateLocalCache",
-      "shortName": "apDataService.updateLocalCache",
-      "type": "function",
-      "moduleName": "apDataService",
-      "shortDescription": "Maps a cache by entity id.  All provided entities are then either added if they don&#39;t already exist",
-      "keywords": "apdataservice api cache don entities entity exist function localcache maps merged number provided query replaced updated updatelocalcache"
     },
     {
       "section": "api",
