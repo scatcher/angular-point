@@ -1,0 +1,21 @@
+<h1><code ng:non-bindable="">executeQuery</code>
+<div><span class="hint">service in module <code ng:non-bindable="">apDataService</code>
+</span>
+</div>
+</h1>
+<div><h2 id="description">Description</h2>
+<div class="description"><div class="apdataservice-executequery-page"><p>Primary method of retrieving list items from SharePoint.  Look at Query and Model for specifics.</p>
+</div></div>
+<h2 id="usage">Usage</h2>
+<div class="usage"><pre class="prettyprint linenums">executeQuery(model, query, [options]);</pre>
+<h4 id="usage_parameters">Parameters</h4><table class="variables-matrix table table-bordered table-striped"><thead><tr><th>Param</th><th>Type</th><th>Details</th></tr></thead><tbody><tr><td>model</td><td><a href="" class="label type-hint type-hint-object">object</a></td><td><div class="apdataservice-executequery-page"><p>Reference to the model where the Query resides.</p>
+</div></td></tr><tr><td>query</td><td><a href="" class="label type-hint type-hint-object">object</a></td><td><div class="apdataservice-executequery-page"><p>Reference to the Query making the call.</p>
+</div></td></tr><tr><td>[options]</td><td><a href="" class="label type-hint type-hint-object">object</a></td><td><div class="apdataservice-executequery-page"><p>Optional configuration parameters.</p>
+</div></td></tr><tr><td>options.target</td><td><a href="" class="label type-hint type-hint-array">Array</a></td><td><div class="apdataservice-executequery-page"><p>The target destination for returned entities</p>
+</div> <p><em>(default: model.getCache())</em></p></td></tr><tr><td>options.offlineXML</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="apdataservice-executequery-page"><p>Optionally include the location of
+a custom offline XML file specifically for this query.</p>
+</div> <p><em>(default: 'dev/' + model.list.title + '.xml')</em></p></td></tr></tbody></table><h4 id="usage_returns">Returns</h4><table class="variables-matrix"><tr><td><a href="" class="label type-hint type-hint-object">object[]</a></td><td><div class="apdataservice-executequery-page"><ul>
+<li>Array of list item objects.</li>
+</ul>
+</div></td></tr></table></div>
+</div>
