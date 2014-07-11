@@ -46,7 +46,7 @@ NG_DOCS={
       "type": "service",
       "moduleName": "angularPoint",
       "shortDescription": "Processes the XML received from SharePoint and converts it into JavaScript objects based on predefined field types.",
-      "keywords": "allow allows angularpoint apcacheservice apconfig apdecodeservice api apqueueservice aputilityservice array attributes based batch boolean browsers cache calc call child chunks configuration constructors conversions converts correctly counter ctor currency cut data datetime definition definitions don downside elements entities entity evergreen exist factory field filter find float formatted function getcache getlistitems handle hit html includeallattrs integer item items iterate javascript json large leading list lists local localcache long lookup lookupmulti mappedname mapping maps merged mode model modified multichoice node number object objects objecttype optional optionally options ows_ parent parsed pass performance post predefined prevent processed processes processing promise provided query received reference removeows replace replaced representation resolved resolves responsexml return returning returns rows running server service set sharepoint slow slowdowns spservices spxmltojson store stored string stripped target text throttle true type types typically ui unnecessarily update updated updating user usermulti version web xml"
+      "keywords": "allow allows angularpoint apcacheservice apconfig apdecodeservice api apqueueservice aputilityservice array attributes based batch boolean browsers cache calc call change child chunks configuration constructors conversions converts correctly counter ctor currency cut data datetime definition definitions don downside elements entities entity evergreen exist factory field fielddefinition filter find float formatted function getcache getlistitems handle hit html includeallattrs integer item items iterate javascript json large leading list lists local localcache long lookup lookupmulti mappedname mapping maps merged mode model modified multichoice node number object objects objecttype optional optionally options ows_ parent parsed pass performance post predefined prevent processed processes processing promise provided query received reference removeows replace replaced representation resolved resolves response responsexml return returned returning returns rows running server service set sharepoint slow slowdowns spservices spxmltojson store stored string stripped takes target text throttle true type types typically ui unnecessarily update updated updating user usermulti version versions web webservice xml"
     },
     {
       "section": "api",
@@ -209,15 +209,6 @@ NG_DOCS={
       "moduleName": "apDataService",
       "shortDescription": "Returns details of a SharePoint list view",
       "keywords": "apdataservice api configuration default desired details formatted function getview guid list listname options override parameters promise provided returns sharepoint url view viewname web weburl"
-    },
-    {
-      "section": "api",
-      "id": "apDataService.parseFieldVersionHistoryResponse",
-      "shortName": "apDataService.parseFieldVersionHistoryResponse",
-      "type": "function",
-      "moduleName": "apDataService",
-      "shortDescription": "Takes an XML response from SharePoint webservice and returns an array of field versions.",
-      "keywords": "apdataservice api array call change definition field fielddefinition function model objects parsefieldversionhistoryresponse response responsexml returned returns service sharepoint takes version versions web webservice xml"
     },
     {
       "section": "api",

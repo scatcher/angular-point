@@ -229,35 +229,6 @@ angular.module('angularPoint').service('apDataService', [
     var online = !offline;
     /**
          * @ngdoc function
-         * @name apDataService.parseFieldVersionHistoryResponse
-         * @description
-         * Takes an XML response from SharePoint webservice and returns an array of field versions.
-         *
-         * @param {xml} responseXML Returned XML from web service call.
-         * @param {object} fieldDefinition Field definition from the model.
-         *
-         * @returns {Array} Array objects containing the various version of a field for each change.
-         */
-    function parseFieldVersionHistoryResponse(responseXML, fieldDefinition) {
-      var versions = [];
-      var versionCount = $(responseXML).find('Version').length;
-      $(responseXML).find('Version').each(function (index) {
-        var self = this;
-        /** Parse the xml and create a representation of the version as a js object */
-        var version = {
-            editor: apDecodeService.attrToJson($(self).attr('Editor'), 'User'),
-            modified: apDecodeService.attrToJson($(self).attr('Modified'), 'DateTime'),
-            version: versionCount - index
-          };
-        /** Properly format field based on definition from model */
-        version[fieldDefinition.mappedName] = apDecodeService.attrToJson($(self).attr(fieldDefinition.internalName), fieldDefinition.objectType);
-        /** Push to beginning of array */
-        versions.unshift(version);
-      });
-      return versions;
-    }
-    /**
-         * @ngdoc function
          * @name apDataService.getFieldVersionHistory
          * @description
          * Returns the version history for a field in a list item.
@@ -281,7 +252,7 @@ angular.module('angularPoint').service('apDataService', [
         var webServiceCall = $().SPServices(payload);
         webServiceCall.then(function () {
           /** Parse XML response */
-          var versions = parseFieldVersionHistoryResponse(webServiceCall.responseText, fieldDefinition);
+          var versions = apDecodeService.parseFieldVersions(webServiceCall.responseText, fieldDefinition);
           /** Resolve with an array of all field versions */
           deferred.resolve(versions);
         }, function (outcome) {
@@ -619,41 +590,6 @@ angular.module('angularPoint').service('apDataService', [
       });
       return deferred.promise;
     };
-    var parseFieldDefinitionXML = function (customFields, responseXML) {
-      var fieldMap = {};
-      /** Map all custom fields with keys of the internalName and values = field definition */
-      _.each(customFields, function (field) {
-        if (field.internalName) {
-          fieldMap[field.internalName] = field;
-        }
-      });
-      /** Iterate over each of the field nodes */
-      $(responseXML).SPFilterNode('Field').each(function () {
-        var field = this;
-        var staticName = $(field).attr('StaticName');
-        /** If we've defined this field then we should extend it */
-        if (fieldMap[staticName]) {
-          var row = {};
-          var rowAttrs = field.attributes;
-          _.each(rowAttrs, function (attr, attrNum) {
-            var attrName = rowAttrs[attrNum].name;
-            row[attrName] = $(field).attr(attrName);
-          });
-          /** Additional processing for Choice fields to include the default value and choices */
-          if (fieldMap[staticName].objectType === 'Choice' || fieldMap[staticName].objectType === 'MultiChoice') {
-            row.choices = [];
-            /** Convert XML Choices object to an array of choices */
-            $(this).find('CHOICE').each(function () {
-              row.choices.push($(this).text());
-            });
-            row.Default = $(this).find('Default').text();
-          }
-          /** Extend the existing field definition with field attributes from SharePoint */
-          _.extend(fieldMap[staticName], row);
-        }
-      });
-      return true;
-    };
     /**
          * @ngdoc function
          * @name apDataService.executeQuery
@@ -687,7 +623,7 @@ angular.module('angularPoint').service('apDataService', [
                          *  list so use this to extend the existing field definitions defined in the model.
                          */
             if (!model.list.extendedFieldDefinitions) {
-              model.list.extendedFieldDefinitions = parseFieldDefinitionXML(model.list.customFields, responseXML);
+              model.list.extendedFieldDefinitions = apDecodeService.parseFieldDefinitionXML(model.list.customFields, responseXML);
             }
             /** Store token for future web service calls to return changes */
             query.changeToken = retrieveChangeToken(responseXML);
@@ -728,7 +664,7 @@ angular.module('angularPoint').service('apDataService', [
               apQueueService.decrease();
               /** Extend the field definition in the model with the offline data */
               if (query.operation === 'GetListItemChangesSinceToken') {
-                model.list.extendedFieldDefinitions = parseFieldDefinitionXML(model.list.customFields, responseXML);
+                model.list.extendedFieldDefinitions = apDecodeService.parseFieldDefinitionXML(model.list.customFields, responseXML);
               }
               deferred.resolve(entities);
             });
@@ -1508,9 +1444,76 @@ angular.module('angularPoint').service('apDecodeService', [
         self.title = thisUserExpanded[4].replace(/(,,)/g, ',');
       }
     }
+    var parseFieldDefinitionXML = function (customFields, responseXML) {
+      var fieldMap = {};
+      /** Map all custom fields with keys of the internalName and values = field definition */
+      _.each(customFields, function (field) {
+        if (field.internalName) {
+          fieldMap[field.internalName] = field;
+        }
+      });
+      /** Iterate over each of the field nodes */
+      $(responseXML).SPFilterNode('Field').each(function () {
+        var field = this;
+        var staticName = $(field).attr('StaticName');
+        /** If we've defined this field then we should extend it */
+        if (fieldMap[staticName]) {
+          var row = {};
+          var rowAttrs = field.attributes;
+          _.each(rowAttrs, function (attr, attrNum) {
+            var attrName = rowAttrs[attrNum].name;
+            row[attrName] = $(field).attr(attrName);
+          });
+          /** Additional processing for Choice fields to include the default value and choices */
+          if (fieldMap[staticName].objectType === 'Choice' || fieldMap[staticName].objectType === 'MultiChoice') {
+            row.choices = [];
+            /** Convert XML Choices object to an array of choices */
+            $(this).find('CHOICE').each(function () {
+              row.choices.push($(this).text());
+            });
+            row.Default = $(this).find('Default').text();
+          }
+          /** Extend the existing field definition with field attributes from SharePoint */
+          _.extend(fieldMap[staticName], row);
+        }
+      });
+      return true;
+    };
+    /**
+         * @ngdoc function
+         * @name angularPoint.apDecodeService:parseFieldVersions
+         * @methodOf angularPoint.apDecodeService
+         * @description
+         * Takes an XML response from SharePoint webservice and returns an array of field versions.
+         *
+         * @param {xml} responseXML Returned XML from web service call.
+         * @param {object} fieldDefinition Field definition from the model.
+         *
+         * @returns {Array} Array objects containing the various version of a field for each change.
+         */
+    function parseFieldVersions(responseXML, fieldDefinition) {
+      var versions = [];
+      var versionCount = $(responseXML).find('Version').length;
+      $(responseXML).find('Version').each(function (index) {
+        var self = this;
+        /** Parse the xml and create a representation of the version as a js object */
+        var version = {
+            editor: attrToJson($(self).attr('Editor'), 'User'),
+            modified: attrToJson($(self).attr('Modified'), 'DateTime'),
+            version: versionCount - index
+          };
+        /** Properly format field based on definition from model */
+        version[fieldDefinition.mappedName] = attrToJson($(self).attr(fieldDefinition.internalName), fieldDefinition.objectType);
+        /** Push to beginning of array */
+        versions.unshift(version);
+      });
+      return versions;
+    }
     return {
       attrToJson: attrToJson,
       lookupToJsonObject: lookupToJsonObject,
+      parseFieldDefinitionXML: parseFieldDefinitionXML,
+      parseFieldVersions: parseFieldVersions,
       processListItems: processListItems,
       updateLocalCache: updateLocalCache,
       xmlToJson: xmlToJson
