@@ -11,7 +11,7 @@
  * @requires angularPoint.apUtilityService
  */
 angular.module('angularPoint')
-    .factory('apListItemFactory', function (apCacheService, apDataService, apUtilityService) {
+    .factory('apListItemFactory', function ($q, apCacheService, apDataService, apUtilityService) {
 
         /**
          * @ngdoc function
