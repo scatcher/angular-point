@@ -2819,10 +2819,11 @@ angular.module('angularPoint').factory('apListFactory', [
  * @requires angularPoint.apUtilityService
  */
 angular.module('angularPoint').factory('apListItemFactory', [
+  '$q',
   'apCacheService',
   'apDataService',
   'apUtilityService',
-  function (apCacheService, apDataService, apUtilityService) {
+  function ($q, apCacheService, apDataService, apUtilityService) {
     /**
          * @ngdoc function
          * @name ListItem
