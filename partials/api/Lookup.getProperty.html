@@ -1,0 +1,31 @@
+<h1><code ng:non-bindable="">getProperty</code>
+<div><span class="hint">service in module <code ng:non-bindable="">Lookup</code>
+</span>
+</div>
+</h1>
+<div><h2 id="description">Description</h2>
+<div class="description"><div class="lookup-getproperty-page"><p>Returns a promise which resolves with the value of a property in the referenced object.</p>
+</div></div>
+<h2 id="usage">Usage</h2>
+<div class="usage"><pre class="prettyprint linenums">getProperty(propertyPath);</pre>
+<h4 id="usage_parameters">Parameters</h4><table class="variables-matrix table table-bordered table-striped"><thead><tr><th>Param</th><th>Type</th><th>Details</th></tr></thead><tbody><tr><td>propertyPath</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="lookup-getproperty-page"><p>The dot separated propertyPath.</p>
+</div></td></tr></tbody></table><h4 id="usage_returns">Returns</h4><table class="variables-matrix"><tr><td><a href="" class="label type-hint type-hint-promise">promise</a></td><td><div class="lookup-getproperty-page"><p>Resolves with the value, or undefined if it doesn&#39;t exists.</p>
+</div></td></tr></table></div>
+<h2 id="example">Example</h2>
+<div class="example"><div class="lookup-getproperty-page"><pre class="prettyprint linenums">
+var project = {
+   title: 'Project 1',
+   location: {
+       lookupId: 5,
+       lookupValue: 'Some Building'
+   }
+};
+
+//To get the location.city
+project.location.getProperty('city').then(function(city) {
+   //Resolves with the city property from the referenced location entity
+
+   });
+</pre>
+</div></div>
+</div>

@@ -1,0 +1,55 @@
+<h1><code ng:non-bindable="">apDecodeService</code>
+<div><span class="hint">service in module <code ng:non-bindable="">angularPoint</code>
+</span>
+</div>
+</h1>
+<div><h2 id="description">Description</h2>
+<div class="description"><div class="angularpoint-apdecodeservice-page"><p>Processes the XML received from SharePoint and converts it into JavaScript objects based on predefined field types.</p>
+</div></div>
+<div class="member method"><h2 id="methods">Methods</h2>
+<ul class="methods"><li><h3 id="methods_attrtojson">attrToJson(value, objectType, [options], options)</h3>
+<div class="attrtojson"><div class="angularpoint-apdecodeservice-page angularpoint-apdecodeservice-attrtojson-page"><p>Converts a SharePoint string representation of a field into the correctly formatted JavaScript version
+based on object type.</p>
+</div><h5 id="methods_attrtojson_parameters">Parameters</h5><table class="variables-matrix table table-bordered table-striped"><thead><tr><th>Param</th><th>Type</th><th>Details</th></tr></thead><tbody><tr><td>value</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="angularpoint-apdecodeservice-page angularpoint-apdecodeservice-attrtojson-page"><p>SharePoint string.</p>
+</div></td></tr><tr><td>objectType</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="angularpoint-apdecodeservice-page angularpoint-apdecodeservice-attrtojson-page"><p>The type based on field definition.</p>
+</div> <p><em>(default: 'Text')</em></p></td></tr><tr><td>[options]</td><td><a href="" class="label type-hint type-hint-object">object</a></td><td><div class="angularpoint-apdecodeservice-page angularpoint-apdecodeservice-attrtojson-page"><p>Options to pass to the object constructor.
+Options:[
+ DateTime,
+ Lookup,
+ User,
+ LookupMulti,
+ UserMulti,
+ Boolean,
+ Integer,
+ Float,
+ Counter,
+ MultiChoice,
+ Currency,
+ Number,
+ Calc,
+ JSON,
+ HTML,
+ Text [Default]
+]</p>
+</div></td></tr><tr><td>options</td><td><a href="" class="label type-hint type-hint-obj">obj</a></td><td><div class="angularpoint-apdecodeservice-page angularpoint-apdecodeservice-attrtojson-page"><p>Reference to the parent list item which can be used by child constructors.</p>
+</div></td></tr></tbody></table><h5 id="methods_attrtojson_returns">Returns</h5><table class="variables-matrix"><tr><td><a href="" class="label type-hint type-hint-object">*</a></td><td><div class="angularpoint-apdecodeservice-page angularpoint-apdecodeservice-attrtojson-page"><p>The formatted JavaScript value based on field type.</p>
+</div></td></tr></table></div>
+</li>
+<li><h3 id="methods_xmltojson">xmlToJson(rows, options)</h3>
+<div class="xmltojson"><div class="angularpoint-apdecodeservice-page angularpoint-apdecodeservice-xmltojson-page"><p>Converts an XML node set to Javascript object array. This is a modified version of the SPServices
+&quot;SPXmlToJson&quot; function.</p>
+</div><h5 id="methods_xmltojson_parameters">Parameters</h5><table class="variables-matrix table table-bordered table-striped"><thead><tr><th>Param</th><th>Type</th><th>Details</th></tr></thead><tbody><tr><td>rows</td><td><a href="" class="label type-hint type-hint-array">array</a></td><td><div class="angularpoint-apdecodeservice-page angularpoint-apdecodeservice-xmltojson-page"><p>[&quot;z:rows&quot;] XML rows that need to be parsed.</p>
+</div></td></tr><tr><td>options</td><td><a href="" class="label type-hint type-hint-object">object</a></td><td><div class="angularpoint-apdecodeservice-page angularpoint-apdecodeservice-xmltojson-page"><p>Options object.</p>
+</div></td></tr><tr><td>options.mapping</td><td><a href="" class="label type-hint type-hint-object">object[]</a></td><td><div class="angularpoint-apdecodeservice-page angularpoint-apdecodeservice-xmltojson-page"><p>[columnName: &quot;mappedName&quot;, objectType: &quot;objectType&quot;]</p>
+</div></td></tr><tr><td>options.includeAllAttrs</td><td><a href="" class="label type-hint type-hint-boolean">boolean</a></td><td><div class="angularpoint-apdecodeservice-page angularpoint-apdecodeservice-xmltojson-page"><p>If true, return all attributes, regardless whether</p>
+</div> <p><em>(default: false)</em></p></td></tr><tr><td>[options.ctor]</td><td><a href="" class="label type-hint type-hint-boolean">boolean</a></td><td><div class="angularpoint-apdecodeservice-page angularpoint-apdecodeservice-xmltojson-page"><p>List item constructor.</p>
+</div></td></tr><tr><td>options.throttle</td><td><a href="" class="label type-hint type-hint-boolean">boolean</a></td><td><div class="angularpoint-apdecodeservice-page angularpoint-apdecodeservice-xmltojson-page"><p>Cut long running conversions into chunks to prevent ui performance
+hit.  The downside is most evergreen browsers can handle it so it could slow them down unnecessarily.</p>
+</div> <p><em>(default: true)</em></p></td></tr><tr><td>options.removeOws</td><td><a href="" class="label type-hint type-hint-boolean">boolean</a></td><td><div class="angularpoint-apdecodeservice-page angularpoint-apdecodeservice-xmltojson-page"><p>Specifically for GetListItems, if true, the leading ows_ will
+be stripped off the field name.</p>
+</div> <p><em>(default: true)</em></p></td></tr></tbody></table><h5 id="methods_xmltojson_returns">Returns</h5><table class="variables-matrix"><tr><td><a href="" class="label type-hint type-hint-array">Array</a></td><td><div class="angularpoint-apdecodeservice-page angularpoint-apdecodeservice-xmltojson-page"><p>An array of JavaScript objects.</p>
+</div></td></tr></table></div>
+</li>
+</ul>
+</div>
+</div>

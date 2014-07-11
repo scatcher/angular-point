@@ -32,6 +32,24 @@ NG_DOCS={
     },
     {
       "section": "api",
+      "id": "angularPoint.apDecodeService",
+      "shortName": "angularPoint.apDecodeService",
+      "type": "service",
+      "moduleName": "angularPoint",
+      "shortDescription": "Processes the XML received from SharePoint and converts it into JavaScript objects based on predefined field types.",
+      "keywords": "angularpoint apdecodeservice api array attributes based boolean browsers calc child chunks constructors conversions converts correctly counter ctor currency cut datetime definition downside evergreen field float formatted function getlistitems handle hit html includeallattrs integer item javascript json leading list long lookup lookupmulti mappedname mapping modified multichoice node number object objects objecttype options ows_ parent parsed pass performance predefined prevent processes received reference removeows representation return rows running service set sharepoint slow spservices spxmltojson string stripped text throttle true type types ui unnecessarily user usermulti version xml"
+    },
+    {
+      "section": "api",
+      "id": "angularPoint.apEncodeService",
+      "shortName": "angularPoint.apEncodeService",
+      "type": "service",
+      "moduleName": "angularPoint",
+      "shortDescription": "Processes JavaScript objects and converts them to a format SharePoint expects.",
+      "keywords": "angularpoint apencodeservice api array attempt convert converts current defined definition definitions delimited doesn entity expects field fielddefinition fielddefinitions fields fieldvalue find format function hand internalname iso8601 item iterate javascript js lastname list ll lookup lookupid lookupvalue mappedname model modified multi multiselectvalue non-readonly objects objecttype offset pairs pass passed prior processes properly properties property readonly save saving select selection service sharepoint someid somevalue spservices stored string submission text timezone title turns typically user valid values"
+    },
+    {
+      "section": "api",
       "id": "angularPoint.apFieldService",
       "shortName": "angularPoint.apFieldService",
       "type": "service",
@@ -389,6 +407,33 @@ NG_DOCS={
       "moduleName": "ListItem",
       "shortDescription": "Helper function that passes the current item to Model.validateEntity",
       "keywords": "api current dataservice displayed evaluation false function helper item listitem messages model optionally params pass passes prevent set toast toastr validateentity validity"
+    },
+    {
+      "section": "api",
+      "id": "Lookup",
+      "shortName": "Lookup",
+      "type": "function",
+      "moduleName": "Lookup",
+      "shortDescription": "Allows for easier distinction when debugging if object type is shown as either Lookup or User.  Also allows us",
+      "keywords": "allows api async create debugging distinction easier entity function item key list lookup lookupid lookupvalue object options parent property propertyname reference referenced request split string type user"
+    },
+    {
+      "section": "api",
+      "id": "Lookup.getEntity",
+      "shortName": "Lookup.getEntity",
+      "type": "function",
+      "moduleName": "Lookup",
+      "shortDescription": "Allows us to create a promise that will resolve with the entity referenced in the lookup whenever that list",
+      "keywords": "allows api building cache create entity full function getentity item list location lookup lookupid lookupvalue object project promise referenced referencing registered resolve resolves title var"
+    },
+    {
+      "section": "api",
+      "id": "Lookup.getProperty",
+      "shortName": "Lookup.getProperty",
+      "type": "function",
+      "moduleName": "Lookup",
+      "shortDescription": "Returns a promise which resolves with the value of a property in the referenced object.",
+      "keywords": "api building city doesn dot entity exists function getproperty location lookup lookupid lookupvalue object project promise property propertypath referenced resolves returns separated title undefined var"
     },
     {
       "section": "api",
