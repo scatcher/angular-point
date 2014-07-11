@@ -32,6 +32,15 @@ NG_DOCS={
     },
     {
       "section": "api",
+      "id": "angularPoint.apConfig",
+      "shortName": "angularPoint.apConfig",
+      "type": "object",
+      "moduleName": "angularPoint",
+      "shortDescription": "Basic config for the application (unique for each environment).  Update to change for your environment.",
+      "keywords": "$urlrouterprovider angular angular-point angularpoint apconfig api application apptitle apsyncservice automatically based basic blocking call calls case change code config configuration constant debug debugenabled default defaulturl dependencies details determines don environment firebase firebaseurl hosted href http indexof initial localhost locally location module myapp myserver object offline optional override pulls reference root routes service set sets site source spservices true update url web window xml"
+    },
+    {
+      "section": "api",
       "id": "angularPoint.apDecodeService",
       "shortName": "angularPoint.apDecodeService",
       "type": "service",

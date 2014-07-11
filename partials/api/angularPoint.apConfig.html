@@ -1,0 +1,43 @@
+<h1><code ng:non-bindable="">apConfig</code>
+<div><span class="hint">service in module <code ng:non-bindable="">angularPoint</code>
+</span>
+</div>
+</h1>
+<div><h2 id="description">Description</h2>
+<div class="description"><div class="angularpoint-apconfig-page"><p>Basic config for the application (unique for each environment).  Update to change for your environment.</p>
+</div></div>
+<h2 id="usage">Usage</h2>
+<div class="usage"><pre class="prettyprint linenums">apConfig(appTitle, debugEnabled, defaultUrl, [firebaseUrl], offline);</pre>
+<h4 id="usage_parameters">Parameters</h4><table class="variables-matrix table table-bordered table-striped"><thead><tr><th>Param</th><th>Type</th><th>Details</th></tr></thead><tbody><tr><td>appTitle</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="angularpoint-apconfig-page"><p>Name of the application in case you need to reference.</p>
+</div></td></tr><tr><td>debugEnabled</td><td><a href="" class="label type-hint type-hint-boolean">boolean</a></td><td><div class="angularpoint-apconfig-page"><p>Determines if we should show debug code.</p>
+</div></td></tr><tr><td>defaultUrl</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="angularpoint-apconfig-page"><p>Automatically sets the defaultUrl for web service calls so we don&#39;t need to make the
+initial blocking call by SPServices.</p>
+</div></td></tr><tr><td>[firebaseUrl]</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="angularpoint-apconfig-page"><p>Necessary if you&#39;re using apSyncService.  Look there for more details.</p>
+</div></td></tr><tr><td>offline</td><td><a href="" class="label type-hint type-hint-boolean">boolean</a></td><td><div class="angularpoint-apconfig-page"><p>Automatically set based on the URL of the site.  Pulls offline XML when hosted locally.</p>
+</div></td></tr></tbody></table></div>
+<h2 id="example">Example</h2>
+<div class="example"><div class="angularpoint-apconfig-page"><p><h6 id="example_default-configuration">Default Configuration</h6>
+<pre class="prettyprint linenums">
+.constant('apConfig', {
+    appTitle: 'Angular-Point',
+    debugEnabled: true,
+    firebaseURL: "The optional url of your firebase source",
+    offline: window.location.href.indexOf('localhost') &gt; -1 ||
+        window.location.href.indexOf('http://0.') &gt; -1 ||
+        window.location.href.indexOf('http://10.') &gt; -1 ||
+        window.location.href.indexOf('http://192.') &gt; -1
+})
+</pre>
+<p><h6 id="example_to-override">To Override</h6>
+<pre class="prettyprint linenums">
+angular.module('MyApp', ['my dependencies'])
+     .config(function ($stateProvider, $urlRouterProvider) {
+         //My routes
+     })
+     .run(function(apConfig) {
+         //To set the default site root
+         apConfig.defaultUrl = '//sharepoint.myserver.com/siteRoot';
+     });
+</pre>
+</div></div>
+</div>
