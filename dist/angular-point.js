@@ -1042,6 +1042,11 @@ angular.module('angularPoint').service('apDataService', [
  * @name angularPoint.apDecodeService
  * @description
  * Processes the XML received from SharePoint and converts it into JavaScript objects based on predefined field types.
+ *
+ * @requires angularPoint.apUtilityService
+ * @requires angularPoint.apQueueService
+ * @requires angularPoint.apConfig
+ * @requires angularPoint.apCacheService
  */
 angular.module('angularPoint').service('apDecodeService', [
   '$q',
@@ -1519,6 +1524,9 @@ angular.module('angularPoint').service('apDecodeService', [
  * @name angularPoint.apEncodeService
  * @description
  * Processes JavaScript objects and converts them to a format SharePoint expects.
+ *
+ * @requires angularPoint.apConfig
+ * @requires angularPoint.apUtilityService
  */
 angular.module('angularPoint').service('apEncodeService', [
   'apConfig',
@@ -2459,6 +2467,8 @@ angular.module('angularPoint').service('apQueueService', function () {
  * @name angularPoint.apUtilityService
  * @description
  * Provides shared utility functionality across the application.
+ *
+ * @requires angularPoint.apConfig
  */
 angular.module('angularPoint').service('apUtilityService', [
   '$q',
@@ -2701,6 +2711,9 @@ angular.module('angularPoint').service('apUtilityService', [
  * @name angularPoint.apListFactory
  * @description
  * Exposes the List prototype and a constructor to instantiate a new List.
+ *
+ * @requires angularPoint.apConfig
+ * @requires angularPoint.apFieldService
  */
 angular.module('angularPoint').factory('apListFactory', [
   'apConfig',
@@ -2797,6 +2810,10 @@ angular.module('angularPoint').factory('apListFactory', [
  * @name angularPoint.apListItemFactory
  * @description
  * Exposes the ListItem prototype and a constructor to instantiate a new ListItem.
+ *
+ * @requires angularPoint.apCacheService
+ * @requires angularPoint.apDataService
+ * @requires angularPoint.apUtilityService
  */
 angular.module('angularPoint').factory('apListItemFactory', [
   'apCacheService',
@@ -3284,6 +3301,14 @@ angular.module('angularPoint').factory('apListItemFactory', [
  * @name angularPoint.apModelFactory
  * @description
  * Exposes the model prototype and a constructor to instantiate a new Model.
+ *
+ * @requires angularPoint.apModalService
+ * @requires angularPoint.apCacheService
+ * @requires angularPoint.apDataService
+ * @requires angularPoint.apListFactory
+ * @requires angularPoint.apListItemFactory
+ * @requires angularPoint.apQueryFactory
+ * @requires angularPoint.apUtilityService
  */
 angular.module('angularPoint').factory('apModelFactory', [
   'apModalService',
@@ -4143,6 +4168,11 @@ angular.module('angularPoint').factory('apModelFactory', [
  * @name angularPoint.apQueryFactory
  * @description
  * Exposes the Query prototype and a constructor to instantiate a new Query.
+ *
+ * @requires angularPoint.apModalService
+ * @requires angularPoint.apCacheService
+ * @requires angularPoint.apDataService
+ * @requires angularPoint.apConfig
  */
 angular.module('angularPoint').factory('apQueryFactory', [
   'apModalService',

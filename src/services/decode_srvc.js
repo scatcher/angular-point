@@ -5,6 +5,11 @@
  * @name angularPoint.apDecodeService
  * @description
  * Processes the XML received from SharePoint and converts it into JavaScript objects based on predefined field types.
+ *
+ * @requires angularPoint.apUtilityService
+ * @requires angularPoint.apQueueService
+ * @requires angularPoint.apConfig
+ * @requires angularPoint.apCacheService
  */
 angular.module('angularPoint')
     .service('apDecodeService', function ($q, apUtilityService, apQueueService, apConfig, apCacheService) {

@@ -5,6 +5,11 @@
  * @name angularPoint.apQueryFactory
  * @description
  * Exposes the Query prototype and a constructor to instantiate a new Query.
+ *
+ * @requires angularPoint.apModalService
+ * @requires angularPoint.apCacheService
+ * @requires angularPoint.apDataService
+ * @requires angularPoint.apConfig
  */
 angular.module('angularPoint')
     .factory('apQueryFactory', function (apModalService, apCacheService, apDataService, apConfig, $q) {

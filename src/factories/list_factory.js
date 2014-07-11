@@ -5,6 +5,9 @@
  * @name angularPoint.apListFactory
  * @description
  * Exposes the List prototype and a constructor to instantiate a new List.
+ *
+ * @requires angularPoint.apConfig
+ * @requires angularPoint.apFieldService
  */
 angular.module('angularPoint')
     .factory('apListFactory', function (apConfig, apFieldService) {

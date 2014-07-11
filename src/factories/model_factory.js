@@ -5,6 +5,14 @@
  * @name angularPoint.apModelFactory
  * @description
  * Exposes the model prototype and a constructor to instantiate a new Model.
+ *
+ * @requires angularPoint.apModalService
+ * @requires angularPoint.apCacheService
+ * @requires angularPoint.apDataService
+ * @requires angularPoint.apListFactory
+ * @requires angularPoint.apListItemFactory
+ * @requires angularPoint.apQueryFactory
+ * @requires angularPoint.apUtilityService
  */
 angular.module('angularPoint')
     .factory('apModelFactory', function (apModalService, apCacheService, apDataService, apListFactory, apListItemFactory, apQueryFactory, apUtilityService, $q, toastr) {

@@ -5,6 +5,9 @@
  * @name angularPoint.apEncodeService
  * @description
  * Processes JavaScript objects and converts them to a format SharePoint expects.
+ *
+ * @requires angularPoint.apConfig
+ * @requires angularPoint.apUtilityService
  */
 angular.module('angularPoint')
     .service('apEncodeService', function (apConfig, apUtilityService) {

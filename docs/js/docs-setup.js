@@ -46,7 +46,7 @@ NG_DOCS={
       "type": "service",
       "moduleName": "angularPoint",
       "shortDescription": "Processes the XML received from SharePoint and converts it into JavaScript objects based on predefined field types.",
-      "keywords": "allow allows angularpoint apdecodeservice api array attributes based batch boolean browsers cache calc call child chunks configuration constructors conversions converts correctly counter ctor currency cut data datetime definition definitions don downside elements entities entity evergreen exist factory field filter find float formatted function getcache getlistitems handle hit html includeallattrs integer item items iterate javascript json large leading list lists local localcache long lookup lookupmulti mappedname mapping maps merged mode model modified multichoice node number object objects objecttype optional optionally options ows_ parent parsed pass performance post predefined prevent processed processes processing promise provided query received reference removeows replace replaced representation resolved resolves responsexml return returning returns rows running server service set sharepoint slow slowdowns spservices spxmltojson store stored string stripped target text throttle true type types typically ui unnecessarily update updated updating user usermulti version web xml"
+      "keywords": "allow allows angularpoint apcacheservice apconfig apdecodeservice api apqueueservice aputilityservice array attributes based batch boolean browsers cache calc call child chunks configuration constructors conversions converts correctly counter ctor currency cut data datetime definition definitions don downside elements entities entity evergreen exist factory field filter find float formatted function getcache getlistitems handle hit html includeallattrs integer item items iterate javascript json large leading list lists local localcache long lookup lookupmulti mappedname mapping maps merged mode model modified multichoice node number object objects objecttype optional optionally options ows_ parent parsed pass performance post predefined prevent processed processes processing promise provided query received reference removeows replace replaced representation resolved resolves responsexml return returning returns rows running server service set sharepoint slow slowdowns spservices spxmltojson store stored string stripped target text throttle true type types typically ui unnecessarily update updated updating user usermulti version web xml"
     },
     {
       "section": "api",
@@ -55,7 +55,7 @@ NG_DOCS={
       "type": "service",
       "moduleName": "angularPoint",
       "shortDescription": "Processes JavaScript objects and converts them to a format SharePoint expects.",
-      "keywords": "angularpoint apencodeservice api array attempt convert converts current defined definition definitions delimited doesn entity expects field fielddefinition fielddefinitions fields fieldvalue find format function hand internalname iso8601 item iterate javascript js lastname list ll lookup lookupid lookupvalue mappedname model modified multi multiselectvalue non-readonly objects objecttype offset pairs pass passed prior processes properly properties property readonly save saving select selection service sharepoint someid somevalue spservices stored string submission text timezone title turns typically user valid values"
+      "keywords": "angularpoint apconfig apencodeservice api aputilityservice array attempt convert converts current defined definition definitions delimited doesn entity expects field fielddefinition fielddefinitions fields fieldvalue find format function hand internalname iso8601 item iterate javascript js lastname list ll lookup lookupid lookupvalue mappedname model modified multi multiselectvalue non-readonly objects objecttype offset pairs pass passed prior processes properly properties property readonly save saving select selection service sharepoint someid somevalue spservices stored string submission text timezone title turns typically user valid values"
     },
     {
       "section": "api",
@@ -73,7 +73,7 @@ NG_DOCS={
       "type": "object",
       "moduleName": "angularPoint",
       "shortDescription": "Exposes the List prototype and a constructor to instantiate a new List.",
-      "keywords": "angularpoint api aplistfactory config exposes function instantiate instantiates list object options prototype returns"
+      "keywords": "angularpoint apconfig apfieldservice api aplistfactory config exposes function instantiate instantiates list object options prototype returns"
     },
     {
       "section": "api",
@@ -82,7 +82,7 @@ NG_DOCS={
       "type": "object",
       "moduleName": "angularPoint",
       "shortDescription": "Exposes the ListItem prototype and a constructor to instantiate a new ListItem.",
-      "keywords": "allow angularpoint api aplistitemfactory event exposes factory function inherit instantiate instantiates isn listitem object prototype returns standard"
+      "keywords": "allow angularpoint apcacheservice apdataservice api aplistitemfactory aputilityservice event exposes factory function inherit instantiate instantiates isn listitem object prototype returns standard"
     },
     {
       "section": "api",
@@ -100,7 +100,7 @@ NG_DOCS={
       "type": "object",
       "moduleName": "angularPoint",
       "shortDescription": "Exposes the model prototype and a constructor to instantiate a new Model.",
-      "keywords": "angularpoint api apmodelfactory array assignedto config create customfields description designer dev estimatedeffort exposes factory false field file folder function guid instantiate instantiates integer item list mappedname mapping model object objects objecttype offline options percentcomplete priority properties property prototype readonly requestedby returns sharepoint spaces status task tasks text title user var xml"
+      "keywords": "angularpoint apcacheservice apdataservice api aplistfactory aplistitemfactory apmodalservice apmodelfactory apqueryfactory aputilityservice array assignedto config create customfields description designer dev estimatedeffort exposes factory false field file folder function guid instantiate instantiates integer item list mappedname mapping model object objects objecttype offline options percentcomplete priority properties property prototype readonly requestedby returns sharepoint spaces status task tasks text title user var xml"
     },
     {
       "section": "api",
@@ -109,7 +109,7 @@ NG_DOCS={
       "type": "object",
       "moduleName": "angularPoint",
       "shortDescription": "Exposes the Query prototype and a constructor to instantiate a new Query.",
-      "keywords": "angularpoint api apqueryfactory config exposes function instantiate instantiates object options prototype query returns"
+      "keywords": "angularpoint apcacheservice apconfig apdataservice api apmodalservice apqueryfactory config exposes function instantiate instantiates object options prototype query returns"
     },
     {
       "section": "api",
@@ -127,7 +127,7 @@ NG_DOCS={
       "type": "service",
       "moduleName": "angularPoint",
       "shortDescription": "Provides shared utility functionality across the application.",
-      "keywords": "$q angularpoint api application aputilityservice array article assigned based batches batchprocess bit break browser buildprojectsummary change chunks codeplex comparison complete context convert converts create current cuts dates datetocheck defaults defer deferred delay desired determine directly don easier easily enddate entities evaluate evaluates event example executed extendprojectsummary fall falls false fictitious firebase flags formatted function functionality getalllistitems group hang http identifying int integer intensive ints item items iterate iterating javascript js length level list listitem lock long mask maximum milliseconds model module nczonline net notify number object online pausing performing permission permissionsmask permmask portion problem process processed processing projectmodel projects projectsmodel promise property provided range reference resolve resolvepermissions return rights running service set shared site somelistitem specifies startdate starting stuff sufficient summary summaryobject sync thread time typically ui unsigned usable user users utility var wss yyyymmdd"
+      "keywords": "$q angularpoint apconfig api application aputilityservice array article assigned based batches batchprocess bit break browser buildprojectsummary change chunks codeplex comparison complete context convert converts create current cuts dates datetocheck defaults defer deferred delay desired determine directly don easier easily enddate entities evaluate evaluates event example executed extendprojectsummary fall falls false fictitious firebase flags formatted function functionality getalllistitems group hang http identifying int integer intensive ints item items iterate iterating javascript js length level list listitem lock long mask maximum milliseconds model module nczonline net notify number object online pausing performing permission permissionsmask permmask portion problem process processed processing projectmodel projects projectsmodel promise property provided range reference resolve resolvepermissions return rights running service set shared site somelistitem specifies startdate starting stuff sufficient summary summaryobject sync thread time typically ui unsigned usable user users utility var wss yyyymmdd"
     },
     {
       "section": "api",

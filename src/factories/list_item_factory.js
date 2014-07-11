@@ -5,6 +5,10 @@
  * @name angularPoint.apListItemFactory
  * @description
  * Exposes the ListItem prototype and a constructor to instantiate a new ListItem.
+ *
+ * @requires angularPoint.apCacheService
+ * @requires angularPoint.apDataService
+ * @requires angularPoint.apUtilityService
  */
 angular.module('angularPoint')
     .factory('apListItemFactory', function (apCacheService, apDataService, apUtilityService) {

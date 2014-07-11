@@ -5,6 +5,8 @@
  * @name angularPoint.apUtilityService
  * @description
  * Provides shared utility functionality across the application.
+ *
+ * @requires angularPoint.apConfig
  */
 angular.module('angularPoint')
     .service('apUtilityService', function ($q, apConfig, $log) {
