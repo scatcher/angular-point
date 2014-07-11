@@ -12,121 +12,16 @@
  *  @requires angularPoint.apQueueService
  *  @requires angularPoint.apConfig
  *  @requires angularPoint.apUtilityService
- *  @requires angularPoint.apCacheService
  *  @requires angularPoint.apFieldService
  */
 angular.module('angularPoint')
-    .service('apDataService', function ($q, $timeout, apQueueService, apConfig, apUtilityService, apCacheService, apFieldService, toastr) {
+    .service('apDataService', function ($q, $timeout, apQueueService, apConfig, apUtilityService, apDecodeService, apEncodeService, apFieldService, toastr) {
         var dataService = {};
 
         /** Flag to use cached XML files from the src/dev folder */
         var offline = apConfig.offline;
         /** Allows us to make code easier to read */
         var online = !offline;
-
-        /**
-         * @ngdoc function
-         * @name apDataService.processListItems
-         * @description
-         * Post processing of data after returning list items from server.  Returns a promise that resolves with
-         * the processed entities.  Promise allows us to batch conversions of large lists to prevent ui slowdowns.
-         * @param {object} model Reference to allow updating of model.
-         * @param {xml} responseXML Resolved promise from SPServices web service call.
-         * @param {object} [options] Optional configuration object.
-         * @param {function} [options.factory=model.factory] Constructor function typically stored on the model.
-         * @param {string} [options.filter='z:row'] XML filter string used to find the elements to iterate over.
-         * @param {Array} [options.mapping=model.list.mapping] Field definitions, typically stored on the model.
-         * @param {string} [options.mode='update'] Options for what to do with local list data array in
-         * store ['replace', 'update', 'return']
-         * @param {Array} [options.target=model.getCache()] Optionally pass in array to update after processing.
-         * @returns {object} Promise
-         */
-        var processListItems = function (model, responseXML, options) {
-            var deferred = $q.defer();
-
-            var defaults = {
-                /** Default list item constructor */
-                ctor: function (item) {
-                    /** Allow us to reference the originating query that generated this object */
-                    item.getQuery = function () {
-                        return opts.getQuery();
-                    };
-                    /** Create Reference to the containing array */
-                    item.getContainer = function () {
-                        return opts.target;
-                    };
-                    var listItem = new model.factory(item);
-
-                    /** Register in global application entity cache */
-                    apCacheService.registerEntity(listItem);
-                    return listItem;
-                },
-                factory: model.factory,
-                filter: 'z:row',
-                mapping: model.list.mapping,
-                mode: 'update',
-                target: model.getCache()
-            };
-
-            var opts = _.extend({}, defaults, options);
-
-            /** Map returned XML to JS objects based on mapping from model */
-            var filteredNodes = $(responseXML).SPFilterNode(opts.filter);
-
-            apUtilityService.xmlToJson(filteredNodes, opts).then(function (entities) {
-                if (opts.mode === 'replace') {
-                    /** Replace any existing data */
-                    opts.target = entities;
-                    if (offline) {
-                        console.log(model.list.title + ' Replaced with ' + opts.target.length + ' new records.');
-                    }
-                } else if (opts.mode === 'update') {
-                    var updateStats = updateLocalCache(opts.target, entities);
-                    if (offline) {
-                        console.log(model.list.title + ' Changes (Create: ' + updateStats.created +
-                            ' | Update: ' + updateStats.updated + ')');
-                    }
-                }
-                apQueueService.decrease();
-                deferred.resolve(entities);
-            });
-
-            return deferred.promise;
-
-        };
-
-        /**
-         * @ngdoc function
-         * @name apDataService.updateLocalCache
-         * @description
-         * Maps a cache by entity id.  All provided entities are then either added if they don't already exist
-         * or replaced if they do.
-         * @param {object[]} localCache The cache for a given query.
-         * @param {object[]} entities All entities that should be merged into the cache.
-         * @returns {object} {created: number, updated: number}
-         */
-        function updateLocalCache(localCache, entities) {
-            var updateCount = 0,
-                createCount = 0;
-
-            /** Map to only run through target list once and speed up subsequent lookups */
-            var idMap = _.pluck(localCache, 'id');
-
-            /** Update any existing items stored in the cache */
-            _.each(entities, function (entity) {
-                if (idMap.indexOf(entity.id) === -1) {
-                    /** No match found, add to target and update map */
-                    localCache.push(entity);
-                    idMap.push(entity.id);
-                    createCount++;
-                } else {
-                    /** Replace local item with updated value */
-                    localCache[idMap.indexOf(entity.id)] = entity;
-                    updateCount++;
-                }
-            });
-            return {created: createCount, updated: updateCount};
-        }
 
         /**
          * @ngdoc function
@@ -147,16 +42,16 @@ angular.module('angularPoint')
 
                 /** Parse the xml and create a representation of the version as a js object */
                 var version = {
-                    editor: apUtilityService.attrToJson($(self).attr('Editor'), 'User'),
+                    editor: apDecodeService.attrToJson($(self).attr('Editor'), 'User'),
                     /** Turn the SharePoint formatted date into a valid date object */
-                    modified: apUtilityService.attrToJson($(self).attr('Modified'), 'DateTime'),
+                    modified: apDecodeService.attrToJson($(self).attr('Modified'), 'DateTime'),
                     /** Returns records in desc order so compute the version number from index */
                     version: versionCount - index
                 };
 
                 /** Properly format field based on definition from model */
                 version[fieldDefinition.mappedName] =
-                    apUtilityService.attrToJson($(self).attr(fieldDefinition.internalName), fieldDefinition.objectType);
+                    apDecodeService.attrToJson($(self).attr(fieldDefinition.internalName), fieldDefinition.objectType);
 
                 /** Push to beginning of array */
                 versions.unshift(version);
@@ -466,21 +361,21 @@ angular.module('angularPoint')
          * @param {string} options.listItemId ID of the list item with the attachment.
          * @param {string} options.url Requires the URL for the attachment we want to delete.
          * @param {string} options.listName Best option is the GUID of the list.
-         <pre>'{37388A98-534C-4A28-BFFA-22429276897B}'</pre>
+         * <pre>'{37388A98-534C-4A28-BFFA-22429276897B}'</pre>
          *
          * @returns {object} Promise which resolves with the updated attachment collection.
          *
          * @example
-         <pre>
-         ListItem.prototype.deleteAttachment = function (url) {
-            var listItem = this;
-            return apDataService.deleteAttachment({
-                listItemId: listItem.id,
-                url: url,
-                listName: listItem.getModel().list.guid
-            });
-         };
-         </pre>
+         * <pre>
+         * ListItem.prototype.deleteAttachment = function (url) {
+         *    var listItem = this;
+         *    return apDataService.deleteAttachment({
+         *        listItemId: listItem.id,
+         *        url: url,
+         *        listName: listItem.getModel().list.guid
+         *    });
+         * };
+         * </pre>
          */
         var deleteAttachment = function (options) {
             var defaults = {
@@ -528,7 +423,7 @@ angular.module('angularPoint')
          * @param {object} options Configuration parameters.
          * @param {string} options.listName GUID of the list.
          * @param {string} [options.viewName] Formatted as a GUID, if not provided
-         <pre>'{37388A98-534C-4A28-BFFA-22429276897B}'</pre>
+         * <pre>'{37388A98-534C-4A28-BFFA-22429276897B}'</pre>
          * @param {string} [options.webURL] Can override the default web url if desired.
          * @returns {object} promise
          */
@@ -674,7 +569,7 @@ angular.module('angularPoint')
                         processDeletionsSinceToken(responseXML, opts.target);
                     }
                     /** Convert the XML into JS */
-                    processListItems(model, responseXML, opts)
+                    apDecodeService.processListItems(model, responseXML, opts)
                         .then(function (entities) {
                             /** Set date time to allow for time based updates */
                             query.lastRun = new Date();
@@ -698,7 +593,7 @@ angular.module('angularPoint')
                      *  Get offline data stored in the src/dev folder
                      */
                     $.ajax(offlineData).then(function (responseXML) {
-                        processListItems(model, responseXML, opts)
+                        apDecodeService.processListItems(model, responseXML, opts)
                             .then(function (entities) {
                                 /** Set date time to allow for time based updates */
                                 query.lastRun = new Date();
@@ -803,92 +698,7 @@ angular.module('angularPoint')
             }
         }
 
-        /**
-         * @ngdoc function
-         * @name apDataService.createValuePair
-         * @description
-         * Uses a field definition from a model to properly format a value for submission to SharePoint.  Typically
-         * used prior to saving a list item, we iterate over each of the non-readonly properties defined in the model
-         * for a list item and convert those value into value pairs that we can then hand off to SPServices.
-         * @param {object} fieldDefinition The field definition, typically defined in the model.
-         <pre>{ internalName: "Title", objectType: "Text", mappedName: "lastName", readOnly:false }</pre>
-         * @param {*} value Current field value.
-         * @returns {Array} [fieldName, fieldValue]
-         */
-        var createValuePair = function (fieldDefinition, value) {
-            var valuePair = [];
-            var internalName = fieldDefinition.internalName;
 
-            if (!value || value === '') {
-                /** Create empty value pair if blank or undefined */
-                valuePair = [internalName, ''];
-            } else {
-                switch (fieldDefinition.objectType) {
-                    case 'Lookup':
-                    case 'User':
-                        if (!value.lookupId) {
-                            valuePair = [internalName, ''];
-                        } else {
-                            valuePair = [internalName, value.lookupId];
-                        }
-                        break;
-                    case 'LookupMulti':
-                    case 'UserMulti':
-                        var stringifiedArray = apUtilityService.stringifySharePointMultiSelect(value, 'lookupId');
-                        valuePair = [fieldDefinition.internalName, stringifiedArray];
-                        break;
-                    case 'MultiChoice':
-                        valuePair = [fieldDefinition.internalName, apUtilityService.choiceMultiToString(value)];
-                        break;
-                    case 'Boolean':
-                        valuePair = [internalName, value ? 1 : 0];
-                        break;
-                    case 'DateTime':
-                        if (_.isDate(value)) {
-                            //A string date in ISO8601 format, e.g., '2013-05-08T01:20:29Z-05:00'
-                            valuePair = [internalName, apUtilityService.stringifySharePointDate(value)];
-                        } else {
-                            valuePair = [internalName, ''];
-                        }
-                        break;
-                    case 'Note':
-                    case 'HTML':
-                        valuePair = [internalName, _.escape(value)];
-                        break;
-                    case 'JSON':
-                        valuePair = [internalName, angular.toJson(value)];
-                        break;
-                    default:
-                        valuePair = [internalName, value];
-                }
-                if (offline) {
-                    console.log('{' + fieldDefinition.objectType + '} ' + valuePair);
-                }
-            }
-            return valuePair;
-        };
-
-        /**
-         * @ngdoc function
-         * @name apDataService.generateValuePairs
-         * @description
-         * Typically used to iterate over the non-readonly field definitions stored in a model and convert a
-         * given list item entity into value pairs that we can pass to SPServices for saving.
-         * @param {Array} fieldDefinitions Definitions from the model.
-         * @param {object} item list item that we'll attempt to iterate over to find the properties that we need to
-         * save it to SharePoint.
-         * @returns {Array[]} Value pairs of all non-readonly fields. [[fieldName, fieldValue]]
-         */
-        function generateValuePairs(fieldDefinitions, item) {
-            var pairs = [];
-            _.each(fieldDefinitions, function (field) {
-                /** Check to see if item contains data for this field */
-                if (_.has(item, field.mappedName)) {
-                    pairs.push(createValuePair(field, item[field.mappedName]));
-                }
-            });
-            return pairs;
-        }
 
         /**
          * @ngdoc function
@@ -907,9 +717,9 @@ angular.module('angularPoint')
             /** Search through each of the queries and update any occurrence of this entity */
             _.each(model.queries, function (query) {
                 /** Process all query caches except the one originally used to retrieve entity because
-                 * that is automatically updated by "processListItems". */
+                 * that is automatically updated by "apDecodeService.processListItems". */
                 if (query != exemptQuery) {
-                    updateLocalCache(query.cache, [entity]);
+                    apDecodeService.updateLocalCache(query.cache, [entity]);
                 }
             });
             return queriesUpdated;
@@ -948,7 +758,7 @@ angular.module('angularPoint')
 
             if (opts.buildValuePairs === true) {
                 var editableFields = _.where(model.list.fields, {readOnly: false});
-                opts.valuePairs = generateValuePairs(editableFields, entity);
+                opts.valuePairs = apEncodeService.generateValuePairs(editableFields, entity);
             }
             var payload = {
                 operation: 'UpdateListItems',
@@ -972,7 +782,7 @@ angular.module('angularPoint')
 
                 webServiceCall.then(function () {
                     /** Success */
-                    processListItems(model, webServiceCall.responseXML, opts).then(function (output) {
+                    apDecodeService.processListItems(model, webServiceCall.responseXML, opts).then(function (output) {
                         var updatedEntity = output[0];
 
                         /** Optionally search through each cache on the model and update any other references to this entity */
@@ -1122,16 +932,13 @@ angular.module('angularPoint')
         /** Exposed functionality */
         _.extend(dataService, {
             addUpdateItemModel: addUpdateItemModel,
-            createValuePair: createValuePair,
             deleteAttachment: deleteAttachment,
             deleteItemModel: deleteItemModel,
-            generateValuePairs: generateValuePairs,
             getCollection: getCollection,
             getFieldVersionHistory: getFieldVersionHistory,
             getList: getList,
             getView: getView,
             executeQuery: executeQuery,
-            processListItems: processListItems,
             serviceWrapper: serviceWrapper
         });
 

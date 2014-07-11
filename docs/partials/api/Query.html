@@ -6,15 +6,15 @@
 <div class="description"><div class="query-page"><p>Primary constructor that all queries inherit from.</p>
 </div></div>
 <h2 id="usage">Usage</h2>
-<div class="usage"><pre class="prettyprint linenums">Query(queryOptions, model);</pre>
-<h4 id="usage_parameters">Parameters</h4><table class="variables-matrix table table-bordered table-striped"><thead><tr><th>Param</th><th>Type</th><th>Details</th></tr></thead><tbody><tr><td>queryOptions</td><td><a href="" class="label type-hint type-hint-object">object</a></td><td><div class="query-page"><p>Initialization parameters.</p>
-</div></td></tr><tr><td>queryOptions.operation</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="query-page"><p>Optionally use &#39;GetListItems&#39; to
+<div class="usage"><pre class="prettyprint linenums">Query(config, model);</pre>
+<h4 id="usage_parameters">Parameters</h4><table class="variables-matrix table table-bordered table-striped"><thead><tr><th>Param</th><th>Type</th><th>Details</th></tr></thead><tbody><tr><td>config</td><td><a href="" class="label type-hint type-hint-object">object</a></td><td><div class="query-page"><p>Initialization parameters.</p>
+</div></td></tr><tr><td>[config.operation</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="query-page"><p>= GetListItemChangesSinceToken] Optionally use &#39;GetListItems&#39; to
 receive a more efficient response, just don&#39;t have the ability to check for changes since the last time
 the query was called.</p>
-</div> <p><em>(default: GetListItemChangesSinceToken)</em></p></td></tr><tr><td>queryOptions.cacheXML</td><td><a href="" class="label type-hint type-hint-boolean">boolean</a></td><td><div class="query-page"><p>Set to false if you want a fresh request.</p>
-</div> <p><em>(default: true)</em></p></td></tr><tr><td>queryOptions.query</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="query-page"><p>CAML query passed to SharePoint to control
+</div></td></tr><tr><td>config.cacheXML</td><td><a href="" class="label type-hint type-hint-boolean">boolean</a></td><td><div class="query-page"><p>Set to false if you want a fresh request.</p>
+</div> <p><em>(default: true)</em></p></td></tr><tr><td>config.query</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="query-page"><p>CAML query passed to SharePoint to control
 the data SharePoint returns.</p>
-</div> <p><em>(default: Ordered ascending by ID)</em></p></td></tr><tr><td>[queryOptions.queryOptions]</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="query-page"><p>SharePoint options.
+</div> <p><em>(default: Ordered ascending by ID)</em></p></td></tr><tr><td>[config.queryOptions]</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="query-page"><p>SharePoint options.
 <pre class="prettyprint linenums">
 //Default
 queryOptions: '' +

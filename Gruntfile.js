@@ -134,8 +134,8 @@ module.exports = function (grunt) {
             options: {
                 dest: 'docs',
                 scripts: [
-                    '//ajax.googleapis.com/ajax/libs/angularjs/1.2.16/angular.js',
-                    '//ajax.googleapis.com/ajax/libs/angularjs/1.2.16/angular-animate.min.js'
+                    '//ajax.googleapis.com/ajax/libs/angularjs/1.2.19/angular.js',
+                    '//ajax.googleapis.com/ajax/libs/angularjs/1.2.19/angular-animate.min.js'
                 ],
                 html5Mode: false,
                 analytics: {
@@ -146,13 +146,8 @@ module.exports = function (grunt) {
                 title: 'Angular-Point API Docs'
             },
             api: [
-                '<%= config.services %>/modal_srvc.js',
-                '<%= config.services %>/model_srvc.js',
-                '<%= config.services %>/data_srvc.js',
-                '<%= config.services %>/queue_srvc.js',
-                '<%= config.services %>/utility_srvc.js',
-                '<%= config.services %>/cache_srvc.js',
-                '<%= config.services %>/field_srvc.js',
+                '<%= config.src %>/app.js',
+                '<%= config.services %>/*.js',
                 '<%= config.factories %>/*.js'
             ]
 //            model: {

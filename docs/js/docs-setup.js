@@ -32,6 +32,33 @@ NG_DOCS={
     },
     {
       "section": "api",
+      "id": "angularPoint.apConfig",
+      "shortName": "angularPoint.apConfig",
+      "type": "object",
+      "moduleName": "angularPoint",
+      "shortDescription": "Basic config for the application (unique for each environment).  Update to change for your environment.",
+      "keywords": "$urlrouterprovider angular angular-point angularpoint apconfig api application apptitle apsyncservice automatically based basic blocking call calls case change code config configuration constant debug debugenabled default defaulturl dependencies details determines don environment firebase firebaseurl hosted href http indexof initial localhost locally location module myapp myserver object offline optional override pulls reference root routes service set sets site source spservices true update url web window xml"
+    },
+    {
+      "section": "api",
+      "id": "angularPoint.apDecodeService",
+      "shortName": "angularPoint.apDecodeService",
+      "type": "service",
+      "moduleName": "angularPoint",
+      "shortDescription": "Processes the XML received from SharePoint and converts it into JavaScript objects based on predefined field types.",
+      "keywords": "allow allows angularpoint apdecodeservice api array attributes based batch boolean browsers cache calc call child chunks configuration constructors conversions converts correctly counter ctor currency cut data datetime definition definitions don downside elements entities entity evergreen exist factory field filter find float formatted function getcache getlistitems handle hit html includeallattrs integer item items iterate javascript json large leading list lists local localcache long lookup lookupmulti mappedname mapping maps merged mode model modified multichoice node number object objects objecttype optional optionally options ows_ parent parsed pass performance post predefined prevent processed processes processing promise provided query received reference removeows replace replaced representation resolved resolves responsexml return returning returns rows running server service set sharepoint slow slowdowns spservices spxmltojson store stored string stripped target text throttle true type types typically ui unnecessarily update updated updating user usermulti version web xml"
+    },
+    {
+      "section": "api",
+      "id": "angularPoint.apEncodeService",
+      "shortName": "angularPoint.apEncodeService",
+      "type": "service",
+      "moduleName": "angularPoint",
+      "shortDescription": "Processes JavaScript objects and converts them to a format SharePoint expects.",
+      "keywords": "angularpoint apencodeservice api array attempt convert converts current defined definition definitions delimited doesn entity expects field fielddefinition fielddefinitions fields fieldvalue find format function hand internalname iso8601 item iterate javascript js lastname list ll lookup lookupid lookupvalue mappedname model modified multi multiselectvalue non-readonly objects objecttype offset pairs pass passed prior processes properly properties property readonly save saving select selection service sharepoint someid somevalue spservices stored string submission text timezone title turns typically user valid values"
+    },
+    {
+      "section": "api",
       "id": "angularPoint.apFieldService",
       "shortName": "angularPoint.apFieldService",
       "type": "service",
@@ -100,7 +127,7 @@ NG_DOCS={
       "type": "service",
       "moduleName": "angularPoint",
       "shortDescription": "Provides shared utility functionality across the application.",
-      "keywords": "$q angularpoint api application aputilityservice array article assigned attributes based batches batchprocess bit boolean break browser browsers buildprojectsummary calc change child chunks codeplex comparison complete constructors context conversions convert converts correctly counter create ctor currency current cut cuts dates datetime datetocheck defaults defer deferred definition delay delimited desired determine directly doesn don downside easier easily enddate entities evaluate evaluates event evergreen example executed extendprojectsummary fall falls false fictitious field find firebase flags float format formatted function functionality getalllistitems getlistitems group handle hang hit html http identifying includeallattrs int integer intensive ints iso8601 item items iterate iterating javascript js json leading length level list listitem ll lock long lookup lookupid lookupmulti lookupvalue mappedname mapping mask maximum milliseconds model modified module multi multichoice multiselectvalue nczonline net node notify number object objects objecttype offset online options ows_ parent parsed pass passed pausing performance performing permission permissionsmask permmask portion prevent problem process processed processing projectmodel projects projectsmodel promise property provided range reference removeows representation resolve resolvepermissions return rights rows running select selection service set shared sharepoint site slow someid somelistitem somevalue specifies spservices spxmltojson startdate starting string stripped stuff sufficient summary summaryobject sync text thread throttle time timezone true turns type typically ui unnecessarily unsigned usable user usermulti users utility valid values var version wss xml yyyymmdd"
+      "keywords": "$q angularpoint api application aputilityservice array article assigned based batches batchprocess bit break browser buildprojectsummary change chunks codeplex comparison complete context convert converts create current cuts dates datetocheck defaults defer deferred delay desired determine directly don easier easily enddate entities evaluate evaluates event example executed extendprojectsummary fall falls false fictitious firebase flags formatted function functionality getalllistitems group hang http identifying int integer intensive ints item items iterate iterating javascript js length level list listitem lock long mask maximum milliseconds model module nczonline net notify number object online pausing performing permission permissionsmask permmask portion problem process processed processing projectmodel projects projectsmodel promise property provided range reference resolve resolvepermissions return rights running service set shared site somelistitem specifies startdate starting stuff sufficient summary summaryobject sync thread time typically ui unsigned usable user users utility var wss yyyymmdd"
     },
     {
       "section": "api",
@@ -109,7 +136,7 @@ NG_DOCS={
       "type": "service",
       "moduleName": "apDataService",
       "shortDescription": "Handles all interaction with SharePoint web services",
-      "keywords": "additional anderson angularpoint apcacheservice apconfig apdataservice apfieldservice api apqueueservice aputilityservice calls codeplex documentation handles http interaction marc service services sharepoint spservices web"
+      "keywords": "additional anderson angularpoint apconfig apdataservice apfieldservice api apqueueservice aputilityservice calls codeplex documentation handles http interaction marc service services sharepoint spservices web"
     },
     {
       "section": "api",
@@ -119,15 +146,6 @@ NG_DOCS={
       "moduleName": "apDataService",
       "shortDescription": "Adds or updates a list item based on if the item passed in contains an id attribute.",
       "keywords": "adds addupdateitemmodel apdataservice api applicable attribute automatically based buildvaluepairs cache cached configuration currently default defined ensure entities entity field fields function generate generating identified instances intensive item javascript list mode model newly note object optional pairs params passed precomputed process promise query reference replace representing resolves return search sharepoint stored update updateallcaches updated updates updating valuepairs"
-    },
-    {
-      "section": "api",
-      "id": "apDataService.createValuePair",
-      "shortName": "apDataService.createValuePair",
-      "type": "function",
-      "moduleName": "apDataService",
-      "shortDescription": "Uses a field definition from a model to properly format a value for submission to SharePoint.  Typically",
-      "keywords": "apdataservice api convert createvaluepair current defined definition field fielddefinition fieldvalue format function hand internalname item iterate lastname list mappedname model non-readonly objecttype pairs prior properly properties readonly saving sharepoint spservices submission text title typically"
     },
     {
       "section": "api",
@@ -155,15 +173,6 @@ NG_DOCS={
       "moduleName": "apDataService",
       "shortDescription": "Primary method of retrieving list items from SharePoint.  Look at Query and Model for specifics.",
       "keywords": "apdataservice api array call configuration custom destination dev entities executequery file function getcache include item items list location making method model objects offline offlinexml optional optionally parameters primary query reference resides retrieving returned sharepoint specifics target title xml"
-    },
-    {
-      "section": "api",
-      "id": "apDataService.generateValuePairs",
-      "shortName": "apDataService.generateValuePairs",
-      "type": "function",
-      "moduleName": "apDataService",
-      "shortDescription": "Typically used to iterate over the non-readonly field definitions stored in a model and convert a",
-      "keywords": "apdataservice api attempt convert definitions entity field fielddefinitions fields fieldvalue find function generatevaluepairs item iterate list ll model non-readonly pairs pass properties save saving sharepoint spservices stored typically"
     },
     {
       "section": "api",
@@ -221,15 +230,6 @@ NG_DOCS={
     },
     {
       "section": "api",
-      "id": "apDataService.processListItems",
-      "shortName": "apDataService.processListItems",
-      "type": "function",
-      "moduleName": "apDataService",
-      "shortDescription": "Post processing of data after returning list items from server.  Returns a promise that resolves with",
-      "keywords": "allow allows apdataservice api array batch call configuration conversions data definitions elements entities factory field filter find function getcache items iterate large list lists local mapping mode model object optional optionally options pass post prevent processed processing processlistitems promise reference replace resolved resolves responsexml return returning returns server service slowdowns spservices store stored string target typically ui update updating web xml"
-    },
-    {
-      "section": "api",
       "id": "apDataService.removeEntityFromLocalCache",
       "shortName": "apDataService.removeEntityFromLocalCache",
       "type": "function",
@@ -272,15 +272,6 @@ NG_DOCS={
       "moduleName": "apDataService",
       "shortDescription": "Propagates a change to all duplicate entities in all cached queries within a given model.",
       "keywords": "apdataservice api automatically cached change don duplicate entities entity function item javascript list model number object process propagates queries query reference representing sharepoint updateallcaches updated"
-    },
-    {
-      "section": "api",
-      "id": "apDataService.updateLocalCache",
-      "shortName": "apDataService.updateLocalCache",
-      "type": "function",
-      "moduleName": "apDataService",
-      "shortDescription": "Maps a cache by entity id.  All provided entities are then either added if they don&#39;t already exist",
-      "keywords": "apdataservice api cache don entities entity exist function localcache maps merged number provided query replaced updated updatelocalcache"
     },
     {
       "section": "api",
