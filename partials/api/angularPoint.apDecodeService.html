@@ -45,6 +45,13 @@ Options:[
 </div></td></tr></tbody></table><h5 id="methods_attrtojson_returns">Returns</h5><table class="variables-matrix"><tr><td><a href="" class="label type-hint type-hint-object">*</a></td><td><div class="angularpoint-apdecodeservice-page angularpoint-apdecodeservice-attrtojson-page"><p>The formatted JavaScript value based on field type.</p>
 </div></td></tr></table></div>
 </li>
+<li><h3 id="methods_parsefieldversions">parseFieldVersions(responseXML, fieldDefinition)</h3>
+<div class="parsefieldversions"><div class="angularpoint-apdecodeservice-page angularpoint-apdecodeservice-parsefieldversions-page"><p>Takes an XML response from SharePoint webservice and returns an array of field versions.</p>
+</div><h5 id="methods_parsefieldversions_parameters">Parameters</h5><table class="variables-matrix table table-bordered table-striped"><thead><tr><th>Param</th><th>Type</th><th>Details</th></tr></thead><tbody><tr><td>responseXML</td><td><a href="" class="label type-hint type-hint-xml">xml</a></td><td><div class="angularpoint-apdecodeservice-page angularpoint-apdecodeservice-parsefieldversions-page"><p>Returned XML from web service call.</p>
+</div></td></tr><tr><td>fieldDefinition</td><td><a href="" class="label type-hint type-hint-object">object</a></td><td><div class="angularpoint-apdecodeservice-page angularpoint-apdecodeservice-parsefieldversions-page"><p>Field definition from the model.</p>
+</div></td></tr></tbody></table><h5 id="methods_parsefieldversions_returns">Returns</h5><table class="variables-matrix"><tr><td><a href="" class="label type-hint type-hint-array">Array</a></td><td><div class="angularpoint-apdecodeservice-page angularpoint-apdecodeservice-parsefieldversions-page"><p>Array objects containing the various version of a field for each change.</p>
+</div></td></tr></table></div>
+</li>
 <li><h3 id="methods_processlistitems">processListItems(model, responseXML, [options])</h3>
 <div class="processlistitems"><div class="angularpoint-apdecodeservice-page angularpoint-apdecodeservice-processlistitems-page"><p>Post processing of data after returning list items from server.  Returns a promise that resolves with
 the processed entities.  Promise allows us to batch conversions of large lists to prevent ui slowdowns.</p>
