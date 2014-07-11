@@ -2,8 +2,9 @@
 
 /**
  * @ngdoc object
- * @name ListItem
+ * @name angularPoint.apListItemFactory
  * @description
+ * Exposes the ListItem prototype and a constructor to instantiate a new ListItem.
  */
 angular.module('angularPoint')
     .factory('apListItemFactory', function (apCacheService, apDataService, apUtilityService) {
@@ -493,7 +494,41 @@ angular.module('angularPoint')
             return deferred.promise;
         };
 
+        /** In the event that a factory isn't specified, just use a
+         * standard constructor to allow it to inherit from ListItem */
+        var StandardListItem = function (item) {
+            var self = this;
+            _.extend(self, item);
+        };
+
+
+        /**
+         * @ngdoc function
+         * @name angularPoint.apListItemFactory:create
+         * @methodOf angularPoint.apListItemFactory
+         * @description
+         * Instantiates and returns a new ListItem.
+         */
+        var create = function () {
+            return new ListItem();
+        };
+
+        /**
+         * @ngdoc function
+         * @name angularPoint.apListItemFactory:createGenericFactory
+         * @methodOf angularPoint.apListItemFactory
+         * @description
+         * In the event that a factory isn't specified, just use a
+         * standard constructor to allow it to inherit from ListItem
+         */
+        var createGenericFactory = function () {
+            return new StandardListItem();
+        };
+
         return {
-            ListItem: ListItem
+            create: create,
+            createGenericFactory: createGenericFactory,
+            ListItem: ListItem,
+            StandardListItem: StandardListItem
         }
     });

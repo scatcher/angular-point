@@ -2353,7 +2353,6 @@ angular.module('angularPoint').service('apUtilityService', [
       });
       return deferred.promise;
     };
-
     function User(s) {
       var self = this;
       var thisUser = new SplitIndex(s);
@@ -2647,8 +2646,9 @@ angular.module('angularPoint').service('apUtilityService', [
 'use strict';
 /**
  * @ngdoc object
- * @name List
+ * @name angularPoint.apListFactory
  * @description
+ * Exposes the List prototype and a constructor to instantiate a new List.
  */
 angular.module('angularPoint').factory('apListFactory', [
   'apConfig',
@@ -2660,12 +2660,12 @@ angular.module('angularPoint').factory('apListFactory', [
          * @description
          * List Object Constructor.  This is handled automatically when creating a new model so there shouldn't be
          * any reason to manually call.
-         * @param {object} obj Initialization parameters.
-         * @param {string} obj.guid Unique SharePoint GUID for the list we'll be basing the model on
+         * @param {object} config Initialization parameters.
+         * @param {string} config.guid Unique SharePoint GUID for the list we'll be basing the model on
          * ex:'{4D74831A-42B2-4558-A67F-B0B5ADBC0EAC}'
-         * @param {string} obj.title Maps to the offline XML file in dev folder (no spaces)
+         * @param {string} config.title Maps to the offline XML file in dev folder (no spaces)
          * ex: 'ProjectsList' so the offline XML file would be located at dev/ProjectsList.xml
-         * @param {object[]} [obj.customFields] Mapping of SharePoint field names to the internal names we'll be using
+         * @param {object[]} [config.customFields] Mapping of SharePoint field names to the internal names we'll be using
          * in our application.  Also contains field type, readonly attribute, and any other non-standard settings.
          * <pre>
          * [
@@ -2703,7 +2703,7 @@ angular.module('angularPoint').factory('apListFactory', [
          * </pre>
          * @constructor
          */
-    function List(obj) {
+    function List(config) {
       var defaults = {
           viewFields: '',
           customFields: [],
@@ -2717,19 +2717,34 @@ angular.module('angularPoint').factory('apListFactory', [
       if (apConfig.defaultUrl) {
         defaults.webURL = apConfig.defaultUrl;
       }
-      var list = _.extend({}, defaults, obj);
+      var list = _.extend({}, defaults, config);
       apFieldService.extendFieldDefinitions(list);
       return list;
     }
-    return { List: List };
+    /**
+         * @ngdoc function
+         * @name angularPoint.apListFactory:create
+         * @methodOf angularPoint.apListFactory
+         * @param {object} config Options object.
+         * @description
+         * Instantiates and returns a new List.
+         */
+    var create = function (config) {
+      return new List(config);
+    };
+    return {
+      create: create,
+      List: List
+    };
   }
 ]);
 ;
 'use strict';
 /**
  * @ngdoc object
- * @name ListItem
+ * @name angularPoint.apListItemFactory
  * @description
+ * Exposes the ListItem prototype and a constructor to instantiate a new ListItem.
  */
 angular.module('angularPoint').factory('apListItemFactory', [
   'apCacheService',
@@ -3175,15 +3190,48 @@ angular.module('angularPoint').factory('apListItemFactory', [
       });
       return deferred.promise;
     };
-    return { ListItem: ListItem };
+    /** In the event that a factory isn't specified, just use a
+         * standard constructor to allow it to inherit from ListItem */
+    var StandardListItem = function (item) {
+      var self = this;
+      _.extend(self, item);
+    };
+    /**
+         * @ngdoc function
+         * @name angularPoint.apListItemFactory:create
+         * @methodOf angularPoint.apListItemFactory
+         * @description
+         * Instantiates and returns a new ListItem.
+         */
+    var create = function () {
+      return new ListItem();
+    };
+    /**
+         * @ngdoc function
+         * @name angularPoint.apListItemFactory:createGenericFactory
+         * @methodOf angularPoint.apListItemFactory
+         * @description
+         * In the event that a factory isn't specified, just use a
+         * standard constructor to allow it to inherit from ListItem
+         */
+    var createGenericFactory = function () {
+      return new StandardListItem();
+    };
+    return {
+      create: create,
+      createGenericFactory: createGenericFactory,
+      ListItem: ListItem,
+      StandardListItem: StandardListItem
+    };
   }
 ]);
 ;
 'use strict';
 /**
  * @ngdoc object
- * @name Model
+ * @name angularPoint.apModelFactory
  * @description
+ * Exposes the model prototype and a constructor to instantiate a new Model.
  */
 angular.module('angularPoint').factory('apModelFactory', [
   'apModalService',
@@ -3197,12 +3245,6 @@ angular.module('angularPoint').factory('apModelFactory', [
   'toastr',
   function (apModalService, apCacheService, apDataService, apListFactory, apListItemFactory, apQueryFactory, apUtilityService, $q, toastr) {
     var defaultQueryName = 'primary';
-    /** In the event that a factory isn't specified, just use a
-         * standard constructor to allow it to inherit from ListItem */
-    var StandardListItem = function (item) {
-      var self = this;
-      _.extend(self, item);
-    };
     /**
          * @ngdoc function
          * @name Model
@@ -3215,14 +3257,14 @@ angular.module('angularPoint').factory('apModelFactory', [
          * - builds "model.list" with constructor
          * - adds "getAllListItems" function
          * - adds "addNewItem" function
-         * @param {object} options Object containing optional params.
-         * @param {object} [options.factory=StandardListItem] - Constructor function for individual list items.
-         * @param {object} options.list - Definition of the list in SharePoint; This object will
+         * @param {object} config Object containing optional params.
+         * @param {object} [config.factory = apListItemFactory.createGenericFactory()] - Constructor function for individual list items.
+         * @param {object} config.list - Definition of the list in SharePoint; This object will
          * be passed to the list constructor to extend further
-         * @param {string} options.list.title - List name, no spaces.  Offline XML file will need to be
+         * @param {string} config.list.title - List name, no spaces.  Offline XML file will need to be
          * named the same (ex: CustomList so xml file would be /dev/CustomList.xml)
-         * @param {string} options.list.guid - Unique SharePoint ID (ex: '{3DBEB25A-BEF0-4213-A634-00DAF46E3897}')
-         * @param {object[]} options.list.customFields - Maps SharePoint fields with names we'll use within the
+         * @param {string} config.list.guid - Unique SharePoint ID (ex: '{3DBEB25A-BEF0-4213-A634-00DAF46E3897}')
+         * @param {object[]} config.list.customFields - Maps SharePoint fields with names we'll use within the
          * application.  Identifies field types and formats accordingly.  Also denotes if a field is read only.
          * @constructor
          *
@@ -3294,19 +3336,19 @@ angular.module('angularPoint').factory('apModelFactory', [
          * });
          * </pre>
          */
-    function Model(options) {
+    function Model(config) {
       var model = this;
       var defaults = {
           data: [],
-          factory: StandardListItem,
+          factory: apListItemFactory.createGenericFactory(),
           lastServerUpdate: null,
           queries: {}
         };
-      _.extend(model, defaults, options);
+      _.extend(model, defaults, config);
       /** Use list constructor to decorate */
-      model.list = new apListFactory.List(model.list);
+      model.list = apListFactory.create(model.list);
       /** Set the constructor's prototype to inherit from ListItem so we can inherit functionality */
-      model.factory.prototype = new apListItemFactory.ListItem();
+      model.factory.prototype = apListItemFactory.create();
       /** Make the model directly accessible from the list item */
       model.factory.prototype.getModel = function () {
         return model;
@@ -3598,7 +3640,7 @@ angular.module('angularPoint').factory('apModelFactory', [
       var model = this;
       var defaults = { name: defaultQueryName };
       queryOptions = _.extend({}, defaults, queryOptions);
-      model.queries[queryOptions.name] = new apQueryFactory.Query(queryOptions, model);
+      model.queries[queryOptions.name] = apQueryFactory.create(queryOptions, model);
       /** Return the newly created query */
       return model.queries[queryOptions.name];
     };
@@ -4003,15 +4045,52 @@ angular.module('angularPoint').factory('apModelFactory', [
         return utilityService.resolvePermissions(null);
       }
     };
-    return { Model: Model };
+    /**
+         * @ngdoc function
+         * @name angularPoint.apModelFactory:create
+         * @methodOf angularPoint.apModelFactory
+         * @param {object} config Options object.
+         * @description
+         * Instantiates and returns a new Model.
+         * @example
+         * <pre>
+         * var model = apModelFactory.create({
+         *     factory: Task,
+         *     list: {
+         *         title: 'Tasks', //Maps to the offline XML file in dev folder (no spaces)
+         *         // List GUID can be found in list properties in SharePoint designer
+         *         guid: '{DBA4535D-D8F3-4D65-B7C0-7E970AE3A52D}',
+         *         customFields: [
+         *             // Array of objects mapping each SharePoint field to a property on a list item object
+         *             {internalName: 'Title', objectType: 'Text', mappedName: 'title', readOnly: false},
+         *             {internalName: 'Description', objectType: 'Text', mappedName: 'description', readOnly: false},
+         *             {internalName: 'Priority', objectType: 'Text', mappedName: 'priority', readOnly: false},
+         *             {internalName: 'Status', objectType: 'Text', mappedName: 'status', readOnly: false},
+         *             {internalName: 'RequestedBy', objectType: 'User', mappedName: 'requestedBy', readOnly: false},
+         *             {internalName: 'AssignedTo', objectType: 'User', mappedName: 'assignedTo', readOnly: false},
+         *             {internalName: 'EstimatedEffort', objectType: 'Integer', mappedName: 'estimatedEffort', readOnly: false},
+         *             {internalName: 'PercentComplete', objectType: 'Integer', mappedName: 'percentComplete', readOnly: false}
+         *         ]
+         *     }
+         * });
+         * </pre>
+         */
+    var create = function (config) {
+      return new Model(config);
+    };
+    return {
+      create: create,
+      Model: Model
+    };
   }
 ]);
 ;
 'use strict';
 /**
  * @ngdoc object
- * @name apQueryFactory
+ * @name angularPoint.apQueryFactory
  * @description
+ * Exposes the Query prototype and a constructor to instantiate a new Query.
  */
 angular.module('angularPoint').factory('apQueryFactory', [
   'apModalService',
@@ -4025,14 +4104,14 @@ angular.module('angularPoint').factory('apQueryFactory', [
          * @name Query
          * @description
          * Primary constructor that all queries inherit from.
-         * @param {object} queryOptions Initialization parameters.
-         * @param {string} [queryOptions.operation=GetListItemChangesSinceToken] Optionally use 'GetListItems' to
+         * @param {object} config Initialization parameters.
+         * @param {string} [config.operation = GetListItemChangesSinceToken] Optionally use 'GetListItems' to
          * receive a more efficient response, just don't have the ability to check for changes since the last time
          * the query was called.
-         * @param {boolean} [queryOptions.cacheXML=true] Set to false if you want a fresh request.
-         * @param {string} [queryOptions.query=Ordered ascending by ID] CAML query passed to SharePoint to control
+         * @param {boolean} [config.cacheXML=true] Set to false if you want a fresh request.
+         * @param {string} [config.query=Ordered ascending by ID] CAML query passed to SharePoint to control
          * the data SharePoint returns.
-         * @param {string} [queryOptions.queryOptions] SharePoint options.
+         * @param {string} [config.queryOptions] SharePoint options.
          * <pre>
          * //Default
          * queryOptions: '' +
@@ -4077,7 +4156,7 @@ angular.module('angularPoint').factory('apQueryFactory', [
          * });
          * </pre>
          */
-    function Query(queryOptions, model) {
+    function Query(config, model) {
       var query = this;
       var defaults = {
           cache: [],
@@ -4095,7 +4174,7 @@ angular.module('angularPoint').factory('apQueryFactory', [
       if (apConfig.defaultUrl) {
         defaults.webURL = apConfig.defaultUrl;
       }
-      _.extend(query, defaults, queryOptions);
+      _.extend(query, defaults, config);
       /** Key/Value mapping of SharePoint properties to SPServices properties */
       var mapping = [
           [
@@ -4191,7 +4270,21 @@ angular.module('angularPoint').factory('apQueryFactory', [
       var opts = _.extend({}, defaults, options);
       return model.searchLocalCache(value, opts);
     };
-    return { Query: Query };
+    /**
+         * @ngdoc function
+         * @name angularPoint.apQueryFactory:create
+         * @methodOf angularPoint.apQueryFactory
+         * @param {object} config Options object.
+         * @description
+         * Instantiates and returns a new Query.
+         */
+    var create = function (config, model) {
+      return new Query(config, model);
+    };
+    return {
+      create: create,
+      Query: Query
+    };
   }
 ]);
 ;
@@ -4449,6 +4542,6 @@ angular.module('angularPoint').run([
     $templateCache.put('src/directives/ap_comments/ap_recursive_comment.html', '<ul class=comments><li class=comment ng-repeat="response in comment.thread" style="border-top-width: 1px;border-top-color: grey"><div class=comment-content><div class=content><h5><small><span class=author>{{ response.author.lookupValue }}</span> <span>{{ response.modified | date:\'short\' }}</span> <button class="btn btn-link btn-xs" ng-click="state.respondingTo = response"><i class="fa fa-mail-reply"></i> Reply</button> <button class="btn btn-link btn-xs" ng-click=deleteComment(response)><i class="fa fa-trash-o"></i> Delete</button></small></h5><p class=comment-text>{{ response.comment }}</p></div></div><div ng-if="state.respondingTo === response"><div class=row><div class=col-xs-12><form><div class=form-group><h5><small>Response<label class=pull-right><button class="btn btn-link btn-xs" ng-click=createResponse(response)><i class="fa fa-save"></i> Save</button> <button class="btn btn-link btn-xs" ng-click=clearTempVars()><i class="fa fa-undo"></i> Cancel</button></label></small></h5><textarea class=form-control rows=2 ng-model=state.tempResponse></textarea></div></form></div></div></div><div ng-if="response.thread.length !== -1"><span ng-include="\'src/directives/ap_comments/ap_recursive_comment.html\'" ng-init="comment = response;"></span></div></li></ul>');
     $templateCache.put('src/directives/ap_select/ap_select_tmpl.html', '<span class=ng-cloak><span ng-if=!multi><select class=form-control ng-model=state.singleSelectID ng-change=updateSingleModel() style="width: 100%" ng-disabled=ngDisabled ng-options="lookup.id as lookup[state.lookupField] for lookup in arr"></select></span> <span ng-if=multi><select multiple ui-select2="" ng-model=state.multiSelectIDs ng-change=updateMultiModel() style="width: 100%" ng-disabled=ngDisabled><option></option><option ng-repeat="lookup in arr" value="{{ lookup.id }}" ng-bind=lookup[state.lookupField]>&nbsp;</option></select></span></span>');
     $templateCache.put('src/views/generate_offline_view.html', '<div class=container><h3>Offline XML Generator</h3><p>Fill in the basic information for a list and make the request to SharePoint. The xml response will appear at the bottom of the page where you can then copy by Ctrl + A.</p><hr><form role=form><div class=form-group><label>Site URL</label><div class=input-group><input type=url class=form-control ng-model=state.siteUrl><span class=input-group-btn><button title="Refresh list/libraries" class="btn btn-success" type=button ng-click=getLists()><i class="fa fa-refresh"></i></button></span></div></div><div class=row><div class=col-xs-5><div class=form-group><label>List Name or GUID</label><select ng-model=state.selectedList ng-options="list.Title for list in listCollection" class=form-control></select></div></div><div class=col-xs-3><div class=form-group><label>Number of Items to Return</label><input type=number class=form-control ng-model=state.itemLimit><p class=help-block>[0 = All Items]</p></div></div><div class=col-xs-4><div class=form-group><label>Operation</label><select class=form-control ng-model=state.operation ng-options="operation for operation in operations"></select><p class=help-block>Operation to query with.</p></div></div></div><div class=row><div class=col-xs-12><div class=form-group><label>Selected Fields</label><select multiple ui-select2="" ng-model=state.selectedListFields style="width: 100%" ng-disabled="listCollection.length < 1"><option ng-repeat="field in state.availableListFields" value={{field.Name}}>{{ field.Name }}</option></select><p class=help-block>Leaving this blank will return all fields visible in the default list view.</p></div></div></div><div class=form-group><label>CAML Query (Optional)</label><textarea class=form-control ng-model=state.query rows=3></textarea></div><br><button type=submit class="btn btn-primary" ng-click=getXML()>Make Request</button><hr><h4>XML Response</h4><ol><li>Create a new offline file under "app/dev" in angularPoint.</li><li>Use the same name as found in the model at "model.list.title" + .xml</li><li>Select the returned XML below by clicking in the textarea.</li><li>Add the XML to the newly created offline .xml file.</li></ol><div class="well well-sm"><textarea name=xmlResponse class=form-control cols=30 rows=10 ng-model=state.xmlResponse ng-click=onTextClick($event)></textarea></div></form></div>');
-    $templateCache.put('src/views/group_manager_view.html', '<style>select.multiselect {\r' + '\n' + '        min-height: 400px;\r' + '\n' + '    }\r' + '\n' + '\r' + '\n' + '    .ui-match {\r' + '\n' + '        background: yellow;\r' + '\n' + '    }</style><div class=container><ul class="nav nav-tabs"><li ng-class="{active: state.activeTab === \'Users\'}"><a href="" ng-click="updateTab(\'Users\')">Users</a></li><li ng-class="{active: state.activeTab === \'Groups\'}"><a href="" ng-click="updateTab(\'Groups\')">Groups</a></li><li ng-class="{active: state.activeTab === \'Merge\'}"><a href="" ng-click="state.activeTab = \'Merge\'">Merge</a></li><li ng-class="{active: state.activeTab === \'UserList\'}"><a href="" ng-click="state.activeTab = \'UserList\'">User List</a></li><li ng-class="{active: state.activeTab === \'GroupList\'}"><a href="" ng-click="state.activeTab = \'GroupList\'">Group List</a></li></ul><div ng-if="state.activeTab === \'Users\'"><div class="panel panel-default"><div class=panel-heading><div class=row><div class=col-xs-5><span style=font-weight:bold>Select a Group:</span><select class=form-control ng-model=users.filter ng-options="group.Name for group in groups.all" ng-change=updateAvailableUsers(users.filter) style="min-width: 100px"></select></div><div class=col-xs-7><span style=font-weight:bold>Site/Site Collection:</span><input class=form-control ng-model=state.siteUrl ng-change=updateAvailableUsers(users.filter)></div></div><div class=row ng-if=users.filter.Description><div class=col-xs-12><p class=help-block>Description: {{ users.filter.Description }}</p></div></div></div><div class=panel-body><div class=row><div class=col-xs-12><div colspan=3 class=description>This tab will allow you to quickly assign multiple users to a selected group.</div></div></div><hr class=hr-sm><div class=row><div class=col-xs-5><div class=form-group><label>Available Users ({{users.available.length}})</label><select ng-model=users.selectedAvailable ng-options="user.Name for user in users.available" multiple class="multiselect form-control"></select></div></div><div class="col-xs-2 text-center" style="padding-top: 175px"><button class="btn btn-default" style=width:80px ng-click="updatePermissions(\'AddUserToGroup\', users.selectedAvailable, [users.filter])" title="Add user"><i class="fa fa-2x fa-angle-double-right"></i></button><br><br><button class="btn btn-default" style=width:80px ng-click="updatePermissions(\'RemoveUserFromGroup\', users.selectedAssigned, [users.filter])"><i class="fa fa-2x fa-angle-double-left"></i></button></div><div class=col-xs-5><div class=form-group><label>Assigned Users ({{users.assigned.length}})</label><select ng-model=users.selectedAssigned ng-options="user.Name for user in users.assigned" multiple class="multiselect form-control"></select></div></div></div></div></div></div><div ng-if="state.activeTab === \'Groups\'"><div class="panel panel-default"><div class=panel-heading><div class=row><div class=col-xs-5><span style=font-weight:bold>Select a User:</span><select class=form-control ng-model=groups.filter ng-options="user.Name for user in users.all" ng-change=updateAvailableGroups(groups.filter) style="min-width: 100px"></select></div><div class=col-xs-7><span style=font-weight:bold>Site/Site Collection:</span><input class=form-control ng-model=state.siteUrl ng-change=updateAvailableGroups(groups.filter)></div></div></div><div class=panel-body><div class=row><div class=col-xs-12><div colspan=3 class=description>This page was created to make the process of managing users/groups within the site collection more manageable. When a user is selected, the available groups are displayed on the left and the groups that the user is currently a member of will show on the right. Selecting multiple groups is supported.</div></div></div><hr class=hr-sm><div class=row><div class=col-xs-5><div class=form-group><label>Available Groups ({{groups.available.length}})</label><select ng-model=groups.selectedAvailable ng-options="group.Name for group in groups.available" multiple class="multiselect form-control"></select></div></div><div class="col-xs-2 text-center" style="padding-top: 175px"><button class="btn btn-default" style=width:80px ng-click="updatePermissions(\'AddUserToGroup\', [groups.filter], groups.selectedAvailable)" title="Add to group"><i class="fa fa-2x fa-angle-double-right"></i></button><br><br><button class="btn btn-default" style=width:80px ng-click="updatePermissions(\'RemoveUserFromGroup\', [groups.filter], groups.selectedAssigned)"><i class="fa fa-2x fa-angle-double-left"></i></button></div><div class=col-xs-5><div class=form-group><label>Assigned Users ({{users.assigned.length}})</label><select ng-model=groups.selectedAssigned ng-options="group.Name for group in groups.assigned" multiple class="multiselect form-control"></select></div></div></div></div></div></div><div ng-if="state.activeTab === \'Merge\'"><div class="panel panel-default"><div class=panel-body><div class=row><div class=col-xs-12><div class=description>This tab allows us to copy the members from the "Source" group over to the "Target" group. It\'s not a problem if any of the users already exist in the destination group. Note: This is a onetime operation so any additional members added to the Source group will not automatically be added to the destination group. You will need to repeat this process.</div></div></div><hr class=hr-sm><div class=row><div class=col-xs-5><fieldset><legend>Step 1</legend><div class=well><div class=form-group><label>Source Group</label><select class=form-control ng-model=state.sourceGroup ng-options="group.Name for group in groups.all" ng-change=updateAvailableUsers(state.sourceGroup) style="min-width: 100px"></select></div></div></fieldset></div><div class=col-xs-5><fieldset><legend>Step 2</legend><div class=well><div class=form-group><label>Source Group</label><select class=form-control ng-model=state.targetGroup ng-options="group.Name for group in groups.all" style="min-width: 100px"></select></div></div></fieldset></div><div class=col-xs-2><fieldset><legend>Step 3</legend><button class="btn btn-success" ng-disabled="state.sourceGroup.length < 1 || state.targetGroup.length < 1" ng-click=mergeGroups() title="Copy all members from the source group over to the destination group."><i class="fa fa-2x fa-magic"></i> Merge</button></fieldset></div></div></div></div></div><div ng-if="state.activeTab === \'UserList\'"><div class="panel panel-default"><div class=panel-heading><span style=font-weight:bold>User Filter</span><input class=form-control ng-model=state.userFilter ng-change=usersTable.reload()></div><table ng-table=usersTable class=table template-pagination=custom/pager><tr ng-repeat="user in $data"><td data-title="\'ID\'">{{ user.ID }}</td><td data-title="\'Name\'"><a href="" ng-click=userDetailsLink(user) ng-bind-html="user.Name |  highlight:state.userFilter"></a></td><td data-title="\'Email\'">{{ user.Email }}</td></tr></table></div></div><div ng-if="state.activeTab === \'GroupList\'"><div class="panel panel-default"><div class=panel-heading><span style=font-weight:bold>Group Filter</span><input class=form-control ng-model=state.groupFilter ng-change=groupsTable.reload()></div><table ng-table=groupsTable class=table template-pagination=custom/pager><tr ng-repeat="group in $data"><td data-title="\'ID\'">{{ group.ID }}</td><td data-title="\'Name\'"><a href="" ng-click=groupDetailsLink(group) ng-bind-html="group.Name |  highlight:state.groupFilter"></a></td><td data-title="\'Description\'">{{ group.Description }}</td></tr></table></div></div></div><script type=text/ng-template id=custom/pager><div class="row">\r' + '\n' + '        <div class="col-xs-12">\r' + '\n' + '            <ul class="pager ng-cloak">\r' + '\n' + '                <li ng-repeat="page in pages"\r' + '\n' + '                    ng-class="{\'disabled\': !page.active}"\r' + '\n' + '                    ng-show="page.type == \'prev\' || page.type == \'next\'" ng-switch="page.type">\r' + '\n' + '                    <a ng-switch-when="prev" ng-click="params.page(page.number)" href="">\r' + '\n' + '                        <i class="fa fa-chevron-left"></i>\r' + '\n' + '                    </a>\r' + '\n' + '                    <a ng-switch-when="next" ng-click="params.page(page.number)" href="">\r' + '\n' + '                        <i class="fa fa-chevron-right"></i>\r' + '\n' + '                    </a>\r' + '\n' + '                </li>\r' + '\n' + '            </ul>\r' + '\n' + '        </div>\r' + '\n' + '    </div></script>');
+    $templateCache.put('src/views/group_manager_view.html', '<style>select.multiselect {\n' + '        min-height: 400px;\n' + '    }\n' + '\n' + '    .ui-match {\n' + '        background: yellow;\n' + '    }</style><div class=container><ul class="nav nav-tabs"><li ng-class="{active: state.activeTab === \'Users\'}"><a href="" ng-click="updateTab(\'Users\')">Users</a></li><li ng-class="{active: state.activeTab === \'Groups\'}"><a href="" ng-click="updateTab(\'Groups\')">Groups</a></li><li ng-class="{active: state.activeTab === \'Merge\'}"><a href="" ng-click="state.activeTab = \'Merge\'">Merge</a></li><li ng-class="{active: state.activeTab === \'UserList\'}"><a href="" ng-click="state.activeTab = \'UserList\'">User List</a></li><li ng-class="{active: state.activeTab === \'GroupList\'}"><a href="" ng-click="state.activeTab = \'GroupList\'">Group List</a></li></ul><div ng-if="state.activeTab === \'Users\'"><div class="panel panel-default"><div class=panel-heading><div class=row><div class=col-xs-5><span style=font-weight:bold>Select a Group:</span><select class=form-control ng-model=users.filter ng-options="group.Name for group in groups.all" ng-change=updateAvailableUsers(users.filter) style="min-width: 100px"></select></div><div class=col-xs-7><span style=font-weight:bold>Site/Site Collection:</span><input class=form-control ng-model=state.siteUrl ng-change=updateAvailableUsers(users.filter)></div></div><div class=row ng-if=users.filter.Description><div class=col-xs-12><p class=help-block>Description: {{ users.filter.Description }}</p></div></div></div><div class=panel-body><div class=row><div class=col-xs-12><div colspan=3 class=description>This tab will allow you to quickly assign multiple users to a selected group.</div></div></div><hr class=hr-sm><div class=row><div class=col-xs-5><div class=form-group><label>Available Users ({{users.available.length}})</label><select ng-model=users.selectedAvailable ng-options="user.Name for user in users.available" multiple class="multiselect form-control"></select></div></div><div class="col-xs-2 text-center" style="padding-top: 175px"><button class="btn btn-default" style=width:80px ng-click="updatePermissions(\'AddUserToGroup\', users.selectedAvailable, [users.filter])" title="Add user"><i class="fa fa-2x fa-angle-double-right"></i></button><br><br><button class="btn btn-default" style=width:80px ng-click="updatePermissions(\'RemoveUserFromGroup\', users.selectedAssigned, [users.filter])"><i class="fa fa-2x fa-angle-double-left"></i></button></div><div class=col-xs-5><div class=form-group><label>Assigned Users ({{users.assigned.length}})</label><select ng-model=users.selectedAssigned ng-options="user.Name for user in users.assigned" multiple class="multiselect form-control"></select></div></div></div></div></div></div><div ng-if="state.activeTab === \'Groups\'"><div class="panel panel-default"><div class=panel-heading><div class=row><div class=col-xs-5><span style=font-weight:bold>Select a User:</span><select class=form-control ng-model=groups.filter ng-options="user.Name for user in users.all" ng-change=updateAvailableGroups(groups.filter) style="min-width: 100px"></select></div><div class=col-xs-7><span style=font-weight:bold>Site/Site Collection:</span><input class=form-control ng-model=state.siteUrl ng-change=updateAvailableGroups(groups.filter)></div></div></div><div class=panel-body><div class=row><div class=col-xs-12><div colspan=3 class=description>This page was created to make the process of managing users/groups within the site collection more manageable. When a user is selected, the available groups are displayed on the left and the groups that the user is currently a member of will show on the right. Selecting multiple groups is supported.</div></div></div><hr class=hr-sm><div class=row><div class=col-xs-5><div class=form-group><label>Available Groups ({{groups.available.length}})</label><select ng-model=groups.selectedAvailable ng-options="group.Name for group in groups.available" multiple class="multiselect form-control"></select></div></div><div class="col-xs-2 text-center" style="padding-top: 175px"><button class="btn btn-default" style=width:80px ng-click="updatePermissions(\'AddUserToGroup\', [groups.filter], groups.selectedAvailable)" title="Add to group"><i class="fa fa-2x fa-angle-double-right"></i></button><br><br><button class="btn btn-default" style=width:80px ng-click="updatePermissions(\'RemoveUserFromGroup\', [groups.filter], groups.selectedAssigned)"><i class="fa fa-2x fa-angle-double-left"></i></button></div><div class=col-xs-5><div class=form-group><label>Assigned Users ({{users.assigned.length}})</label><select ng-model=groups.selectedAssigned ng-options="group.Name for group in groups.assigned" multiple class="multiselect form-control"></select></div></div></div></div></div></div><div ng-if="state.activeTab === \'Merge\'"><div class="panel panel-default"><div class=panel-body><div class=row><div class=col-xs-12><div class=description>This tab allows us to copy the members from the "Source" group over to the "Target" group. It\'s not a problem if any of the users already exist in the destination group. Note: This is a onetime operation so any additional members added to the Source group will not automatically be added to the destination group. You will need to repeat this process.</div></div></div><hr class=hr-sm><div class=row><div class=col-xs-5><fieldset><legend>Step 1</legend><div class=well><div class=form-group><label>Source Group</label><select class=form-control ng-model=state.sourceGroup ng-options="group.Name for group in groups.all" ng-change=updateAvailableUsers(state.sourceGroup) style="min-width: 100px"></select></div></div></fieldset></div><div class=col-xs-5><fieldset><legend>Step 2</legend><div class=well><div class=form-group><label>Source Group</label><select class=form-control ng-model=state.targetGroup ng-options="group.Name for group in groups.all" style="min-width: 100px"></select></div></div></fieldset></div><div class=col-xs-2><fieldset><legend>Step 3</legend><button class="btn btn-success" ng-disabled="state.sourceGroup.length < 1 || state.targetGroup.length < 1" ng-click=mergeGroups() title="Copy all members from the source group over to the destination group."><i class="fa fa-2x fa-magic"></i> Merge</button></fieldset></div></div></div></div></div><div ng-if="state.activeTab === \'UserList\'"><div class="panel panel-default"><div class=panel-heading><span style=font-weight:bold>User Filter</span><input class=form-control ng-model=state.userFilter ng-change=usersTable.reload()></div><table ng-table=usersTable class=table template-pagination=custom/pager><tr ng-repeat="user in $data"><td data-title="\'ID\'">{{ user.ID }}</td><td data-title="\'Name\'"><a href="" ng-click=userDetailsLink(user) ng-bind-html="user.Name |  highlight:state.userFilter"></a></td><td data-title="\'Email\'">{{ user.Email }}</td></tr></table></div></div><div ng-if="state.activeTab === \'GroupList\'"><div class="panel panel-default"><div class=panel-heading><span style=font-weight:bold>Group Filter</span><input class=form-control ng-model=state.groupFilter ng-change=groupsTable.reload()></div><table ng-table=groupsTable class=table template-pagination=custom/pager><tr ng-repeat="group in $data"><td data-title="\'ID\'">{{ group.ID }}</td><td data-title="\'Name\'"><a href="" ng-click=groupDetailsLink(group) ng-bind-html="group.Name |  highlight:state.groupFilter"></a></td><td data-title="\'Description\'">{{ group.Description }}</td></tr></table></div></div></div><script type=text/ng-template id=custom/pager><div class="row">\n' + '        <div class="col-xs-12">\n' + '            <ul class="pager ng-cloak">\n' + '                <li ng-repeat="page in pages"\n' + '                    ng-class="{\'disabled\': !page.active}"\n' + '                    ng-show="page.type == \'prev\' || page.type == \'next\'" ng-switch="page.type">\n' + '                    <a ng-switch-when="prev" ng-click="params.page(page.number)" href="">\n' + '                        <i class="fa fa-chevron-left"></i>\n' + '                    </a>\n' + '                    <a ng-switch-when="next" ng-click="params.page(page.number)" href="">\n' + '                        <i class="fa fa-chevron-right"></i>\n' + '                    </a>\n' + '                </li>\n' + '            </ul>\n' + '        </div>\n' + '    </div></script>');
   }
 ]);

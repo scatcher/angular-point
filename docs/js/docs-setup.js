@@ -41,12 +41,48 @@ NG_DOCS={
     },
     {
       "section": "api",
+      "id": "angularPoint.apListFactory",
+      "shortName": "angularPoint.apListFactory",
+      "type": "object",
+      "moduleName": "angularPoint",
+      "shortDescription": "Exposes the List prototype and a constructor to instantiate a new List.",
+      "keywords": "angularpoint api aplistfactory config exposes function instantiate instantiates list object options prototype returns"
+    },
+    {
+      "section": "api",
+      "id": "angularPoint.apListItemFactory",
+      "shortName": "angularPoint.apListItemFactory",
+      "type": "object",
+      "moduleName": "angularPoint",
+      "shortDescription": "Exposes the ListItem prototype and a constructor to instantiate a new ListItem.",
+      "keywords": "allow angularpoint api aplistitemfactory event exposes factory function inherit instantiate instantiates isn listitem object prototype returns standard"
+    },
+    {
+      "section": "api",
       "id": "angularPoint.apModalService",
       "shortName": "angularPoint.apModalService",
       "type": "service",
       "moduleName": "angularPoint",
       "shortDescription": "Extends a modal form to include many standard functions",
       "keywords": "$modalinstance $scope accepts admin allow angularpoint api apmodalservice argument arguments attach binding boolean checked closes comprequestmodalctrl comprequestsmodel configuration confirmation controller controllers controls creates current dateexceedsboundary default deleteentity deleterequest deletes deletion deprecated determine dialog disable display displaymode dynamic easily edit edited enableapproval entity existing expectedarguments extended extends fallback false firebase flag form fullcontrol function functions html include initializestate injects instance item javascript levels list locked lockedby locking modal modalmodelprovider mode model modules negotiatingwithserver number object openmodal optional options params permission permissions populates promise prompts record reference representing request returns rights saveentity saverequest service sets sharepoint standard templateurl turn updates user usercanapprove usercandelete usercanedit view"
+    },
+    {
+      "section": "api",
+      "id": "angularPoint.apModelFactory",
+      "shortName": "angularPoint.apModelFactory",
+      "type": "object",
+      "moduleName": "angularPoint",
+      "shortDescription": "Exposes the model prototype and a constructor to instantiate a new Model.",
+      "keywords": "angularpoint api apmodelfactory array assignedto config create customfields description designer dev estimatedeffort exposes factory false field file folder function guid instantiate instantiates integer item list mappedname mapping model object objects objecttype offline options percentcomplete priority properties property prototype readonly requestedby returns sharepoint spaces status task tasks text title user var xml"
+    },
+    {
+      "section": "api",
+      "id": "angularPoint.apQueryFactory",
+      "shortName": "angularPoint.apQueryFactory",
+      "type": "object",
+      "moduleName": "angularPoint",
+      "shortDescription": "Exposes the Query prototype and a constructor to instantiate a new Query.",
+      "keywords": "angularpoint api apqueryfactory config exposes function instantiate instantiates object options prototype query returns"
     },
     {
       "section": "api",
@@ -248,30 +284,12 @@ NG_DOCS={
     },
     {
       "section": "api",
-      "id": "apQueryFactory",
-      "shortName": "apQueryFactory",
-      "type": "object",
-      "moduleName": "apQueryFactory",
-      "shortDescription": "",
-      "keywords": "api apqueryfactory object"
-    },
-    {
-      "section": "api",
-      "id": "List",
-      "shortName": "List",
-      "type": "object",
-      "moduleName": "List",
-      "shortDescription": "",
-      "keywords": "api list object"
-    },
-    {
-      "section": "api",
       "id": "List",
       "shortName": "List",
       "type": "function",
       "moduleName": "List",
       "shortDescription": "List Object Constructor.  This is handled automatically when creating a new model so there shouldn&#39;t be",
-      "keywords": "account api application attribute automatically basing call creating customfields details dev field file firstname folder function guid handled initialization internal internalname lastname list ll located lookup manually mappedname mapping maps model names non-standard obj object objecttype offline organization parameters projectslist readonly reason settings sharepoint shouldn spaces text title type unique user xml"
+      "keywords": "account api application attribute automatically basing call config creating customfields details dev field file firstname folder function guid handled initialization internal internalname lastname list ll located lookup manually mappedname mapping maps model names non-standard object objecttype offline organization parameters projectslist readonly reason settings sharepoint shouldn spaces text title type unique user xml"
     },
     {
       "section": "api",
@@ -281,15 +299,6 @@ NG_DOCS={
       "moduleName": "ListItem",
       "shortDescription": "Base prototype which all list items inherit CRUD functionality that can be called directly from obj.",
       "keywords": "api base called crud directly function functionality inherit items list listitem obj prototype"
-    },
-    {
-      "section": "api",
-      "id": "ListItem",
-      "shortName": "ListItem",
-      "type": "object",
-      "moduleName": "ListItem",
-      "shortDescription": "",
-      "keywords": "api listitem object"
     },
     {
       "section": "api",
@@ -433,16 +442,7 @@ NG_DOCS={
       "type": "function",
       "moduleName": "Model",
       "shortDescription": "Model Constructor",
-      "keywords": "active addnewitem adds api apmodelfactory application array attachments boolean builds costestimate currency customer customfields customlist data deferred definition denotes empty extend factory false fictitious field fields file formats function getalllistitems group guid identifies individual internalname items js list ll lookup mappedname maps model named names obj object objecttype offline optional options params passed project projectdescription projectgroup projects projectsmodel queries read readonly ready sharepoint spaces status taskmanager text title true types unique user var xml"
-    },
-    {
-      "section": "api",
-      "id": "Model",
-      "shortName": "Model",
-      "type": "object",
-      "moduleName": "Model",
-      "shortDescription": "",
-      "keywords": "api model object"
+      "keywords": "active addnewitem adds api aplistitemfactory apmodelfactory application array attachments boolean builds config costestimate creategenericfactory currency customer customfields customlist data deferred definition denotes empty extend factory false fictitious field fields file formats function getalllistitems group guid identifies individual internalname items js list ll lookup mappedname maps model named names obj object objecttype offline optional params passed project projectdescription projectgroup projects projectsmodel queries read readonly ready sharepoint spaces status taskmanager text title true types unique user var xml"
     },
     {
       "section": "api",
@@ -586,7 +586,7 @@ NG_DOCS={
       "type": "function",
       "moduleName": "Query",
       "shortDescription": "Primary constructor that all queries inherit from.",
-      "keywords": "ability allows api ascending cache cachexml called caml camlrowlimit changes check control data default doesn don efficient evaluate false fresh function getlistitems inherit initialization local location model modifications modified object operation optionally options parameters parent pass passed permissions prevents primary project prototype queries query queryoptions receive recentchanges records reference registerquery request response retrieve returned returns scope search searching searchlocalcache set sets sharepoint simple time true undefined user wrapper"
+      "keywords": "ability allows api ascending cache cachexml called caml camlrowlimit changes check config control data default doesn don efficient evaluate false fresh function getlistitemchangessincetoken getlistitems inherit initialization local location model modifications modified object operation optionally options parameters parent pass passed permissions prevents primary project prototype queries query queryoptions receive recentchanges records reference registerquery request response retrieve returned returns scope search searching searchlocalcache set sets sharepoint simple time true undefined user wrapper"
     },
     {
       "section": "api",

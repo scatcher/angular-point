@@ -2,8 +2,9 @@
 
 /**
  * @ngdoc object
- * @name apQueryFactory
+ * @name angularPoint.apQueryFactory
  * @description
+ * Exposes the Query prototype and a constructor to instantiate a new Query.
  */
 angular.module('angularPoint')
     .factory('apQueryFactory', function (apModalService, apCacheService, apDataService, apConfig, $q) {
@@ -14,14 +15,14 @@ angular.module('angularPoint')
          * @name Query
          * @description
          * Primary constructor that all queries inherit from.
-         * @param {object} queryOptions Initialization parameters.
-         * @param {string} [queryOptions.operation=GetListItemChangesSinceToken] Optionally use 'GetListItems' to
+         * @param {object} config Initialization parameters.
+         * @param {string} [config.operation = GetListItemChangesSinceToken] Optionally use 'GetListItems' to
          * receive a more efficient response, just don't have the ability to check for changes since the last time
          * the query was called.
-         * @param {boolean} [queryOptions.cacheXML=true] Set to false if you want a fresh request.
-         * @param {string} [queryOptions.query=Ordered ascending by ID] CAML query passed to SharePoint to control
+         * @param {boolean} [config.cacheXML=true] Set to false if you want a fresh request.
+         * @param {string} [config.query=Ordered ascending by ID] CAML query passed to SharePoint to control
          * the data SharePoint returns.
-         * @param {string} [queryOptions.queryOptions] SharePoint options.
+         * @param {string} [config.queryOptions] SharePoint options.
          * <pre>
          * //Default
          * queryOptions: '' +
@@ -66,7 +67,7 @@ angular.module('angularPoint')
          * });
          * </pre>
          */
-        function Query(queryOptions, model) {
+        function Query(config, model) {
             var query = this;
             var defaults = {
                 /** Container to hold returned entities */
@@ -105,7 +106,7 @@ angular.module('angularPoint')
                 defaults.webURL = apConfig.defaultUrl;
             }
 
-            _.extend(query, defaults, queryOptions);
+            _.extend(query, defaults, config);
 
 
             /** Key/Value mapping of SharePoint properties to SPServices properties */
@@ -205,7 +206,21 @@ angular.module('angularPoint')
             return model.searchLocalCache(value, opts);
         };
 
+        /**
+         * @ngdoc function
+         * @name angularPoint.apQueryFactory:create
+         * @methodOf angularPoint.apQueryFactory
+         * @param {object} config Options object.
+         * @description
+         * Instantiates and returns a new Query.
+         */
+        var create = function (config, model) {
+            return new Query(config, model);
+        };
+
+
         return {
+            create: create,
             Query: Query
         }
 

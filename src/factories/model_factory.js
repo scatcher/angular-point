@@ -2,20 +2,15 @@
 
 /**
  * @ngdoc object
- * @name Model
+ * @name angularPoint.apModelFactory
  * @description
+ * Exposes the model prototype and a constructor to instantiate a new Model.
  */
 angular.module('angularPoint')
     .factory('apModelFactory', function (apModalService, apCacheService, apDataService, apListFactory, apListItemFactory, apQueryFactory, apUtilityService, $q, toastr) {
 
         var defaultQueryName = 'primary';
 
-        /** In the event that a factory isn't specified, just use a
-         * standard constructor to allow it to inherit from ListItem */
-        var StandardListItem = function (item) {
-            var self = this;
-            _.extend(self, item);
-        };
 
         /**
          * @ngdoc function
@@ -29,14 +24,14 @@ angular.module('angularPoint')
          * - builds "model.list" with constructor
          * - adds "getAllListItems" function
          * - adds "addNewItem" function
-         * @param {object} options Object containing optional params.
-         * @param {object} [options.factory=StandardListItem] - Constructor function for individual list items.
-         * @param {object} options.list - Definition of the list in SharePoint; This object will
+         * @param {object} config Object containing optional params.
+         * @param {object} [config.factory = apListItemFactory.createGenericFactory()] - Constructor function for individual list items.
+         * @param {object} config.list - Definition of the list in SharePoint; This object will
          * be passed to the list constructor to extend further
-         * @param {string} options.list.title - List name, no spaces.  Offline XML file will need to be
+         * @param {string} config.list.title - List name, no spaces.  Offline XML file will need to be
          * named the same (ex: CustomList so xml file would be /dev/CustomList.xml)
-         * @param {string} options.list.guid - Unique SharePoint ID (ex: '{3DBEB25A-BEF0-4213-A634-00DAF46E3897}')
-         * @param {object[]} options.list.customFields - Maps SharePoint fields with names we'll use within the
+         * @param {string} config.list.guid - Unique SharePoint ID (ex: '{3DBEB25A-BEF0-4213-A634-00DAF46E3897}')
+         * @param {object[]} config.list.customFields - Maps SharePoint fields with names we'll use within the
          * application.  Identifies field types and formats accordingly.  Also denotes if a field is read only.
          * @constructor
          *
@@ -108,23 +103,23 @@ angular.module('angularPoint')
          * });
          * </pre>
          */
-        function Model(options) {
+        function Model(config) {
             var model = this;
             var defaults = {
                 data: [],
-                factory: StandardListItem,
+                factory: apListItemFactory.createGenericFactory(),
                 /** Date/Time of last communication with server */
                 lastServerUpdate: null,
                 queries: {}
             };
 
-            _.extend(model, defaults, options);
+            _.extend(model, defaults, config);
 
             /** Use list constructor to decorate */
-            model.list = new apListFactory.List(model.list);
+            model.list = apListFactory.create(model.list);
 
             /** Set the constructor's prototype to inherit from ListItem so we can inherit functionality */
-            model.factory.prototype = new apListItemFactory.ListItem();
+            model.factory.prototype = apListItemFactory.create();
 
             /** Make the model directly accessible from the list item */
             model.factory.prototype.getModel = function () {
@@ -434,7 +429,7 @@ angular.module('angularPoint')
 
             queryOptions = _.extend({}, defaults, queryOptions);
 
-            model.queries[queryOptions.name] = new apQueryFactory.Query(queryOptions, model);
+            model.queries[queryOptions.name] = apQueryFactory.create(queryOptions, model);
 
             /** Return the newly created query */
             return model.queries[queryOptions.name];
@@ -865,8 +860,44 @@ angular.module('angularPoint')
             }
         };
 
+        /**
+         * @ngdoc function
+         * @name angularPoint.apModelFactory:create
+         * @methodOf angularPoint.apModelFactory
+         * @param {object} config Options object.
+         * @description
+         * Instantiates and returns a new Model.
+         * @example
+         * <pre>
+         * var model = apModelFactory.create({
+         *     factory: Task,
+         *     list: {
+         *         title: 'Tasks', //Maps to the offline XML file in dev folder (no spaces)
+         *         // List GUID can be found in list properties in SharePoint designer
+         *         guid: '{DBA4535D-D8F3-4D65-B7C0-7E970AE3A52D}',
+         *         customFields: [
+         *             // Array of objects mapping each SharePoint field to a property on a list item object
+         *             {internalName: 'Title', objectType: 'Text', mappedName: 'title', readOnly: false},
+         *             {internalName: 'Description', objectType: 'Text', mappedName: 'description', readOnly: false},
+         *             {internalName: 'Priority', objectType: 'Text', mappedName: 'priority', readOnly: false},
+         *             {internalName: 'Status', objectType: 'Text', mappedName: 'status', readOnly: false},
+         *             {internalName: 'RequestedBy', objectType: 'User', mappedName: 'requestedBy', readOnly: false},
+         *             {internalName: 'AssignedTo', objectType: 'User', mappedName: 'assignedTo', readOnly: false},
+         *             {internalName: 'EstimatedEffort', objectType: 'Integer', mappedName: 'estimatedEffort', readOnly: false},
+         *             {internalName: 'PercentComplete', objectType: 'Integer', mappedName: 'percentComplete', readOnly: false}
+         *         ]
+         *     }
+         * });
+         * </pre>
+         */
+        var create = function (config) {
+            return new Model(config);
+        };
+
         return {
+            create: create,
             Model: Model
+
         };
 
     });
