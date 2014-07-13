@@ -69,16 +69,58 @@ falls within the date range provided</p>
 </li>
 <li><h3 id="methods_resolvepermissions">resolvePermissions(permissionsMask)</h3>
 <div class="resolvepermissions"><div class="angularpoint-aputilityservice-page angularpoint-aputilityservice-resolvepermissions-page"><p>Converts permMask into something usable to determine permission level for current user.  Typically used
-directly from a list item.  See ListItem.resolvePermissions.
-<pre class="prettyprint linenums">
-someListItem.resolvePermissions('0x0000000000000010');
-</pre>
+directly from a list item.  See ListItem.resolvePermissions.</p>
+<h6 id="methods_resolvepermissions_additional-info">Additional Info</h6>
+
+<ul>
+<li><a href="http://sympmarc.com/2009/02/03/permmask-in-sharepoint-dvwps/">PermMask in SharePoint DVWPs</a></li>
+<li><a href="http://spservices.codeplex.com/discussions/208708">$().SPServices.SPLookupAddNew and security trimming</a></li>
+</ul>
 </div><h5 id="methods_resolvepermissions_parameters">Parameters</h5><table class="variables-matrix table table-bordered table-striped"><thead><tr><th>Param</th><th>Type</th><th>Details</th></tr></thead><tbody><tr><td>permissionsMask</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="angularpoint-aputilityservice-page angularpoint-aputilityservice-resolvepermissions-page"><p>The WSS Rights Mask is an 8-byte, unsigned integer that specifies
 the rights that can be assigned to a user or site group. This bit mask can have zero or more flags set.</p>
-</div></td></tr></tbody></table><h5 id="methods_resolvepermissions_returns">Returns</h5><table class="variables-matrix"><tr><td><a href="" class="label type-hint type-hint-object">object</a></td><td><div class="angularpoint-aputilityservice-page angularpoint-aputilityservice-resolvepermissions-page"><p>property for each permission level identifying if current user has rights (true || false)</p>
+</div></td></tr></tbody></table><h5 id="methods_resolvepermissions_returns">Returns</h5><table class="variables-matrix"><tr><td><a href="" class="label type-hint type-hint-object">object</a></td><td><div class="angularpoint-aputilityservice-page angularpoint-aputilityservice-resolvepermissions-page"><p>Object with properties for each permission level identifying if current user has rights (true || false)</p>
 </div></td></tr></table><h4 id="methods_resolvepermissions_example">Example</h4>
 <div class="example"><div class="angularpoint-aputilityservice-page angularpoint-aputilityservice-resolvepermissions-page"><pre class="prettyprint linenums">
-apUtilityService.resolvePermissions('0x0000000000000010');
+var perm = apUtilityService.resolvePermissions('0x0000000000000010');
+</pre>
+Example of what the returned object would look like
+for a site admin.
+<pre class="prettyprint linenums">
+perm = {
+   "ViewListItems":true,
+   "AddListItems":true,
+   "EditListItems":true,
+   "DeleteListItems":true,
+   "ApproveItems":true,
+   "OpenItems":true,
+   "ViewVersions":true,
+   "DeleteVersions":true,
+   "CancelCheckout":true,
+   "PersonalViews":true,
+   "ManageLists":true,
+   "ViewFormPages":true,
+   "Open":true,
+   "ViewPages":true,
+   "AddAndCustomizePages":true,
+   "ApplyThemeAndBorder":true,
+   "ApplyStyleSheets":true,
+   "ViewUsageData":true,
+   "CreateSSCSite":true,
+   "ManageSubwebs":true,
+   "CreateGroups":true,
+   "ManagePermissions":true,
+   "BrowseDirectories":true,
+   "BrowseUserInfo":true,
+   "AddDelPrivateWebParts":true,
+   "UpdatePersonalWebParts":true,
+   "ManageWeb":true,
+   "UseRemoteAPIs":true,
+   "ManageAlerts":true,
+   "CreateAlerts":true,
+   "EditMyUserInfo":true,
+   "EnumeratePermissions":true,
+   "FullMask":true
+}
 </pre>
 </div></div>
 </div>
