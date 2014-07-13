@@ -17,32 +17,16 @@
 </li>
 </ul>
 <div class="member method"><h2 id="methods">Methods</h2>
-<ul class="methods"><li><h3 id="methods_attrtojson">attrToJson(value, objectType, [options], options)</h3>
+<ul class="methods"><li><h3 id="methods_attrtojson">attrToJson(value, objectType, [options])</h3>
 <div class="attrtojson"><div class="angularpoint-apdecodeservice-page angularpoint-apdecodeservice-attrtojson-page"><p>Converts a SharePoint string representation of a field into the correctly formatted JavaScript version
 based on object type.</p>
 </div><h5 id="methods_attrtojson_parameters">Parameters</h5><table class="variables-matrix table table-bordered table-striped"><thead><tr><th>Param</th><th>Type</th><th>Details</th></tr></thead><tbody><tr><td>value</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="angularpoint-apdecodeservice-page angularpoint-apdecodeservice-attrtojson-page"><p>SharePoint string.</p>
-</div></td></tr><tr><td>objectType</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="angularpoint-apdecodeservice-page angularpoint-apdecodeservice-attrtojson-page"><p>The type based on field definition.</p>
-</div> <p><em>(default: 'Text')</em></p></td></tr><tr><td>[options]</td><td><a href="" class="label type-hint type-hint-object">object</a></td><td><div class="angularpoint-apdecodeservice-page angularpoint-apdecodeservice-attrtojson-page"><p>Options to pass to the object constructor.
-Options:[
- DateTime,
- Lookup,
- User,
- LookupMulti,
- UserMulti,
- Boolean,
- Integer,
- Float,
- Counter,
- MultiChoice,
- Currency,
- Number,
- Calc,
- JSON,
- HTML,
- Text [Default]
-]</p>
-</div></td></tr><tr><td>options</td><td><a href="" class="label type-hint type-hint-obj">obj</a></td><td><div class="angularpoint-apdecodeservice-page angularpoint-apdecodeservice-attrtojson-page"><p>Reference to the parent list item which can be used by child constructors.</p>
-</div></td></tr></tbody></table><h5 id="methods_attrtojson_returns">Returns</h5><table class="variables-matrix"><tr><td><a href="" class="label type-hint type-hint-object">*</a></td><td><div class="angularpoint-apdecodeservice-page angularpoint-apdecodeservice-attrtojson-page"><p>The formatted JavaScript value based on field type.</p>
+</div></td></tr><tr><td>objectType</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="angularpoint-apdecodeservice-page angularpoint-apdecodeservice-attrtojson-page"><p>The type based on field definition.  See
+See <a href="#/api/List.FieldDefinition">List.customFields</a> for additional info on how to define a field type.</p>
+</div> <p><em>(default: 'Text')</em></p></td></tr><tr><td>[options]</td><td><a href="" class="label type-hint type-hint-object">object</a></td><td><div class="angularpoint-apdecodeservice-page angularpoint-apdecodeservice-attrtojson-page"><p>Options to pass to the object constructor.</p>
+</div></td></tr><tr><td>[options.entity]</td><td><a href="" class="label type-hint type-hint-object">object</a></td><td><div class="angularpoint-apdecodeservice-page angularpoint-apdecodeservice-attrtojson-page"><p>Reference to the parent list item which can be used by child constructors.</p>
+</div></td></tr><tr><td>[options.propertyName]</td><td><a href="" class="label type-hint type-hint-object">object</a></td><td><div class="angularpoint-apdecodeservice-page angularpoint-apdecodeservice-attrtojson-page"><p>Name of property on the list item.</p>
+</div></td></tr></tbody></table><h5 id="methods_attrtojson_returns">Returns</h5><table class="variables-matrix"><tr><td><a href="" class="label type-hint type-hint-object">*</a></td><td><div class="angularpoint-apdecodeservice-page angularpoint-apdecodeservice-attrtojson-page"><p>The newly instantiated JavaScript value based on field type.</p>
 </div></td></tr></table></div>
 </li>
 <li><h3 id="methods_parsefieldversions">parseFieldVersions(responseXML, fieldDefinition)</h3>

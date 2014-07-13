@@ -5,6 +5,15 @@ NG_DOCS={
   "pages": [
     {
       "section": "api",
+      "id": "angularPoint",
+      "shortName": "angularPoint",
+      "type": "overview",
+      "moduleName": "angularPoint",
+      "shortDescription": "This is the primary angularPoint module and needs to be listed in your app.js dependencies to gain use of AngularPoint",
+      "keywords": "angularpoint api app dependencies functionality gain js listed module overview primary project"
+    },
+    {
+      "section": "api",
       "id": "angularPoint.apCacheService",
       "shortName": "angularPoint.apCacheService",
       "type": "service",
@@ -46,7 +55,7 @@ NG_DOCS={
       "type": "service",
       "moduleName": "angularPoint",
       "shortDescription": "Processes the XML received from SharePoint and converts it into JavaScript objects based on predefined field types.",
-      "keywords": "allow allows angularpoint apcacheservice apconfig apdecodeservice api apqueueservice aputilityservice array attributes based batch boolean browsers cache calc call change child chunks configuration constructors conversions converts correctly counter ctor currency cut data datetime definition definitions don downside elements entities entity evergreen exist factory field fielddefinition filter find float formatted function getcache getlistitems handle hit html includeallattrs integer item items iterate javascript json large leading list lists local localcache long lookup lookupmulti mappedname mapping maps merged mode model modified multichoice node number object objects objecttype optional optionally options ows_ parent parsed pass performance post predefined prevent processed processes processing promise provided query received reference removeows replace replaced representation resolved resolves response responsexml return returned returning returns rows running server service set sharepoint slow slowdowns spservices spxmltojson store stored string stripped takes target text throttle true type types typically ui unnecessarily update updated updating user usermulti version versions web webservice xml"
+      "keywords": "additional allow allows angularpoint apcacheservice apconfig apdecodeservice api apqueueservice aputilityservice array attributes based batch browsers cache call change child chunks configuration constructors conversions converts correctly ctor customfields cut data define definition definitions don downside elements entities entity evergreen exist factory field fielddefinition filter find formatted function getcache getlistitems handle hit includeallattrs info instantiated item items iterate javascript large leading list lists local localcache long mappedname mapping maps merged mode model modified newly node number object objects objecttype optional optionally options ows_ parent parsed pass performance post predefined prevent processed processes processing promise property propertyname provided query received reference removeows replace replaced representation resolved resolves response responsexml return returned returning returns rows running server service set sharepoint slow slowdowns spservices spxmltojson store stored string stripped takes target text throttle true type types typically ui unnecessarily update updated updating version versions web webservice xml"
     },
     {
       "section": "api",
@@ -128,6 +137,24 @@ NG_DOCS={
       "moduleName": "angularPoint",
       "shortDescription": "Provides shared utility functionality across the application.",
       "keywords": "$q angularpoint apconfig api application aputilityservice array article assigned based batches batchprocess bit break browser buildprojectsummary change chunks codeplex comparison complete context convert converts create current cuts dates datetocheck defaults defer deferred delay desired determine directly don easier easily enddate entities evaluate evaluates event example executed extendprojectsummary fall falls false fictitious firebase flags formatted function functionality getalllistitems group hang http identifying int integer intensive ints item items iterate iterating javascript js length level list listitem lock long mask maximum milliseconds model module nczonline net notify number object online pausing performing permission permissionsmask permmask portion problem process processed processing projectmodel projects projectsmodel promise property provided range reference resolve resolvepermissions return rights running service set shared site somelistitem specifies startdate starting stuff sufficient summary summaryobject sync thread time typically ui unsigned usable user users utility var wss yyyymmdd"
+    },
+    {
+      "section": "api",
+      "id": "angularPoint.directive:apAttachments",
+      "shortName": "apAttachments",
+      "type": "directive",
+      "moduleName": "angularPoint",
+      "shortDescription": "Uses an iFrame to hijack the portions of the upload attachment form that we would like to show to the user. Adds",
+      "keywords": "adds allow angularpoint api attachment attachments callback complete data-ap-attachments data-change-event data-list-item delete directive disassociate display event fetchattachments form functionality hijack iframe item linked list listed listeners listitem opening portions provide queries resets span updated upload user verification view waits"
+    },
+    {
+      "section": "api",
+      "id": "angularPoint.directive:apSelect",
+      "shortName": "apSelect",
+      "type": "directive",
+      "moduleName": "angularPoint",
+      "shortDescription": "A SharePoint lookup value is represented as an object containing a lookupId and lookupValue.",
+      "keywords": "acronym activetask allows angularpoint api applicable arr array attempts attribute categories category class coming control-label create data-ap-select data-arr data-lookup-value data-multi data-target directive display field form form-group item items list lookup lookupid lookupvalue mind multi-select object objects options populate providing pushes reference referencing represented select select2 selected sets sharepoint span target taskcategories title true typically"
     },
     {
       "section": "api",
@@ -268,10 +295,19 @@ NG_DOCS={
       "section": "api",
       "id": "List",
       "shortName": "List",
-      "type": "function",
+      "type": "object",
       "moduleName": "List",
       "shortDescription": "List Object Constructor.  This is handled automatically when creating a new model so there shouldn&#39;t be",
-      "keywords": "account api application attribute automatically basing call config creating customfields details dev field file firstname folder function guid handled initialization internal internalname lastname list ll located lookup manually mappedname mapping maps model names non-standard object objecttype offline organization parameters projectslist readonly reason settings sharepoint shouldn spaces text title type unique user xml"
+      "keywords": "account additional api application attribute automatically basing call config creating customfields define details dev field fielddefinition file firstname folder guid handled info initialization internal internalname lastname list ll located lookup manually mappedname mapping maps model names non-standard object objecttype offline organization parameters projectslist readonly reason settings sharepoint shouldn spaces text title type unique user xml"
+    },
+    {
+      "section": "api",
+      "id": "List.FieldDefinition",
+      "shortName": "List.FieldDefinition",
+      "type": "object",
+      "moduleName": "List",
+      "shortDescription": "Defined in the MODEL.list.fieldDefinitions array.  Each field definition object maps an internal field",
+      "keywords": "actual add additional angular api apmodelfactory app array attribute attributes automatically base broken calculated call changed choice choice_field_name choices collection column convert converts counter create created current customfields dashes data defined definition deliminator delimited description designer desired dev display element error extend factory fetch field fielddefinition fielddefinitions fields file float folder form function generally getfielddefinition guid ignore info inherits initial initially int integer internal internalname invalid item items javascript js json list listitem local lookup lookupid lookupvalue manager mapped mappedname mapping maps methods model modelname module multiple named newly number obj object objects objecttype offline parsed passed point post primary priority processing project properties property prototype pulls push read read-only readonly records reference registerquery representing requested requirement respect retrieve return returned returns saving second selected service set sharepoint single site slashes space spaces store stored string strings subsequent task taskermodel tasks text thrown title true type typically unescape unique updated updates usage user valid var xml"
     },
     {
       "section": "api",
@@ -578,6 +614,15 @@ NG_DOCS={
       "moduleName": "Query",
       "shortDescription": "Query SharePoint, pull down all initial records on first call along with list definition if using",
       "keywords": "api array call calls changes dataservice definition execute executequery function getlistitemchangessincetoken getlistitems initial item larger list note objects operation options passed pull pulls query records sharepoint subsequent"
+    },
+    {
+      "section": "api",
+      "id": "User",
+      "shortName": "User",
+      "type": "function",
+      "moduleName": "User",
+      "shortDescription": "Allows for easier distinction when debugging if object type is shown as a User.  Turns a delimited &quot;;#&quot;",
+      "keywords": "allows api create debugging delimited depeinding distinction easier email field function joe loginname lookupid lookupvalue maker object settings sipaddress sr string title turns type user widget"
     }
   ],
   "apis": {

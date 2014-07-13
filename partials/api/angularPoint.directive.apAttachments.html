@@ -1,0 +1,28 @@
+<h1><code ng:non-bindable="">apAttachments</code>
+<div><span class="hint">directive in module <code ng:non-bindable="">angularPoint</code>
+</span>
+</div>
+</h1>
+<div><h2 id="description">Description</h2>
+<div class="description"><div class="angularpoint-directive-page angularpoint-directive-apattachments-page"><p>Uses an iFrame to hijack the portions of the upload attachment form that we would like to show to the user. Adds
+event listeners on the form and waits for an upload to complete, then queries for the updated list of attachments
+to display below the form, and resets the iFrame.  The listed attachments are linked to allow opening and also
+provide delete functionality to disassociate with the list item.</p>
+</div></div>
+<h2 id="usage">Usage</h2>
+<div class="usage">as attribute<pre class="prettyprint linenums">&lt;span ap-attachments
+     list-item="{object}"
+     [change-event]="{function}"&gt;
+   ...
+&lt;/span&gt;</pre>
+<h4 id="usage_parameters">Parameters</h4><table class="variables-matrix table table-bordered table-striped"><thead><tr><th>Param</th><th>Type</th><th>Details</th></tr></thead><tbody><tr><td>listItem</td><td><a href="" class="label type-hint type-hint-object">object</a></td><td><div class="angularpoint-directive-page angularpoint-directive-apattachments-page"><p>The list item that we&#39;d like to view/add attachments.</p>
+</div></td></tr><tr><td>[changeEvent]</td><td><a href="" class="label type-hint type-hint-function">function</a></td><td><div class="angularpoint-directive-page angularpoint-directive-apattachments-page"><p>Callback when the attachments have been updated.</p>
+</div></td></tr></tbody></table></div>
+<h2 id="example">Example</h2>
+<div class="example"><div class="angularpoint-directive-page angularpoint-directive-apattachments-page"><pre class="prettyprint linenums">
+&lt;span data-ap-attachments
+ data-list-item="verification"
+ data-change-event="fetchAttachments"&gt;&lt;/span&gt;
+</pre>
+</div></div>
+</div>
