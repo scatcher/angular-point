@@ -297,8 +297,8 @@ NG_DOCS={
       "shortName": "ListItem",
       "type": "object",
       "moduleName": "ListItem",
-      "shortDescription": "Base prototype which all list items inherit CRUD functionality that can be called directly from obj.",
-      "keywords": "api base called crud directly functionality inherit items list listitem obj object prototype"
+      "shortDescription": "Base prototype which all list items inherit from.  All methods can be accessed through this prototype so all CRUD",
+      "keywords": "accessed api base called crud directly functionality inherit item items list listitem methods object prototype"
     },
     {
       "section": "api",
