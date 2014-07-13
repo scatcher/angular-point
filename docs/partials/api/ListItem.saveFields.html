@@ -9,33 +9,29 @@ Alternative to saving all fields</p>
 </div></div>
 <h2 id="usage">Usage</h2>
 <div class="usage"><pre class="prettyprint linenums">saveFields(fieldArray, [options]);</pre>
-<h4 id="usage_parameters">Parameters</h4><table class="variables-matrix table table-bordered table-striped"><thead><tr><th>Param</th><th>Type</th><th>Details</th></tr></thead><tbody><tr><td>fieldArray</td><td><a href="" class="label type-hint type-hint-array">array</a></td><td><div class="listitem-savefields-page"><p>Array of internal field names that should be saved to SharePoint.
-<pre class="prettyprint linenums">
-//Create an array to store all promises.
-var queue = [],
-progressCounter = 0;
-
-//We're only updating a single field on each entity so it's much
-// faster to use ListItem.saveFields() so we don't need to push the
-// entire object back to the server.
-_.each(selectedItems, function (entity) {
-   entity.title = title + ': Now Updated!';
-   var request = entity.saveFields('title').then(function() {
-       progressCounter++;
-   }
-   queue.push(request);
- });
-
-$q.all(queue).then(function() {
-    // All items have now been processed so we can do something...but
-    // the view is automatically updated so we don't need to bother
-    // if there's no other required business logic.
-});
-</pre>
+<h4 id="usage_parameters">Parameters</h4><table class="variables-matrix table table-bordered table-striped"><thead><tr><th>Param</th><th>Type</th><th>Details</th></tr></thead><tbody><tr><td>fieldArray</td><td><a href="" class="label type-hint type-hint-array">array</a></td><td><div class="listitem-savefields-page"><p>Array of internal field names that should be saved to SharePoint.</p>
 </div></td></tr><tr><td>[options]</td><td><a href="" class="label type-hint type-hint-object">object</a></td><td><div class="listitem-savefields-page"><p>Optionally pass params to the data service.</p>
 </div></td></tr><tr><td>options.updateAllCaches</td><td><a href="" class="label type-hint type-hint-boolean">boolean</a></td><td><div class="listitem-savefields-page"><p>Search through the cache for each query to ensure entity is
 updated everywhere.  This is more process intensive so by default we only update the cached entity in the
 cache where this entity is currently stored.</p>
 </div> <p><em>(default: false)</em></p></td></tr></tbody></table><h4 id="usage_returns">Returns</h4><table class="variables-matrix"><tr><td><a href="" class="label type-hint type-hint-object">object</a></td><td><div class="listitem-savefields-page"><p>Promise which resolves with the updated list item from the server.</p>
 </div></td></tr></table></div>
+<h2 id="example">Example</h2>
+<div class="example"><div class="listitem-savefields-page"><pre class="prettyprint linenums">
+// Example of saveFields function on a fictitious
+// app/modules/tasks/TaskDetailsCtrl.js modal form.
+// Similar to saveChanges but instead we only save
+// specified fields instead of pushing everything.
+$scope.updateStatus = function(task) {
+     task.saveFields(['status', 'notes']).then(function() {
+         // Successfully updated the status and
+         // notes fields for the given task
+
+         }, function() {
+         // Failure to update the field
+
+         });
+}
+</pre>
+</div></div>
 </div>

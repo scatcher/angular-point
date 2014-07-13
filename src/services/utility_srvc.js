@@ -154,21 +154,61 @@ angular.module('angularPoint')
          * @ngdoc function
          * @name angularPoint.apUtilityService:resolvePermissions
          * @methodOf angularPoint.apUtilityService
+         * @param {string} permissionsMask The WSS Rights Mask is an 8-byte, unsigned integer that specifies
+         * the rights that can be assigned to a user or site group. This bit mask can have zero or more flags set.
          * @description
          * Converts permMask into something usable to determine permission level for current user.  Typically used
          * directly from a list item.  See ListItem.resolvePermissions.
-         * <pre>
-         * someListItem.resolvePermissions('0x0000000000000010');
-         * </pre>
-         * @param {string} permissionsMask The WSS Rights Mask is an 8-byte, unsigned integer that specifies
-         * the rights that can be assigned to a user or site group. This bit mask can have zero or more flags set.
+         *
+         * <h3>Additional Info</h3>
+         *
+         * -   [PermMask in SharePoint DVWPs](http://sympmarc.com/2009/02/03/permmask-in-sharepoint-dvwps/)
+         * -   [$().SPServices.SPLookupAddNew and security trimming](http://spservices.codeplex.com/discussions/208708)
+         *
+         * @returns {object} Object with properties for each permission level identifying if current user has rights (true || false)
          * @example
          * <pre>
-         * apUtilityService.resolvePermissions('0x0000000000000010');
+         * var perm = apUtilityService.resolvePermissions('0x0000000000000010');
          * </pre>
-         * @returns {object} property for each permission level identifying if current user has rights (true || false)
-         * @link: http://sympmarc.com/2009/02/03/permmask-in-sharepoint-dvwps/
-         * @link: http://spservices.codeplex.com/discussions/208708
+         * Example of what the returned object would look like
+         * for a site admin.
+         * <pre>
+         * perm = {
+         *    "ViewListItems":true,
+         *    "AddListItems":true,
+         *    "EditListItems":true,
+         *    "DeleteListItems":true,
+         *    "ApproveItems":true,
+         *    "OpenItems":true,
+         *    "ViewVersions":true,
+         *    "DeleteVersions":true,
+         *    "CancelCheckout":true,
+         *    "PersonalViews":true,
+         *    "ManageLists":true,
+         *    "ViewFormPages":true,
+         *    "Open":true,
+         *    "ViewPages":true,
+         *    "AddAndCustomizePages":true,
+         *    "ApplyThemeAndBorder":true,
+         *    "ApplyStyleSheets":true,
+         *    "ViewUsageData":true,
+         *    "CreateSSCSite":true,
+         *    "ManageSubwebs":true,
+         *    "CreateGroups":true,
+         *    "ManagePermissions":true,
+         *    "BrowseDirectories":true,
+         *    "BrowseUserInfo":true,
+         *    "AddDelPrivateWebParts":true,
+         *    "UpdatePersonalWebParts":true,
+         *    "ManageWeb":true,
+         *    "UseRemoteAPIs":true,
+         *    "ManageAlerts":true,
+         *    "CreateAlerts":true,
+         *    "EditMyUserInfo":true,
+         *    "EnumeratePermissions":true,
+         *    "FullMask":true
+         * }
+         * </pre>
          */
         function resolvePermissions(permissionsMask) {
             var permissionSet = {};

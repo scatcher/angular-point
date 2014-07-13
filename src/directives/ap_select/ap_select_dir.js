@@ -1,5 +1,45 @@
 'use strict';
 
+/**
+ * @ngdoc directive
+ * @name angularPoint.directive:apSelect
+ * @element span
+ * @function
+ *
+ * @description
+ * A SharePoint lookup value is represented as an object containing a lookupId and lookupValue.
+ * ```
+ * Lookup = {
+ *     lookupId: 1,
+ *     lookupValue: 'Typically the Title of the Item we're referencing'
+ * }
+ * ```
+ * With that in mind, we know that the list providing lookup options is made up of SharePoint list items.  This
+ * directive attempts to create a select using the array of lookup options and once selected, sets field referencing
+ * the target object with the applicable `lookupValue` and `lookupId`.
+ *
+ *
+ * @param {object} target Reference to the target attribute on the list item.
+ * @param {object[]} arr Array of list items used to populate the options for the select.
+ * @param {string} [lookupValue='title'] Name of the attribute to use as the display value for each item
+ * in `arr` array.
+ * @param {boolean} [multi=false] Allows us to use a multi-select using Select2.
+ *
+ * @example
+ * Form field below allows us to display a multi-select with options coming
+ * from a taskCategories array.  Each item selected pushes an object into
+ * the activeTask.categories array.  Each of these objects will have a
+ * lookupId = category.id and lookupValue = category.acronym.
+ * <pre>
+ * <div class="form-group">
+ *      <label class="control-label">Task Categories</label>
+ *      <span data-ap-select data-multi="true"
+ *          data-arr="taskCategories"
+ *          data-target="activeTask.categories"
+ *          data-lookup-value="'acronym'"></span>
+ *  </div>
+ * </pre>
+ */
 angular.module('angularPoint')
     .directive('apSelect', function () {
         return {

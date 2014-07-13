@@ -209,36 +209,19 @@ angular.module('angularPoint')
          * Converts a SharePoint string representation of a field into the correctly formatted JavaScript version
          * based on object type.
          * @param {string} value SharePoint string.
-         * @param {string} [objectType='Text'] The type based on field definition.
+         * @param {string} [objectType='Text'] The type based on field definition.  See
+         * See [List.customFields](#/api/List.FieldDefinition) for additional info on how to define a field type.
          * @param {object} [options] Options to pass to the object constructor.
-         * Options:[
-         *  DateTime,
-         *  Lookup,
-         *  User,
-         *  LookupMulti,
-         *  UserMulti,
-         *  Boolean,
-         *  Integer,
-         *  Float,
-         *  Counter,
-         *  MultiChoice,
-         *  Currency,
-         *  Number,
-         *  Calc,
-         *  JSON,
-         *  HTML,
-         *  Text [Default]
-         * ]
-         * @param {obj} options Reference to the parent list item which can be used by child constructors.
-         * @returns {*} The formatted JavaScript value based on field type.
+         * @param {object} [options.entity] Reference to the parent list item which can be used by child constructors.
+         * @param {object} [options.propertyName] Name of property on the list item.
+         * @returns {*} The newly instantiated JavaScript value based on field type.
          */
         function attrToJson(value, objectType, options) {
 
             var colValue;
 
             switch (objectType) {
-                case 'DateTime':
-                case 'datetime':	// For calculated columns, stored as datetime;#value
+                case 'DateTime': // For calculated columns, stored as datetime;#value
                     // Dates have dashes instead of slashes: ows_Created='2009-08-25 14:24:48'
                     colValue = dateToJsonObject(value);
                     break;
@@ -263,8 +246,7 @@ angular.module('angularPoint')
                     break;
                 case 'Currency':
                 case 'Number':
-                case 'Float':
-                case 'float':	// For calculated columns, stored as float;#value
+                case 'Float': // For calculated columns, stored as float;#value
                     colValue = floatToJsonObject(value);
                     break;
                 case 'Calc':
@@ -279,6 +261,7 @@ angular.module('angularPoint')
                 case 'JSON':
                     colValue = parseJSON(value);
                     break;
+                case 'Choice':
                 default:
                     // All other objectTypes will be simple strings
                     colValue = stringToJsonObject(value);
@@ -423,6 +406,7 @@ angular.module('angularPoint')
         /**
          * @ngdoc function
          * @name Lookup.getEntity
+         * @methodOf Lookup
          * @description
          * Allows us to create a promise that will resolve with the entity referenced in the lookup whenever that list
          * item is registered.
@@ -465,6 +449,7 @@ angular.module('angularPoint')
         /**
          * @ngdoc function
          * @name Lookup.getProperty
+         * @methodOf Lookup
          * @description
          * Returns a promise which resolves with the value of a property in the referenced object.
          * @param {string} propertyPath The dot separated propertyPath.
@@ -495,6 +480,32 @@ angular.module('angularPoint')
             return deferred.promise;
         };
 
+        /**
+         * @ngdoc function
+         * @name User
+         * @description
+         * Allows for easier distinction when debugging if object type is shown as a User.  Turns a delimited ";#"
+         * string into an object shown below depeinding on field settings:
+         * <pre>
+         * {
+         *      lookupId: 1,
+         *      lookupValue: 'Joe User'
+         * }
+         * </pre>
+         * or
+         * <pre>
+         * {
+         *      lookupId: 1,
+         *      lookupValue: 'Joe User',
+         *      loginName: 'joe.user',
+         *      email: 'joe@company.com',
+         *      sipAddress: 'whatever',
+         *      title: 'Sr. Widget Maker'
+         * }
+         * </pre>
+         * @param {string} s Delimited string used to create a User object.
+         * @constructor
+         */
         function User(s) {
             var self = this;
             var thisUser = new apUtilityService.SplitIndex(s);

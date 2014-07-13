@@ -17,6 +17,15 @@ try {
     }
   ]);
 }
+/**
+ * @ngdoc overview
+ * @module
+ * @name angularPoint
+ * @description
+ * This is the primary angularPoint module and needs to be listed in your app.js dependencies to gain use of AngularPoint
+ * functionality in your project.
+ * @installModule
+ */
 angular.module('angularPoint', ['toastr']).constant('apConfig', {
   appTitle: 'Angular-Point',
   debugEnabled: true,
@@ -65,14 +74,13 @@ angular.module('angularPoint').service('apCacheService', [
       }
     };
     /**
-         * @ngdoc object
-         * @name angularPoint.apCacheService.EntityCache
+         * @name EntityCache
          * @description
          * Cache constructor that maintains a queue of all requests for a list item, counter for the number of times
          * the cache has been updated, timestamp of last update, and add/update/remove functionality.
+         * @constructor apCacheService
          * @param {string} entityType GUID for list the list item belongs to.
          * @param {number} entityId The entity.id.
-         * @requires angularPoint.apCacheService
          */
     var EntityCache = function (entityType, entityId) {
       var self = this;
@@ -82,9 +90,7 @@ angular.module('angularPoint').service('apCacheService', [
       self.entityId = entityId;
     };
     /**
-         * @ngdoc function
-         * @name angularPoint.apCacheService.EntityCache:getEntity
-         * @mthodOf angularPoint.apCacheService.EntityCache
+         * @name EntityCache.getEntity
          * @description
          * Promise which returns the requested entity once it has been registered in the cache.
          */
@@ -201,10 +207,11 @@ angular.module('angularPoint').service('apCacheService', [
  * @ngdoc service
  * @name apDataService
  * @description
- * Handles all interaction with SharePoint web services
+ * Handles all interaction with SharePoint's SOAP web services.  Mostly a wrapper for SPServices functionality.
  *
- * For additional information on many of these web service calls, see Marc Anderson's SPServices documentation
- *  http://spservices.codeplex.com/documentation
+ * For additional information on many of these web service calls, see Marc Anderson's
+ * [SPServices](http://spservices.codeplex.com/documentation) documentation.
+ *
  *
  *  @requires angularPoint.apQueueService
  *  @requires angularPoint.apConfig
@@ -233,15 +240,15 @@ angular.module('angularPoint').service('apDataService', [
          * @description
          * Returns the version history for a field in a list item.
          * @param {object} payload Configuration object passed to SPServices.
-         <pre>
-         var payload = {
-                operation: 'GetVersionCollection',
-                webURL: apConfig.defaultUrl,
-                strlistID: model.list.guid,
-                strlistItemID: listItem.id,
-                strFieldName: fieldDefinition.internalName
-            };
-         </pre>
+         * <pre>
+         * var payload = {
+         *        operation: 'GetVersionCollection',
+         *        webURL: apConfig.defaultUrl,
+         *        strlistID: model.list.guid,
+         *        strlistItemID: listItem.id,
+         *        strFieldName: fieldDefinition.internalName
+         *    };
+         * </pre>
          * @param {object} fieldDefinition Field definition object from the model.
          * @returns {object[]} Promise which resolves with an array of list item changes for the specified field.
          */
@@ -291,14 +298,14 @@ angular.module('angularPoint').service('apDataService', [
          * requested collection.
          *
          * @example
-         <pre>
-         apDataService.getCollection({
-                operation: "GetGroupCollectionFromUser",
-                userLoginName: $scope.state.selectedUser.LoginName
-                }).then(function (response) {
-                    postProcessFunction(response);
-               });
-         </pre>
+         * <pre>
+         * apDataService.getCollection({
+         *        operation: "GetGroupCollectionFromUser",
+         *        userLoginName: $scope.state.selectedUser.LoginName
+         *        }).then(function (response) {
+         *            postProcessFunction(response);
+         *       });
+         * </pre>
          */
     var getCollection = function (options) {
       apQueueService.increase();
@@ -1163,34 +1170,17 @@ angular.module('angularPoint').service('apDecodeService', [
          * Converts a SharePoint string representation of a field into the correctly formatted JavaScript version
          * based on object type.
          * @param {string} value SharePoint string.
-         * @param {string} [objectType='Text'] The type based on field definition.
+         * @param {string} [objectType='Text'] The type based on field definition.  See
+         * See [List.customFields](#/api/List.FieldDefinition) for additional info on how to define a field type.
          * @param {object} [options] Options to pass to the object constructor.
-         * Options:[
-         *  DateTime,
-         *  Lookup,
-         *  User,
-         *  LookupMulti,
-         *  UserMulti,
-         *  Boolean,
-         *  Integer,
-         *  Float,
-         *  Counter,
-         *  MultiChoice,
-         *  Currency,
-         *  Number,
-         *  Calc,
-         *  JSON,
-         *  HTML,
-         *  Text [Default]
-         * ]
-         * @param {obj} options Reference to the parent list item which can be used by child constructors.
-         * @returns {*} The formatted JavaScript value based on field type.
+         * @param {object} [options.entity] Reference to the parent list item which can be used by child constructors.
+         * @param {object} [options.propertyName] Name of property on the list item.
+         * @returns {*} The newly instantiated JavaScript value based on field type.
          */
     function attrToJson(value, objectType, options) {
       var colValue;
       switch (objectType) {
       case 'DateTime':
-      case 'datetime':
         // For calculated columns, stored as datetime;#value
         // Dates have dashes instead of slashes: ows_Created='2009-08-25 14:24:48'
         colValue = dateToJsonObject(value);
@@ -1217,7 +1207,6 @@ angular.module('angularPoint').service('apDecodeService', [
       case 'Currency':
       case 'Number':
       case 'Float':
-      case 'float':
         // For calculated columns, stored as float;#value
         colValue = floatToJsonObject(value);
         break;
@@ -1233,6 +1222,7 @@ angular.module('angularPoint').service('apDecodeService', [
       case 'JSON':
         colValue = parseJSON(value);
         break;
+      case 'Choice':
       default:
         // All other objectTypes will be simple strings
         colValue = stringToJsonObject(value);
@@ -1359,6 +1349,7 @@ angular.module('angularPoint').service('apDecodeService', [
     /**
          * @ngdoc function
          * @name Lookup.getEntity
+         * @methodOf Lookup
          * @description
          * Allows us to create a promise that will resolve with the entity referenced in the lookup whenever that list
          * item is registered.
@@ -1397,6 +1388,7 @@ angular.module('angularPoint').service('apDecodeService', [
     /**
          * @ngdoc function
          * @name Lookup.getProperty
+         * @methodOf Lookup
          * @description
          * Returns a promise which resolves with the value of a property in the referenced object.
          * @param {string} propertyPath The dot separated propertyPath.
@@ -1426,6 +1418,32 @@ angular.module('angularPoint').service('apDecodeService', [
       });
       return deferred.promise;
     };
+    /**
+         * @ngdoc function
+         * @name User
+         * @description
+         * Allows for easier distinction when debugging if object type is shown as a User.  Turns a delimited ";#"
+         * string into an object shown below depeinding on field settings:
+         * <pre>
+         * {
+         *      lookupId: 1,
+         *      lookupValue: 'Joe User'
+         * }
+         * </pre>
+         * or
+         * <pre>
+         * {
+         *      lookupId: 1,
+         *      lookupValue: 'Joe User',
+         *      loginName: 'joe.user',
+         *      email: 'joe@company.com',
+         *      sipAddress: 'whatever',
+         *      title: 'Sr. Widget Maker'
+         * }
+         * </pre>
+         * @param {string} s Delimited string used to create a User object.
+         * @constructor
+         */
     function User(s) {
       var self = this;
       var thisUser = new apUtilityService.SplitIndex(s);
@@ -2601,21 +2619,61 @@ angular.module('angularPoint').service('apUtilityService', [
          * @ngdoc function
          * @name angularPoint.apUtilityService:resolvePermissions
          * @methodOf angularPoint.apUtilityService
+         * @param {string} permissionsMask The WSS Rights Mask is an 8-byte, unsigned integer that specifies
+         * the rights that can be assigned to a user or site group. This bit mask can have zero or more flags set.
          * @description
          * Converts permMask into something usable to determine permission level for current user.  Typically used
          * directly from a list item.  See ListItem.resolvePermissions.
-         * <pre>
-         * someListItem.resolvePermissions('0x0000000000000010');
-         * </pre>
-         * @param {string} permissionsMask The WSS Rights Mask is an 8-byte, unsigned integer that specifies
-         * the rights that can be assigned to a user or site group. This bit mask can have zero or more flags set.
+         *
+         * <h3>Additional Info</h3>
+         *
+         * -   [PermMask in SharePoint DVWPs](http://sympmarc.com/2009/02/03/permmask-in-sharepoint-dvwps/)
+         * -   [$().SPServices.SPLookupAddNew and security trimming](http://spservices.codeplex.com/discussions/208708)
+         *
+         * @returns {object} Object with properties for each permission level identifying if current user has rights (true || false)
          * @example
          * <pre>
-         * apUtilityService.resolvePermissions('0x0000000000000010');
+         * var perm = apUtilityService.resolvePermissions('0x0000000000000010');
          * </pre>
-         * @returns {object} property for each permission level identifying if current user has rights (true || false)
-         * @link: http://sympmarc.com/2009/02/03/permmask-in-sharepoint-dvwps/
-         * @link: http://spservices.codeplex.com/discussions/208708
+         * Example of what the returned object would look like
+         * for a site admin.
+         * <pre>
+         * perm = {
+         *    "ViewListItems":true,
+         *    "AddListItems":true,
+         *    "EditListItems":true,
+         *    "DeleteListItems":true,
+         *    "ApproveItems":true,
+         *    "OpenItems":true,
+         *    "ViewVersions":true,
+         *    "DeleteVersions":true,
+         *    "CancelCheckout":true,
+         *    "PersonalViews":true,
+         *    "ManageLists":true,
+         *    "ViewFormPages":true,
+         *    "Open":true,
+         *    "ViewPages":true,
+         *    "AddAndCustomizePages":true,
+         *    "ApplyThemeAndBorder":true,
+         *    "ApplyStyleSheets":true,
+         *    "ViewUsageData":true,
+         *    "CreateSSCSite":true,
+         *    "ManageSubwebs":true,
+         *    "CreateGroups":true,
+         *    "ManagePermissions":true,
+         *    "BrowseDirectories":true,
+         *    "BrowseUserInfo":true,
+         *    "AddDelPrivateWebParts":true,
+         *    "UpdatePersonalWebParts":true,
+         *    "ManageWeb":true,
+         *    "UseRemoteAPIs":true,
+         *    "ManageAlerts":true,
+         *    "CreateAlerts":true,
+         *    "EditMyUserInfo":true,
+         *    "EnumeratePermissions":true,
+         *    "FullMask":true
+         * }
+         * </pre>
          */
     function resolvePermissions(permissionsMask) {
       var permissionSet = {};
@@ -2723,7 +2781,7 @@ angular.module('angularPoint').factory('apListFactory', [
   'apFieldService',
   function (apConfig, apFieldService) {
     /**
-         * @ngdoc function
+         * @ngdoc object
          * @name List
          * @description
          * List Object Constructor.  This is handled automatically when creating a new model so there shouldn't be
@@ -2735,6 +2793,7 @@ angular.module('angularPoint').factory('apListFactory', [
          * ex: 'ProjectsList' so the offline XML file would be located at dev/ProjectsList.xml
          * @param {object[]} [config.customFields] Mapping of SharePoint field names to the internal names we'll be using
          * in our application.  Also contains field type, readonly attribute, and any other non-standard settings.
+         * See [List.customFields](#/api/List.FieldDefinition) for additional info on how to define a field type.
          * <pre>
          * [
          *   {
@@ -2790,6 +2849,152 @@ angular.module('angularPoint').factory('apListFactory', [
       return list;
     }
     /**
+         * @ngdoc object
+         * @name List.FieldDefinition
+         * @property {string} internalName The actual SharePoint field name.
+         * @property {string} [objectType='Text']
+         * <dl>
+         *     <dt>Boolean</dt>
+         *     <dd>Used to store a TRUE/FALSE value (stored in SharePoint as 0 or 1).</dd>
+         *     <dt>Calc</dt>
+         *     <dd>";#" Delimited String: The first value will be the calculated column value
+         *     type, the second will be the value</dd>
+         *     <dt>Choice</dt>
+         *     <dd>Simple text string but when processing the initial list definition, we
+         *     look for a Choices XML element within the field definition and store each
+         *     value.  We can then retrieve the valid Choices with one of the following:
+         *     ```var fieldDefinition = LISTITEM.getFieldDefinition('CHOICE_FIELD_NAME');```
+         *                                      or
+         *     ```var fieldDefinition = MODELNAME.getFieldDefinition('CHOICE_FIELD_NAME');```
+         *     ```var choices = fieldDefinition.Choices;```
+
+         *     </dd>
+         *     <dt>Counter</dt>
+         *     <dd>Same as Integer. Generally used only for the internal ID field. Its integer
+         *     value is set automatically to be unique with respect to every other item in the
+         *     current list. The Counter type is always read-only and cannot be set through a
+         *     form post.</dd>
+         *     <dt>Currency</dt>
+         *     <dd>Floating point number.</dd>
+         *     <dt>DateTime</dt>
+         *     <dd>Replace dashes with slashes and the "T" deliminator with a space if found.  Then
+         *     converts into a valid JS date object.</dd>
+         *     <dt>Float</dt>
+         *     <dd>Floating point number.</dd>
+         *     <dt>HTML</dt>
+         *     <dd>```_.unescape(STRING)```</dd>
+         *     <dt>Integer</dt>
+         *     <dd>Parses the string to a base 10 int.</dd>
+         *     <dt>JSON</dt>
+         *     <dd>Parses JSON if valid and converts into a a JS object.  If not valid, an error is
+         *     thrown with additional info on specifically what is invalid.</dd>
+         *     <dt>Lookup</dt>
+         *     <dd>Passes string to Lookup constructor where it is broken into an object containing
+         *     a "lookupValue" and "lookupId" attribute.  Inherits additional prototype methods from
+         *     Lookup.  See "Lookup" for more info.</dd>
+         *     See [Lookup](#/api/Lookup) for more information.
+         *     <dt>LookupMulti</dt>
+         *     <dd>Converts multiple delimited ";#" strings into an array of Lookup objects.</dd>
+         *     <dt>MultiChoice</dt>
+         *     <dd>Converts delimited ";#" string into an array of strings representing each of the
+         *     selected choices.  Similar to the single "Choice", the XML Choices are stored in the
+         *     field definition after the initial call is returned from SharePoint so we can reference
+         *     later.
+         *     </dd>
+         *     <dt>Number</dt>
+         *     <dd>Treats as a float.</dd>
+         *     <dt>Text</dt>
+         *     <dd>**Default** No processing of the text string from XML.</dd>
+         *     <dt>User</dt>
+         *     <dd>Similar to Lookup but uses the "User" prototype as a constructor to convert into a
+         *     User object with "lookupId" and "lookupValue" attributes.  The lookupId is the site collection
+         *     ID for the user and the lookupValue is typically the display name.
+         *     See [User](#/api/User) for more information.
+         *     </dd>
+         *     <dt>UserMulti</dt>
+         *     <dd>Parses delimited string to returns an array of User objects.</dd>
+         * </dl>
+         * @property {string} mappedName The attribute name we'd like to use
+         * for this field on the newly created JS object.
+         * @property {boolean} [readOnly=false] When saving, we only push fields
+         * that are mapped and not read only.
+
+         * @description
+         * Defined in the MODEL.list.fieldDefinitions array.  Each field definition object maps an internal field
+         * in a SharePoint list/library to a JavaScript object using the internal SharePoint field name, the field
+         * type, and the desired JavaScript property name to add onto the parsed list item object. Ignore shown usage,
+         * each field definition is just an object within the fieldDefinitions array.
+         *
+         * @example
+         * <pre>
+         * angular.module('App')
+         *  .service('taskerModel', function (apModelFactory) {
+         *     // Object Constructor (class)
+         *     // All list items are passed to the below constructor which inherits from
+         *     // the ListItem prototype.
+         *     function Task(obj) {
+         *         var self = this;
+         *         _.extend(self, obj);
+         *     }
+         *
+         *     // Model Constructor
+         *     var model = apModelFactory.create({
+         *         factory: Task,
+         *         list: {
+         *             // Maps to the offline XML file in dev folder (no spaces)
+         *             name: 'Tasks',
+         *             // List GUID can be found in list properties in SharePoint designer
+         *             guid: '{CB1B965E-D952-4ED5-86FD-FF8DA770F871}',
+         *             customFields: [
+         *                 // Array of objects mapping each SharePoint field to a
+         *                 // property on a list item object
+         *                 {
+         *                  internalName: 'Title',
+         *                  objectType: 'Text',
+         *                  mappedName: 'title',
+         *                  readOnly:false
+         *                 },
+         *                 {
+         *                  internalName: 'Project',
+         *                  objectType: 'Lookup',
+         *                  mappedName: 'project',
+         *                  readOnly:false
+         *                 },
+         *                 {
+         *                  internalName: 'Priority',
+         *                  objectType: 'Choice',
+         *                  mappedName: 'priority',
+         *                  readOnly:false
+          *                },
+         *                 {
+         *                  internalName: 'Description',
+         *                  objectType: 'Text',
+         *                  mappedName: 'description',
+         *                  readOnly:false
+         *                 },
+         *                 {
+         *                  internalName: 'Manager',
+         *                  objectType: 'Lookup',
+         *                  mappedName: 'requirement',
+         *                  readOnly:false
+         *                 }
+         *             ]
+         *         }
+         *     });
+         *
+         *     // Fetch data (pulls local xml if offline named model.list.title + '.xml')
+         *     // Initially pulls all requested data.  Each subsequent call just pulls
+         *     // records that have been changed, updates the model, and returns a reference
+          *    // to the updated data array
+         *     // @returns {Array} Requested list items
+         *     model.registerQuery({name: 'primary'});
+         *
+         *     return model;
+         * });
+         * </pre>
+         *
+         */
+    /**
          * @ngdoc function
          * @name angularPoint.apListFactory:create
          * @methodOf angularPoint.apListFactory
@@ -2813,7 +3018,9 @@ angular.module('angularPoint').factory('apListFactory', [
  * @name angularPoint.apListItemFactory
  * @description
  * Exposes the ListItem prototype and a constructor to instantiate a new ListItem.
+ * See [ListItem](#/api/ListItem) for details of the methods available on the prototype.
  *
+ * @requires ListItem
  * @requires angularPoint.apCacheService
  * @requires angularPoint.apDataService
  * @requires angularPoint.apUtilityService
@@ -2825,11 +3032,11 @@ angular.module('angularPoint').factory('apListItemFactory', [
   'apUtilityService',
   function ($q, apCacheService, apDataService, apUtilityService) {
     /**
-         * @ngdoc function
+         * @ngdoc object
          * @name ListItem
-         * @module ListItem
          * @description
-         * Base prototype which all list items inherit CRUD functionality that can be called directly from obj.
+         * Base prototype which all list items inherit from.  All methods can be accessed through this prototype so all CRUD
+         * functionality can be called directly from a given list item.
          * @constructor
          */
     function ListItem() {
@@ -2837,7 +3044,6 @@ angular.module('angularPoint').factory('apListItemFactory', [
     /**
          * @ngdoc function
          * @name ListItem.getDataService
-         * @module ListItem
          * @description
          * Allows us to reference when out of scope
          * @returns {object} Reference to the dataService in the event that it's out of scope.
@@ -2848,7 +3054,6 @@ angular.module('angularPoint').factory('apListItemFactory', [
     /**
          * @ngdoc function
          * @name ListItem.saveChanges
-         * @module ListItem
          * @description
          * Updates record directly from the object
          * @param {object} [options] Optionally pass params to the data service.
@@ -2856,6 +3061,21 @@ angular.module('angularPoint').factory('apListItemFactory', [
          * updated everywhere.  This is more process intensive so by default we only update the cached entity in the
          * cache where this entity is currently stored.
          * @returns {object} Promise which resolved with the updated list item from the server.
+         * @example
+         * <pre>
+         * // Example of save function on a fictitious
+         * // app/modules/tasks/TaskDetailsCtrl.js modal form.
+         * $scope.saveChanges = function(task) {
+         *      task.saveChanges().then(function() {
+         *          // Successfully saved so we can do something
+         *          // like close form
+         *
+         *          }, function() {
+         *          // Failure
+         *
+         *          });
+         * }
+         * </pre>
          */
     ListItem.prototype.saveChanges = function (options) {
       var listItem = this;
@@ -2871,38 +3091,32 @@ angular.module('angularPoint').factory('apListItemFactory', [
     /**
          * @ngdoc function
          * @name ListItem.saveFields
-         * @module ListItem
          * @description
          * Saves a named subset of fields back to SharePoint
          * Alternative to saving all fields
          * @param {array} fieldArray Array of internal field names that should be saved to SharePoint.
-         * <pre>
-         * //Create an array to store all promises.
-         * var queue = [],
-         * progressCounter = 0;
-         *
-         * //We're only updating a single field on each entity so it's much
-         * // faster to use ListItem.saveFields() so we don't need to push the
-         * // entire object back to the server.
-         * _.each(selectedItems, function (entity) {
-         *    entity.title = title + ': Now Updated!';
-         *    var request = entity.saveFields('title').then(function() {
-         *        progressCounter++;
-         *    }
-         *    queue.push(request);
-         *  });
-         *
-         * $q.all(queue).then(function() {
-         *     // All items have now been processed so we can do something...but
-         *     // the view is automatically updated so we don't need to bother
-         *     // if there's no other required business logic.
-         * });
-         * </pre>
          * @param {object} [options] Optionally pass params to the data service.
          * @param {boolean} [options.updateAllCaches=false] Search through the cache for each query to ensure entity is
          * updated everywhere.  This is more process intensive so by default we only update the cached entity in the
          * cache where this entity is currently stored.
          * @returns {object} Promise which resolves with the updated list item from the server.
+         * @example
+         * <pre>
+         * // Example of saveFields function on a fictitious
+         * // app/modules/tasks/TaskDetailsCtrl.js modal form.
+         * // Similar to saveChanges but instead we only save
+         * // specified fields instead of pushing everything.
+         * $scope.updateStatus = function(task) {
+         *      task.saveFields(['status', 'notes']).then(function() {
+         *          // Successfully updated the status and
+         *          // notes fields for the given task
+         *
+         *          }, function() {
+         *          // Failure to update the field
+         *
+         *          });
+         * }
+         * </pre>
          */
     ListItem.prototype.saveFields = function (fieldArray, options) {
       var listItem = this;
@@ -2934,7 +3148,6 @@ angular.module('angularPoint').factory('apListItemFactory', [
     /**
          * @ngdoc function
          * @name ListItem.deleteItem
-         * @module ListItem
          * @description
          * Deletes record directly from the object and removes record from user cache.
          * @param {object} [options] Optionally pass params to the dataService.
@@ -2942,6 +3155,16 @@ angular.module('angularPoint').factory('apListItemFactory', [
          * removed everywhere.  This is more process intensive so by default we only remove the cached entity in the
          * cache where this entity is currently stored.
          * @returns {object} Promise which really only lets us know the request is complete.
+         * @example
+         * ```
+         * <ul>
+         *    <li ng-repeat="task in tasks">
+         *        {{task.title}} <a href ng-click="task.deleteItem()>delete</a>
+         *    </li>
+         * </ul>
+         * ```
+         * List of tasks.  When the delete link is clicked, the list item item is removed from the local cache and
+         * the view is updated to no longer show the task.
          */
     ListItem.prototype.deleteItem = function (options) {
       var listItem = this;
@@ -2957,7 +3180,6 @@ angular.module('angularPoint').factory('apListItemFactory', [
     /**
          * @ngdoc function
          * @name ListItem.getLookupReference
-         * @module ListItem
          * @description
          * Allows us to retrieve the entity being referenced in a given lookup field.
          * @param {string} fieldName Name of the lookup property on the list item that references an entity.
@@ -3024,7 +3246,6 @@ angular.module('angularPoint').factory('apListItemFactory', [
     /**
          * @ngdoc function
          * @name ListItem.validateEntity
-         * @module ListItem
          * @description
          * Helper function that passes the current item to Model.validateEntity
          * @param {object} [options] Optionally pass params to the dataService.
@@ -3038,7 +3259,6 @@ angular.module('angularPoint').factory('apListItemFactory', [
     /**
          * @ngdoc function
          * @name ListItem.getFieldDefinition
-         * @module ListItem
          * @description
          * Returns the field definition from the definitions defined in the custom fields array within a model.
          * @example
@@ -3063,10 +3283,19 @@ angular.module('angularPoint').factory('apListItemFactory', [
     /**
          * @ngdoc function
          * @name ListItem.getAttachmentCollection
-         * @module ListItem
          * @description
          * Requests all attachments for a given list item.
          * @returns {object} Promise which resolves with all attachments for a list item.
+         * @example
+         * <pre>
+         * //Pull down all attachments for the current list item
+         * var fetchAttachments = function (listItem) {
+         *     listItem.getAttachmentCollection()
+         *         .then(function (attachments) {
+         *             scope.attachments = attachments;
+         *         });
+         * };
+         * </pre>
          */
     ListItem.prototype.getAttachmentCollection = function () {
       return apDataService.getCollection({
@@ -3080,11 +3309,21 @@ angular.module('angularPoint').factory('apListItemFactory', [
     /**
          * @ngdoc function
          * @name ListItem.deleteAttachment
-         * @module ListItem
          * @description
          * Delete an attachment from a list item.
          * @param {string} url Requires the URL for the attachment we want to delete.
          * @returns {object} Promise which resolves with the updated attachment collection.
+         * @example
+         * <pre>
+         * $scope.deleteAttachment = function (attachment) {
+         *     var confirmation = window.confirm("Are you sure you want to delete this file?");
+         *     if (confirmation) {
+         *         scope.listItem.deleteAttachment(attachment).then(function () {
+         *             alert("Attachment successfully deleted");
+         *         });
+         *     }
+         * };
+         * </pre>
          */
     ListItem.prototype.deleteAttachment = function (url) {
       var listItem = this;
@@ -3097,13 +3336,55 @@ angular.module('angularPoint').factory('apListItemFactory', [
     /**
          * @ngdoc function
          * @name ListItem.resolvePermissions
-         * @module ListItem
          * @description
          * See apModelService.resolvePermissions for details on what we expect to have returned.
          * @returns {Object} Contains properties for each permission level evaluated for current user.
          * @example
+         * Lets assume we're checking to see if a user has edit rights for a given task list item.
          * <pre>
-         * var permissionObject = myGenericListItem.resolvePermissions();
+         * var canUserEdit = function(task) {
+         *      var userPermissions = task.resolvePermissions();
+         *      return userPermissions.EditListItems;
+         * };
+         * </pre>
+         * Example of what the returned object would look like
+         * for a site admin.
+         * <pre>
+         * userPermissions = {
+         *    "ViewListItems":true,
+         *    "AddListItems":true,
+         *    "EditListItems":true,
+         *    "DeleteListItems":true,
+         *    "ApproveItems":true,
+         *    "OpenItems":true,
+         *    "ViewVersions":true,
+         *    "DeleteVersions":true,
+         *    "CancelCheckout":true,
+         *    "PersonalViews":true,
+         *    "ManageLists":true,
+         *    "ViewFormPages":true,
+         *    "Open":true,
+         *    "ViewPages":true,
+         *    "AddAndCustomizePages":true,
+         *    "ApplyThemeAndBorder":true,
+         *    "ApplyStyleSheets":true,
+         *    "ViewUsageData":true,
+         *    "CreateSSCSite":true,
+         *    "ManageSubwebs":true,
+         *    "CreateGroups":true,
+         *    "ManagePermissions":true,
+         *    "BrowseDirectories":true,
+         *    "BrowseUserInfo":true,
+         *    "AddDelPrivateWebParts":true,
+         *    "UpdatePersonalWebParts":true,
+         *    "ManageWeb":true,
+         *    "UseRemoteAPIs":true,
+         *    "ManageAlerts":true,
+         *    "CreateAlerts":true,
+         *    "EditMyUserInfo":true,
+         *    "EnumeratePermissions":true,
+         *    "FullMask":true
+         * }
          * </pre>
          */
     ListItem.prototype.resolvePermissions = function () {
@@ -3115,7 +3396,6 @@ angular.module('angularPoint').factory('apListItemFactory', [
     /**
          * @ngdoc function
          * @name ListItem.addEntityReference
-         * @module ListItem
          * @description
          * Allows us to pass in another entity to associate superficially, only persists for the current session and
          * no data is saved but it allows us to iterate over all of the references much faster than doing a lookup each
@@ -3189,7 +3469,6 @@ angular.module('angularPoint').factory('apListItemFactory', [
     /**
          * @ngdoc function
          * @name ListItem.getFieldVersionHistory
-         * @module ListItem
          * @description
          * Takes an array of field names, finds the version history for field, and returns a snapshot of the object at each
          * version.  If no fields are provided, we look at the field definitions in the model and pull all non-readonly
@@ -3197,13 +3476,17 @@ angular.module('angularPoint').factory('apListItemFactory', [
          * field independently and then build the history by combining the server responses for each requests into a
          * snapshot of the object.
          * @param {string[]} [fieldNames] An array of field names that we're interested in.
+         * @returns {object} promise - containing array of changes
+         * @example
+         * Assuming we have a modal form where we want to display each version of the title and project fields
+         * of a given list item.
          * <pre>
          * myGenericListItem.getFieldVersionHistory(['title', 'project'])
-         * .then(function(versionHistory) {
-         *        //We now have an array of versions of the list item
-         *    };
+         *     .then(function(versionHistory) {
+         *            // We now have an array of every version of these fields
+         *            $scope.versionHistory = versionHistory;
+         *      };
          * </pre>
-         * @returns {object} promise - containing array of changes
          */
     ListItem.prototype.getFieldVersionHistory = function (fieldNames) {
       var deferred = $q.defer();
@@ -4114,8 +4397,49 @@ angular.module('angularPoint').factory('apModelFactory', [
          * See apModelFactory.resolvePermissions for details on what we expect to have returned.
          * @returns {Object} Contains properties for each permission level evaluated for current user.
          * @example
+         * Lets assume we're checking to see if a user has edit rights for a given list.
          * <pre>
-         * var permissionObject = projectsModel.resolvePermissions();
+         * var userPermissions = tasksModel.resolvePermissions();
+         * var userCanEdit = userPermissions.EditListItems;
+         * </pre>
+         * Example of what the returned object would look like
+         * for a site admin.
+         * <pre>
+         * perm = {
+         *    "ViewListItems":true,
+         *    "AddListItems":true,
+         *    "EditListItems":true,
+         *    "DeleteListItems":true,
+         *    "ApproveItems":true,
+         *    "OpenItems":true,
+         *    "ViewVersions":true,
+         *    "DeleteVersions":true,
+         *    "CancelCheckout":true,
+         *    "PersonalViews":true,
+         *    "ManageLists":true,
+         *    "ViewFormPages":true,
+         *    "Open":true,
+         *    "ViewPages":true,
+         *    "AddAndCustomizePages":true,
+         *    "ApplyThemeAndBorder":true,
+         *    "ApplyStyleSheets":true,
+         *    "ViewUsageData":true,
+         *    "CreateSSCSite":true,
+         *    "ManageSubwebs":true,
+         *    "CreateGroups":true,
+         *    "ManagePermissions":true,
+         *    "BrowseDirectories":true,
+         *    "BrowseUserInfo":true,
+         *    "AddDelPrivateWebParts":true,
+         *    "UpdatePersonalWebParts":true,
+         *    "ManageWeb":true,
+         *    "UseRemoteAPIs":true,
+         *    "ManageAlerts":true,
+         *    "CreateAlerts":true,
+         *    "EditMyUserInfo":true,
+         *    "EnumeratePermissions":true,
+         *    "FullMask":true
+         * }
          * </pre>
          */
     Model.prototype.resolvePermissions = function () {
@@ -4191,7 +4515,7 @@ angular.module('angularPoint').factory('apQueryFactory', [
          * @description
          * Primary constructor that all queries inherit from.
          * @param {object} config Initialization parameters.
-         * @param {string} [config.operation = GetListItemChangesSinceToken] Optionally use 'GetListItems' to
+         * @param {string} [config.operation=GetListItemChangesSinceToken] Optionally use 'GetListItems' to
          * receive a more efficient response, just don't have the ability to check for changes since the last time
          * the query was called.
          * @param {boolean} [config.cacheXML=true] Set to false if you want a fresh request.
@@ -4298,6 +4622,7 @@ angular.module('angularPoint').factory('apQueryFactory', [
     /**
          * @ngdoc function
          * @name Query.execute
+         * @methodOf Query
          * @description
          * Query SharePoint, pull down all initial records on first call along with list definition if using
          * "GetListItemChangesSinceToken".  Note: this is  substantially larger than "GetListItems" on first call.
@@ -4442,6 +4767,30 @@ angular.module('angularPoint').service('apUserModel', [
   }
 ]);
 ;
+'use strict';
+/**
+ * @ngdoc directive
+ * @name angularPoint.directive:apAttachments
+ * @element span
+ * @function
+ *
+ * @description
+ * Uses an iFrame to hijack the portions of the upload attachment form that we would like to show to the user. Adds
+ * event listeners on the form and waits for an upload to complete, then queries for the updated list of attachments
+ * to display below the form, and resets the iFrame.  The listed attachments are linked to allow opening and also
+ * provide delete functionality to disassociate with the list item.
+ *
+ *
+ * @param {object} listItem The list item that we'd like to view/add attachments.
+ * @param {function} [changeEvent] Callback when the attachments have been updated.
+ *
+ * @example
+ * <pre>
+ *     <span data-ap-attachments
+ *      data-list-item="verification"
+ *      data-change-event="fetchAttachments"></span>
+ * </pre>
+ */
 angular.module('angularPoint').directive('apAttachments', [
   '$sce',
   'toastr',
@@ -4537,6 +4886,46 @@ angular.module('angularPoint').directive('apAttachments', [
 ]);
 ;
 'use strict';
+/**
+ * @ngdoc directive
+ * @name angularPoint.directive:apSelect
+ * @element span
+ * @function
+ *
+ * @description
+ * A SharePoint lookup value is represented as an object containing a lookupId and lookupValue.
+ * ```
+ * Lookup = {
+ *     lookupId: 1,
+ *     lookupValue: 'Typically the Title of the Item we're referencing'
+ * }
+ * ```
+ * With that in mind, we know that the list providing lookup options is made up of SharePoint list items.  This
+ * directive attempts to create a select using the array of lookup options and once selected, sets field referencing
+ * the target object with the applicable `lookupValue` and `lookupId`.
+ *
+ *
+ * @param {object} target Reference to the target attribute on the list item.
+ * @param {object[]} arr Array of list items used to populate the options for the select.
+ * @param {string} [lookupValue='title'] Name of the attribute to use as the display value for each item
+ * in `arr` array.
+ * @param {boolean} [multi=false] Allows us to use a multi-select using Select2.
+ *
+ * @example
+ * Form field below allows us to display a multi-select with options coming
+ * from a taskCategories array.  Each item selected pushes an object into
+ * the activeTask.categories array.  Each of these objects will have a
+ * lookupId = category.id and lookupValue = category.acronym.
+ * <pre>
+ * <div class="form-group">
+ *      <label class="control-label">Task Categories</label>
+ *      <span data-ap-select data-multi="true"
+ *          data-arr="taskCategories"
+ *          data-target="activeTask.categories"
+ *          data-lookup-value="'acronym'"></span>
+ *  </div>
+ * </pre>
+ */
 angular.module('angularPoint').directive('apSelect', function () {
   return {
     restrict: 'A',

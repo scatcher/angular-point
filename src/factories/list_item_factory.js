@@ -5,7 +5,9 @@
  * @name angularPoint.apListItemFactory
  * @description
  * Exposes the ListItem prototype and a constructor to instantiate a new ListItem.
+ * See [ListItem](#/api/ListItem) for details of the methods available on the prototype.
  *
+ * @requires ListItem
  * @requires angularPoint.apCacheService
  * @requires angularPoint.apDataService
  * @requires angularPoint.apUtilityService
@@ -13,12 +15,13 @@
 angular.module('angularPoint')
     .factory('apListItemFactory', function ($q, apCacheService, apDataService, apUtilityService) {
 
+
         /**
-         * @ngdoc function
+         * @ngdoc object
          * @name ListItem
-         * @module ListItem
          * @description
-         * Base prototype which all list items inherit CRUD functionality that can be called directly from obj.
+         * Base prototype which all list items inherit from.  All methods can be accessed through this prototype so all CRUD
+         * functionality can be called directly from a given list item.
          * @constructor
          */
         function ListItem() {
@@ -27,7 +30,6 @@ angular.module('angularPoint')
         /**
          * @ngdoc function
          * @name ListItem.getDataService
-         * @module ListItem
          * @description
          * Allows us to reference when out of scope
          * @returns {object} Reference to the dataService in the event that it's out of scope.
@@ -39,7 +41,6 @@ angular.module('angularPoint')
         /**
          * @ngdoc function
          * @name ListItem.saveChanges
-         * @module ListItem
          * @description
          * Updates record directly from the object
          * @param {object} [options] Optionally pass params to the data service.
@@ -47,6 +48,21 @@ angular.module('angularPoint')
          * updated everywhere.  This is more process intensive so by default we only update the cached entity in the
          * cache where this entity is currently stored.
          * @returns {object} Promise which resolved with the updated list item from the server.
+         * @example
+         * <pre>
+         * // Example of save function on a fictitious
+         * // app/modules/tasks/TaskDetailsCtrl.js modal form.
+         * $scope.saveChanges = function(task) {
+         *      task.saveChanges().then(function() {
+         *          // Successfully saved so we can do something
+         *          // like close form
+         *
+         *          }, function() {
+         *          // Failure
+         *
+         *          });
+         * }
+         * </pre>
          */
         ListItem.prototype.saveChanges = function (options) {
             var listItem = this;
@@ -65,38 +81,32 @@ angular.module('angularPoint')
         /**
          * @ngdoc function
          * @name ListItem.saveFields
-         * @module ListItem
          * @description
          * Saves a named subset of fields back to SharePoint
          * Alternative to saving all fields
          * @param {array} fieldArray Array of internal field names that should be saved to SharePoint.
-         * <pre>
-         * //Create an array to store all promises.
-         * var queue = [],
-         * progressCounter = 0;
-         *
-         * //We're only updating a single field on each entity so it's much
-         * // faster to use ListItem.saveFields() so we don't need to push the
-         * // entire object back to the server.
-         * _.each(selectedItems, function (entity) {
-         *    entity.title = title + ': Now Updated!';
-         *    var request = entity.saveFields('title').then(function() {
-         *        progressCounter++;
-         *    }
-         *    queue.push(request);
-         *  });
-         *
-         * $q.all(queue).then(function() {
-         *     // All items have now been processed so we can do something...but
-         *     // the view is automatically updated so we don't need to bother
-         *     // if there's no other required business logic.
-         * });
-         * </pre>
          * @param {object} [options] Optionally pass params to the data service.
          * @param {boolean} [options.updateAllCaches=false] Search through the cache for each query to ensure entity is
          * updated everywhere.  This is more process intensive so by default we only update the cached entity in the
          * cache where this entity is currently stored.
          * @returns {object} Promise which resolves with the updated list item from the server.
+         * @example
+         * <pre>
+         * // Example of saveFields function on a fictitious
+         * // app/modules/tasks/TaskDetailsCtrl.js modal form.
+         * // Similar to saveChanges but instead we only save
+         * // specified fields instead of pushing everything.
+         * $scope.updateStatus = function(task) {
+         *      task.saveFields(['status', 'notes']).then(function() {
+         *          // Successfully updated the status and
+         *          // notes fields for the given task
+         *
+         *          }, function() {
+         *          // Failure to update the field
+         *
+         *          });
+         * }
+         * </pre>
          */
         ListItem.prototype.saveFields = function (fieldArray, options) {
 
@@ -133,7 +143,6 @@ angular.module('angularPoint')
         /**
          * @ngdoc function
          * @name ListItem.deleteItem
-         * @module ListItem
          * @description
          * Deletes record directly from the object and removes record from user cache.
          * @param {object} [options] Optionally pass params to the dataService.
@@ -141,6 +150,16 @@ angular.module('angularPoint')
          * removed everywhere.  This is more process intensive so by default we only remove the cached entity in the
          * cache where this entity is currently stored.
          * @returns {object} Promise which really only lets us know the request is complete.
+         * @example
+         * ```
+         * <ul>
+         *    <li ng-repeat="task in tasks">
+         *        {{task.title}} <a href ng-click="task.deleteItem()>delete</a>
+         *    </li>
+         * </ul>
+         * ```
+         * List of tasks.  When the delete link is clicked, the list item item is removed from the local cache and
+         * the view is updated to no longer show the task.
          */
         ListItem.prototype.deleteItem = function (options) {
             var listItem = this;
@@ -160,7 +179,6 @@ angular.module('angularPoint')
         /**
          * @ngdoc function
          * @name ListItem.getLookupReference
-         * @module ListItem
          * @description
          * Allows us to retrieve the entity being referenced in a given lookup field.
          * @param {string} fieldName Name of the lookup property on the list item that references an entity.
@@ -230,7 +248,6 @@ angular.module('angularPoint')
         /**
          * @ngdoc function
          * @name ListItem.validateEntity
-         * @module ListItem
          * @description
          * Helper function that passes the current item to Model.validateEntity
          * @param {object} [options] Optionally pass params to the dataService.
@@ -246,7 +263,6 @@ angular.module('angularPoint')
         /**
          * @ngdoc function
          * @name ListItem.getFieldDefinition
-         * @module ListItem
          * @description
          * Returns the field definition from the definitions defined in the custom fields array within a model.
          * @example
@@ -273,10 +289,19 @@ angular.module('angularPoint')
         /**
          * @ngdoc function
          * @name ListItem.getAttachmentCollection
-         * @module ListItem
          * @description
          * Requests all attachments for a given list item.
          * @returns {object} Promise which resolves with all attachments for a list item.
+         * @example
+         * <pre>
+         * //Pull down all attachments for the current list item
+         * var fetchAttachments = function (listItem) {
+         *     listItem.getAttachmentCollection()
+         *         .then(function (attachments) {
+         *             scope.attachments = attachments;
+         *         });
+         * };
+         * </pre>
          */
         ListItem.prototype.getAttachmentCollection = function () {
             return apDataService.getCollection({
@@ -291,11 +316,21 @@ angular.module('angularPoint')
         /**
          * @ngdoc function
          * @name ListItem.deleteAttachment
-         * @module ListItem
          * @description
          * Delete an attachment from a list item.
          * @param {string} url Requires the URL for the attachment we want to delete.
          * @returns {object} Promise which resolves with the updated attachment collection.
+         * @example
+         * <pre>
+         * $scope.deleteAttachment = function (attachment) {
+         *     var confirmation = window.confirm("Are you sure you want to delete this file?");
+         *     if (confirmation) {
+         *         scope.listItem.deleteAttachment(attachment).then(function () {
+         *             alert("Attachment successfully deleted");
+         *         });
+         *     }
+         * };
+         * </pre>
          */
         ListItem.prototype.deleteAttachment = function (url) {
             var listItem = this;
@@ -309,13 +344,55 @@ angular.module('angularPoint')
         /**
          * @ngdoc function
          * @name ListItem.resolvePermissions
-         * @module ListItem
          * @description
          * See apModelService.resolvePermissions for details on what we expect to have returned.
          * @returns {Object} Contains properties for each permission level evaluated for current user.
          * @example
+         * Lets assume we're checking to see if a user has edit rights for a given task list item.
          * <pre>
-         * var permissionObject = myGenericListItem.resolvePermissions();
+         * var canUserEdit = function(task) {
+         *      var userPermissions = task.resolvePermissions();
+         *      return userPermissions.EditListItems;
+         * };
+         * </pre>
+         * Example of what the returned object would look like
+         * for a site admin.
+         * <pre>
+         * userPermissions = {
+         *    "ViewListItems":true,
+         *    "AddListItems":true,
+         *    "EditListItems":true,
+         *    "DeleteListItems":true,
+         *    "ApproveItems":true,
+         *    "OpenItems":true,
+         *    "ViewVersions":true,
+         *    "DeleteVersions":true,
+         *    "CancelCheckout":true,
+         *    "PersonalViews":true,
+         *    "ManageLists":true,
+         *    "ViewFormPages":true,
+         *    "Open":true,
+         *    "ViewPages":true,
+         *    "AddAndCustomizePages":true,
+         *    "ApplyThemeAndBorder":true,
+         *    "ApplyStyleSheets":true,
+         *    "ViewUsageData":true,
+         *    "CreateSSCSite":true,
+         *    "ManageSubwebs":true,
+         *    "CreateGroups":true,
+         *    "ManagePermissions":true,
+         *    "BrowseDirectories":true,
+         *    "BrowseUserInfo":true,
+         *    "AddDelPrivateWebParts":true,
+         *    "UpdatePersonalWebParts":true,
+         *    "ManageWeb":true,
+         *    "UseRemoteAPIs":true,
+         *    "ManageAlerts":true,
+         *    "CreateAlerts":true,
+         *    "EditMyUserInfo":true,
+         *    "EnumeratePermissions":true,
+         *    "FullMask":true
+         * }
          * </pre>
          */
         ListItem.prototype.resolvePermissions = function () {
@@ -331,7 +408,6 @@ angular.module('angularPoint')
         /**
          * @ngdoc function
          * @name ListItem.addEntityReference
-         * @module ListItem
          * @description
          * Allows us to pass in another entity to associate superficially, only persists for the current session and
          * no data is saved but it allows us to iterate over all of the references much faster than doing a lookup each
@@ -410,7 +486,6 @@ angular.module('angularPoint')
         /**
          * @ngdoc function
          * @name ListItem.getFieldVersionHistory
-         * @module ListItem
          * @description
          * Takes an array of field names, finds the version history for field, and returns a snapshot of the object at each
          * version.  If no fields are provided, we look at the field definitions in the model and pull all non-readonly
@@ -418,13 +493,17 @@ angular.module('angularPoint')
          * field independently and then build the history by combining the server responses for each requests into a
          * snapshot of the object.
          * @param {string[]} [fieldNames] An array of field names that we're interested in.
+         * @returns {object} promise - containing array of changes
+         * @example
+         * Assuming we have a modal form where we want to display each version of the title and project fields
+         * of a given list item.
          * <pre>
          * myGenericListItem.getFieldVersionHistory(['title', 'project'])
-         * .then(function(versionHistory) {
-         *        //We now have an array of versions of the list item
-         *    };
+         *     .then(function(versionHistory) {
+         *            // We now have an array of every version of these fields
+         *            $scope.versionHistory = versionHistory;
+         *      };
          * </pre>
-         * @returns {object} promise - containing array of changes
          */
         ListItem.prototype.getFieldVersionHistory = function (fieldNames) {
             var deferred = $q.defer();

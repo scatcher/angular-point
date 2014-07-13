@@ -14,4 +14,20 @@ updated everywhere.  This is more process intensive so by default we only update
 cache where this entity is currently stored.</p>
 </div> <p><em>(default: false)</em></p></td></tr></tbody></table><h4 id="usage_returns">Returns</h4><table class="variables-matrix"><tr><td><a href="" class="label type-hint type-hint-object">object</a></td><td><div class="listitem-savechanges-page"><p>Promise which resolved with the updated list item from the server.</p>
 </div></td></tr></table></div>
+<h2 id="example">Example</h2>
+<div class="example"><div class="listitem-savechanges-page"><pre class="prettyprint linenums">
+// Example of save function on a fictitious
+// app/modules/tasks/TaskDetailsCtrl.js modal form.
+$scope.saveChanges = function(task) {
+     task.saveChanges().then(function() {
+         // Successfully saved so we can do something
+         // like close form
+
+         }, function() {
+         // Failure
+
+         });
+}
+</pre>
+</div></div>
 </div>

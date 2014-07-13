@@ -12,13 +12,18 @@ snapshot of the object.</p>
 </div></div>
 <h2 id="usage">Usage</h2>
 <div class="usage"><pre class="prettyprint linenums">getFieldVersionHistory([fieldNames]);</pre>
-<h4 id="usage_parameters">Parameters</h4><table class="variables-matrix table table-bordered table-striped"><thead><tr><th>Param</th><th>Type</th><th>Details</th></tr></thead><tbody><tr><td>[fieldNames]</td><td><a href="" class="label type-hint type-hint-string">string[]</a></td><td><div class="listitem-getfieldversionhistory-page"><p>An array of field names that we&#39;re interested in.
-<pre class="prettyprint linenums">
-myGenericListItem.getFieldVersionHistory(['title', 'project'])
-.then(function(versionHistory) {
-       //We now have an array of versions of the list item
-   };
-</pre>
+<h4 id="usage_parameters">Parameters</h4><table class="variables-matrix table table-bordered table-striped"><thead><tr><th>Param</th><th>Type</th><th>Details</th></tr></thead><tbody><tr><td>[fieldNames]</td><td><a href="" class="label type-hint type-hint-string">string[]</a></td><td><div class="listitem-getfieldversionhistory-page"><p>An array of field names that we&#39;re interested in.</p>
 </div></td></tr></tbody></table><h4 id="usage_returns">Returns</h4><table class="variables-matrix"><tr><td><a href="" class="label type-hint type-hint-object">object</a></td><td><div class="listitem-getfieldversionhistory-page"><p>promise - containing array of changes</p>
 </div></td></tr></table></div>
+<h2 id="example">Example</h2>
+<div class="example"><div class="listitem-getfieldversionhistory-page"><p>Assuming we have a modal form where we want to display each version of the title and project fields
+of a given list item.
+<pre class="prettyprint linenums">
+myGenericListItem.getFieldVersionHistory(['title', 'project'])
+    .then(function(versionHistory) {
+           // We now have an array of every version of these fields
+           $scope.versionHistory = versionHistory;
+     };
+</pre>
+</div></div>
 </div>

@@ -4,10 +4,11 @@
  * @ngdoc service
  * @name apDataService
  * @description
- * Handles all interaction with SharePoint web services
+ * Handles all interaction with SharePoint's SOAP web services.  Mostly a wrapper for SPServices functionality.
  *
- * For additional information on many of these web service calls, see Marc Anderson's SPServices documentation
- *  http://spservices.codeplex.com/documentation
+ * For additional information on many of these web service calls, see Marc Anderson's
+ * [SPServices](http://spservices.codeplex.com/documentation) documentation.
+ *
  *
  *  @requires angularPoint.apQueueService
  *  @requires angularPoint.apConfig
@@ -30,15 +31,15 @@ angular.module('angularPoint')
          * @description
          * Returns the version history for a field in a list item.
          * @param {object} payload Configuration object passed to SPServices.
-         <pre>
-         var payload = {
-                operation: 'GetVersionCollection',
-                webURL: apConfig.defaultUrl,
-                strlistID: model.list.guid,
-                strlistItemID: listItem.id,
-                strFieldName: fieldDefinition.internalName
-            };
-         </pre>
+         * <pre>
+         * var payload = {
+         *        operation: 'GetVersionCollection',
+         *        webURL: apConfig.defaultUrl,
+         *        strlistID: model.list.guid,
+         *        strlistItemID: listItem.id,
+         *        strFieldName: fieldDefinition.internalName
+         *    };
+         * </pre>
          * @param {object} fieldDefinition Field definition object from the model.
          * @returns {object[]} Promise which resolves with an array of list item changes for the specified field.
          */
@@ -90,14 +91,14 @@ angular.module('angularPoint')
          * requested collection.
          *
          * @example
-         <pre>
-         apDataService.getCollection({
-                operation: "GetGroupCollectionFromUser",
-                userLoginName: $scope.state.selectedUser.LoginName
-                }).then(function (response) {
-                    postProcessFunction(response);
-               });
-         </pre>
+         * <pre>
+         * apDataService.getCollection({
+         *        operation: "GetGroupCollectionFromUser",
+         *        userLoginName: $scope.state.selectedUser.LoginName
+         *        }).then(function (response) {
+         *            postProcessFunction(response);
+         *       });
+         * </pre>
          */
         var getCollection = function (options) {
             apQueueService.increase();

@@ -21,7 +21,7 @@ angular.module('angularPoint')
          * @description
          * Primary constructor that all queries inherit from.
          * @param {object} config Initialization parameters.
-         * @param {string} [config.operation = GetListItemChangesSinceToken] Optionally use 'GetListItems' to
+         * @param {string} [config.operation=GetListItemChangesSinceToken] Optionally use 'GetListItems' to
          * receive a more efficient response, just don't have the ability to check for changes since the last time
          * the query was called.
          * @param {boolean} [config.cacheXML=true] Set to false if you want a fresh request.
@@ -139,6 +139,7 @@ angular.module('angularPoint')
         /**
          * @ngdoc function
          * @name Query.execute
+         * @methodOf Query
          * @description
          * Query SharePoint, pull down all initial records on first call along with list definition if using
          * "GetListItemChangesSinceToken".  Note: this is  substantially larger than "GetListItems" on first call.

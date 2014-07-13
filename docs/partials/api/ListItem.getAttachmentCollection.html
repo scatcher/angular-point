@@ -10,4 +10,15 @@
 <div class="usage"><pre class="prettyprint linenums">getAttachmentCollection();</pre>
 <h4 id="usage_returns">Returns</h4><table class="variables-matrix"><tr><td><a href="" class="label type-hint type-hint-object">object</a></td><td><div class="listitem-getattachmentcollection-page"><p>Promise which resolves with all attachments for a list item.</p>
 </div></td></tr></table></div>
+<h2 id="example">Example</h2>
+<div class="example"><div class="listitem-getattachmentcollection-page"><pre class="prettyprint linenums">
+//Pull down all attachments for the current list item
+var fetchAttachments = function (listItem) {
+    listItem.getAttachmentCollection()
+        .then(function (attachments) {
+            scope.attachments = attachments;
+        });
+};
+</pre>
+</div></div>
 </div>

@@ -24,7 +24,6 @@ module.exports = function (grunt) {
             dist: 'dist',
             factories: 'src/factories',
             services: 'src/services'
-
         },
 
         // Empties folders to start fresh
@@ -145,11 +144,16 @@ module.exports = function (grunt) {
 //                startPage: '/api',
                 title: 'Angular-Point API Docs'
             },
-            api: [
-                '<%= config.src %>/app.js',
-                '<%= config.services %>/*.js',
-                '<%= config.factories %>/*.js'
-            ]
+            api: {
+                src: [
+                    '<%= config.src %>/app.js',
+                    '<%= config.services %>/*.js',
+                    '<%= config.factories %>/*.js',
+                    '<%= config.src %>/directives/**/*.js'
+                ],
+                title: 'API Documentation',
+                api: false
+            }
 //            model: {
 //                src: ['<%= config.services %>/model_srvc.js'],
 //                title: 'Model Service'
@@ -181,7 +185,7 @@ module.exports = function (grunt) {
     ]);
 
     grunt.registerTask('doc', [
-        'clean:docs',
+//        'clean:docs',
         'ngdocs'
     ]);
 

@@ -1,3 +1,28 @@
+'use strict';
+
+/**
+ * @ngdoc directive
+ * @name angularPoint.directive:apAttachments
+ * @element span
+ * @function
+ *
+ * @description
+ * Uses an iFrame to hijack the portions of the upload attachment form that we would like to show to the user. Adds
+ * event listeners on the form and waits for an upload to complete, then queries for the updated list of attachments
+ * to display below the form, and resets the iFrame.  The listed attachments are linked to allow opening and also
+ * provide delete functionality to disassociate with the list item.
+ *
+ *
+ * @param {object} listItem The list item that we'd like to view/add attachments.
+ * @param {function} [changeEvent] Callback when the attachments have been updated.
+ *
+ * @example
+ * <pre>
+ *     <span data-ap-attachments
+ *      data-list-item="verification"
+ *      data-change-event="fetchAttachments"></span>
+ * </pre>
+ */
 angular.module('angularPoint')
     .directive('apAttachments', function ($sce, toastr) {
         return {
@@ -37,7 +62,7 @@ angular.module('angularPoint')
 
                 //Pull down all attachments for the current list item
                 var fetchAttachments = function () {
-                    toastr.info("Checking for attachments")
+                    toastr.info("Checking for attachments");
                     scope.listItem.getAttachmentCollection().then(function (attachments) {
                         scope.attachments.length = 0;
                         //Push any new attachments into the existing array to prevent breakage of references

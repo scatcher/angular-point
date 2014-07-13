@@ -41,14 +41,13 @@ angular.module('angularPoint')
         };
         
         /**
-         * @ngdoc object
-         * @name angularPoint.apCacheService.EntityCache
+         * @name EntityCache
          * @description
          * Cache constructor that maintains a queue of all requests for a list item, counter for the number of times
          * the cache has been updated, timestamp of last update, and add/update/remove functionality.
+         * @constructor apCacheService
          * @param {string} entityType GUID for list the list item belongs to.
          * @param {number} entityId The entity.id.
-         * @requires angularPoint.apCacheService
          */
         var EntityCache = function (entityType, entityId) {
             var self = this;
@@ -59,9 +58,7 @@ angular.module('angularPoint')
         };
 
         /**
-         * @ngdoc function
-         * @name angularPoint.apCacheService.EntityCache:getEntity
-         * @mthodOf angularPoint.apCacheService.EntityCache
+         * @name EntityCache.getEntity
          * @description
          * Promise which returns the requested entity once it has been registered in the cache.
          */

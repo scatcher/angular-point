@@ -5,30 +5,21 @@ NG_DOCS={
   "pages": [
     {
       "section": "api",
+      "id": "angularPoint",
+      "shortName": "angularPoint",
+      "type": "overview",
+      "moduleName": "angularPoint",
+      "shortDescription": "This is the primary angularPoint module and needs to be listed in your app.js dependencies to gain use of AngularPoint",
+      "keywords": "angularpoint api app dependencies functionality gain js listed module overview primary project"
+    },
+    {
+      "section": "api",
       "id": "angularPoint.apCacheService",
       "shortName": "angularPoint.apCacheService",
       "type": "service",
       "moduleName": "angularPoint",
       "shortDescription": "Stores a reference for all list items based on list GUID and list item id.  Allows us to then register promises that",
       "keywords": "add allows angularpoint apcacheservice api assuming based belongs cache created deferred entity entityid entitytype eventually fulfills function future guid item items list local newly object pass pending point promises reference register registered registers removes requested requests resolve resolves returns service stores"
-    },
-    {
-      "section": "api",
-      "id": "angularPoint.apCacheService.EntityCache",
-      "shortName": "angularPoint.apCacheService.EntityCache",
-      "type": "object",
-      "moduleName": "angularPoint.apCacheService",
-      "shortDescription": "Cache constructor that maintains a queue of all requests for a list item, counter for the number of times",
-      "keywords": "add angularpoint apcacheservice api belongs cache counter entity entitycache entityid entitytype functionality guid item list maintains number object queue requests times timestamp update updated"
-    },
-    {
-      "section": "api",
-      "id": "angularPoint.apCacheService.EntityCache:getEntity",
-      "shortName": "getEntity",
-      "type": "function",
-      "moduleName": "angularPoint.apCacheService",
-      "shortDescription": "Promise which returns the requested entity once it has been registered in the cache.",
-      "keywords": "angularpoint apcacheservice api cache entity entitycache function promise registered requested returns"
     },
     {
       "section": "api",
@@ -46,7 +37,7 @@ NG_DOCS={
       "type": "service",
       "moduleName": "angularPoint",
       "shortDescription": "Processes the XML received from SharePoint and converts it into JavaScript objects based on predefined field types.",
-      "keywords": "allow allows angularpoint apcacheservice apconfig apdecodeservice api apqueueservice aputilityservice array attributes based batch boolean browsers cache calc call change child chunks configuration constructors conversions converts correctly counter ctor currency cut data datetime definition definitions don downside elements entities entity evergreen exist factory field fielddefinition filter find float formatted function getcache getlistitems handle hit html includeallattrs integer item items iterate javascript json large leading list lists local localcache long lookup lookupmulti mappedname mapping maps merged mode model modified multichoice node number object objects objecttype optional optionally options ows_ parent parsed pass performance post predefined prevent processed processes processing promise provided query received reference removeows replace replaced representation resolved resolves response responsexml return returned returning returns rows running server service set sharepoint slow slowdowns spservices spxmltojson store stored string stripped takes target text throttle true type types typically ui unnecessarily update updated updating user usermulti version versions web webservice xml"
+      "keywords": "additional allow allows angularpoint apcacheservice apconfig apdecodeservice api apqueueservice aputilityservice array attributes based batch browsers cache call change child chunks configuration constructors conversions converts correctly ctor customfields cut data define definition definitions don downside elements entities entity evergreen exist factory field fielddefinition filter find formatted function getcache getlistitems handle hit includeallattrs info instantiated item items iterate javascript large leading list lists local localcache long mappedname mapping maps merged mode model modified newly node number object objects objecttype optional optionally options ows_ parent parsed pass performance post predefined prevent processed processes processing promise property propertyname provided query received reference removeows replace replaced representation resolved resolves response responsexml return returned returning returns rows running server service set sharepoint slow slowdowns spservices spxmltojson store stored string stripped takes target text throttle true type types typically ui unnecessarily update updated updating version versions web webservice xml"
     },
     {
       "section": "api",
@@ -82,7 +73,7 @@ NG_DOCS={
       "type": "object",
       "moduleName": "angularPoint",
       "shortDescription": "Exposes the ListItem prototype and a constructor to instantiate a new ListItem.",
-      "keywords": "allow angularpoint apcacheservice apdataservice api aplistitemfactory aputilityservice event exposes factory function inherit instantiate instantiates isn listitem object prototype returns standard"
+      "keywords": "allow angularpoint apcacheservice apdataservice api aplistitemfactory aputilityservice details event exposes factory function inherit instantiate instantiates isn listitem methods object prototype returns standard"
     },
     {
       "section": "api",
@@ -127,7 +118,25 @@ NG_DOCS={
       "type": "service",
       "moduleName": "angularPoint",
       "shortDescription": "Provides shared utility functionality across the application.",
-      "keywords": "$q angularpoint apconfig api application aputilityservice array article assigned based batches batchprocess bit break browser buildprojectsummary change chunks codeplex comparison complete context convert converts create current cuts dates datetocheck defaults defer deferred delay desired determine directly don easier easily enddate entities evaluate evaluates event example executed extendprojectsummary fall falls false fictitious firebase flags formatted function functionality getalllistitems group hang http identifying int integer intensive ints item items iterate iterating javascript js length level list listitem lock long mask maximum milliseconds model module nczonline net notify number object online pausing performing permission permissionsmask permmask portion problem process processed processing projectmodel projects projectsmodel promise property provided range reference resolve resolvepermissions return rights running service set shared site somelistitem specifies startdate starting stuff sufficient summary summaryobject sync thread time typically ui unsigned usable user users utility var wss yyyymmdd"
+      "keywords": "$q addandcustomizepages adddelprivatewebparts addlistitems admin angularpoint apconfig api application applystylesheets applythemeandborder approveitems aputilityservice array article assigned based batches batchprocess bit break browsedirectories browser browseuserinfo buildprojectsummary cancelcheckout change chunks codeplex comparison complete context convert converts create createalerts creategroups createsscsite current cuts dates datetocheck defaults defer deferred delay deletelistitems deleteversions desired determine directly don dvwps easier easily editlistitems editmyuserinfo enddate entities enumeratepermissions evaluate evaluates event example executed extendprojectsummary fall falls false fictitious firebase flags formatted fullmask function functionality getalllistitems group hang identifying info int integer intensive ints item items iterate iterating javascript js length level list listitem lock long managealerts managelists managepermissions managesubwebs manageweb mask maximum milliseconds model module nczonline net notify number object online open openitems pausing performing perm permission permissionsmask permmask personalviews portion problem process processed processing projectmodel projects projectsmodel promise properties provided range reference resolve resolvepermissions return returned rights running security service set shared sharepoint site specifies splookupaddnew spservices startdate starting stuff sufficient summary summaryobject sync thread time trimming typically ui unsigned updatepersonalwebparts usable user useremoteapis users utility var viewformpages viewlistitems viewpages viewusagedata viewversions wss yyyymmdd"
+    },
+    {
+      "section": "api",
+      "id": "angularPoint.directive:apAttachments",
+      "shortName": "apAttachments",
+      "type": "directive",
+      "moduleName": "angularPoint",
+      "shortDescription": "Uses an iFrame to hijack the portions of the upload attachment form that we would like to show to the user. Adds",
+      "keywords": "adds allow angularpoint api attachment attachments callback complete data-ap-attachments data-change-event data-list-item delete directive disassociate display event fetchattachments form functionality hijack iframe item linked list listed listeners listitem opening portions provide queries resets span updated upload user verification view waits"
+    },
+    {
+      "section": "api",
+      "id": "angularPoint.directive:apSelect",
+      "shortName": "apSelect",
+      "type": "directive",
+      "moduleName": "angularPoint",
+      "shortDescription": "A SharePoint lookup value is represented as an object containing a lookupId and lookupValue.",
+      "keywords": "acronym activetask allows angularpoint api applicable arr array attempts attribute categories category class coming control-label create data-ap-select data-arr data-lookup-value data-multi data-target directive display field form form-group item items list lookup lookupid lookupvalue mind multi-select object objects options populate providing pushes reference referencing represented select select2 selected sets sharepoint span target taskcategories title true typically"
     },
     {
       "section": "api",
@@ -135,8 +144,8 @@ NG_DOCS={
       "shortName": "apDataService",
       "type": "service",
       "moduleName": "apDataService",
-      "shortDescription": "Handles all interaction with SharePoint web services",
-      "keywords": "additional anderson angularpoint apconfig apdataservice apfieldservice api apqueueservice aputilityservice calls codeplex documentation handles http interaction marc service services sharepoint spservices web"
+      "shortDescription": "Handles all interaction with SharePoint&#39;s SOAP web services.  Mostly a wrapper for SPServices functionality.",
+      "keywords": "additional anderson angularpoint apconfig apdataservice apfieldservice api apqueueservice aputilityservice calls codeplex documentation functionality handles interaction marc service services sharepoint soap spservices web wrapper"
     },
     {
       "section": "api",
@@ -268,19 +277,28 @@ NG_DOCS={
       "section": "api",
       "id": "List",
       "shortName": "List",
-      "type": "function",
+      "type": "object",
       "moduleName": "List",
       "shortDescription": "List Object Constructor.  This is handled automatically when creating a new model so there shouldn&#39;t be",
-      "keywords": "account api application attribute automatically basing call config creating customfields details dev field file firstname folder function guid handled initialization internal internalname lastname list ll located lookup manually mappedname mapping maps model names non-standard object objecttype offline organization parameters projectslist readonly reason settings sharepoint shouldn spaces text title type unique user xml"
+      "keywords": "account additional api application attribute automatically basing call config creating customfields define details dev field fielddefinition file firstname folder guid handled info initialization internal internalname lastname list ll located lookup manually mappedname mapping maps model names non-standard object objecttype offline organization parameters projectslist readonly reason settings sharepoint shouldn spaces text title type unique user xml"
+    },
+    {
+      "section": "api",
+      "id": "List.FieldDefinition",
+      "shortName": "List.FieldDefinition",
+      "type": "object",
+      "moduleName": "List",
+      "shortDescription": "Defined in the MODEL.list.fieldDefinitions array.  Each field definition object maps an internal field",
+      "keywords": "actual add additional angular api apmodelfactory app array attribute attributes automatically base broken calculated call changed choice choice_field_name choices class collection column convert converts counter create created current customfields dashes data defined definition deliminator delimited description designer desired dev display element error extend factory fetch field fielddefinition fielddefinitions fields file float folder form function generally getfielddefinition guid href ignore info inherits initial initially int integer internal internalname invalid item items javascript js json list list-fielddefinition-page listitem local lookup lookupid lookupvalue manager mapped mappedname mapping maps methods model modelname module multiple named newly number obj object objects objecttype offline parsed passed point post primary priority processing project properties property prototype pulls push read read-only readonly records reference registerquery representing requested requirement respect retrieve return returned returns saving second selected service set sharepoint single site slashes space spaces store stored string strings subsequent task taskermodel tasks text thrown title true type typically unescape unique updated updates usage user valid var xml"
     },
     {
       "section": "api",
       "id": "ListItem",
       "shortName": "ListItem",
-      "type": "function",
+      "type": "object",
       "moduleName": "ListItem",
-      "shortDescription": "Base prototype which all list items inherit CRUD functionality that can be called directly from obj.",
-      "keywords": "api base called crud directly function functionality inherit items list listitem obj prototype"
+      "shortDescription": "Base prototype which all list items inherit from.  All methods can be accessed through this prototype so all CRUD",
+      "keywords": "accessed api base called crud directly functionality inherit item items list listitem methods object prototype"
     },
     {
       "section": "api",
@@ -298,7 +316,7 @@ NG_DOCS={
       "type": "function",
       "moduleName": "ListItem",
       "shortDescription": "Delete an attachment from a list item.",
-      "keywords": "api attachment collection delete deleteattachment function item list listitem promise requires resolves updated url"
+      "keywords": "$scope alert api attachment collection confirm confirmation delete deleteattachment deleted file function item list listitem promise requires resolves scope updated url var window"
     },
     {
       "section": "api",
@@ -307,7 +325,7 @@ NG_DOCS={
       "type": "function",
       "moduleName": "ListItem",
       "shortDescription": "Deletes record directly from the object and removes record from user cache.",
-      "keywords": "api cache cached complete currently dataservice default deleteitem deletes directly ensure entity function intensive iterate listitem object optionally params pass process promise query record remove removed removes request stored updateallcaches user"
+      "keywords": "api cache cached clicked complete currently dataservice default delete deleteitem deletes directly ensure entity function href intensive item iterate link list listitem local longer ng-click ng-repeat object optionally params pass process promise query record remove removed removes request stored task tasks title updateallcaches updated user view"
     },
     {
       "section": "api",
@@ -316,7 +334,7 @@ NG_DOCS={
       "type": "function",
       "moduleName": "ListItem",
       "shortDescription": "Requests all attachments for a given list item.",
-      "keywords": "api attachments function getattachmentcollection item list listitem promise requests resolves"
+      "keywords": "api attachments current fetchattachments function getattachmentcollection item list listitem promise requests resolves scope var"
     },
     {
       "section": "api",
@@ -343,7 +361,7 @@ NG_DOCS={
       "type": "function",
       "moduleName": "ListItem",
       "shortDescription": "Takes an array of field names, finds the version history for field, and returns a snapshot of the object at each",
-      "keywords": "api array build changes combining definitions field fields finds function getfieldversionhistory history independently interested item list listitem model mygenericlistitem names non-readonly object project promise provided pull requests responses returns server snapshot takes title ve version versions working"
+      "keywords": "$scope api array assuming build changes combining definitions display field fields finds form function getfieldversionhistory history independently interested item list listitem modal model mygenericlistitem names non-readonly object project promise provided pull requests responses returns server snapshot takes title ve version versionhistory working"
     },
     {
       "section": "api",
@@ -361,7 +379,7 @@ NG_DOCS={
       "type": "function",
       "moduleName": "ListItem",
       "shortDescription": "See apModelService.resolvePermissions for details on what we expect to have returned.",
-      "keywords": "api apmodelservice current details evaluated expect function level listitem mygenericlistitem permission permissionobject properties resolvepermissions returned user var"
+      "keywords": "addandcustomizepages adddelprivatewebparts addlistitems admin api apmodelservice applystylesheets applythemeandborder approveitems assume browsedirectories browseuserinfo cancelcheckout canuseredit checking createalerts creategroups createsscsite current deletelistitems deleteversions details edit editlistitems editmyuserinfo enumeratepermissions evaluated example expect fullmask function item level list listitem managealerts managelists managepermissions managesubwebs manageweb object open openitems permission personalviews properties resolvepermissions return returned rights site task updatepersonalwebparts user useremoteapis userpermissions var viewformpages viewlistitems viewpages viewusagedata viewversions"
     },
     {
       "section": "api",
@@ -370,7 +388,7 @@ NG_DOCS={
       "type": "function",
       "moduleName": "ListItem",
       "shortDescription": "Updates record directly from the object",
-      "keywords": "api cache cached currently data default directly ensure entity function intensive item list listitem object optionally params pass process promise query record resolved savechanges search server service stored update updateallcaches updated updates"
+      "keywords": "$scope api app cache cached close currently data default directly ensure entity example failure fictitious form function intensive item js list listitem modal object optionally params pass process promise query record resolved save savechanges saved search server service stored task update updateallcaches updated updates"
     },
     {
       "section": "api",
@@ -379,7 +397,7 @@ NG_DOCS={
       "type": "function",
       "moduleName": "ListItem",
       "shortDescription": "Saves a named subset of fields back to SharePoint",
-      "keywords": "$q alternative api array automatically bother business cache cached currently data default don ensure entire entity faster field fieldarray fields function intensive internal item items list listitem logic named names object optionally params pass process processed progresscounter promise promises push query queue request required resolves saved savefields saves saving search server service sharepoint single store stored subset title update updateallcaches updated updating var view"
+      "keywords": "$scope alternative api app array cache cached currently data default ensure entity example failure fictitious field fieldarray fields form function intensive internal item js list listitem modal named names notes optionally params pass process promise pushing query resolves save savechanges saved savefields saves saving search server service sharepoint status stored subset task update updateallcaches updated updatestatus"
     },
     {
       "section": "api",
@@ -397,25 +415,7 @@ NG_DOCS={
       "type": "function",
       "moduleName": "Lookup",
       "shortDescription": "Allows for easier distinction when debugging if object type is shown as either Lookup or User.  Also allows us",
-      "keywords": "allows api async create debugging distinction easier entity function item key list lookup lookupid lookupvalue object options parent property propertyname reference referenced request split string type user"
-    },
-    {
-      "section": "api",
-      "id": "Lookup.getEntity",
-      "shortName": "Lookup.getEntity",
-      "type": "function",
-      "moduleName": "Lookup",
-      "shortDescription": "Allows us to create a promise that will resolve with the entity referenced in the lookup whenever that list",
-      "keywords": "allows api building cache create entity full function getentity item list location lookup lookupid lookupvalue object project promise referenced referencing registered resolve resolves title var"
-    },
-    {
-      "section": "api",
-      "id": "Lookup.getProperty",
-      "shortName": "Lookup.getProperty",
-      "type": "function",
-      "moduleName": "Lookup",
-      "shortDescription": "Returns a promise which resolves with the value of a property in the referenced object.",
-      "keywords": "api building city doesn dot entity exists function getproperty location lookup lookupid lookupvalue object project promise property propertypath referenced resolves returns separated title undefined var"
+      "keywords": "allows api async building cache city create debugging distinction doesn dot easier entity exists full function getentity getproperty item key list location lookup lookupid lookupvalue object options parent project promise property propertyname propertypath reference referenced referencing registered request resolve resolves returns separated split string title type undefined user var"
     },
     {
       "section": "api",
@@ -541,7 +541,7 @@ NG_DOCS={
       "type": "function",
       "moduleName": "Model",
       "shortDescription": "See apModelFactory.resolvePermissions for details on what we expect to have returned.",
-      "keywords": "api apmodelfactory current details evaluated expect function level model permission permissionobject projectsmodel properties resolvepermissions returned user var"
+      "keywords": "addandcustomizepages adddelprivatewebparts addlistitems admin api apmodelfactory applystylesheets applythemeandborder approveitems assume browsedirectories browseuserinfo cancelcheckout checking createalerts creategroups createsscsite current deletelistitems deleteversions details edit editlistitems editmyuserinfo enumeratepermissions evaluated example expect fullmask function level list managealerts managelists managepermissions managesubwebs manageweb model object open openitems perm permission personalviews properties resolvepermissions returned rights site tasksmodel updatepersonalwebparts user usercanedit useremoteapis userpermissions var viewformpages viewlistitems viewpages viewusagedata viewversions"
     },
     {
       "section": "api",
@@ -568,16 +568,16 @@ NG_DOCS={
       "type": "function",
       "moduleName": "Query",
       "shortDescription": "Primary constructor that all queries inherit from.",
-      "keywords": "ability allows api ascending cache cachexml called caml camlrowlimit changes check config control data default doesn don efficient evaluate false fresh function getlistitemchangessincetoken getlistitems inherit initialization local location model modifications modified object operation optionally options parameters parent pass passed permissions prevents primary project prototype queries query queryoptions receive recentchanges records reference registerquery request response retrieve returned returns scope search searching searchlocalcache set sets sharepoint simple time true undefined user wrapper"
+      "keywords": "ability allows api array ascending cache cachexml call called calls caml camlrowlimit changes check config control data dataservice default definition doesn don efficient evaluate execute executequery false fresh function getlistitemchangessincetoken getlistitems inherit initial initialization item larger list local location model modifications modified note object objects operation optionally options parameters parent pass passed permissions prevents primary project prototype pull pulls queries query queryoptions receive recentchanges records reference registerquery request response retrieve returned returns scope search searching searchlocalcache set sets sharepoint simple subsequent time true undefined user wrapper"
     },
     {
       "section": "api",
-      "id": "Query.execute",
-      "shortName": "Query.execute",
+      "id": "User",
+      "shortName": "User",
       "type": "function",
-      "moduleName": "Query",
-      "shortDescription": "Query SharePoint, pull down all initial records on first call along with list definition if using",
-      "keywords": "api array call calls changes dataservice definition execute executequery function getlistitemchangessincetoken getlistitems initial item larger list note objects operation options passed pull pulls query records sharepoint subsequent"
+      "moduleName": "User",
+      "shortDescription": "Allows for easier distinction when debugging if object type is shown as a User.  Turns a delimited &quot;;#&quot;",
+      "keywords": "allows api create debugging delimited depeinding distinction easier email field function joe loginname lookupid lookupvalue maker object settings sipaddress sr string title turns type user widget"
     }
   ],
   "apis": {

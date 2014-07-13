@@ -11,8 +11,51 @@
 <h4 id="usage_returns">Returns</h4><table class="variables-matrix"><tr><td><a href="" class="label type-hint type-hint-object">Object</a></td><td><div class="listitem-resolvepermissions-page"><p>Contains properties for each permission level evaluated for current user.</p>
 </div></td></tr></table></div>
 <h2 id="example">Example</h2>
-<div class="example"><div class="listitem-resolvepermissions-page"><pre class="prettyprint linenums">
-var permissionObject = myGenericListItem.resolvePermissions();
+<div class="example"><div class="listitem-resolvepermissions-page"><p>Lets assume we&#39;re checking to see if a user has edit rights for a given task list item.
+<pre class="prettyprint linenums">
+var canUserEdit = function(task) {
+     var userPermissions = task.resolvePermissions();
+     return userPermissions.EditListItems;
+};
+</pre>
+Example of what the returned object would look like
+for a site admin.
+<pre class="prettyprint linenums">
+userPermissions = {
+   "ViewListItems":true,
+   "AddListItems":true,
+   "EditListItems":true,
+   "DeleteListItems":true,
+   "ApproveItems":true,
+   "OpenItems":true,
+   "ViewVersions":true,
+   "DeleteVersions":true,
+   "CancelCheckout":true,
+   "PersonalViews":true,
+   "ManageLists":true,
+   "ViewFormPages":true,
+   "Open":true,
+   "ViewPages":true,
+   "AddAndCustomizePages":true,
+   "ApplyThemeAndBorder":true,
+   "ApplyStyleSheets":true,
+   "ViewUsageData":true,
+   "CreateSSCSite":true,
+   "ManageSubwebs":true,
+   "CreateGroups":true,
+   "ManagePermissions":true,
+   "BrowseDirectories":true,
+   "BrowseUserInfo":true,
+   "AddDelPrivateWebParts":true,
+   "UpdatePersonalWebParts":true,
+   "ManageWeb":true,
+   "UseRemoteAPIs":true,
+   "ManageAlerts":true,
+   "CreateAlerts":true,
+   "EditMyUserInfo":true,
+   "EnumeratePermissions":true,
+   "FullMask":true
+}
 </pre>
 </div></div>
 </div>

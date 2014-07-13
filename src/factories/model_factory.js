@@ -855,8 +855,49 @@ angular.module('angularPoint')
          * See apModelFactory.resolvePermissions for details on what we expect to have returned.
          * @returns {Object} Contains properties for each permission level evaluated for current user.
          * @example
+         * Lets assume we're checking to see if a user has edit rights for a given list.
          * <pre>
-         * var permissionObject = projectsModel.resolvePermissions();
+         * var userPermissions = tasksModel.resolvePermissions();
+         * var userCanEdit = userPermissions.EditListItems;
+         * </pre>
+         * Example of what the returned object would look like
+         * for a site admin.
+         * <pre>
+         * perm = {
+         *    "ViewListItems":true,
+         *    "AddListItems":true,
+         *    "EditListItems":true,
+         *    "DeleteListItems":true,
+         *    "ApproveItems":true,
+         *    "OpenItems":true,
+         *    "ViewVersions":true,
+         *    "DeleteVersions":true,
+         *    "CancelCheckout":true,
+         *    "PersonalViews":true,
+         *    "ManageLists":true,
+         *    "ViewFormPages":true,
+         *    "Open":true,
+         *    "ViewPages":true,
+         *    "AddAndCustomizePages":true,
+         *    "ApplyThemeAndBorder":true,
+         *    "ApplyStyleSheets":true,
+         *    "ViewUsageData":true,
+         *    "CreateSSCSite":true,
+         *    "ManageSubwebs":true,
+         *    "CreateGroups":true,
+         *    "ManagePermissions":true,
+         *    "BrowseDirectories":true,
+         *    "BrowseUserInfo":true,
+         *    "AddDelPrivateWebParts":true,
+         *    "UpdatePersonalWebParts":true,
+         *    "ManageWeb":true,
+         *    "UseRemoteAPIs":true,
+         *    "ManageAlerts":true,
+         *    "CreateAlerts":true,
+         *    "EditMyUserInfo":true,
+         *    "EnumeratePermissions":true,
+         *    "FullMask":true
+         * }
          * </pre>
          */
         Model.prototype.resolvePermissions = function () {
