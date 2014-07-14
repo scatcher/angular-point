@@ -19,6 +19,11 @@
         "SPServices": "https://github.com/scatcher/SPServices.git#master"
     },
     "devDependencies": {
+        "angular-sanitize": "~1.2",
+        "angular-mocks": "~1.2",
+        "angular-resource": "~1.2",
+        "angular-bootstrap": "~0.11",
+        "chance": "latest",
         "respond": "latest",
         "es5-shim": "~2.3.0",
         "explorer-canvas": "https://github.com/arv/ExplorerCanvas.git",

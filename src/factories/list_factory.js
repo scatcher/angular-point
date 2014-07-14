@@ -156,6 +156,8 @@ angular.module('angularPoint')
          * for this field on the newly created JS object.
          * @property {boolean} [readOnly=false] When saving, we only push fields
          * that are mapped and not read only.
+         * @property {boolean} [required=false] Allows us to validate the field to ensure it is valid based
+         * on field type.
 
          * @description
          * Defined in the MODEL.list.fieldDefinitions array.  Each field definition object maps an internal field

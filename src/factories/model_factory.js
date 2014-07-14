@@ -15,7 +15,7 @@
  * @requires angularPoint.apUtilityService
  */
 angular.module('angularPoint')
-    .factory('apModelFactory', function (apModalService, apCacheService, apDataService, apListFactory, apListItemFactory, apQueryFactory, apUtilityService, $q, toastr) {
+    .factory('apModelFactory', function (apModalService, apCacheService, apDataService, apListFactory, apListItemFactory, apQueryFactory, apUtilityService, apFieldService, $q, toastr) {
 
         var defaultQueryName = 'primary';
 
@@ -683,6 +683,9 @@ angular.module('angularPoint')
                 /** Only evaluate required fields */
                 if (fieldDefinition.required && valid) {
                     switch (fieldDefinition.objectType) {
+                        case 'Boolean':
+                            valid = _.isBoolean(fieldValue);
+                            break;
                         case 'DateTime':
                             valid = _.isDate(fieldValue);
                             break;

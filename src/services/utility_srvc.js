@@ -30,7 +30,11 @@ angular.module('angularPoint')
          * @returns {string} Two digit string.
          */
         function doubleDigit(val) {
-            return val > 9 ? val.toString() : '0' + val;
+            if(typeof val === 'number') {
+                return val > 9 ? val.toString() : '0' + val;
+            } else {
+                return doubleDigit(parseInt(val));
+            }
         }
 
         /**
@@ -42,9 +46,9 @@ angular.module('angularPoint')
          * We don't need the time portion of comparison so an int makes this easier to evaluate
          */
         function yyyymmdd(date) {
-            var yyyy = date.getFullYear().toString();
-            var mm = (date.getMonth() + 1).toString();
-            var dd = date.getDate().toString();
+            var yyyy = date.getFullYear();
+            var mm = date.getMonth() + 1;
+            var dd = date.getDate();
             /** Add leading 0's to month and day if necessary */
             return parseInt(yyyy + doubleDigit(mm) + doubleDigit(dd));
         }
@@ -307,6 +311,7 @@ angular.module('angularPoint')
             registerChange: registerChange,
             resolvePermissions: resolvePermissions,
             SplitIndex: SplitIndex,
-            toCamelCase: toCamelCase
+            toCamelCase: toCamelCase,
+            yyyymmdd: yyyymmdd
         };
     });
