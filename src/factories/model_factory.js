@@ -637,12 +637,13 @@ angular.module('angularPoint')
             /** Extend defaults with any provided options */
             var opts = _.extend({}, defaults, options);
 
-            _.times(opts.quantity, function () {
+            _.times(opts.quantity, function (count) {
                 var mock = {};
                 /** Create an attribute with mock data for each field */
                 _.each(model.list.fields, function (field) {
                     mock[field.mappedName] = field.getMockData(opts);
                 });
+                mock.id = count + 1;
                 /** Use the factory on the model to extend the object */
                 mockData.push(new model.factory(mock));
             });

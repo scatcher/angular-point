@@ -129,8 +129,8 @@ angular.module('angularPoint')
          *     <dt>Lookup</dt>
          *     <dd>Passes string to Lookup constructor where it is broken into an object containing
          *     a "lookupValue" and "lookupId" attribute.  Inherits additional prototype methods from
-         *     Lookup.  See "Lookup" for more info.</dd>
-         *     See [Lookup](#/api/Lookup) for more information.
+         *     Lookup.  See [Lookup](#/api/Lookup) for more information.
+         *     </dd>
          *     <dt>LookupMulti</dt>
          *     <dd>Converts multiple delimited ";#" strings into an array of Lookup objects.</dd>
          *     <dt>MultiChoice</dt>
@@ -225,7 +225,7 @@ angular.module('angularPoint')
          *     // Fetch data (pulls local xml if offline named model.list.title + '.xml')
          *     // Initially pulls all requested data.  Each subsequent call just pulls
          *     // records that have been changed, updates the model, and returns a reference
-          *    // to the updated data array
+         *    // to the updated data array
          *     // @returns {Array} Requested list items
          *     model.registerQuery({name: 'primary'});
          *

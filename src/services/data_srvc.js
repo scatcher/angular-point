@@ -793,7 +793,7 @@ angular.module('angularPoint')
             apQueueService.increase();
 
             var defaults = {
-                target: entity.getContainer(),
+                target: _.isFunction(entity.getContainer) ? entity.getContainer() : model.getCache(),
                 updateAllCaches: false
             };
             var opts = _.extend({}, defaults, options);

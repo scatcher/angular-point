@@ -149,7 +149,7 @@ angular.module('angularPoint')
             if (!_.isDate(date)) {
                 return '';
             }
-            var self = this;
+            var self = stringifySharePointDate;
             var dateString = '';
             dateString += date.getFullYear();
             dateString += '-';

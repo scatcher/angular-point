@@ -9,6 +9,7 @@
     "distPath": "dist",
     "description": "Shared components of AngularPoint.",
     "license": "MIT",
+    "main": "dist/angular-point.min.js",
     "dependencies": {
         "angular": "~1.2",
         "angular-toastr": "latest",

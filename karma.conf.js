@@ -10,7 +10,8 @@ module.exports = function ( config ) {
         frameworks: ['jasmine'],
 
         // list of files / patterns to load in the browser
-        files:      [
+        files: [
+            // Third Party
             'bower_components/jquery/dist/jquery.js',
             'bower_components/angular/angular.js',
             'bower_components/angular-mocks/angular-mocks.js',
@@ -19,16 +20,17 @@ module.exports = function ( config ) {
             'bower_components/angular-bootstrap/ui-bootstrap.js',
             'bower_components/SPServices/jquery.SPServices.js',
             'bower_components/chance/chance.js',
-
             'bower_components/lodash/dist/lodash.js',
             'bower_components/lodash-deep/lodash-deep.js',
             'bower_components/angular-toastr/dist/angular-toastr.js',
+
+            // Angular Point
             'src/app.js',
             'src/utility/*.js',
             'src/services/*.js',
             'src/factories/*.js',
-            'src/directives/**/*.js',
             'src/models/*.js',
+            'src/directives/**/*.js',
             'test/mock/models/*.js',
             'test/spec/factories/*.js',
             'test/spec/services/*.js'

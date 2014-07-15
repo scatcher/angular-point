@@ -13,7 +13,7 @@
  * @requires angularPoint.apUtilityService
  */
 angular.module('angularPoint')
-    .factory('apListItemFactory', function ($q, apCacheService, apDataService, apUtilityService) {
+    .factory('apListItemFactory', function ($q, apCacheService, apDataService, apEncodeService, apUtilityService) {
 
 
         /**
@@ -123,7 +123,7 @@ angular.module('angularPoint')
             });
 
             /** Generate value pairs for specified fields */
-            var valuePairs = apDataService.generateValuePairs(definitions, listItem);
+            var valuePairs = apEncodeService.generateValuePairs(definitions, listItem);
 
             var defaults = {buildValuePairs: false, valuePairs: valuePairs};
 
