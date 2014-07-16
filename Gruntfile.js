@@ -82,7 +82,7 @@ module.exports = function (grunt) {
             },
             iesafe: {
                 src: [
-                    'bower_components/explorer-canvas/excanvas.js',
+                    'bower_components/ExplorerCanvas/excanvas.js',
                     'bower_components/es5-shim/es5-shim.js',
                     'bower_components/json3/lib/json3.js',
                     'bower_components/respond/dest/respond.src.js',
@@ -94,12 +94,11 @@ module.exports = function (grunt) {
 
         // Allow the use of non-minsafe AngularJS files. Automatically makes it
         // minsafe compatible so Uglify does not destroy the ng references
-        ngmin: {
+        ngAnnotate: {
             dist: {
                 files: [
                     {
-                        src: '<%= config.dist %>/angular-point.js',
-                        dest: '<%= config.dist %>/angular-point.js'
+                        src: '<%= config.dist %>/angular-point.js'
                     }
                 ]
             }
@@ -179,7 +178,7 @@ module.exports = function (grunt) {
         'clean:dist',
         'ngtemplates',
         'concat',
-        'ngmin',
+        'ngAnnotate',
         'uglify',
         'doc'
     ]);

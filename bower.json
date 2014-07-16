@@ -5,7 +5,6 @@
     "authors": [
         "Scott <github@scotthatcher.com>"
     ],
-    "appPath": "demo",
     "distPath": "dist",
     "description": "Shared components of AngularPoint.",
     "license": "MIT",
@@ -27,7 +26,7 @@
         "chance": "latest",
         "respond": "latest",
         "es5-shim": "~2.3.0",
-        "explorer-canvas": "https://github.com/arv/ExplorerCanvas.git",
+        "ExplorerCanvas": "latest",
         "json3": "~3"
     },
     "ignore": [
