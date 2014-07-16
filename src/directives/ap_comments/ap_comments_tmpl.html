@@ -16,12 +16,17 @@
     <div style="min-height: 150px;">
         <div class="newComment">
             <div class="form-group">
-                <h4><small>New Comment</small></h4>
-                <textarea class="form-control" rows="2" ng-model="state.tempComment" placeholder="Create a new comment..."></textarea>
+                <h4>
+                    <small>New Comment</small>
+                </h4>
+                <textarea class="form-control" rows="2" ng-model="state.tempComment"
+                          placeholder="Create a new comment..."></textarea>
             </div>
         </div>
         <div class="alert text-center" style="margin-top: 30px;" ng-show="!state.ready">
-            <h4><small>loading...</small></h4>
+            <h4>
+                <small>loading...</small>
+            </h4>
         </div>
         <div class="grey" style="margin-top: 30px;" ng-show="!comments && !state.newCommentVisible && state.ready">
             No comments have been made. Create one using the input box above.

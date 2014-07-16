@@ -1,17 +1,19 @@
 <div class="container">
     <h3>Offline XML Generator</h3>
-    <p>Fill in the basic information for a list and make the request to SharePoint.  The xml
+
+    <p>Fill in the basic information for a list and make the request to SharePoint. The xml
         response will appear at the bottom of the page where you can then copy by Ctrl + A.</p>
     <hr/>
     <form role="form">
         <div class="form-group">
             <label>Site URL</label>
+
             <div class="input-group">
                 <input type="url" class="form-control" ng-model="state.siteUrl">
                   <span class="input-group-btn">
                     <button title="Refresh list/libraries" class="btn btn-success"
                             type="button" ng-click="getLists()">
-                        <i class="fa fa-refresh"></i> </button>
+                        <i class="fa fa-refresh"></i></button>
                   </span>
             </div>
         </div>
@@ -28,6 +30,7 @@
                 <div class="form-group">
                     <label>Number of Items to Return</label>
                     <input type="number" class="form-control" ng-model="state.itemLimit"/>
+
                     <p class="help-block">[0 = All Items]</p>
                 </div>
             </div>
@@ -36,6 +39,7 @@
                     <label>Operation</label>
                     <select class="form-control" ng-model="state.operation"
                             ng-options="operation for operation in operations"></select>
+
                     <p class="help-block">Operation to query with.</p>
                 </div>
             </div>
@@ -48,15 +52,18 @@
                             style="width: 100%;"
                             ng-disabled="listCollection.length < 1">
                         <option ng-repeat="field in state.availableListFields"
-                                value="{{field.Name}}">{{ field.Name }}</option>
+                                value="{{field.Name}}">{{ field.Name }}
+                        </option>
                     </select>
-                    <p class="help-block">Leaving this blank will return all fields visible in the default list view.</p>
+
+                    <p class="help-block">Leaving this blank will return all fields visible in the default list
+                        view.</p>
                 </div>
             </div>
         </div>
         <div class="form-group">
             <label>CAML Query (Optional)</label>
-            <textarea  class="form-control" ng-model="state.query" rows="3"></textarea>
+            <textarea class="form-control" ng-model="state.query" rows="3"></textarea>
         </div>
         <br/>
         <button type="submit" class="btn btn-primary" ng-click="getXML()">Make Request</button>

@@ -52,7 +52,9 @@
         <div class="panel-body">
             <div class="row">
                 <div class="col-xs-12">
-                    <div colspan="3" class="description">This tab will allow you to quickly assign multiple users to a selected group.</div>
+                    <div colspan="3" class="description">This tab will allow you to quickly assign multiple users to a
+                        selected group.
+                    </div>
                 </div>
             </div>
             <hr class="hr-sm">
@@ -67,7 +69,8 @@
                 </div>
                 <div class="col-xs-2 text-center" style="padding-top: 175px">
                     <button class="btn btn-default" style="width:80px;"
-                            ng-click="updatePermissions('AddUserToGroup', users.selectedAvailable, [users.filter])" title="Add user">
+                            ng-click="updatePermissions('AddUserToGroup', users.selectedAvailable, [users.filter])"
+                            title="Add user">
                         <i class="fa fa-2x fa-angle-double-right"></i>
                     </button>
                     <br/><br/>
@@ -101,17 +104,20 @@
                 </div>
                 <div class="col-xs-7">
                     <span style="font-weight:bold">Site/Site Collection: </span>
-                    <input class="form-control" ng-model="state.siteUrl" ng-change="updateAvailableGroups(groups.filter)">
+                    <input class="form-control" ng-model="state.siteUrl"
+                           ng-change="updateAvailableGroups(groups.filter)">
                 </div>
             </div>
         </div>
         <div class="panel-body">
             <div class="row">
                 <div class="col-xs-12">
-                    <div colspan="3" class="description">This page was created to make the process of managing users/groups within the site
-                        collection more manageable.  When a user is selected, the available groups are displayed on the
+                    <div colspan="3" class="description">This page was created to make the process of managing
+                        users/groups within the site
+                        collection more manageable. When a user is selected, the available groups are displayed on the
                         left and the groups that the user is currently a member of will show on the right. Selecting
-                        multiple groups is supported.</div>
+                        multiple groups is supported.
+                    </div>
                 </div>
             </div>
             <hr class="hr-sm">
@@ -126,7 +132,8 @@
                 </div>
                 <div class="col-xs-2 text-center" style="padding-top: 175px">
                     <button class="btn btn-default" style="width:80px;"
-                            ng-click="updatePermissions('AddUserToGroup', [groups.filter], groups.selectedAvailable)" title="Add to group">
+                            ng-click="updatePermissions('AddUserToGroup', [groups.filter], groups.selectedAvailable)"
+                            title="Add to group">
                         <i class="fa fa-2x fa-angle-double-right"></i>
                     </button>
                     <br/><br/>

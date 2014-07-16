@@ -3,19 +3,19 @@
 //TODO: Remove dependency on toastr
 /** Check to see if dependent modules exist */
 try {
-    angular.module('toastr');
+  angular.module('toastr');
 }
 catch (e) {
-    /** Toastr wasn't found so redirect all toastr requests to $log */
-    angular.module('toastr', [])
-        .factory('toastr', function ($log) {
-            return {
-                error: $log.error,
-                info: $log.info,
-                success: $log.info,
-                warning: $log.warn
-            };
-        });
+  /** Toastr wasn't found so redirect all toastr requests to $log */
+  angular.module('toastr', [])
+    .factory('toastr', function ($log) {
+      return {
+        error: $log.error,
+        info: $log.info,
+        success: $log.info,
+        warning: $log.warn
+      };
+    });
 }
 /**
  * @ngdoc overview
@@ -27,7 +27,7 @@ catch (e) {
  * @installModule
  */
 angular.module('angularPoint', [
-    'toastr'
+  'toastr'
 ])
 
 /**
@@ -68,16 +68,16 @@ angular.module('angularPoint', [
  *      });
  * </pre>
  */
-    .constant('apConfig', {
-        appTitle: 'Angular-Point',
-        debugEnabled: true,
-        firebaseURL: "The optional url of your firebase source",
-        offline: window.location.href.indexOf('localhost') > -1 ||
-            window.location.href.indexOf('http://0.') > -1 ||
-            window.location.href.indexOf('http://10.') > -1 ||
-            window.location.href.indexOf('http://192.') > -1
-    })
-    .run(function () {
+  .constant('apConfig', {
+    appTitle: 'Angular-Point',
+    debugEnabled: true,
+    firebaseURL: "The optional url of your firebase source",
+    offline: window.location.href.indexOf('localhost') > -1 ||
+      window.location.href.indexOf('http://0.') > -1 ||
+      window.location.href.indexOf('http://10.') > -1 ||
+      window.location.href.indexOf('http://192.') > -1
+  })
+  .run(function () {
 
-    });
+  });
 
