@@ -32,6 +32,15 @@ NG_DOCS={
     },
     {
       "section": "api",
+      "id": "angularPoint.apDebugService",
+      "shortName": "angularPoint.apDebugService",
+      "type": "service",
+      "moduleName": "angularPoint",
+      "shortDescription": "Tools to assist with development.",
+      "keywords": "angularpoint apdebugservice api assist assume big console console-save converts data development downloaded dump easily file function github io js json local located machine myobject object optionally original save savejson script service tools viewed"
+    },
+    {
+      "section": "api",
       "id": "angularPoint.apDecodeService",
       "shortName": "angularPoint.apDecodeService",
       "type": "service",
