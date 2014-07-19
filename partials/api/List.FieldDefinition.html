@@ -53,8 +53,8 @@ thrown with additional info on specifically what is invalid.</dd>
 <dt>Lookup</dt>
 <dd>Passes string to Lookup constructor where it is broken into an object containing
 a &quot;lookupValue&quot; and &quot;lookupId&quot; attribute.  Inherits additional prototype methods from
-Lookup.  See &quot;Lookup&quot; for more info.</dd>
-See <a href="#/api/Lookup">Lookup</a> for more information.
+Lookup.  See <a href="#/api/Lookup">Lookup</a> for more information.
+</dd>
 <dt>LookupMulti</dt>
 <dd>Converts multiple delimited &quot;;#&quot; strings into an array of Lookup objects.</dd>
 <dt>MultiChoice</dt>
@@ -85,6 +85,11 @@ for this field on the newly created JS object.</p>
 <li><h3 id="properties_[readonly=false]">[readOnly=false]</h3>
 <div class="[readonly=false]"><div class="list-fielddefinition-page"><p>When saving, we only push fields
 that are mapped and not read only.</p>
+</div></div>
+</li>
+<li><h3 id="properties_[required=false]">[required=false]</h3>
+<div class="[required=false]"><div class="list-fielddefinition-page"><p>Allows us to validate the field to ensure it is valid based
+on field type.</p>
 </div></div>
 </li>
 </ul>

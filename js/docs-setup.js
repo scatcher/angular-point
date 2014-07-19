@@ -32,6 +32,15 @@ NG_DOCS={
     },
     {
       "section": "api",
+      "id": "angularPoint.apDebugService",
+      "shortName": "angularPoint.apDebugService",
+      "type": "service",
+      "moduleName": "angularPoint",
+      "shortDescription": "Tools to assist with development.",
+      "keywords": "angularpoint apdebugservice api assist assume big console console-save converts data development downloaded dump easily file function github io js json local located machine myobject object optionally original save savejson script service tools viewed"
+    },
+    {
+      "section": "api",
       "id": "angularPoint.apDecodeService",
       "shortName": "angularPoint.apDecodeService",
       "type": "service",
@@ -289,7 +298,7 @@ NG_DOCS={
       "type": "object",
       "moduleName": "List",
       "shortDescription": "Defined in the MODEL.list.fieldDefinitions array.  Each field definition object maps an internal field",
-      "keywords": "actual add additional angular api apmodelfactory app array attribute attributes automatically base broken calculated call changed choice choice_field_name choices class collection column convert converts counter create created current customfields dashes data defined definition deliminator delimited description designer desired dev display element error extend factory fetch field fielddefinition fielddefinitions fields file float folder form function generally getfielddefinition guid href ignore info inherits initial initially int integer internal internalname invalid item items javascript js json list list-fielddefinition-page listitem local lookup lookupid lookupvalue manager mapped mappedname mapping maps methods model modelname module multiple named newly number obj object objects objecttype offline parsed passed point post primary priority processing project properties property prototype pulls push read read-only readonly records reference registerquery representing requested requirement respect retrieve return returned returns saving second selected service set sharepoint single site slashes space spaces store stored string strings subsequent task taskermodel tasks text thrown title true type typically unescape unique updated updates usage user valid var xml"
+      "keywords": "actual add additional allows angular api apmodelfactory app array attribute attributes automatically base based broken calculated call changed choice choice_field_name choices class collection column convert converts counter create created current customfields dashes data defined definition deliminator delimited description designer desired dev display element ensure error extend factory fetch field fielddefinition fielddefinitions fields file float folder form function generally getfielddefinition guid href ignore info inherits initial initially int integer internal internalname invalid item items javascript js json list list-fielddefinition-page listitem local lookup lookupid lookupvalue manager mapped mappedname mapping maps methods model modelname module multiple named newly number obj object objects objecttype offline parsed passed point post primary priority processing project properties property prototype pulls push read read-only readonly records reference registerquery representing requested requirement respect retrieve return returned returns saving second selected service set sharepoint single site slashes space spaces store stored string strings subsequent task taskermodel tasks text thrown title true type typically unescape unique updated updates usage user valid validate var xml"
     },
     {
       "section": "api",
