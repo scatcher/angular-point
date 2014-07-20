@@ -22,7 +22,7 @@ angular.module('angularPoint')
      * @param {string} config.guid Unique SharePoint GUID for the list we'll be basing the model on
      * ex:'{4D74831A-42B2-4558-A67F-B0B5ADBC0EAC}'
      * @param {string} config.title Maps to the offline XML file in dev folder (no spaces)
-     * ex: 'ProjectsList' so the offline XML file would be located at dev/ProjectsList.xml
+     * ex: 'ProjectsList' so the offline XML file would be located at apConfig.offlineXML + 'ProjectsList.xml'
      * @param {object[]} [config.customFields] Mapping of SharePoint field names to the internal names we'll be using
      * in our application.  Also contains field type, readonly attribute, and any other non-standard settings.
      * See [List.customFields](#/api/List.FieldDefinition) for additional info on how to define a field type.

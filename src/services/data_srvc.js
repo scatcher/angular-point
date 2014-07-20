@@ -19,7 +19,7 @@ angular.module('angularPoint')
   .service('apDataService', function ($q, $timeout, apQueueService, apConfig, apUtilityService, apDecodeService, apEncodeService, apFieldService, toastr) {
     var dataService = {};
 
-    /** Flag to use cached XML files from the src/dev folder */
+    /** Flag to use cached XML files from the location specified in apConfig.offlineXML */
     var offline = apConfig.offline;
     /** Allows us to make code easier to read */
     var online = !offline;
@@ -129,7 +129,7 @@ angular.module('angularPoint')
       };
 
       if (offline) {
-        var offlineData = 'dev/' + opts.operation + '.xml';
+        var offlineData = apConfig.offlineXML + opts.operation + '.xml';
 
         /** Get offline data */
         $.ajax(offlineData).then(
@@ -138,7 +138,8 @@ angular.module('angularPoint')
             /** Pass back the group array */
             deferred.resolve(processXML(offlineData));
           }, function (outcome) {
-            toastr.error('You need to have a dev/' + opts.operation + '.xml in order to get the group collection in offline mode.');
+            toastr.error('You need to have a ' + apConfig.offlineXML + opts.operation + '.xml ' +
+              'in order to get the group collection in offline mode.');
             deferred.reject(outcome);
             apQueueService.decrease();
           });
@@ -254,7 +255,7 @@ angular.module('angularPoint')
         });
       } else {
         /** Debugging offline */
-        var offlineData = 'dev/' + opts.operation + '.xml';
+        var offlineData = apConfig.offlineXML + opts.operation + '.xml';
 
         /** Get offline data */
         $.ajax(offlineData).then(
@@ -263,7 +264,7 @@ angular.module('angularPoint')
             /** Pass back the group array */
             deferred.resolve(processXML(offlineData));
           }, function (outcome) {
-            toastr.error('You need to have a dev/' + opts.operation + '.xml in order to get the group collection in offline mode.');
+            toastr.error('You need to have a ' + apConfig.offlineXML + opts.operation + '.xml in order to get the group collection in offline mode.');
             deferred.reject(outcome);
             apQueueService.decrease();
           });
@@ -442,7 +443,7 @@ angular.module('angularPoint')
      * @param {object} query Reference to the Query making the call.
      * @param {object} [options] Optional configuration parameters.
      * @param {Array} [options.target=model.getCache()] The target destination for returned entities
-     * @param {string} [options.offlineXML='dev/' + model.list.title + '.xml'] Optionally include the location of
+     * @param {string} [options.offlineXML=apConfig.offlineXML + model.list.title + '.xml'] Optionally include the location of
      * a custom offline XML file specifically for this query.
      * @returns {object[]} - Array of list item objects.
      */
@@ -503,7 +504,7 @@ angular.module('angularPoint')
       } else {
         /** Simulate an web service call if working offline */
         /** Optionally set alternate offline XML location but default to value in model */
-        var offlineData = opts.offlineXML || query.offlineXML || 'dev/' + model.list.title + '.xml';
+        var offlineData = opts.offlineXML || query.offlineXML || apConfig.offlineXML + model.list.title + '.xml';
 
         /** Only pull down offline xml if this is the first time the query is run */
         if (query.lastRun) {
@@ -513,7 +514,7 @@ angular.module('angularPoint')
           deferred.resolve(query.cache);
         } else {
           /** First run for query
-           *  Get offline data stored in the src/dev folder
+           *  Get offline XML file from the location specified in apConfig.offlineXML
            */
           $.ajax(offlineData).then(function (responseXML) {
             apDecodeService.processListItems(model, responseXML, opts)
@@ -532,7 +533,7 @@ angular.module('angularPoint')
           }, function () {
             var mockData = model.generateMockData();
             deferred.resolve(mockData);
-            toastr.error('There was a problem locating the "dev/' + model.list.title + '.xml"');
+            toastr.error('There was a problem locating the "' + apConfig.offlineXML + model.list.title + '.xml"');
           });
         }
 

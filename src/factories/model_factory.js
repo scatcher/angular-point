@@ -37,7 +37,7 @@ angular.module('angularPoint')
      * @param {object} config.list - Definition of the list in SharePoint; This object will
      * be passed to the list constructor to extend further
      * @param {string} config.list.title - List name, no spaces.  Offline XML file will need to be
-     * named the same (ex: CustomList so xml file would be /dev/CustomList.xml)
+     * named the same (ex: CustomList so xml file would be apConfig.offlineXML + '/CustomList.xml')
      * @param {string} config.list.guid - Unique SharePoint ID (ex: '{3DBEB25A-BEF0-4213-A634-00DAF46E3897}')
      * @param {object[]} config.list.customFields - Maps SharePoint fields with names we'll use within the
      * application.  Identifies field types and formats accordingly.  Also denotes if a field is read only.

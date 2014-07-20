@@ -1,6 +1,6 @@
 {
     "name": "angular-point",
-    "version": "0.0.1",
+    "version": "0.0.3",
     "homepage": "https://github.com/scatcher/angular-point",
     "authors": [
         "Scott <github@scotthatcher.com>"
@@ -8,7 +8,7 @@
     "distPath": "dist",
     "description": "Shared components of AngularPoint.",
     "license": "MIT",
-    "main": "dist/angular-point.min.js",
+    "main": "./dist/angular-point.min.js",
     "dependencies": {
         "angular": "~1.2",
         "angular-toastr": "latest",
