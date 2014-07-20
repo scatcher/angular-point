@@ -37,11 +37,12 @@ angular.module('angularPoint', [
  * Basic config for the application (unique for each environment).  Update to change for your environment.
  *
  * @param {string} appTitle Name of the application in case you need to reference.
- * @param {boolean} debugEnabled Determines if we should show debug code.
+ * @param {boolean} debug Determines if we should show debug code.
  * @param {string} defaultUrl Automatically sets the defaultUrl for web service calls so we don't need to make the
  * initial blocking call by SPServices.
  * @param {string} [firebaseUrl] Necessary if you're using apSyncService.  Look there for more details.
- * @param {boolean} offline Automatically set based on the URL of the site.  Pulls offline XML when hosted locally.
+ * @param {boolean} [offline] Automatically set based on the URL of the site.  Pulls offline XML when hosted locally.
+ * @param {string} [offlineXML='dev/'] The location to look for offline xml files.
  * @example
  * <h4>Default Configuration</h4>
  * <pre>
@@ -64,18 +65,24 @@ angular.module('angularPoint', [
  *      })
  *      .run(function(apConfig) {
  *          //To set the default site root
- *          apConfig.defaultUrl = '//sharepoint.myserver.com/siteRoot';
+ *          apConfig.defaultUrl =
+ *            '//sharepoint.myserver.com/siteRoot';
+ *
+ *          //To set the default location to look for
+ *          //offline xml files.
+ *          apConfig.offlineXML = 'myCachedQueries/';
  *      });
  * </pre>
  */
   .constant('apConfig', {
     appTitle: 'Angular-Point',
-    debugEnabled: true,
+    debug: false,
     firebaseURL: "The optional url of your firebase source",
     offline: window.location.href.indexOf('localhost') > -1 ||
       window.location.href.indexOf('http://0.') > -1 ||
       window.location.href.indexOf('http://10.') > -1 ||
-      window.location.href.indexOf('http://192.') > -1
+      window.location.href.indexOf('http://192.') > -1,
+    offlineXML: 'dev/'
   })
   .run(function () {
 
@@ -284,7 +291,7 @@ angular.module('angularPoint')
   .service('apDataService', ["$q", "$timeout", "apQueueService", "apConfig", "apUtilityService", "apDecodeService", "apEncodeService", "apFieldService", "toastr", function ($q, $timeout, apQueueService, apConfig, apUtilityService, apDecodeService, apEncodeService, apFieldService, toastr) {
     var dataService = {};
 
-    /** Flag to use cached XML files from the src/dev folder */
+    /** Flag to use cached XML files from the location specified in apConfig.offlineXML */
     var offline = apConfig.offline;
     /** Allows us to make code easier to read */
     var online = !offline;
@@ -394,7 +401,7 @@ angular.module('angularPoint')
       };
 
       if (offline) {
-        var offlineData = 'dev/' + opts.operation + '.xml';
+        var offlineData = apConfig.offlineXML + opts.operation + '.xml';
 
         /** Get offline data */
         $.ajax(offlineData).then(
@@ -403,7 +410,8 @@ angular.module('angularPoint')
             /** Pass back the group array */
             deferred.resolve(processXML(offlineData));
           }, function (outcome) {
-            toastr.error('You need to have a dev/' + opts.operation + '.xml in order to get the group collection in offline mode.');
+            toastr.error('You need to have a ' + apConfig.offlineXML + opts.operation + '.xml ' +
+              'in order to get the group collection in offline mode.');
             deferred.reject(outcome);
             apQueueService.decrease();
           });
@@ -519,7 +527,7 @@ angular.module('angularPoint')
         });
       } else {
         /** Debugging offline */
-        var offlineData = 'dev/' + opts.operation + '.xml';
+        var offlineData = apConfig.offlineXML + opts.operation + '.xml';
 
         /** Get offline data */
         $.ajax(offlineData).then(
@@ -528,7 +536,7 @@ angular.module('angularPoint')
             /** Pass back the group array */
             deferred.resolve(processXML(offlineData));
           }, function (outcome) {
-            toastr.error('You need to have a dev/' + opts.operation + '.xml in order to get the group collection in offline mode.');
+            toastr.error('You need to have a ' + apConfig.offlineXML + opts.operation + '.xml in order to get the group collection in offline mode.');
             deferred.reject(outcome);
             apQueueService.decrease();
           });
@@ -707,7 +715,7 @@ angular.module('angularPoint')
      * @param {object} query Reference to the Query making the call.
      * @param {object} [options] Optional configuration parameters.
      * @param {Array} [options.target=model.getCache()] The target destination for returned entities
-     * @param {string} [options.offlineXML='dev/' + model.list.title + '.xml'] Optionally include the location of
+     * @param {string} [options.offlineXML=apConfig.offlineXML + model.list.title + '.xml'] Optionally include the location of
      * a custom offline XML file specifically for this query.
      * @returns {object[]} - Array of list item objects.
      */
@@ -768,7 +776,7 @@ angular.module('angularPoint')
       } else {
         /** Simulate an web service call if working offline */
         /** Optionally set alternate offline XML location but default to value in model */
-        var offlineData = opts.offlineXML || query.offlineXML || 'dev/' + model.list.title + '.xml';
+        var offlineData = opts.offlineXML || query.offlineXML || apConfig.offlineXML + model.list.title + '.xml';
 
         /** Only pull down offline xml if this is the first time the query is run */
         if (query.lastRun) {
@@ -778,7 +786,7 @@ angular.module('angularPoint')
           deferred.resolve(query.cache);
         } else {
           /** First run for query
-           *  Get offline data stored in the src/dev folder
+           *  Get offline XML file from the location specified in apConfig.offlineXML
            */
           $.ajax(offlineData).then(function (responseXML) {
             apDecodeService.processListItems(model, responseXML, opts)
@@ -797,7 +805,7 @@ angular.module('angularPoint')
           }, function () {
             var mockData = model.generateMockData();
             deferred.resolve(mockData);
-            toastr.error('There was a problem locating the "dev/' + model.list.title + '.xml"');
+            toastr.error('There was a problem locating the "' + apConfig.offlineXML + model.list.title + '.xml"');
           });
         }
 
@@ -1145,48 +1153,91 @@ angular.module('angularPoint')
 
     /**
      * @ngdoc function
-     * @name angularPoint.apDebugService:saveJson
+     * @name angularPoint.apDebugService:saveFile
      * @methodOf angularPoint.apDebugService
      * @description
-     * Converts an object into a JSON file that is then downloaded to the local machine.  Original script located
+     * Used to convert a JS object or XML document into a file that is then downloaded on the users
+     * local machine.  Original work located:
      * [here](http://bgrins.github.io/devtools-snippets/#console-save).
      * @param {object} data JS object that we'd like to dump to a JSON file and save to the local machine.
+     * @param {string} type Can be either 'xml' or 'json'.
      * @param {string} [filename=debug.json] Optionally name the file.
      * @example
      * <pre>
      * //Lets assume we want to looks at an object that is too big to be easily viewed in the console.
-     * apDebugService.saveJson(objectToSave, 'myobject.json');
+     * apDebugService.saveJSON(objectToSave, 'myobject.json');
      * </pre>
      *
      */
-    var saveJson = function (data, filename) {
+    var saveFile = function (data, type, filename) {
       if (!data) {
-        console.error('apDebugService.saveJson: No data');
+        console.error('apDebugService.save' + type.toUpperCase() + ': No data');
         return;
       }
 
       if (!filename) {
-        filename = 'debug.json';
+        filename = 'debug.' + type;
       }
 
-      if (typeof data === 'object') {
+      if (type === json && typeof data === 'object') {
         data = JSON.stringify(data, undefined, 4);
       }
 
-      var blob = new Blob([data], {type: 'text/json'}),
+      var blob = new Blob([data], {type: 'text/' + type}),
         e = document.createEvent('MouseEvents'),
         a = document.createElement('a');
 
       a.download = filename;
       a.href = window.URL.createObjectURL(blob);
-      a.dataset.downloadurl = ['text/json', a.download, a.href].join(':');
+      a.dataset.downloadurl = ['text/' + type, a.download, a.href].join(':');
       e.initMouseEvent('click', true, false, window, 0, 0, 0, 0, 0, false, false, false, false, 0, null);
       a.dispatchEvent(e);
+    };
 
+    /**
+     * @ngdoc function
+     * @name angularPoint.apDebugService:saveJSON
+     * @methodOf angularPoint.apDebugService
+     * @description
+     * Simple convenience function that uses angularPoint.apDebugService:saveFile to download json to the local machine.
+     * @requires angularPoint.apDebugService:saveFile
+     * @param {object} data JS object that we'd like to dump to a JSON file and save to the local machine.
+     * @param {string} [filename=debug.json] Optionally name the file.
+     * @example
+     * <pre>
+     * //Lets assume we want to looks at an object that is too big to be easily viewed in the console.
+     * apDebugService.saveJSON(objectToSave, 'myobject.json');
+     * </pre>
+     *
+     */
+    var saveJSON = function (data, filename) {
+      saveFile(data, filename, 'json');
+    };
+
+    /**
+     * @ngdoc function
+     * @name angularPoint.apDebugService:saveXML
+     * @methodOf angularPoint.apDebugService
+     * @description
+     * Simple convenience function that uses angularPoint.apDebugService:saveFile to download xml to the local machine.
+     * @requires angularPoint.apDebugService:saveFile
+     * @param {object} data XML object that we'd like to dump to a XML file and save to the local machine.
+     * @param {string} [filename=debug.xml] Optionally name the file.
+     * @example
+     * <pre>
+     * //Lets assume we want to looks at an object that is too big to be easily viewed in the console.
+     * apDebugService.saveXML(objectToSave, 'myobject.xml');
+     * </pre>
+     *
+     */
+    var saveXML = function (data, filename) {
+      saveFile(data, filename, 'xml');
     };
 
     return {
-      saveJson: saveJson
+      saveFile: saveFile,
+      saveJSON: saveJSON,
+      saveXML: saveXML
     };
   });;'use strict';
 
@@ -3011,7 +3062,7 @@ angular.module('angularPoint')
      * @param {string} config.guid Unique SharePoint GUID for the list we'll be basing the model on
      * ex:'{4D74831A-42B2-4558-A67F-B0B5ADBC0EAC}'
      * @param {string} config.title Maps to the offline XML file in dev folder (no spaces)
-     * ex: 'ProjectsList' so the offline XML file would be located at dev/ProjectsList.xml
+     * ex: 'ProjectsList' so the offline XML file would be located at apConfig.offlineXML + 'ProjectsList.xml'
      * @param {object[]} [config.customFields] Mapping of SharePoint field names to the internal names we'll be using
      * in our application.  Also contains field type, readonly attribute, and any other non-standard settings.
      * See [List.customFields](#/api/List.FieldDefinition) for additional info on how to define a field type.
@@ -3897,7 +3948,7 @@ angular.module('angularPoint')
      * @param {object} config.list - Definition of the list in SharePoint; This object will
      * be passed to the list constructor to extend further
      * @param {string} config.list.title - List name, no spaces.  Offline XML file will need to be
-     * named the same (ex: CustomList so xml file would be /dev/CustomList.xml)
+     * named the same (ex: CustomList so xml file would be apConfig.offlineXML + '/CustomList.xml')
      * @param {string} config.list.guid - Unique SharePoint ID (ex: '{3DBEB25A-BEF0-4213-A634-00DAF46E3897}')
      * @param {object[]} config.list.customFields - Maps SharePoint fields with names we'll use within the
      * application.  Identifies field types and formats accordingly.  Also denotes if a field is read only.

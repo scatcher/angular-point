@@ -12,7 +12,7 @@ any reason to manually call.</p>
 </div></td></tr><tr><td>config.guid</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="list-page"><p>Unique SharePoint GUID for the list we&#39;ll be basing the model on
 ex:&#39;{4D74831A-42B2-4558-A67F-B0B5ADBC0EAC}&#39;</p>
 </div></td></tr><tr><td>config.title</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="list-page"><p>Maps to the offline XML file in dev folder (no spaces)
-ex: &#39;ProjectsList&#39; so the offline XML file would be located at dev/ProjectsList.xml</p>
+ex: &#39;ProjectsList&#39; so the offline XML file would be located at apConfig.offlineXML + &#39;ProjectsList.xml&#39;</p>
 </div></td></tr><tr><td>[config.customFields]</td><td><a href="" class="label type-hint type-hint-object">object[]</a></td><td><div class="list-page"><p>Mapping of SharePoint field names to the internal names we&#39;ll be using
 in our application.  Also contains field type, readonly attribute, and any other non-standard settings.
 See <a href="#/api/List.FieldDefinition">List.customFields</a> for additional info on how to define a field type.
