@@ -302,9 +302,9 @@ angular.module('angularPoint')
      * @name apDataService.getFieldVersionHistory
      * @description
      * Returns the version history for a field in a list item.
-     * @param {object} payload Configuration object passed to SPServices.
+     * @param {object} options Configuration object passed to SPServices.
      * <pre>
-     * var payload = {
+     * var options = {
          *        operation: 'GetVersionCollection',
          *        webURL: apConfig.defaultUrl,
          *        strlistID: model.list.guid,
@@ -315,28 +315,29 @@ angular.module('angularPoint')
      * @param {object} fieldDefinition Field definition object from the model.
      * @returns {object[]} Promise which resolves with an array of list item changes for the specified field.
      */
-    var getFieldVersionHistory = function (payload, fieldDefinition) {
-      var deferred = $q.defer();
-      if (online) {
-        /** SPServices returns a promise */
-        var webServiceCall = $().SPServices(payload);
+    var getFieldVersionHistory = function (options, fieldDefinition) {
+      var defaults = {
+        operation: 'GetVersionCollection'
+      };
+      var opts = _.extend({}, defaults, options);
 
-        webServiceCall.then(function () {
-          /** Parse XML response */
-          var versions = apDecodeService.parseFieldVersions(webServiceCall.responseText, fieldDefinition);
-          /** Resolve with an array of all field versions */
-          deferred.resolve(versions);
-        }, function (outcome) {
-          /** Failure */
-          toastr.error('Failed to fetch version history.');
-          deferred.reject(outcome);
-        });
+      var deferred = $q.defer();
+
+      if (online) {
+        serviceWrapper(opts)
+          .then(function (response) {
+            /** Parse XML response */
+            var versions = apDecodeService.parseFieldVersions(response.responseText, fieldDefinition);
+            /** Resolve with an array of all field versions */
+            deferred.resolve(versions);
+          }, function (outcome) {
+            /** Failure */
+            toastr.error('Failed to fetch version history.');
+            deferred.reject(outcome);
+          });
       } else {
-        /** Simulate async response if offline */
-        $timeout(function () {
-          /** Resolve with an empty array */
-          deferred.resolve([]);
-        });
+        /** Resolve with an empty array because we don't know what the data should look like to mock */
+        deferred.resolve([]);
       }
       return deferred.promise;
     };
@@ -564,51 +565,6 @@ angular.module('angularPoint')
       return serviceWrapper(opts);
     };
 
-//    /**
-//     * @ngdoc function
-//     * @name apDataService.getList
-//     * @description
-//     * Returns all list settings for each list on the site
-//     * @param {object} options Configuration parameters.
-//     * @param {string} options.listName GUID of the list.
-//     * @param {string} [options.webURL] Can override the default web url if desired.
-//     * @returns {object[]} Promise which resolves with an array of field definitions for the list.
-//     */
-//    var getList = function (options) {
-//      var opts = _.extend({}, options);
-//      apQueueService.increase();
-//      var deferred = $q.defer();
-//
-//
-//
-//      //TODO: Use serviceWrapper
-//      var webServiceCall = $().SPServices({
-//        operation: 'GetList',
-//        listName: opts.listName
-//      });
-//
-//      webServiceCall.then(function () {
-//        /** Success */
-//        apQueueService.decrease();
-//
-//        /** Map returned XML to JSON */
-//        var json = $(webServiceCall.responseXML).SPFilterNode('Field').SPXmlToJson({
-//          includeAllAttrs: true,
-//          removeOws: false
-//        });
-//        /** Pass back the lists array */
-//        deferred.resolve(json);
-//      }, function (outcome) {
-//        /** Failure */
-//        deferred.reject(outcome);
-//        toastr.error('Failed to fetch list details.');
-//      }).always(function () {
-//        apQueueService.decrease();
-//      });
-//
-//      return deferred.promise;
-//    };
-
     /**
      * @ngdoc function
      * @name apDataService.deleteAttachment
@@ -638,90 +594,92 @@ angular.module('angularPoint')
      */
     var deleteAttachment = function (options) {
       var defaults = {
-        operation: 'DeleteAttachment'
-      };
-      var opts = _.extend({}, defaults, options);
-      apQueueService.increase();
-      var deferred = $q.defer();
-
-      //TODO: Use serviceWrapper
-      var webServiceCall = $().SPServices({
         operation: 'DeleteAttachment',
-        listItemID: opts.listItemId,
-        url: opts.url,
-        listName: opts.listName
-      });
+        filterNode: 'Field'
+      };
 
-      webServiceCall.then(function () {
-        /** Success */
-        apQueueService.decrease();
+      var opts = _.extend({}, defaults, options);
 
-        /** Map returned XML to JSON */
-        var json = $(webServiceCall.responseXML).SPFilterNode('Field').SPXmlToJson({
-          includeAllAttrs: true,
-          removeOws: false
-        });
-        /** Pass back the lists array */
-        deferred.resolve(json);
-      }, function (outcome) {
-        /** Failure */
-        deferred.reject(outcome);
-        toastr.error('Failed to fetch list details.');
-      }).always(function () {
-        apQueueService.decrease();
-      });
-
-      return deferred.promise;
+      return serviceWrapper(opts);
     };
 
     /**
      * @ngdoc function
      * @name apDataService.getView
      * @description
-     * Returns details of a SharePoint list view
+     * Returns the schema of the specified view for the specified list.
      * @param {object} options Configuration parameters.
      * @param {string} options.listName GUID of the list.
      * @param {string} [options.viewName] Formatted as a GUID, if not provided
      * <pre>'{37388A98-534C-4A28-BFFA-22429276897B}'</pre>
      * @param {string} [options.webURL] Can override the default web url if desired.
-     * @returns {object} promise
+     * @returns {object} {query: '', viewFields: '', rowLimit: ''}
+     * Promise that resolves with an object similar to this.
+     * @example
+     * <pre>
+     * apDataService.getView({
+     *    viewName: '{EE7C652F-9CBF-433F-B376-86B0EE989A06}',
+     *    listName: '{AA7C652F-44BF-433F-B376-234423234A06}'
+     * })
+     *
+     *
+     * </pre>
+     * <h3>Returned XML</h3>
+     * <pre>
+     *  <View Name="{EE7C652F-9CBF-433F-B376-86B0EE989A06}"
+     *  DefaultView="TRUE" Type="HTML" DisplayName="View_Name"
+     *  Url="Lists/Events/File_Name.aspx" BaseViewID="1">
+     *  <Query>
+     *    <Where>
+     *      <Leq>
+     *        <FieldRef Name="Created"/>
+     *        <Value Type="DateTime">2003-03-03T00:00:00Z</Value>
+     *      </Leq>
+     *    </Where>
+     *  </Query>
+     *  <ViewFields>
+     *    <FieldRef Name="fRecurrence"/>
+     *    <FieldRef Name="Attachments"/>
+     *    <FieldRef Name="WorkspaceLink"/>
+     *    <FieldRef Name="LinkTitle"/>
+     *    <FieldRef Name="Location"/>
+     *    <FieldRef Name="EventDate"/>
+     *    <FieldRef Name="EndDate"/>
+     *  </ViewFields>
+     *  <RowLimit Paged="TRUE">100</RowLimit>
+     * </View>
+     * </pre>
+     *
      */
     var getView = function (options) {
-      var opts = _.extend({}, options);
-      var deferred = $q.defer();
-
-      apQueueService.increase();
-
-      var payload = {
+      var defaults = {
         operation: 'GetView',
-        listName: opts.listName
+        offlineXML: apConfig.offlineXML + 'GetView.xml'
       };
 
-      /** Set view name if provided in options, otherwise it returns default view */
-      if (opts.viewName) {
-        payload.viewName = opts.viewName;
-      }
+      var deferred = $q.defer();
 
-      //TODO: Use serviceWrapper
-      var webServiceCall = $().SPServices(payload);
 
-      webServiceCall.then(function () {
-        /** Success */
-        var output = {
-          query: '<Query>' + $(webServiceCall.responseText).find('Query').html() + '</Query>',
-          viewFields: '<ViewFields>' + $(webServiceCall.responseText).find('ViewFields').html() + '</ViewFields>',
-          rowLimit: $(webServiceCall.responseText).find('RowLimit').html()
-        };
+      var opts = _.extend({}, defaults, options);
 
-        /** Pass back the lists array */
-        deferred.resolve(output);
-      }, function (outcome) {
-        /** Failure */
-        toastr.error('Failed to fetch view details.');
-        deferred.reject(outcome);
-      }).always(function () {
-        apQueueService.decrease();
-      });
+      serviceWrapper(opts)
+        .then(function (response) {
+          /** Already have the correct node if offline, otherwise if offline we need the responseText prop */
+          var responseText = apConfig.offline ? response : response.responseText;
+          /** Success */
+          var output = {
+            query: '<Query>' + $(responseText).find('Query').html() + '</Query>',
+            viewFields: '<ViewFields>' + $(responseText).find('ViewFields').html() + '</ViewFields>',
+            rowLimit: $(responseText).find('RowLimit').html()
+          };
+
+          /** Pass back the lists array */
+          deferred.resolve(output);
+        }, function (err) {
+          /** Failure */
+          toastr.error('Failed to fetch view details.');
+          deferred.reject(err);
+        });
 
       return deferred.promise;
     };
@@ -785,7 +743,8 @@ angular.module('angularPoint')
             /** Change token query includes deleted items as well so we need to process them separately */
             processDeletionsSinceToken(responseXML, opts.target);
           }
-          /** Convert the XML into JS */
+
+          /** Convert the XML into JS objects */
           apDecodeService.processListItems(model, responseXML, opts)
             .then(function (entities) {
               /** Set date time to allow for time based updates */
@@ -1054,7 +1013,6 @@ angular.module('angularPoint')
             query.cache.push(newItem);
           });
 
-
           deferred.resolve(newItem);
         } else {
           /** Update existing record in local cache*/
@@ -1083,21 +1041,17 @@ angular.module('angularPoint')
      * @returns {object} Promise which resolves when the operation is complete.  Nothing of importance is returned.
      */
     var deleteItemModel = function (model, entity, options) {
-      apQueueService.increase();
-
       var defaults = {
         target: _.isFunction(entity.getContainer) ? entity.getContainer() : model.getCache(),
-        updateAllCaches: false
-      };
-      var opts = _.extend({}, defaults, options);
-
-      var payload = {
+        updateAllCaches: false,
         operation: 'UpdateListItems',
         webURL: model.list.webURL,
         listName: model.list.guid,
         batchCmd: 'Delete',
         ID: entity.id
       };
+
+      var opts = _.extend({}, defaults, options);
 
       var deferred = $q.defer();
 
@@ -1121,24 +1075,21 @@ angular.module('angularPoint')
       }
 
       if (online) {
-        var webServiceCall = $().SPServices(payload);
-
-        webServiceCall.then(function () {
-          /** Success */
-          cleanCache();
-          apQueueService.decrease();
-          deferred.resolve(opts.target);
-        }, function (outcome) {
-          //In the event of an error, display toast
-          toastr.error('There was an error deleting a list item from ' + model.list.title);
-          apQueueService.decrease();
-          deferred.reject(outcome);
-        });
+        serviceWrapper(opts)
+          .then(function () {
+            /** Success */
+            cleanCache();
+            apQueueService.decrease();
+            deferred.resolve(opts.target);
+          }, function (outcome) {
+            //In the event of an error, display toast
+            toastr.error('There was an error deleting a list item from ' + model.list.title);
+            deferred.reject(outcome);
+          });
       } else {
         /** Offline debug mode */
         /** Simulate deletion and remove locally */
         cleanCache();
-        apQueueService.decrease();
         deferred.resolve(opts.target);
       }
 
