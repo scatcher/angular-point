@@ -315,6 +315,8 @@ angular.module('angularPoint')
      * [GetListItems](http://spservices.codeplex.com/wikipage?title=GetListItems&referringTitle=Lists).
      * @param {boolean} [queryOptions.cacheXML=false] Typically don't need to store the XML response because it
      * has already been parsed into JS objects.
+     * @param {string} [queryOptions.offlineXML] Optionally reference a specific XML file to use for this query instead
+     * of using the shared XML file used by all queries on this model.  Useful to mock custom query results.
      * @param {string} [queryOptions.query] CAML Query - Josh McCarty has a good quick reference
      * [here](http://joshmccarty.com/2012/06/a-caml-query-quick-reference)
      * @param {string} [queryOptions.queryOptions]
@@ -344,22 +346,22 @@ angular.module('angularPoint')
      * <pre>
      * // Query to retrieve the most recent 25 modifications
      * model.registerQuery({
-         *    name: 'recentChanges',
-         *    CAMLRowLimit: 25,
-         *    query: '' +
-         *        '<Query>' +
-         *        '   <OrderBy>' +
-         *        '       <FieldRef Name="Modified" Ascending="FALSE"/>' +
-         *        '   </OrderBy>' +
-         *            //Prevents any records from being returned if user doesn't
-         *            // have permissions on project
-         *        '   <Where>' +
-         *        '       <IsNotNull>' +
-         *        '           <FieldRef Name="Project"/>' +
-         *        '       </IsNotNull>' +
-         *        '   </Where>' +
-         *        '</Query>'
-         * });
+     *    name: 'recentChanges',
+     *    CAMLRowLimit: 25,
+     *    query: '' +
+     *        '<Query>' +
+     *        '   <OrderBy>' +
+     *        '       <FieldRef Name="Modified" Ascending="FALSE"/>' +
+     *        '   </OrderBy>' +
+     *            //Prevents any records from being returned if user doesn't
+     *            // have permissions on project
+     *        '   <Where>' +
+     *        '       <IsNotNull>' +
+     *        '           <FieldRef Name="Project"/>' +
+     *        '       </IsNotNull>' +
+     *        '   </Where>' +
+     *        '</Query>'
+     * });
      * </pre>
      *
      * <h4>Example #2</h4>
@@ -367,22 +369,22 @@ angular.module('angularPoint')
      * // Could be placed on the projectModel and creates the query but doesn't
      * // call it
      * projectModel.registerQuery({
-         *     name: 'primary',
-         *     query: '' +
-         *         '<Query>' +
-         *         '   <OrderBy>' +
-         *         '       <FieldRef Name="Title" Ascending="TRUE"/>' +
-         *         '   </OrderBy>' +
-         *         '</Query>'
-         * });
+     *     name: 'primary',
+     *     query: '' +
+     *         '<Query>' +
+     *         '   <OrderBy>' +
+     *         '       <FieldRef Name="Title" Ascending="TRUE"/>' +
+     *         '   </OrderBy>' +
+     *         '</Query>'
+     * });
      *
      * //To call the query or check for changes since the last call
      * projectModel.executeQuery('primary').then(function(entities) {
-         *     // We now have a reference to array of entities stored in the local
-         *     // cache.  These inherit from the ListItem prototype as well as the
-         *     // Project prototype on the model
-         *     $scope.projects = entities;
-         * });
+     *     // We now have a reference to array of entities stored in the local
+     *     // cache.  These inherit from the ListItem prototype as well as the
+     *     // Project prototype on the model
+     *     $scope.projects = entities;
+     * });
      * </pre>
      *
 
@@ -392,40 +394,40 @@ angular.module('angularPoint')
      * // queries for list items with a lookup field associated with a specific
      * // project id.  Let's assume this is on the projectTasksModel.
      * model.queryByProjectId(projectId) {
-         *     // Unique query name
-         *     var queryKey = 'pid' + projectId;
-         *
-         *     // Register project query if it doesn't exist
-         *     if (!_.isObject(model.queries[queryKey])) {
-         *         model.registerQuery({
-         *             name: queryKey,
-         *             query: '' +
-         *                 '<Query>' +
-         *                 '   <OrderBy>' +
-         *                 '       <FieldRef Name="ID" Ascending="TRUE"/>' +
-         *                 '   </OrderBy>' +
-         *                 '   <Where>' +
-         *                 '       <And>' +
-         *                              // Prevents any records from being returned
-         *                              //if user doesn't have permissions on project
-         *                 '           <IsNotNull>' +
-         *                 '               <FieldRef Name="Project"/>' +
-         *                 '           </IsNotNull>' +
-         *                              // Return all records for the project matching
-         *                              // param projectId
-         *                 '           <Eq>' +
-         *                 '               <FieldRef Name="Project" LookupId="TRUE"/>' +
-         *                 '               <Value Type="Lookup">' + projectId + '</Value>' +
-         *                 '           </Eq>' +
-         *                 '       </And>' +
-         *                 '   </Where>' +
-         *                 '</Query>'
-         *         });
-         *     }
-         *     //Still using execute query but now we have a custom query
-         *     return model.executeQuery(queryKey);
-         * };
-     * </pre>
+     *     // Unique query name
+     *     var queryKey = 'pid' + projectId;
+     *
+     *     // Register project query if it doesn't exist
+     *     if (!_.isObject(model.queries[queryKey])) {
+     *         model.registerQuery({
+     *             name: queryKey,
+     *             query: '' +
+     *                 '<Query>' +
+     *                 '   <OrderBy>' +
+     *                 '       <FieldRef Name="ID" Ascending="TRUE"/>' +
+     *                 '   </OrderBy>' +
+     *                 '   <Where>' +
+     *                 '       <And>' +
+     *                              // Prevents any records from being returned
+     *                              //if user doesn't have permissions on project
+     *                 '           <IsNotNull>' +
+     *                 '               <FieldRef Name="Project"/>' +
+     *                 '           </IsNotNull>' +
+     *                              // Return all records for the project matching
+     *                              // param projectId
+     *                 '           <Eq>' +
+     *                 '               <FieldRef Name="Project" LookupId="TRUE"/>' +
+     *                 '               <Value Type="Lookup">' + projectId + '</Value>' +
+     *                 '           </Eq>' +
+     *                 '       </And>' +
+     *                 '   </Where>' +
+     *                 '</Query>'
+     *         });
+     *     }
+     *     //Still using execute query but now we have a custom query
+     *     return model.executeQuery(queryKey);
+     * };
+     pre>
      */
     Model.prototype.registerQuery = function (queryOptions) {
       var model = this;

@@ -25,6 +25,8 @@ angular.module('angularPoint')
      * receive a more efficient response, just don't have the ability to check for changes since the last time
      * the query was called.
      * @param {boolean} [config.cacheXML=true] Set to false if you want a fresh request.
+     * @param {string} [config.offlineXML] Optionally reference a specific XML file to use for this query instead
+     * of using the shared XML file for this list.
      * @param {string} [config.query=Ordered ascending by ID] CAML query passed to SharePoint to control
      * the data SharePoint returns.
      * @param {string} [config.queryOptions] SharePoint options.
