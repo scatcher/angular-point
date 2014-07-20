@@ -217,7 +217,10 @@ angular.module('angularPoint')
      */
     //TODO: Make this the primary function which interacts with SPServices and makes web service call.  No need having this logic duplicated.
     var serviceWrapper = function (options) {
-      var defaults = {};
+      var defaults = {
+        /** You need to specify the offline xml file if you want to properly mock the request when offline */
+        offlineXML: apConfig.offlineXML + options.operation + '.xml'
+      };
       var opts = _.extend({}, defaults, options);
       var deferred = $q.defer();
 
@@ -249,22 +252,19 @@ angular.module('angularPoint')
           deferred.resolve(processXML(webServiceCall.responseXML));
         }, function (outcome) {
           /** Failure */
-          toastr.error('Failed to fetch list collection.');
+          toastr.error('Failed to complete the requested ' + opts.operation + ' operation.');
           apQueueService.decrease();
           deferred.reject(outcome);
         });
       } else {
-        /** Debugging offline */
-        var offlineData = apConfig.offlineXML + opts.operation + '.xml';
-
         /** Get offline data */
-        $.ajax(offlineData).then(
+        $.ajax(opts.offlineXML).then(
           function (offlineData) {
             apQueueService.decrease();
             /** Pass back the group array */
             deferred.resolve(processXML(offlineData));
           }, function (outcome) {
-            toastr.error('You need to have a ' + apConfig.offlineXML + opts.operation + '.xml in order to get the group collection in offline mode.');
+            toastr.error('You need to have a ' + opts.offlineXML + ' file in order mock this request.');
             deferred.reject(outcome);
             apQueueService.decrease();
           });
@@ -275,46 +275,67 @@ angular.module('angularPoint')
 
     /**
      * @ngdoc function
-     * @name apDataService.getList
+     * @name apDataService.getListFields
      * @description
-     * Returns all list settings for each list on the site
+     * Returns field definitions for a specified list.
      * @param {object} options Configuration parameters.
      * @param {string} options.listName GUID of the list.
-     * @param {string} [options.webURL] Can override the default web url if desired.
-     * @returns {object[]} Promise which resolves with an array of field definitions for the list.
+     * @returns {object} Promise which resolves with an array of field definitions for the list.
      */
-    var getList = function (options) {
-      var opts = _.extend({}, options);
-      apQueueService.increase();
-      var deferred = $q.defer();
-
-      //TODO: Use serviceWrapper
-      var webServiceCall = $().SPServices({
+    var getListFields = function (options) {
+      var defaults = {
         operation: 'GetList',
-        listName: opts.listName
-      });
+        filterNode: 'Field'
+      };
 
-      webServiceCall.then(function () {
-        /** Success */
-        apQueueService.decrease();
-
-        /** Map returned XML to JSON */
-        var json = $(webServiceCall.responseXML).SPFilterNode('Field').SPXmlToJson({
-          includeAllAttrs: true,
-          removeOws: false
-        });
-        /** Pass back the lists array */
-        deferred.resolve(json);
-      }, function (outcome) {
-        /** Failure */
-        deferred.reject(outcome);
-        toastr.error('Failed to fetch list details.');
-      }).always(function () {
-        apQueueService.decrease();
-      });
-
-      return deferred.promise;
+      var opts = _.extend({}, defaults, options);
+      return serviceWrapper(opts);
     };
+
+//    /**
+//     * @ngdoc function
+//     * @name apDataService.getList
+//     * @description
+//     * Returns all list settings for each list on the site
+//     * @param {object} options Configuration parameters.
+//     * @param {string} options.listName GUID of the list.
+//     * @param {string} [options.webURL] Can override the default web url if desired.
+//     * @returns {object[]} Promise which resolves with an array of field definitions for the list.
+//     */
+//    var getList = function (options) {
+//      var opts = _.extend({}, options);
+//      apQueueService.increase();
+//      var deferred = $q.defer();
+//
+//
+//
+//      //TODO: Use serviceWrapper
+//      var webServiceCall = $().SPServices({
+//        operation: 'GetList',
+//        listName: opts.listName
+//      });
+//
+//      webServiceCall.then(function () {
+//        /** Success */
+//        apQueueService.decrease();
+//
+//        /** Map returned XML to JSON */
+//        var json = $(webServiceCall.responseXML).SPFilterNode('Field').SPXmlToJson({
+//          includeAllAttrs: true,
+//          removeOws: false
+//        });
+//        /** Pass back the lists array */
+//        deferred.resolve(json);
+//      }, function (outcome) {
+//        /** Failure */
+//        deferred.reject(outcome);
+//        toastr.error('Failed to fetch list details.');
+//      }).always(function () {
+//        apQueueService.decrease();
+//      });
+//
+//      return deferred.promise;
+//    };
 
     /**
      * @ngdoc function
@@ -859,7 +880,8 @@ angular.module('angularPoint')
       deleteItemModel: deleteItemModel,
       getCollection: getCollection,
       getFieldVersionHistory: getFieldVersionHistory,
-      getList: getList,
+//      getList: getList,
+      getListFields: getListFields,
       getView: getView,
       executeQuery: executeQuery,
       serviceWrapper: serviceWrapper

@@ -37,7 +37,7 @@ angular.module('angularPoint')
         filename = 'debug.' + type;
       }
 
-      if (type === json && typeof data === 'object') {
+      if (type === 'json' && typeof data === 'object') {
         data = JSON.stringify(data, undefined, 4);
       }
 
@@ -69,7 +69,7 @@ angular.module('angularPoint')
      *
      */
     var saveJSON = function (data, filename) {
-      saveFile(data, filename, 'json');
+      saveFile(data, 'json', filename);
     };
 
     /**
@@ -89,7 +89,7 @@ angular.module('angularPoint')
      *
      */
     var saveXML = function (data, filename) {
-      saveFile(data, filename, 'xml');
+      saveFile(data, 'xml', filename);
     };
 
     return {

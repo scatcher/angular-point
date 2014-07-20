@@ -212,12 +212,12 @@ NG_DOCS={
     },
     {
       "section": "api",
-      "id": "apDataService.getList",
-      "shortName": "apDataService.getList",
+      "id": "apDataService.getListFields",
+      "shortName": "apDataService.getListFields",
       "type": "function",
       "moduleName": "apDataService",
-      "shortDescription": "Returns all list settings for each list on the site",
-      "keywords": "apdataservice api array configuration default definitions desired field function getlist guid list listname options override parameters promise resolves returns settings site url web weburl"
+      "shortDescription": "Returns field definitions for a specified list.",
+      "keywords": "apdataservice api array configuration definitions field function getlistfields guid list listname options parameters promise resolves returns"
     },
     {
       "section": "api",
@@ -541,7 +541,7 @@ NG_DOCS={
       "type": "function",
       "moduleName": "Model",
       "shortDescription": "Constructor that allows us create a static query with the option to build dynamic queries as seen in the",
-      "keywords": "$scope advanced allow allows api array ascending aspx associated assume build cache cachexml call caml camlrowlimit changes check codeplex construct create creates custom default defaults doesn don dynamic dynamically entities example execute executequery exist false faster field function functionality getlistitemchangessincetoken good inherit isobject items josh js list listitem lists local lookup lookupid matching mccarty microsoft model modifications modified object objects operation option optional options param parsed pass passthrough payload permissions pid prevents primary project projectid projectmodel projects projecttasksmodel prototype queries query querybyprojectid querykey queryoptions quick recentchanges records reference register registerquery response retrieve return returned returns smaller specific static store stored third title true type typically unique user var xml"
+      "keywords": "$scope advanced allow allows api array ascending aspx associated assume build cache cachexml call caml camlrowlimit changes check codeplex construct create creates custom default defaults doesn don dynamic dynamically entities example execute executequery exist false faster field file function functionality getlistitemchangessincetoken good inherit isobject items josh js list listitem lists local lookup lookupid matching mccarty microsoft mock model modifications modified object objects offlinexml operation option optional optionally options param parsed pass passthrough payload permissions pid pre prevents primary project projectid projectmodel projects projecttasksmodel prototype queries query querybyprojectid querykey queryoptions quick recentchanges records reference register registerquery response retrieve return returned returns shared smaller specific static store stored third title true type typically unique user var xml"
     },
     {
       "section": "api",
@@ -577,7 +577,7 @@ NG_DOCS={
       "type": "function",
       "moduleName": "Query",
       "shortDescription": "Primary constructor that all queries inherit from.",
-      "keywords": "ability allows api array ascending cache cachexml call called calls caml camlrowlimit changes check config control data dataservice default definition doesn don efficient evaluate execute executequery false fresh function getlistitemchangessincetoken getlistitems inherit initial initialization item larger list local location model modifications modified note object objects operation optionally options parameters parent pass passed permissions prevents primary project prototype pull pulls queries query queryoptions receive recentchanges records reference registerquery request response retrieve returned returns scope search searching searchlocalcache set sets sharepoint simple subsequent time true undefined user wrapper"
+      "keywords": "ability allows api array ascending cache cachexml call called calls caml camlrowlimit changes check config control data dataservice default definition doesn don efficient evaluate execute executequery false file fresh function getlistitemchangessincetoken getlistitems inherit initial initialization item larger list local location model modifications modified note object objects offlinexml operation optionally options parameters parent pass passed permissions prevents primary project prototype pull pulls queries query queryoptions receive recentchanges records reference registerquery request response retrieve returned returns scope search searching searchlocalcache set sets shared sharepoint simple specific subsequent time true undefined user wrapper xml"
     },
     {
       "section": "api",
