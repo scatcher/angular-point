@@ -181,16 +181,17 @@ angular.module('angularPoint')
      * @param {object} entity JavaScript object representing the SharePoint list item.
      * @param {object} state Controllers state object.
      * @param {object} $modalInstance Reference to the modal instance for the modal dialog.
-     *
+     * @param {object} [options] Options to pass to ListItem.deleteItem().
      * @example
      *
      * <pre>
      *   $scope.deleteRequest = function () {
-         *       apModalService.deleteEntity($scope.request, $scope.state, $modalInstance);
-         *   };
+     *     apModalService.deleteEntity($scope.request, $scope.state,
+     *        $modalInstance, {updateAllCaches: true});
+     * };
      * </pre>
      */
-    function deleteEntity(entity, state, $modalInstance) {
+    function deleteEntity(entity, state, $modalInstance, options) {
       var confirmation = window.confirm('Are you sure you want to delete this record?');
       if (confirmation) {
         /** Disable form buttons */
@@ -214,30 +215,33 @@ angular.module('angularPoint')
      * @param {object} model Reference to the model for the list item.
      * @param {object} state Deprecated....
      * @param {object} $modalInstance Reference to the modal instance for the modal dialog.
-     *
+     * @param {object} [options] Options to pass to ListItem.saveChanges().
      * @example
      * <pre>
      *  $scope.saveRequest = function () {
-         *      apModalService.saveEntity($scope.request, compRequestsModel, $scope.state, $modalInstance);
-         *  };
+     *      apModalService.saveEntity($scope.request, compRequestsModel,
+     *          $scope.state, $modalInstance, {updateAllCaches: true});
+     *  };
      *  </pre>
      */
-    function saveEntity(entity, model, state, $modalInstance) {
+    function saveEntity(entity, model, state, $modalInstance, options) {
       if (entity.id) {
-        entity.saveChanges().then(function () {
-          toastr.success('Record updated');
-          $modalInstance.close();
-        }, function () {
-          toastr.error('There was a problem updating this record.  Please try again.');
-        });
+        entity.saveChanges(options)
+          .then(function () {
+            toastr.success('Record updated');
+            $modalInstance.close();
+          }, function () {
+            toastr.error('There was a problem updating this record.  Please try again.');
+          });
       } else {
         /** Create new record */
-        model.addNewItem(entity).then(function () {
-          toastr.success('New record created');
-          $modalInstance.close();
-        }, function () {
-          toastr.error('There was a problem creating a new record.  Please try again.');
-        });
+        model.addNewItem(entity, options)
+          .then(function () {
+            toastr.success('New record created');
+            $modalInstance.close();
+          }, function () {
+            toastr.error('There was a problem creating a new record.  Please try again.');
+          });
       }
     }
 
