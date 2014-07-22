@@ -28,7 +28,7 @@ NG_DOCS={
       "type": "object",
       "moduleName": "angularPoint",
       "shortDescription": "Basic config for the application (unique for each environment).  Update to change for your environment.",
-      "keywords": "$urlrouterprovider angular angular-point angularpoint apconfig api application apptitle apsyncservice automatically based basic blocking call calls case change code config configuration constant debug debugenabled default defaulturl dependencies details determines don environment firebase firebaseurl hosted href http indexof initial localhost locally location module myapp myserver object offline optional override pulls reference root routes service set sets site source spservices true update url web window xml"
+      "keywords": "$urlrouterprovider angular angular-point angularpoint apconfig api application apptitle apsyncservice automatically based basic blocking call calls case change code config configuration constant debug debugenabled default defaulturl dependencies details determines dev don environment files firebase firebaseurl hosted href http indexof initial localhost locally location module myapp mycachedqueries myserver object offline offlinexml optional override pulls reference root routes service set sets site source spservices true update url web window xml"
     },
     {
       "section": "api",
@@ -37,7 +37,7 @@ NG_DOCS={
       "type": "service",
       "moduleName": "angularPoint",
       "shortDescription": "Tools to assist with development.",
-      "keywords": "angularpoint apdebugservice api assist assume big console console-save converts data development downloaded dump easily file function github io js json local located machine myobject object optionally original save savejson script service tools viewed"
+      "keywords": "angularpoint apdebugservice api assist assume big console console-save convenience convert data development document download downloaded dump easily file function github io js json local located machine myobject object optionally original save savejson savexml service simple tools type users viewed work xml"
     },
     {
       "section": "api",
@@ -91,7 +91,7 @@ NG_DOCS={
       "type": "service",
       "moduleName": "angularPoint",
       "shortDescription": "Extends a modal form to include many standard functions",
-      "keywords": "$modalinstance $scope accepts admin allow angularpoint api apmodalservice argument arguments attach binding boolean checked closes comprequestmodalctrl comprequestsmodel configuration confirmation controller controllers controls creates current dateexceedsboundary default deleteentity deleterequest deletes deletion deprecated determine dialog disable display displaymode dynamic easily edit edited enableapproval entity existing expectedarguments extended extends fallback false firebase flag form fullcontrol function functions html include initializestate injects instance item javascript levels list locked lockedby locking modal modalmodelprovider mode model modules negotiatingwithserver number object openmodal optional options params permission permissions populates promise prompts record reference representing request returns rights saveentity saverequest service sets sharepoint standard templateurl turn updates user usercanapprove usercandelete usercanedit view"
+      "keywords": "$modalinstance $scope accepts admin allow angularpoint api apmodalservice argument arguments attach binding boolean checked closes comprequestmodalctrl comprequestsmodel configuration confirmation controller controllers controls creates current dateexceedsboundary default deleteentity deleteitem deleterequest deletes deletion deprecated determine dialog disable display displaymode dynamic easily edit edited enableapproval entity existing expectedarguments extended extends fallback false firebase flag form fullcontrol function functions html include initializestate injects instance item javascript levels list listitem locked lockedby locking modal modalmodelprovider mode model modules negotiatingwithserver number object openmodal optional options params pass permission permissions populates promise prompts record reference representing request returns rights savechanges saveentity saverequest service sets sharepoint standard templateurl true turn updates user usercanapprove usercandelete usercanedit view"
     },
     {
       "section": "api",
@@ -190,7 +190,7 @@ NG_DOCS={
       "type": "function",
       "moduleName": "apDataService",
       "shortDescription": "Primary method of retrieving list items from SharePoint.  Look at Query and Model for specifics.",
-      "keywords": "apdataservice api array call configuration custom destination dev entities executequery file function getcache include item items list location making method model objects offline offlinexml optional optionally parameters primary query reference resides retrieving returned sharepoint specifics target title xml"
+      "keywords": "apdataservice api array call configuration custom destination entities executequery file function getcache include item items list location making method model objects offline offlinexml optional optionally parameters primary query reference resides retrieving returned sharepoint specifics target title xml"
     },
     {
       "section": "api",
@@ -208,16 +208,16 @@ NG_DOCS={
       "type": "function",
       "moduleName": "apDataService",
       "shortDescription": "Returns the version history for a field in a list item.",
-      "keywords": "apconfig apdataservice api array changes configuration defaulturl definition field fielddefinition function getfieldversionhistory getversioncollection guid history internalname item list listitem model object operation passed payload promise resolves returns spservices strfieldname strlistid strlistitemid var version weburl"
+      "keywords": "apconfig apdataservice api array changes configuration defaulturl definition field fielddefinition function getfieldversionhistory getversioncollection guid history internalname item list listitem model object operation options passed promise resolves returns spservices strfieldname strlistid strlistitemid var version weburl"
     },
     {
       "section": "api",
-      "id": "apDataService.getList",
-      "shortName": "apDataService.getList",
+      "id": "apDataService.getListFields",
+      "shortName": "apDataService.getListFields",
       "type": "function",
       "moduleName": "apDataService",
-      "shortDescription": "Returns all list settings for each list on the site",
-      "keywords": "apdataservice api array configuration default definitions desired field function getlist guid list listname options override parameters promise resolves returns settings site url web weburl"
+      "shortDescription": "Returns field definitions for a specified list.",
+      "keywords": "apdataservice api array configuration definitions field function getlistfields guid list listname options parameters promise resolves returns"
     },
     {
       "section": "api",
@@ -225,8 +225,8 @@ NG_DOCS={
       "shortName": "apDataService.getView",
       "type": "function",
       "moduleName": "apDataService",
-      "shortDescription": "Returns details of a SharePoint list view",
-      "keywords": "apdataservice api configuration default desired details formatted function getview guid list listname options override parameters promise provided returns sharepoint url view viewname web weburl"
+      "shortDescription": "Returns the schema of the specified view for the specified list.",
+      "keywords": "apdataservice api aspx attachments baseviewid configuration created datetime default defaultview desired displayname enddate eventdate formatted frecurrence function getview guid html linktitle list listname lists location object options override paged parameters promise provided resolves returns rowlimit schema true type url view view_name viewfields viewname web weburl workspacelink xml"
     },
     {
       "section": "api",
@@ -289,7 +289,7 @@ NG_DOCS={
       "type": "object",
       "moduleName": "List",
       "shortDescription": "List Object Constructor.  This is handled automatically when creating a new model so there shouldn&#39;t be",
-      "keywords": "account additional api application attribute automatically basing call config creating customfields define details dev field fielddefinition file firstname folder guid handled info initialization internal internalname lastname list ll located lookup manually mappedname mapping maps model names non-standard object objecttype offline organization parameters projectslist readonly reason settings sharepoint shouldn spaces text title type unique user xml"
+      "keywords": "account additional apconfig api application attribute automatically basing call config creating customfields define details dev field fielddefinition file firstname folder guid handled info initialization internal internalname lastname list ll located lookup manually mappedname mapping maps model names non-standard object objecttype offline offlinexml organization parameters projectslist readonly reason settings sharepoint shouldn spaces text title type unique user xml"
     },
     {
       "section": "api",
@@ -433,7 +433,7 @@ NG_DOCS={
       "type": "function",
       "moduleName": "Model",
       "shortDescription": "Model Constructor",
-      "keywords": "active addnewitem adds api aplistitemfactory apmodelfactory application array attachments boolean builds config costestimate creategenericfactory currency customer customfields customlist data deferred definition denotes empty extend factory false fictitious field fields file formats function getalllistitems group guid identifies individual internalname items js list ll lookup mappedname maps model named names obj object objecttype offline optional params passed project projectdescription projectgroup projects projectsmodel queries read readonly ready sharepoint spaces status taskmanager text title true types unique user var xml"
+      "keywords": "active addnewitem adds apconfig api aplistitemfactory apmodelfactory application array attachments boolean builds config costestimate creategenericfactory currency customer customfields customlist data deferred definition denotes empty extend factory false fictitious field fields file formats function getalllistitems group guid identifies individual internalname items js list ll lookup mappedname maps model named names obj object objecttype offline offlinexml optional params passed project projectdescription projectgroup projects projectsmodel queries read readonly ready sharepoint spaces status taskmanager text title true types unique user var xml"
     },
     {
       "section": "api",
@@ -541,7 +541,7 @@ NG_DOCS={
       "type": "function",
       "moduleName": "Model",
       "shortDescription": "Constructor that allows us create a static query with the option to build dynamic queries as seen in the",
-      "keywords": "$scope advanced allow allows api array ascending aspx associated assume build cache cachexml call caml camlrowlimit changes check codeplex construct create creates custom default defaults doesn don dynamic dynamically entities example execute executequery exist false faster field function functionality getlistitemchangessincetoken good inherit isobject items josh js list listitem lists local lookup lookupid matching mccarty microsoft model modifications modified object objects operation option optional options param parsed pass passthrough payload permissions pid prevents primary project projectid projectmodel projects projecttasksmodel prototype queries query querybyprojectid querykey queryoptions quick recentchanges records reference register registerquery response retrieve return returned returns smaller specific static store stored third title true type typically unique user var xml"
+      "keywords": "$scope advanced allow allows api array ascending aspx associated assume build cache cachexml call caml camlrowlimit changes check codeplex construct create creates custom default defaults doesn don dynamic dynamically entities example execute executequery exist false faster field file function functionality getlistitemchangessincetoken good inherit isobject items josh js list listitem lists local lookup lookupid matching mccarty microsoft mock model modifications modified object objects offlinexml operation option optional optionally options param parsed pass passthrough payload permissions pid pre prevents primary project projectid projectmodel projects projecttasksmodel prototype queries query querybyprojectid querykey queryoptions quick recentchanges records reference register registerquery response retrieve return returned returns shared smaller specific static store stored third title true type typically unique user var xml"
     },
     {
       "section": "api",
@@ -577,7 +577,7 @@ NG_DOCS={
       "type": "function",
       "moduleName": "Query",
       "shortDescription": "Primary constructor that all queries inherit from.",
-      "keywords": "ability allows api array ascending cache cachexml call called calls caml camlrowlimit changes check config control data dataservice default definition doesn don efficient evaluate execute executequery false fresh function getlistitemchangessincetoken getlistitems inherit initial initialization item larger list local location model modifications modified note object objects operation optionally options parameters parent pass passed permissions prevents primary project prototype pull pulls queries query queryoptions receive recentchanges records reference registerquery request response retrieve returned returns scope search searching searchlocalcache set sets sharepoint simple subsequent time true undefined user wrapper"
+      "keywords": "ability allows api array ascending cache cachexml call called calls caml camlrowlimit changes check config control data dataservice default definition doesn don efficient evaluate execute executequery false file fresh function getlistitemchangessincetoken getlistitems inherit initial initialization item larger list local location model modifications modified note object objects offlinexml operation optionally options parameters parent pass passed permissions prevents primary project prototype pull pulls queries query queryoptions receive recentchanges records reference registerquery request response retrieve returned returns scope search searching searchlocalcache set sets shared sharepoint simple specific subsequent time true undefined user wrapper xml"
     },
     {
       "section": "api",

@@ -19,7 +19,9 @@ but for a smaller payload and faster response you can use
 <a href="http://spservices.codeplex.com/wikipage?title=GetListItems&amp;referringTitle=Lists">GetListItems</a>.</p>
 </div> <p><em>(default: "GetListItemChangesSinceToken")</em></p></td></tr><tr><td>queryOptions.cacheXML</td><td><a href="" class="label type-hint type-hint-boolean">boolean</a></td><td><div class="model-registerquery-page"><p>Typically don&#39;t need to store the XML response because it
 has already been parsed into JS objects.</p>
-</div> <p><em>(default: false)</em></p></td></tr><tr><td>[queryOptions.query]</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="model-registerquery-page"><p>CAML Query - Josh McCarty has a good quick reference
+</div> <p><em>(default: false)</em></p></td></tr><tr><td>[queryOptions.offlineXML]</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="model-registerquery-page"><p>Optionally reference a specific XML file to use for this query instead
+of using the shared XML file used by all queries on this model.  Useful to mock custom query results.</p>
+</div></td></tr><tr><td>[queryOptions.query]</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="model-registerquery-page"><p>CAML Query - Josh McCarty has a good quick reference
 <a href="http://joshmccarty.com/2012/06/a-caml-query-quick-reference">here</a></p>
 </div></td></tr><tr><td>[queryOptions.queryOptions]</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="model-registerquery-page"><pre class="prettyprint linenums">
 // Default options
@@ -84,45 +86,44 @@ projectModel.executeQuery('primary').then(function(entities) {
     $scope.projects = entities;
 });
 </pre>
-<p><h6 id="example_example-#3">Example #3</h6>
-<pre class="prettyprint linenums">
+<p><h6 id="example_example-#3">Example #3</h6></p>
+<p><pre>
 // Advanced functionality that would allow us to dynamically create
 // queries for list items with a lookup field associated with a specific
-// project id.  Let's assume this is on the projectTasksModel.
+// project id.  Let&#39;s assume this is on the projectTasksModel.
 model.queryByProjectId(projectId) {
     // Unique query name
-    var queryKey = 'pid' + projectId;
-
-    // Register project query if it doesn't exist
-    if (!_.isObject(model.queries[queryKey])) {
-        model.registerQuery({
-            name: queryKey,
-            query: '' +
-                '&lt;Query&gt;' +
-                '   &lt;OrderBy&gt;' +
-                '       &lt;FieldRef Name="ID" Ascending="TRUE"/&gt;' +
-                '   &lt;/OrderBy&gt;' +
-                '   &lt;Where&gt;' +
-                '       &lt;And&gt;' +
-                             // Prevents any records from being returned
-                             //if user doesn't have permissions on project
-                '           &lt;IsNotNull&gt;' +
-                '               &lt;FieldRef Name="Project"/&gt;' +
-                '           &lt;/IsNotNull&gt;' +
-                             // Return all records for the project matching
-                             // param projectId
-                '           &lt;Eq&gt;' +
-                '               &lt;FieldRef Name="Project" LookupId="TRUE"/&gt;' +
-                '               &lt;Value Type="Lookup"&gt;' + projectId + '&lt;/Value&gt;' +
-                '           &lt;/Eq&gt;' +
-                '       &lt;/And&gt;' +
-                '   &lt;/Where&gt;' +
-                '&lt;/Query&gt;'
-        });
-    }
-    //Still using execute query but now we have a custom query
-    return model.executeQuery(queryKey);
-};
-</pre>
+    var queryKey = &#39;pid&#39; + projectId;</p>
+<pre><code>// Register project query if it doesn&#39;t exist
+if (!_.isObject(model.queries[queryKey])) {
+    model.registerQuery({
+        name: queryKey,
+        query: &#39;&#39; +
+            &#39;&lt;Query&gt;&#39; +
+            &#39;   &lt;OrderBy&gt;&#39; +
+            &#39;       &lt;FieldRef Name=&quot;ID&quot; Ascending=&quot;TRUE&quot;/&gt;&#39; +
+            &#39;   &lt;/OrderBy&gt;&#39; +
+            &#39;   &lt;Where&gt;&#39; +
+            &#39;       &lt;And&gt;&#39; +
+                         // Prevents any records from being returned
+                         //if user doesn&#39;t have permissions on project
+            &#39;           &lt;IsNotNull&gt;&#39; +
+            &#39;               &lt;FieldRef Name=&quot;Project&quot;/&gt;&#39; +
+            &#39;           &lt;/IsNotNull&gt;&#39; +
+                         // Return all records for the project matching
+                         // param projectId
+            &#39;           &lt;Eq&gt;&#39; +
+            &#39;               &lt;FieldRef Name=&quot;Project&quot; LookupId=&quot;TRUE&quot;/&gt;&#39; +
+            &#39;               &lt;Value Type=&quot;Lookup&quot;&gt;&#39; + projectId + &#39;&lt;/Value&gt;&#39; +
+            &#39;           &lt;/Eq&gt;&#39; +
+            &#39;       &lt;/And&gt;&#39; +
+            &#39;   &lt;/Where&gt;&#39; +
+            &#39;&lt;/Query&gt;&#39;
+    });
+}
+//Still using execute query but now we have a custom query
+return model.executeQuery(queryKey);</code></pre>
+<p>};
+     pre&gt;</p>
 </div></div>
 </div>

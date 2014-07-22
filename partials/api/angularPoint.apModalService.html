@@ -7,15 +7,17 @@
 <div class="description"><div class="angularpoint-apmodalservice-page"><p>Extends a modal form to include many standard functions</p>
 </div></div>
 <div class="member method"><h2 id="methods">Methods</h2>
-<ul class="methods"><li><h3 id="methods_deleteentity">deleteEntity(entity, state, $modalInstance)</h3>
+<ul class="methods"><li><h3 id="methods_deleteentity">deleteEntity(entity, state, $modalInstance, [options])</h3>
 <div class="deleteentity"><div class="angularpoint-apmodalservice-page angularpoint-apmodalservice-deleteentity-page"><p>Prompts for confirmation of deletion, then deletes and closes modal</p>
 </div><h5 id="methods_deleteentity_parameters">Parameters</h5><table class="variables-matrix table table-bordered table-striped"><thead><tr><th>Param</th><th>Type</th><th>Details</th></tr></thead><tbody><tr><td>entity</td><td><a href="" class="label type-hint type-hint-object">object</a></td><td><div class="angularpoint-apmodalservice-page angularpoint-apmodalservice-deleteentity-page"><p>JavaScript object representing the SharePoint list item.</p>
 </div></td></tr><tr><td>state</td><td><a href="" class="label type-hint type-hint-object">object</a></td><td><div class="angularpoint-apmodalservice-page angularpoint-apmodalservice-deleteentity-page"><p>Controllers state object.</p>
 </div></td></tr><tr><td>$modalInstance</td><td><a href="" class="label type-hint type-hint-object">object</a></td><td><div class="angularpoint-apmodalservice-page angularpoint-apmodalservice-deleteentity-page"><p>Reference to the modal instance for the modal dialog.</p>
+</div></td></tr><tr><td>[options]</td><td><a href="" class="label type-hint type-hint-object">object</a></td><td><div class="angularpoint-apmodalservice-page angularpoint-apmodalservice-deleteentity-page"><p>Options to pass to ListItem.deleteItem().</p>
 </div></td></tr></tbody></table><h4 id="methods_deleteentity_example">Example</h4>
 <div class="example"><div class="angularpoint-apmodalservice-page angularpoint-apmodalservice-deleteentity-page"><pre class="prettyprint linenums">
 $scope.deleteRequest = function () {
-    apModalService.deleteEntity($scope.request, $scope.state, $modalInstance);
+  apModalService.deleteEntity($scope.request, $scope.state,
+     $modalInstance, {updateAllCaches: true});
 };
 </pre>
 </div></div>
@@ -84,16 +86,18 @@ model.openModal = apModalService.modalModelProvider({
 </div></div>
 </div>
 </li>
-<li><h3 id="methods_saveentity">saveEntity(entity, model, state, $modalInstance)</h3>
+<li><h3 id="methods_saveentity">saveEntity(entity, model, state, $modalInstance, [options])</h3>
 <div class="saveentity"><div class="angularpoint-apmodalservice-page angularpoint-apmodalservice-saveentity-page"><p>Creates a new record if necessary, otherwise updates the existing record</p>
 </div><h5 id="methods_saveentity_parameters">Parameters</h5><table class="variables-matrix table table-bordered table-striped"><thead><tr><th>Param</th><th>Type</th><th>Details</th></tr></thead><tbody><tr><td>entity</td><td><a href="" class="label type-hint type-hint-object">object</a></td><td><div class="angularpoint-apmodalservice-page angularpoint-apmodalservice-saveentity-page"><p>List item.</p>
 </div></td></tr><tr><td>model</td><td><a href="" class="label type-hint type-hint-object">object</a></td><td><div class="angularpoint-apmodalservice-page angularpoint-apmodalservice-saveentity-page"><p>Reference to the model for the list item.</p>
 </div></td></tr><tr><td>state</td><td><a href="" class="label type-hint type-hint-object">object</a></td><td><div class="angularpoint-apmodalservice-page angularpoint-apmodalservice-saveentity-page"><p>Deprecated....</p>
 </div></td></tr><tr><td>$modalInstance</td><td><a href="" class="label type-hint type-hint-object">object</a></td><td><div class="angularpoint-apmodalservice-page angularpoint-apmodalservice-saveentity-page"><p>Reference to the modal instance for the modal dialog.</p>
+</div></td></tr><tr><td>[options]</td><td><a href="" class="label type-hint type-hint-object">object</a></td><td><div class="angularpoint-apmodalservice-page angularpoint-apmodalservice-saveentity-page"><p>Options to pass to ListItem.saveChanges().</p>
 </div></td></tr></tbody></table><h4 id="methods_saveentity_example">Example</h4>
 <div class="example"><div class="angularpoint-apmodalservice-page angularpoint-apmodalservice-saveentity-page"><pre class="prettyprint linenums">
 $scope.saveRequest = function () {
-    apModalService.saveEntity($scope.request, compRequestsModel, $scope.state, $modalInstance);
+    apModalService.saveEntity($scope.request, compRequestsModel,
+        $scope.state, $modalInstance, {updateAllCaches: true});
 };
 </pre>
 </div></div>
