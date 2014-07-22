@@ -788,7 +788,6 @@ angular.module('angularPoint')
             toastr.error('There was a problem locating the "' + apConfig.offlineXML + model.list.title + '.xml"');
           });
         }
-
       }
 
       return deferred.promise;
@@ -808,9 +807,10 @@ angular.module('angularPoint')
 
       /** Remove from local data array */
       var item = _.findWhere(entityArray, {id: entityId});
+      /** Use lodash _.indexOf to workaround IE issues */
       var index = _.indexOf(entityArray, item);
 
-      if (index) {
+      if (index > -1) {
         /** Remove the locally cached record */
         entityArray.splice(index, 1);
         successfullyDeleted = true;
