@@ -196,7 +196,7 @@ angular.module('angularPoint')
       if (confirmation) {
         /** Disable form buttons */
         state.negotiatingWithServer = true;
-        entity.deleteItem().then(function () {
+        entity.deleteItem(options).then(function () {
           toastr.success('Record deleted successfully');
           $modalInstance.close();
         }, function () {
