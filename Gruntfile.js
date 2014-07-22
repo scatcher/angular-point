@@ -79,16 +79,6 @@ module.exports = function (grunt) {
           '.tmp/angular-point-templates.js'
         ],
         dest: '<%= config.dist %>/angular-point.js'
-      },
-      iesafe: {
-        src: [
-          'bower_components/ExplorerCanvas/excanvas.js',
-          'bower_components/es5-shim/es5-shim.js',
-          'bower_components/json3/lib/json3.js',
-          'bower_components/respond/dest/respond.src.js',
-          'src/utility/ap_ie_safe.js'
-        ],
-        dest: '<%= config.dist %>/ie-safe.js'
       }
     },
 
@@ -108,10 +98,6 @@ module.exports = function (grunt) {
       js: {
         src: ['<%= config.dist %>/angular-point.js'],
         dest: '<%= config.dist %>/angular-point.min.js'
-      },
-      ie: {
-        src: '<%= config.dist %>/ie-safe.js',
-        dest: '<%= config.dist %>/ie-safe.min.js'
       }
     },
     // Run some tasks in parallel to speed up the build process

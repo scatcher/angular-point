@@ -208,7 +208,7 @@ NG_DOCS={
       "type": "function",
       "moduleName": "apDataService",
       "shortDescription": "Returns the version history for a field in a list item.",
-      "keywords": "apconfig apdataservice api array changes configuration defaulturl definition field fielddefinition function getfieldversionhistory getversioncollection guid history internalname item list listitem model object operation passed payload promise resolves returns spservices strfieldname strlistid strlistitemid var version weburl"
+      "keywords": "apconfig apdataservice api array changes configuration defaulturl definition field fielddefinition function getfieldversionhistory getversioncollection guid history internalname item list listitem model object operation options passed promise resolves returns spservices strfieldname strlistid strlistitemid var version weburl"
     },
     {
       "section": "api",
@@ -225,8 +225,8 @@ NG_DOCS={
       "shortName": "apDataService.getView",
       "type": "function",
       "moduleName": "apDataService",
-      "shortDescription": "Returns details of a SharePoint list view",
-      "keywords": "apdataservice api configuration default desired details formatted function getview guid list listname options override parameters promise provided returns sharepoint url view viewname web weburl"
+      "shortDescription": "Returns the schema of the specified view for the specified list.",
+      "keywords": "apdataservice api aspx attachments baseviewid configuration created datetime default defaultview desired displayname enddate eventdate formatted frecurrence function getview guid html linktitle list listname lists location object options override paged parameters promise provided resolves returns rowlimit schema true type url view view_name viewfields viewname web weburl workspacelink xml"
     },
     {
       "section": "api",
