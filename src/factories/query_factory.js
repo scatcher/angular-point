@@ -219,6 +219,7 @@ angular.module('angularPoint')
      * @name angularPoint.apQueryFactory:create
      * @methodOf angularPoint.apQueryFactory
      * @param {object} config Options object.
+     * @param {object} model Reference to the model.
      * @description
      * Instantiates and returns a new Query.
      */

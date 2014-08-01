@@ -4197,6 +4197,12 @@ angular.module('angularPoint')
       /** Register cache name with cache service so we can map factory name with list GUID */
       apCacheService.registerModel(model);
 
+      /** Convenience query that simply returns all list items within a list. */
+      model.registerQuery({
+        name: 'getAllListItems',
+        operation: 'GetListItems'
+      });
+
 
       /**
        * @ngdoc function
@@ -5237,6 +5243,7 @@ angular.module('angularPoint')
      * @name angularPoint.apQueryFactory:create
      * @methodOf angularPoint.apQueryFactory
      * @param {object} config Options object.
+     * @param {object} model Reference to the model.
      * @description
      * Instantiates and returns a new Query.
      */
