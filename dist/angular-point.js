@@ -1228,13 +1228,9 @@ angular.module('angularPoint')
      */
     var saveCSV = function (data, filename) {
       var csvString = '';
-      _.each(data, function(row, rowIndex) {
+      _.each(data, function(row) {
         _.each(row, function(column, columnIndex) {
-          var innerValue =  column === null ? '' : column.toString();
-          var result = innerValue.replace(/"/g, '""');
-          if (result.search(/("|,|\n)/g) >= 0) {
-            result = '"' + result + '"';
-          }
+          var result =  column === null ? '' : JSON.stringify(column);
           if (columnIndex > 0) {
             csvString += ',';
           }
@@ -1242,6 +1238,7 @@ angular.module('angularPoint')
         });
         csvString += '\n';
       });
+      csvString = csvString.replace(/\\"/g, '""');
       saveFile(data, 'csv;charset=utf-8;', filename);
     };
 
