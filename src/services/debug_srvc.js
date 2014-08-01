@@ -124,7 +124,7 @@ angular.module('angularPoint')
         csvString += '\n';
       });
       csvString = csvString.replace(/\\"/g, '""');
-      saveFile(data, 'csv;charset=utf-8;', filename);
+      saveFile(csvString, 'csv;charset=utf-8;', filename);
     };
 
     return {
