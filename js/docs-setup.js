@@ -28,7 +28,7 @@ NG_DOCS={
       "type": "function",
       "moduleName": "angularPoint",
       "shortDescription": "Tools to assist with the creation of CAML queries.",
-      "keywords": "angularpoint apcamlfactory api array assist based caml camlcontainsquery characters combination combine console createcamlcontainsselector creation elements escapes field fielddefinitionsarray fieldname fields function html join jointype json log multiple properly queries query records returns search searchstring select selectors selectstatements sharepoint single statements string test testcaml testhtml testjson testtext testtext2 text tools type upset valid var wrap wrapped"
+      "keywords": "angularpoint apcamlfactory api array assist based caml camlcontainsquery characters combination combine console createcamlcontainsselector creation elements escapes field fielddefinitionsarray fields function html internalname join jointype json log multiple properly queries query records returns search searchstring select selectors selectstatements sharepoint single statements string test testcaml testhtml testjson testtext testtext2 text tools type upset valid var wrap wrapped"
     },
     {
       "section": "api",

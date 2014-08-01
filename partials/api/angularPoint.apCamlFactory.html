@@ -16,10 +16,10 @@
 </div></td></tr></table><h4 id="methods_camlcontainsquery_example">Example</h4>
 <div class="example"><div class="angularpoint-apcamlfactory-page angularpoint-apcamlfactory-camlcontainsquery-page"><pre class="prettyprint linenums">
 
-var testHTML = {fieldType: 'HTML', fieldName: 'HTML'};
-var testJSON = {fieldType: 'JSON', fieldName: 'JSON'};
-var testText = {fieldType: 'Text', fieldName: 'Text'};
-var testText2 = {fieldType: 'Text', fieldName: 'Text'};
+var testHTML = {objectType: 'HTML', internalName: 'HTML'};
+var testJSON = {objectType: 'JSON', internalName: 'JSON'};
+var testText = {objectType: 'Text', internalName: 'Text'};
+var testText2 = {objectType: 'Text', internalName: 'Text'};
 
 var testCaml = camlContainsQuery([testHTML, testText, testJSON, testText2], 'Test Query');
 console.log(testCaml);
@@ -45,7 +45,7 @@ console.log(testCaml);
 <div class="createcamlcontainsselector"><div class="angularpoint-apcamlfactory-page angularpoint-apcamlfactory-createcamlcontainsselector-page"><p>Escapes characters that SharePoint gets upset about based on field type.</p>
 </div><h4 id="methods_createcamlcontainsselector_example">Example</h4>
 <div class="example"><div class="angularpoint-apcamlfactory-page angularpoint-apcamlfactory-createcamlcontainsselector-page"><pre class="prettyprint linenums">
-var testHTML = {fieldType: 'HTML', fieldName: 'HTML'};
+var testHTML = {objectType: 'HTML', internalName: 'HTML'};
 
 var testCaml = createCamlContainsSelector(testHTML, 'Test Query');
 console.log(testCaml);
