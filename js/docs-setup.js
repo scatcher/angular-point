@@ -23,6 +23,15 @@ NG_DOCS={
     },
     {
       "section": "api",
+      "id": "angularPoint.apCamlFactory",
+      "shortName": "angularPoint.apCamlFactory",
+      "type": "function",
+      "moduleName": "angularPoint",
+      "shortDescription": "Tools to assist with the creation of CAML queries.",
+      "keywords": "angularpoint apcamlfactory api array assist based caml camlcontainsquery characters combination combine console createcamlcontainsselector creation elements escapes field fielddefinitionsarray fieldname fields function html join jointype json log multiple properly queries query records returns search searchstring select selectors selectstatements sharepoint single statements string test testcaml testhtml testjson testtext testtext2 text tools type upset valid var wrap wrapped"
+    },
+    {
+      "section": "api",
       "id": "angularPoint.apConfig",
       "shortName": "angularPoint.apConfig",
       "type": "object",
@@ -37,7 +46,7 @@ NG_DOCS={
       "type": "service",
       "moduleName": "angularPoint",
       "shortDescription": "Tools to assist with development.",
-      "keywords": "angularpoint apdebugservice api assist assume big console console-save convenience convert data development document download downloaded dump easily file function github io js json local located machine myobject object optionally original save savejson savexml service simple tools type users viewed work xml"
+      "keywords": "angularpoint apdebugservice api array arrays assist assume big console console-save convenience convert converts csv data development document download downloaded dump easily file function github io js json local located machine myobject object optionally original save savecsv savejson savexml service simple tools type users valid viewed work xml"
     },
     {
       "section": "api",

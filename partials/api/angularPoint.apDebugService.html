@@ -7,7 +7,19 @@
 <div class="description"><div class="angularpoint-apdebugservice-page"><p>Tools to assist with development.</p>
 </div></div>
 <div class="member method"><h2 id="methods">Methods</h2>
-<ul class="methods"><li><h3 id="methods_savefile">saveFile(data, type, filename)</h3>
+<ul class="methods"><li><h3 id="methods_savecsv">saveCSV(data, filename)</h3>
+<div class="savecsv"><div class="angularpoint-apdebugservice-page angularpoint-apdebugservice-savecsv-page"><p>Converts an array of arrays into a valid CSV file that is then downloaded to the users machine</p>
+</div><h5 id="methods_savecsv_parameters">Parameters</h5><table class="variables-matrix table table-bordered table-striped"><thead><tr><th>Param</th><th>Type</th><th>Details</th></tr></thead><tbody><tr><td>data</td><td><a href="" class="label type-hint type-hint-array">array[]</a></td><td><div class="angularpoint-apdebugservice-page angularpoint-apdebugservice-savecsv-page"><p>Array of arrays that we&#39;d like to dump to a CSV file and save to the local machine.</p>
+</div></td></tr><tr><td>filename</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="angularpoint-apdebugservice-page angularpoint-apdebugservice-savecsv-page"><p>Optionally name the file.</p>
+</div> <p><em>(default: debug.csv)</em></p></td></tr></tbody></table><h4 id="methods_savecsv_example">Example</h4>
+<div class="example"><div class="angularpoint-apdebugservice-page angularpoint-apdebugservice-savecsv-page"><pre class="prettyprint linenums">
+//Lets assume we want to looks at an object that is too big to be easily viewed in the console.
+apDebugService.saveCSV(objectToSave, 'myobject.csv');
+</pre>
+</div></div>
+</div>
+</li>
+<li><h3 id="methods_savefile">saveFile(data, type, filename)</h3>
 <div class="savefile"><div class="angularpoint-apdebugservice-page angularpoint-apdebugservice-savefile-page"><p>Used to convert a JS object or XML document into a file that is then downloaded on the users
 local machine.  Original work located:
 <a href="http://bgrins.github.io/devtools-snippets/#console-save">here</a>.</p>
