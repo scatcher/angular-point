@@ -258,12 +258,7 @@ angular.module('angularPoint')
      * </pre>
      */
     Model.prototype.getAllListItems = function () {
-      var deferred = $q.defer();
-      apDataService.executeQuery(this, this.queries.getAllListItems, {deferred: deferred})
-        .then(function (response) {
-          deferred.resolve(response);
-        });
-      return deferred.promise();
+      return apDataService.executeQuery(this, this.queries.getAllListItems);
     };
 
     /**
