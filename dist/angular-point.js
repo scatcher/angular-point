@@ -1210,7 +1210,12 @@ angular.module('angularPoint')
       saveFile(data, 'xml', filename);
     };
 
-    /// Replaces commonly-used Windows 1252 encoded chars that do not exist in ASCII or ISO-8859-1 with ISO-8859-1 cognates.
+    /**
+     * @description Replaces commonly-used Windows 1252 encoded chars that do not exist in ASCII or
+     *  ISO-8859-1 with ISO-8859-1 cognates.
+     * @param {string} text Text to be validated and cleaned.
+     * @returns {string}
+     */
     var replaceWordChars = function(text) {
       var s = text;
       // smart single quotes and apostrophe
@@ -1257,11 +1262,14 @@ angular.module('angularPoint')
           if (columnIndex > 0) {
             csvString += ',';
           }
-          csvString += result;
+          /** Escape single quotes with doubles in within the string */
+          result = result.replace(/"/g, '""');
+
+          /** Surround string with quotes so we can have line breaks */
+          csvString += '"' + result + '"';
         });
         csvString += '\n';
       });
-      csvString = csvString.replace(/\\"/g, '""');
       saveFile(csvString, 'csv;charset=utf-8;', filename);
     };
 
