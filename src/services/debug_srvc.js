@@ -33,6 +33,9 @@ angular.module('angularPoint')
         return;
       }
 
+      /** If passed in type="csv;charset=utf-8;" we just want to use "csv" */
+      var fileExtension = type.split(';')[0];
+
       if (!filename) {
         filename = 'debug.' + type;
       }
@@ -92,7 +95,43 @@ angular.module('angularPoint')
       saveFile(data, 'xml', filename);
     };
 
+    /**
+     * @ngdoc function
+     * @name angularPoint.apDebugService:saveCSV
+     * @methodOf angularPoint.apDebugService
+     * @description
+     * Converts an array of arrays into a valid CSV file that is then downloaded to the users machine
+     * @requires angularPoint.apDebugService:saveFile
+     * @param {array[]} data Array of arrays that we'd like to dump to a CSV file and save to the local machine.
+     * @param {string} [filename=debug.csv] Optionally name the file.
+     * @example
+     * <pre>
+     * //Lets assume we want to looks at an object that is too big to be easily viewed in the console.
+     * apDebugService.saveCSV(objectToSave, 'myobject.csv');
+     * </pre>
+     *
+     */
+    var saveCSV = function (data, filename) {
+      var csvString = '';
+      _.each(data, function(row, rowIndex) {
+        _.each(row, function(column, columnIndex) {
+          var innerValue =  column === null ? '' : column.toString();
+          var result = innerValue.replace(/"/g, '""');
+          if (result.search(/("|,|\n)/g) >= 0) {
+            result = '"' + result + '"';
+          }
+          if (columnIndex > 0) {
+            csvString += ',';
+          }
+          csvString += result;
+        });
+        csvString += '\n';
+      });
+      saveFile(data, 'csv;charset=utf-8;', filename);
+    };
+
     return {
+      saveCSV: saveCSV,
       saveFile: saveFile,
       saveJSON: saveJSON,
       saveXML: saveXML
