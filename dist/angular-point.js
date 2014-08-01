@@ -1152,7 +1152,7 @@ angular.module('angularPoint')
       var fileExtension = type.split(';')[0];
 
       if (!filename) {
-        filename = 'debug.' + type;
+        filename = 'debug.' + fileExtension;
       }
 
       if (type === 'json' && typeof data === 'object') {
