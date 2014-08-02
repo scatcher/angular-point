@@ -2262,7 +2262,7 @@ angular.module('angularPoint')
         objectType: 'Text'
       };
       _.extend(self, defaults, obj);
-      self.displayName = self.displayName || apUtilityService.fromCamelCase(self.mappedName);
+      self.displayName = self.displayName ? self.displayName : apUtilityService.fromCamelCase(self.mappedName);
     }
 
     Field.prototype.getDefinition = function () {
@@ -4593,7 +4593,7 @@ angular.module('angularPoint')
      * @returns {object} Field definition.
      */
     Model.prototype.getFieldDefinition = function (fieldName) {
-      return _.findWhere(this.list.customFields, { mappedName: fieldName});
+      return _.findWhere(this.list.fields, { mappedName: fieldName});
     };
 
 

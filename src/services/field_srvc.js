@@ -148,7 +148,7 @@ angular.module('angularPoint')
         objectType: 'Text'
       };
       _.extend(self, defaults, obj);
-      self.displayName = self.displayName || apUtilityService.fromCamelCase(self.mappedName);
+      self.displayName = self.displayName ? self.displayName : apUtilityService.fromCamelCase(self.mappedName);
     }
 
     Field.prototype.getDefinition = function () {

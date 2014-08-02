@@ -505,7 +505,7 @@ angular.module('angularPoint')
      * @returns {object} Field definition.
      */
     Model.prototype.getFieldDefinition = function (fieldName) {
-      return _.findWhere(this.list.customFields, { mappedName: fieldName});
+      return _.findWhere(this.list.fields, { mappedName: fieldName});
     };
 
 
