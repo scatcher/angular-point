@@ -15,7 +15,7 @@
         "chance": "latest",
         "jquery": "~1.11",
         "lodash": "~2.4",
-        "lodash-deep": "~1.1",
+        "lodash-deep": "^1.2.1",
         "SPServices": "https://github.com/scatcher/SPServices.git#master"
     },
     "devDependencies": {
