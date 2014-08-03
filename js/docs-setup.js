@@ -41,15 +41,6 @@ NG_DOCS={
     },
     {
       "section": "api",
-      "id": "angularPoint.apDebugService",
-      "shortName": "angularPoint.apDebugService",
-      "type": "service",
-      "moduleName": "angularPoint",
-      "shortDescription": "Tools to assist with development.",
-      "keywords": "angularpoint apdebugservice api array arrays assist assume big console console-save convenience convert converts csv data development document download downloaded dump easily file function github io js json local located machine myobject object optionally original save savecsv savejson savexml service simple tools type users valid viewed work xml"
-    },
-    {
-      "section": "api",
       "id": "angularPoint.apDecodeService",
       "shortName": "angularPoint.apDecodeService",
       "type": "service",
@@ -65,6 +56,15 @@ NG_DOCS={
       "moduleName": "angularPoint",
       "shortDescription": "Processes JavaScript objects and converts them to a format SharePoint expects.",
       "keywords": "angularpoint apconfig apencodeservice api aputilityservice array attempt convert converts current defined definition definitions delimited doesn entity expects field fielddefinition fielddefinitions fields fieldvalue find format function hand internalname iso8601 item iterate javascript js lastname list ll lookup lookupid lookupvalue mappedname model modified multi multiselectvalue non-readonly objects objecttype offset pairs pass passed prior processes properly properties property readonly save saving select selection service sharepoint someid somevalue spservices stored string submission text timezone title turns typically user valid values"
+    },
+    {
+      "section": "api",
+      "id": "angularPoint.apExportService",
+      "shortName": "angularPoint.apExportService",
+      "type": "service",
+      "moduleName": "angularPoint",
+      "shortDescription": "Tools to assist with development.",
+      "keywords": "angularpoint apexportservice api aputilityservice arr array arrays assist assume based big bool boolean capitalized choices column comment comments concatenated config console console-save convenience convert converts csv custom customdelimiter data dataset default defining definition delim delimiter description development document download downloaded dump easily enddate entities eventtype field fielddefinition fields file function generatecsv getval github io js json label local located location logic lookup lookupid lookupvalue machine method multiple myfile myobject named names object objects optional optionally original overrides parse parsed parsedcsv parsing pass project prop property representation representing return returns row save savecsv savejson savexml selected separate service set settings simple single start startdate str string stringified stringify strings subsequent text title tools type user users valid values var viewed work xml"
     },
     {
       "section": "api",
@@ -118,7 +118,7 @@ NG_DOCS={
       "type": "object",
       "moduleName": "angularPoint",
       "shortDescription": "Exposes the Query prototype and a constructor to instantiate a new Query.",
-      "keywords": "angularpoint apcacheservice apconfig apdataservice api apmodalservice apqueryfactory config exposes function instantiate instantiates object options prototype query returns"
+      "keywords": "angularpoint apcacheservice apconfig apdataservice api apmodalservice apqueryfactory config exposes function instantiate instantiates model object options prototype query reference returns"
     },
     {
       "section": "api",
@@ -136,7 +136,7 @@ NG_DOCS={
       "type": "service",
       "moduleName": "angularPoint",
       "shortDescription": "Provides shared utility functionality across the application.",
-      "keywords": "$q addandcustomizepages adddelprivatewebparts addlistitems admin angularpoint apconfig api application applystylesheets applythemeandborder approveitems aputilityservice array article assigned based batches batchprocess bit break browsedirectories browser browseuserinfo buildprojectsummary cancelcheckout change chunks codeplex comparison complete context convert converts create createalerts creategroups createsscsite current cuts dates datetocheck defaults defer deferred delay deletelistitems deleteversions desired determine directly don dvwps easier easily editlistitems editmyuserinfo enddate entities enumeratepermissions evaluate evaluates event example executed extendprojectsummary fall falls false fictitious firebase flags formatted fullmask function functionality getalllistitems group hang identifying info int integer intensive ints item items iterate iterating javascript js length level list listitem lock long managealerts managelists managepermissions managesubwebs manageweb mask maximum milliseconds model module nczonline net notify number object online open openitems pausing performing perm permission permissionsmask permmask personalviews portion problem process processed processing projectmodel projects projectsmodel promise properties provided range reference resolve resolvepermissions return returned rights running security service set shared sharepoint site specifies splookupaddnew spservices startdate starting stuff sufficient summary summaryobject sync thread time trimming typically ui unsigned updatepersonalwebparts usable user useremoteapis users utility var viewformpages viewlistitems viewpages viewusagedata viewversions wss yyyymmdd"
+      "keywords": "$q addandcustomizepages adddelprivatewebparts addlistitems admin angularpoint apconfig api application applystylesheets applythemeandborder approveitems aputilityservice array article assigned based batches batchprocess bit break browsedirectories browser browseuserinfo buildprojectsummary camel cancelcheckout capitalized case change chunks codeplex comparison complete context convert converts create createalerts creategroups createsscsite current cuts dates datetocheck defaults defer deferred delay deletelistitems deleteversions delimited desired determine directly don dvwps easier easily editlistitems editmyuserinfo enddate entities enumeratepermissions evaluate evaluates event example executed extendprojectsummary fall falls false fictitious firebase flags formatted fullmask function functionality getalllistitems group hang humanized identifying info int integer intensive ints item items iterate iterating javascript js length letter level list listitem lock long managealerts managelists managepermissions managesubwebs manageweb mask maximum milliseconds model module nczonline net notify number object online open openitems pausing performing perm permission permissionsmask permmask personalviews portion problem process processed processing projectmodel projects projectsmodel promise properties provided range reference resolve resolvepermissions return returned rights running security service set shared sharepoint site space specifies splookupaddnew spservices startdate starting string stuff sufficient summary summaryobject sync thread time trimming typically ui unsigned updatepersonalwebparts usable user useremoteapis users utility var viewformpages viewlistitems viewpages viewusagedata viewversions word wss yyyymmdd"
     },
     {
       "section": "api",

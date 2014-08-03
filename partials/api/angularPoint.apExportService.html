@@ -1,0 +1,147 @@
+<h1><code ng:non-bindable="">apExportService</code>
+<div><span class="hint">service in module <code ng:non-bindable="">angularPoint</code>
+</span>
+</div>
+</h1>
+<div><h2 id="description">Description</h2>
+<div class="description"><div class="angularpoint-apexportservice-page"><p>Tools to assist with development.</p>
+</div></div>
+<h2 id="dependencies">Dependencies</h2>
+<ul class="dependencies"><li><code ng:non-bindable=""><a href="#/api/angularPoint.apUtilityService">apUtilityService</a></code>
+</li>
+</ul>
+<div class="member method"><h2 id="methods">Methods</h2>
+<ul class="methods"><li><h3 id="methods_generatecsv">generateCSV(entities, fields, [options])</h3>
+<div class="generatecsv"><div class="angularpoint-apexportservice-page angularpoint-apexportservice-generatecsv-page"><p>Converts an array of objects into a parsed array of arrays based on a field config object.</p>
+</div><h5 id="methods_generatecsv_parameters">Parameters</h5><table class="variables-matrix table table-bordered table-striped"><thead><tr><th>Param</th><th>Type</th><th>Details</th></tr></thead><tbody><tr><td>entities</td><td><a href="" class="label type-hint type-hint-object">object[]</a></td><td><div class="angularpoint-apexportservice-page angularpoint-apexportservice-generatecsv-page"><p>Array of objects to convert.</p>
+</div></td></tr><tr><td>fields</td><td><a href="" class="label type-hint type-hint-object">object</a><a href="" class="label type-hint type-hint-string">string[]</a></td><td><div class="angularpoint-apexportservice-page angularpoint-apexportservice-generatecsv-page"><p>Array of objects defining the fields to parse.  Can also pass in strings representing the name of the field which will then be parsed based on field type.
+FieldDefinition:
+{string} object.field Property name on the object that we want to parse.
+{string} [object.label=object.field capitalized] Column Label
+{function} [object.getVal] Custom function that overrides the default method of parsing based on field type.</p>
+</div></td></tr><tr><td>[options]</td><td><a href="" class="label type-hint type-hint-object">object</a></td><td><div class="angularpoint-apexportservice-page angularpoint-apexportservice-generatecsv-page"><p>Optional config settings.</p>
+</div></td></tr><tr><td>options.delim</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="angularpoint-apexportservice-page angularpoint-apexportservice-generatecsv-page"><p>Delimiter used to separate fields that potentially contain multiple values that will be concatenated into a string.</p>
+</div> <p><em>(default: '; ')</em></p></td></tr></tbody></table><h5 id="methods_generatecsv_returns">Returns</h5><table class="variables-matrix"><tr><td><a href="" class="label type-hint type-hint-array">array[]</a></td><td><div class="angularpoint-apexportservice-page angularpoint-apexportservice-generatecsv-page"><p>Return array of arrays, with the first array being the column names and every subsequent array representing a row in the csv dataset.</p>
+</div></td></tr></table><h4 id="methods_generatecsv_example">Example</h4>
+<div class="example"><div class="angularpoint-apexportservice-page angularpoint-apexportservice-generatecsv-page"><pre class="prettyprint linenums">
+var customDelimiter = ' | ';
+var saveCSV = function() {
+   var parsedCSV = apExportService.generateCSV(entities, [
+    //Field definition
+    { label: 'ID', field: 'id' },
+    //Field as simple string
+    'title',
+    'project',
+    { label: 'Project:ID', field: 'project.lookupId' },
+    { label: 'Type', field: 'eventType' },
+    { label: 'Start Date', field: 'startDate' },
+    { label: 'End Date', field: 'endDate' },
+    'location',
+    'description',
+    //Field definition with custom parse logic
+    { label: 'Comments', field: 'comments', stringify: function (comments) {
+      var str = '';
+      _.each(comments, function (comment, i) {
+        if (i &gt; 0) {
+          str += '\n';
+        }
+        str += comment.text + '\n';
+      });
+      return str;
+    }}
+  ]);
+
+  //Save to user's machine
+  apExportService.saveCSV(parsedCSV, 'MyFile', {delim: customDelimiter});
+}
+</pre>
+</div></div>
+</div>
+</li>
+<li><h3 id="methods_parseboolean">parseBoolean(bool)</h3>
+<div class="parseboolean"><div class="angularpoint-apexportservice-page angularpoint-apexportservice-parseboolean-page"><p>Returns the stringified boolean if it is set.</p>
+</div><h5 id="methods_parseboolean_parameters">Parameters</h5><table class="variables-matrix table table-bordered table-striped"><thead><tr><th>Param</th><th>Type</th><th>Details</th></tr></thead><tbody><tr><td>bool</td><td><a href="" class="label type-hint type-hint-boolean">boolean</a></td><td><div class="angularpoint-apexportservice-page angularpoint-apexportservice-parseboolean-page"><p>Boolean to stringify.</p>
+</div></td></tr></tbody></table><h5 id="methods_parseboolean_returns">Returns</h5><table class="variables-matrix"><tr><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="angularpoint-apexportservice-page angularpoint-apexportservice-parseboolean-page"><p>Stringified boolean.</p>
+</div></td></tr></table></div>
+</li>
+<li><h3 id="methods_parsedate">parseDate(date)</h3>
+<div class="parsedate"><div class="angularpoint-apexportservice-page angularpoint-apexportservice-parsedate-page"><p>Returns JSON date.</p>
+</div><h5 id="methods_parsedate_parameters">Parameters</h5><table class="variables-matrix table table-bordered table-striped"><thead><tr><th>Param</th><th>Type</th><th>Details</th></tr></thead><tbody><tr><td>date</td><td><a href="" class="label type-hint type-hint-date">date</a></td><td><div class="angularpoint-apexportservice-page angularpoint-apexportservice-parsedate-page"><p>Date that if set converts to JSON representation.</p>
+</div></td></tr></tbody></table><h5 id="methods_parsedate_returns">Returns</h5><table class="variables-matrix"><tr><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="angularpoint-apexportservice-page angularpoint-apexportservice-parsedate-page"><p>JSON date.</p>
+</div></td></tr></table></div>
+</li>
+<li><h3 id="methods_parselookup">parseLookup(prop)</h3>
+<div class="parselookup"><div class="angularpoint-apexportservice-page angularpoint-apexportservice-parselookup-page"><p>Returns the property.lookupValue if present.</p>
+</div><h5 id="methods_parselookup_parameters">Parameters</h5><table class="variables-matrix table table-bordered table-striped"><thead><tr><th>Param</th><th>Type</th><th>Details</th></tr></thead><tbody><tr><td>prop</td><td><a href="" class="label type-hint type-hint-obj">obj</a></td><td><div class="angularpoint-apexportservice-page angularpoint-apexportservice-parselookup-page"><p>Property on object to parse.</p>
+</div></td></tr></tbody></table><h5 id="methods_parselookup_returns">Returns</h5><table class="variables-matrix"><tr><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="angularpoint-apexportservice-page angularpoint-apexportservice-parselookup-page"><p>Property.lookupValue.</p>
+</div></td></tr></table></div>
+</li>
+<li><h3 id="methods_parsemultichoice">parseMultiChoice(arr, delim)</h3>
+<div class="parsemultichoice"><div class="angularpoint-apexportservice-page angularpoint-apexportservice-parsemultichoice-page"><p>Converts an array of strings into a single concatenated string.</p>
+</div><h5 id="methods_parsemultichoice_parameters">Parameters</h5><table class="variables-matrix table table-bordered table-striped"><thead><tr><th>Param</th><th>Type</th><th>Details</th></tr></thead><tbody><tr><td>arr</td><td><a href="" class="label type-hint type-hint-string">string[]</a></td><td><div class="angularpoint-apexportservice-page angularpoint-apexportservice-parsemultichoice-page"><p>Array of selected choices.</p>
+</div></td></tr><tr><td>delim</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="angularpoint-apexportservice-page angularpoint-apexportservice-parsemultichoice-page"><p>Custom delimiter used between the concatenated values.</p>
+</div> <p><em>(default: '; ')</em></p></td></tr></tbody></table><h5 id="methods_parsemultichoice_returns">Returns</h5><table class="variables-matrix"><tr><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="angularpoint-apexportservice-page angularpoint-apexportservice-parsemultichoice-page"><p>Concatenated string representation.</p>
+</div></td></tr></table></div>
+</li>
+<li><h3 id="methods_parsemultilookup">parseMultiLookup(arr, delim)</h3>
+<div class="parsemultilookup"><div class="angularpoint-apexportservice-page angularpoint-apexportservice-parsemultilookup-page"><p>Converts an array of selected lookup values into a single concatenated string.</p>
+</div><h5 id="methods_parsemultilookup_parameters">Parameters</h5><table class="variables-matrix table table-bordered table-striped"><thead><tr><th>Param</th><th>Type</th><th>Details</th></tr></thead><tbody><tr><td>arr</td><td><a href="" class="label type-hint type-hint-object">object[]</a></td><td><div class="angularpoint-apexportservice-page angularpoint-apexportservice-parsemultilookup-page"><p>Array of lookup objects.</p>
+</div></td></tr><tr><td>delim</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="angularpoint-apexportservice-page angularpoint-apexportservice-parsemultilookup-page"><p>Custom delimiter used between the concatenated values.</p>
+</div> <p><em>(default: '; ')</em></p></td></tr></tbody></table><h5 id="methods_parsemultilookup_returns">Returns</h5><table class="variables-matrix"><tr><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="angularpoint-apexportservice-page angularpoint-apexportservice-parsemultilookup-page"><p>Concatenated string representation.</p>
+</div></td></tr></table></div>
+</li>
+<li><h3 id="methods_savecsv">saveCSV(data, filename)</h3>
+<div class="savecsv"><div class="angularpoint-apexportservice-page angularpoint-apexportservice-savecsv-page"><p>Converts an array of arrays into a valid CSV file that is then downloaded to the users machine</p>
+</div><h5 id="methods_savecsv_parameters">Parameters</h5><table class="variables-matrix table table-bordered table-striped"><thead><tr><th>Param</th><th>Type</th><th>Details</th></tr></thead><tbody><tr><td>data</td><td><a href="" class="label type-hint type-hint-array">array[]</a></td><td><div class="angularpoint-apexportservice-page angularpoint-apexportservice-savecsv-page"><p>Array of arrays that we&#39;d like to dump to a CSV file and save to the local machine.</p>
+</div></td></tr><tr><td>filename</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="angularpoint-apexportservice-page angularpoint-apexportservice-savecsv-page"><p>Optionally name the file.</p>
+</div> <p><em>(default: debug.csv)</em></p></td></tr></tbody></table><h4 id="methods_savecsv_example">Example</h4>
+<div class="example"><div class="angularpoint-apexportservice-page angularpoint-apexportservice-savecsv-page"><pre class="prettyprint linenums">
+//Lets assume we want to looks at an object that is too big to be easily viewed in the console.
+apExportService.saveCSV(objectToSave, 'MyFile');
+//This would download a file named MyFile.csv
+</pre>
+</div></div>
+</div>
+</li>
+<li><h3 id="methods_savefile">saveFile(data, type, filename)</h3>
+<div class="savefile"><div class="angularpoint-apexportservice-page angularpoint-apexportservice-savefile-page"><p>Used to convert a JS object or XML document into a file that is then downloaded on the users
+local machine.  Original work located:
+<a href="http://bgrins.github.io/devtools-snippets/#console-save">here</a>.</p>
+</div><h5 id="methods_savefile_parameters">Parameters</h5><table class="variables-matrix table table-bordered table-striped"><thead><tr><th>Param</th><th>Type</th><th>Details</th></tr></thead><tbody><tr><td>data</td><td><a href="" class="label type-hint type-hint-object">object</a></td><td><div class="angularpoint-apexportservice-page angularpoint-apexportservice-savefile-page"><p>JS object that we&#39;d like to dump to a JSON file and save to the local machine.</p>
+</div></td></tr><tr><td>type</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="angularpoint-apexportservice-page angularpoint-apexportservice-savefile-page"><p>Can be either &#39;xml&#39; or &#39;json&#39;.</p>
+</div></td></tr><tr><td>filename</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="angularpoint-apexportservice-page angularpoint-apexportservice-savefile-page"><p>Optionally name the file.</p>
+</div> <p><em>(default: debug.json)</em></p></td></tr></tbody></table><h4 id="methods_savefile_example">Example</h4>
+<div class="example"><div class="angularpoint-apexportservice-page angularpoint-apexportservice-savefile-page"><pre class="prettyprint linenums">
+//Lets assume we want to looks at an object that is too big to be easily viewed in the console.
+apExportService.saveJSON(objectToSave, 'myobject.json');
+</pre>
+</div></div>
+</div>
+</li>
+<li><h3 id="methods_savejson">saveJSON(data, filename)</h3>
+<div class="savejson"><div class="angularpoint-apexportservice-page angularpoint-apexportservice-savejson-page"><p>Simple convenience function that uses angularPoint.apExportService:saveFile to download json to the local machine.</p>
+</div><h5 id="methods_savejson_parameters">Parameters</h5><table class="variables-matrix table table-bordered table-striped"><thead><tr><th>Param</th><th>Type</th><th>Details</th></tr></thead><tbody><tr><td>data</td><td><a href="" class="label type-hint type-hint-object">object</a></td><td><div class="angularpoint-apexportservice-page angularpoint-apexportservice-savejson-page"><p>JS object that we&#39;d like to dump to a JSON file and save to the local machine.</p>
+</div></td></tr><tr><td>filename</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="angularpoint-apexportservice-page angularpoint-apexportservice-savejson-page"><p>Optionally name the file.</p>
+</div> <p><em>(default: debug.json)</em></p></td></tr></tbody></table><h4 id="methods_savejson_example">Example</h4>
+<div class="example"><div class="angularpoint-apexportservice-page angularpoint-apexportservice-savejson-page"><pre class="prettyprint linenums">
+//Lets assume we want to looks at an object that is too big to be easily viewed in the console.
+apExportService.saveJSON(objectToSave, 'myobject.json');
+</pre>
+</div></div>
+</div>
+</li>
+<li><h3 id="methods_savexml">saveXML(data, filename)</h3>
+<div class="savexml"><div class="angularpoint-apexportservice-page angularpoint-apexportservice-savexml-page"><p>Simple convenience function that uses angularPoint.apExportService:saveFile to download xml to the local machine.</p>
+</div><h5 id="methods_savexml_parameters">Parameters</h5><table class="variables-matrix table table-bordered table-striped"><thead><tr><th>Param</th><th>Type</th><th>Details</th></tr></thead><tbody><tr><td>data</td><td><a href="" class="label type-hint type-hint-object">object</a></td><td><div class="angularpoint-apexportservice-page angularpoint-apexportservice-savexml-page"><p>XML object that we&#39;d like to dump to a XML file and save to the local machine.</p>
+</div></td></tr><tr><td>filename</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="angularpoint-apexportservice-page angularpoint-apexportservice-savexml-page"><p>Optionally name the file.</p>
+</div> <p><em>(default: debug.xml)</em></p></td></tr></tbody></table><h4 id="methods_savexml_example">Example</h4>
+<div class="example"><div class="angularpoint-apexportservice-page angularpoint-apexportservice-savexml-page"><pre class="prettyprint linenums">
+//Lets assume we want to looks at an object that is too big to be easily viewed in the console.
+apExportService.saveXML(objectToSave, 'myobject.xml');
+</pre>
+</div></div>
+</div>
+</li>
+</ul>
+</div>
+</div>
