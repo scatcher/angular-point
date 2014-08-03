@@ -167,7 +167,28 @@ types identified in the model field definitions are supported.</p>
 </ul>
 </div> <p><em>(default: 'String')</em></p></td></tr><tr><td>delim</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="angularpoint-apexportservice-page angularpoint-apexportservice-stringifyproperty-page"><p>Optional delimiter to split concatenated strings.</p>
 </div> <p><em>(default: '; ')</em></p></td></tr></tbody></table><h5 id="methods_stringifyproperty_returns">Returns</h5><table class="variables-matrix"><tr><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="angularpoint-apexportservice-page angularpoint-apexportservice-stringifyproperty-page"><p>Stringified property on the object based on the field type.</p>
-</div></td></tr></table></div>
+</div></td></tr></table><h4 id="methods_stringifyproperty_example">Example</h4>
+<div class="example"><div class="angularpoint-apexportservice-page angularpoint-apexportservice-stringifyproperty-page"><pre class="prettyprint linenums">
+var project = {
+  title: 'Super Project',
+ members: [
+   { lookupId: 12, lookupValue: 'Joe' },
+   { lookupId: 19, lookupValue: 'Beth' },
+ ]
+};
+
+var membersAsString = apExportService:stringifyProperty({
+  project,
+  'members',
+  'UserMulti',
+  ' | ' //Custom Delimiter
+});
+
+// membersAsString = 'Joe | Beth';
+
+</pre>
+</div></div>
+</div>
 </li>
 </ul>
 </div>
