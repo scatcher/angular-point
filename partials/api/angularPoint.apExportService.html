@@ -90,6 +90,12 @@ var saveCSV = function() {
 </div> <p><em>(default: '; ')</em></p></td></tr></tbody></table><h5 id="methods_parsemultilookup_returns">Returns</h5><table class="variables-matrix"><tr><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="angularpoint-apexportservice-page angularpoint-apexportservice-parsemultilookup-page"><p>Concatenated string representation.</p>
 </div></td></tr></table></div>
 </li>
+<li><h3 id="methods_parsenumber">parseNumber(int)</h3>
+<div class="parsenumber"><div class="angularpoint-apexportservice-page angularpoint-apexportservice-parsenumber-page"><p>Converts a number to a string representation.</p>
+</div><h5 id="methods_parsenumber_parameters">Parameters</h5><table class="variables-matrix table table-bordered table-striped"><thead><tr><th>Param</th><th>Type</th><th>Details</th></tr></thead><tbody><tr><td>int</td><td><a href="" class="label type-hint type-hint-number">number</a></td><td><div class="angularpoint-apexportservice-page angularpoint-apexportservice-parsenumber-page"><p>Property on object to parse.</p>
+</div></td></tr></tbody></table><h5 id="methods_parsenumber_returns">Returns</h5><table class="variables-matrix"><tr><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="angularpoint-apexportservice-page angularpoint-apexportservice-parsenumber-page"><p>Stringified number.</p>
+</div></td></tr></table></div>
+</li>
 <li><h3 id="methods_savecsv">saveCSV(data, filename)</h3>
 <div class="savecsv"><div class="angularpoint-apexportservice-page angularpoint-apexportservice-savecsv-page"><p>Converts an array of arrays into a valid CSV file that is then downloaded to the users machine</p>
 </div><h5 id="methods_savecsv_parameters">Parameters</h5><table class="variables-matrix table table-bordered table-striped"><thead><tr><th>Param</th><th>Type</th><th>Details</th></tr></thead><tbody><tr><td>data</td><td><a href="" class="label type-hint type-hint-array">array[]</a></td><td><div class="angularpoint-apexportservice-page angularpoint-apexportservice-savecsv-page"><p>Array of arrays that we&#39;d like to dump to a CSV file and save to the local machine.</p>
@@ -141,6 +147,27 @@ apExportService.saveXML(objectToSave, 'myobject.xml');
 </pre>
 </div></div>
 </div>
+</li>
+<li><h3 id="methods_stringifyproperty">stringifyProperty(entity, propertyName, propertyType, delim)</h3>
+<div class="stringifyproperty"><h5 id="methods_stringifyproperty_parameters">Parameters</h5><table class="variables-matrix table table-bordered table-striped"><thead><tr><th>Param</th><th>Type</th><th>Details</th></tr></thead><tbody><tr><td>entity</td><td><a href="" class="label type-hint type-hint-object">object</a></td><td><div class="angularpoint-apexportservice-page angularpoint-apexportservice-stringifyproperty-page"><p>Entity that contains the property we&#39;d like to stringify.</p>
+</div></td></tr><tr><td>propertyName</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="angularpoint-apexportservice-page angularpoint-apexportservice-stringifyproperty-page"><p>entity.propertyName</p>
+</div></td></tr><tr><td>propertyType</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="angularpoint-apexportservice-page angularpoint-apexportservice-stringifyproperty-page"><p>Assumes by default that it&#39;s already a string.  Most of the normal field
+types identified in the model field definitions are supported.</p>
+<ul>
+<li>Lookup</li>
+<li>User</li>
+<li>Boolean</li>
+<li>DateTime</li>
+<li>Integer</li>
+<li>Number</li>
+<li>Counter</li>
+<li>MultiChoice</li>
+<li>UserMulti</li>
+<li>LookupMulti</li>
+</ul>
+</div> <p><em>(default: 'String')</em></p></td></tr><tr><td>delim</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="angularpoint-apexportservice-page angularpoint-apexportservice-stringifyproperty-page"><p>Optional delimiter to split concatenated strings.</p>
+</div> <p><em>(default: '; ')</em></p></td></tr></tbody></table><h5 id="methods_stringifyproperty_returns">Returns</h5><table class="variables-matrix"><tr><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="angularpoint-apexportservice-page angularpoint-apexportservice-stringifyproperty-page"><p>Stringified property on the object based on the field type.</p>
+</div></td></tr></table></div>
 </li>
 </ul>
 </div>
