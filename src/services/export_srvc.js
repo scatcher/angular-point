@@ -102,7 +102,7 @@ angular.module('angularPoint')
      * @param {string} text Text to be validated and cleaned.
      * @returns {string}
      */
-    var replaceWordChars = function(text) {
+    var replaceWordChars = function (text) {
       var s = text;
       // smart single quotes and apostrophe
       s = s.replace(/[\u2018|\u2019|\u201A]/g, "\'");
@@ -143,9 +143,9 @@ angular.module('angularPoint')
      */
     var saveCSV = function (data, filename) {
       var csvString = '';
-      _.each(data, function(row) {
-        _.each(row, function(column, columnIndex) {
-          var result =  column === null ? '' : replaceWordChars(column);
+      _.each(data, function (row) {
+        _.each(row, function (column, columnIndex) {
+          var result = column === null ? '' : replaceWordChars(column);
           if (columnIndex > 0) {
             csvString += ',';
           }
@@ -231,7 +231,7 @@ angular.module('angularPoint')
           var propertyName = fieldComponents[0];
 
           /** First array has the field names */
-          if(entityIndex === 0) {
+          if (entityIndex === 0) {
             /** Take a best guess if a column label isn't specified by capitalizing and inserting spaces between camel humps*/
             var label = fieldDefinition.label ?
               fieldDefinition.label : apUtilityService.fromCamelCase(propertyName);
@@ -251,32 +251,7 @@ angular.module('angularPoint')
           } else {
             /** Get the value based on field type defined in the model for the entity*/
             var modelDefinition = entity.getFieldDefinition(propertyName);
-            switch (modelDefinition.objectType) {
-              case 'Lookup':
-              case 'User':
-                val = parseLookup(entity[fieldDefinition.field]);
-                break;
-              case 'Boolean':
-                val = parseBoolean(entity[fieldDefinition.field]);
-                break;
-              case 'DateTime':
-                val = parseDate(entity[fieldDefinition.field]);
-                break;
-              case 'Integer':
-              case 'Number':
-              case 'Counter':
-                val = entity[fieldDefinition.field].toString();
-                break;
-              case 'MultiChoice':
-                val = parseMultiChoice(entity[fieldDefinition.field], opts.delim);
-                break;
-              case 'UserMulti':
-              case 'LookupMulti':
-                val = parseMultiLookup(entity[fieldDefinition.field], opts.delim);
-                break;
-              default:
-                val = entity[fieldDefinition.field];
-            }
+            val = stringifyProperty(entity, fieldDefinition.field, modelDefinition.objectType, opts.delim)
           }
           /** Add string to column */
           entityArray.push(val);
@@ -285,6 +260,97 @@ angular.module('angularPoint')
         entitiesArray.push(entityArray);
       });
       return entitiesArray;
+    };
+
+    /**
+     * @ngdoc function
+     * @name angularPoint.apExportService:stringifyProperty
+     * @methodOf angularPoint.apExportService
+     * @param {object} entity Entity that contains the property we'd like to stringify.
+     * @param {string} propertyName entity.propertyName
+     * @param {string} [propertyType='String'] Assumes by default that it's already a string.  Most of the normal field
+     * types identified in the model field definitions are supported.
+     *
+     * - Lookup
+     * - User
+     * - Boolean
+     * - DateTime
+     * - Integer
+     * - Number
+     * - Counter
+     * - MultiChoice
+     * - UserMulti
+     * - LookupMulti
+     *
+     * @param {string} [delim='; '] Optional delimiter to split concatenated strings.
+     * @example
+     * <pre>
+     *  var project = {
+     *    title: 'Super Project',
+      *   members: [
+      *     { lookupId: 12, lookupValue: 'Joe' },
+      *     { lookupId: 19, lookupValue: 'Beth' },
+      *   ]
+      * };
+     *
+     * var membersAsString = apExportService:stringifyProperty({
+     *    project,
+     *    'members',
+     *    'UserMulti',
+     *    ' | ' //Custom Delimiter
+     * });
+     *
+     * // membersAsString = 'Joe | Beth';
+     *
+     * </pre>
+     * @returns {string} Stringified property on the object based on the field type.
+     */
+    var stringifyProperty = function (entity, propertyName, propertyType, delim) {
+      var str = '';
+      switch (propertyType) {
+        case 'Lookup':
+        case 'User':
+          str = parseLookup(entity[propertyName]);
+          break;
+        case 'Boolean':
+          str = parseBoolean(entity[propertyName]);
+          break;
+        case 'DateTime':
+          str = parseDate(entity[propertyName]);
+          break;
+        case 'Integer':
+        case 'Number':
+        case 'Counter':
+          str = parseNumber(entity[propertyName]);
+          break;
+        case 'MultiChoice':
+          str = parseMultiChoice(entity[propertyName], delim);
+          break;
+        case 'UserMulti':
+        case 'LookupMulti':
+          str = parseMultiLookup(entity[propertyName], delim);
+          break;
+        default:
+          str = entity[propertyName];
+      }
+      return str;
+    };
+
+    /**
+     * @ngdoc function
+     * @name angularPoint.apExportService:parseNumber
+     * @methodOf angularPoint.apExportService
+     * @param {number} int Property on object to parse.
+     * @description
+     * Converts a number to a string representation.
+     * @returns {string} Stringified number.
+     */
+    var parseNumber = function (int) {
+      var str = '';
+      if (_.isNumber(int)) {
+        str = int.toString();
+      }
+      return str;
     };
 
     /**
@@ -392,9 +458,11 @@ angular.module('angularPoint')
       parseDate: parseDate,
       parseLookup: parseLookup,
       parseMultiChoice: parseMultiChoice,
+      parseNumber: parseNumber,
       saveCSV: saveCSV,
       saveFile: saveFile,
       saveJSON: saveJSON,
-      saveXML: saveXML
+      saveXML: saveXML,
+      stringifyProperty: stringifyProperty
     };
   });
