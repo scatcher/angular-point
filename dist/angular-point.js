@@ -3219,7 +3219,7 @@ angular.module('angularPoint')
 
     function fromCamelCase(s) {
       // insert a space before all caps
-      s.replace(/([A-Z])/g, ' $1')
+      return s.replace(/([A-Z])/g, ' $1')
         // uppercase the first character
         .replace(/^./, function (str) {
           return str.toUpperCase();
