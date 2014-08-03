@@ -272,6 +272,15 @@ angular.module('angularPoint')
       }).replace(/\s+/g, '');
     }
 
+    /**
+     * @ngdoc function
+     * @name angularPoint.apUtilityService:fromCamelCase
+     * @methodOf angularPoint.apUtilityService
+     * @param {string} s String to convert.
+     * @description
+     * Converts a camel case string into a space delimited string with each word having a capitalized first letter.
+     * @returns {string} Humanized string.
+     */
     function fromCamelCase(s) {
       // insert a space before all caps
       return s.replace(/([A-Z])/g, ' $1')
