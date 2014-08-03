@@ -41,15 +41,6 @@ NG_DOCS={
     },
     {
       "section": "api",
-      "id": "angularPoint.apDebugService",
-      "shortName": "angularPoint.apDebugService",
-      "type": "service",
-      "moduleName": "angularPoint",
-      "shortDescription": "Tools to assist with development.",
-      "keywords": "angularpoint apdebugservice api array arrays assist assume big console console-save convenience convert converts csv data development document download downloaded dump easily file function github io js json local located machine myobject object optionally original save savecsv savejson savexml service simple tools type users valid viewed work xml"
-    },
-    {
-      "section": "api",
       "id": "angularPoint.apDecodeService",
       "shortName": "angularPoint.apDecodeService",
       "type": "service",
@@ -65,6 +56,15 @@ NG_DOCS={
       "moduleName": "angularPoint",
       "shortDescription": "Processes JavaScript objects and converts them to a format SharePoint expects.",
       "keywords": "angularpoint apconfig apencodeservice api aputilityservice array attempt convert converts current defined definition definitions delimited doesn entity expects field fielddefinition fielddefinitions fields fieldvalue find format function hand internalname iso8601 item iterate javascript js lastname list ll lookup lookupid lookupvalue mappedname model modified multi multiselectvalue non-readonly objects objecttype offset pairs pass passed prior processes properly properties property readonly save saving select selection service sharepoint someid somevalue spservices stored string submission text timezone title turns typically user valid values"
+    },
+    {
+      "section": "api",
+      "id": "angularPoint.apExportService",
+      "shortName": "angularPoint.apExportService",
+      "type": "service",
+      "moduleName": "angularPoint",
+      "shortDescription": "Tools to assist with development.",
+      "keywords": "angularpoint apexportservice api aputilityservice array arrays assist assume based big capitalized column comment comments config console console-save convenience convert converts csv custom data default defining definition description development document download downloaded dump easily enddate entities eventtype field fielddefinition fields file function generatecsv getval github io js json label local located location logic lookupid machine method myfile myobject named object objects optionally original overrides parse parsed parsedcsv parsing pass project property representing return save savecsv savejson savexml service simple start startdate str string strings text title tools type user users valid var viewed work xml"
     },
     {
       "section": "api",
