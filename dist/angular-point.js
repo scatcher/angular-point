@@ -2120,23 +2120,27 @@ angular.module('angularPoint')
      * {string} object.field Property name on the object that we want to parse.
      * {string} [object.label=object.field capitalized] Column Label
      * {function} [object.getVal] Custom function that overrides the default method of parsing based on field type.
+     * @param {object} [options] Optional config settings.
+     * @param {string} [options.delim='; '] Delimiter used to separate fields that potentially contain multiple values that will be concatenated into a string.
+     * @returns {array[]} Return array of arrays, with the first array being the column names and every subsequent array representing a row in the csv dataset.
      * @example
      * <pre>
+     * var customDelimiter = ' | ';
      * var saveCSV = function() {
      *    var parsedCSV = apExportService.generateCSV(entities, [
      *     //Field definition
      *     { label: 'ID', field: 'id' },
      *     //Field as simple string
-     *     title,
-     *     project,
+     *     'title',
+     *     'project',
      *     { label: 'Project:ID', field: 'project.lookupId' },
      *     { label: 'Type', field: 'eventType' },
      *     { label: 'Start Date', field: 'startDate' },
      *     { label: 'End Date', field: 'endDate' },
-     *     location,
-     *     description,
+     *     'location',
+     *     'description',
      *     //Field definition with custom parse logic
-     *     { label: 'Comments', field: 'comments', getVal: function (comments) {
+     *     { label: 'Comments', field: 'comments', stringify: function (comments) {
      *       var str = '';
      *       _.each(comments, function (comment, i) {
      *         if (i > 0) {
@@ -2149,15 +2153,17 @@ angular.module('angularPoint')
      *   ]);
      *
      *   //Save to user's machine
-     *   apExportService.saveCSV(parsedCSV, 'MyFile');
+     *   apExportService.saveCSV(parsedCSV, 'MyFile', {delim: customDelimiter});
      * }
      * </pre>
      *
      */
-    var generateCSV = function (entities, fields) {
-      var entitiesArray = [
-        []
-      ];
+    var generateCSV = function (entities, fields, options) {
+      var defaults = {delim: '; '},
+        opts = _.extend({}, defaults, options),
+        entitiesArray = [
+          []
+        ];
 
       /** Process each of the entities in the data source */
       _.each(entities, function (entity, entityIndex) {
@@ -2182,9 +2188,9 @@ angular.module('angularPoint')
 
           var val = '';
 
-          if (_.isFunction(fieldDefinition.getVal)) {
+          if (_.isFunction(fieldDefinition.stringify)) {
             /** Allows us to override standard field logic for special cases */
-            val = fieldDefinition.getVal(entity[fieldDefinition.field]);
+            val = fieldDefinition.stringify(entity[fieldDefinition.field]);
           } else if (fieldComponents.length > 1) {
             /** Allow user to specify dot separated property path */
             if (_.deepIn(entity, fieldDefinition.field)) {
@@ -2210,41 +2216,68 @@ angular.module('angularPoint')
                 val = entity[fieldDefinition.field].toString();
                 break;
               case 'MultiChoice':
-                val = parseMultiChoice(entity[fieldDefinition.field]);
+                val = parseMultiChoice(entity[fieldDefinition.field], opts.delim);
                 break;
               case 'UserMulti':
               case 'LookupMulti':
-                val = parseArray(entity[fieldDefinition.field]);
+                val = parseMultiLookup(entity[fieldDefinition.field], opts.delim);
                 break;
               default:
                 val = entity[fieldDefinition.field];
             }
           }
-
+          /** Add string to column */
           entityArray.push(val);
         });
-
+        /** Add row */
         entitiesArray.push(entityArray);
       });
       return entitiesArray;
     };
 
-    var parseLookup = function (s) {
+    /**
+     * @ngdoc function
+     * @name angularPoint.apExportService:parseLookup
+     * @methodOf angularPoint.apExportService
+     * @param {obj} prop Property on object to parse.
+     * @description
+     * Returns the property.lookupValue if present.
+     * @returns {string} Property.lookupValue.
+     */
+    var parseLookup = function (prop) {
       var str = '';
-      if (s && s.lookupValue) {
-        str = s.lookupValue;
+      if (prop && prop.lookupValue) {
+        str = prop.lookupValue;
       }
       return str;
     };
 
-    var parseBoolean = function (s) {
+    /**
+     * @ngdoc function
+     * @name angularPoint.apExportService:parseBoolean
+     * @methodOf angularPoint.apExportService
+     * @param {boolean} bool Boolean to stringify.
+     * @description
+     * Returns the stringified boolean if it is set.
+     * @returns {string} Stringified boolean.
+     */
+    var parseBoolean = function (bool) {
       var str = '';
-      if (_.isBoolean(s)) {
-        str = s.toString();
+      if (_.isBoolean(bool)) {
+        str = bool.toString();
       }
       return str;
     };
 
+    /**
+     * @ngdoc function
+     * @name angularPoint.apExportService:parseDate
+     * @methodOf angularPoint.apExportService
+     * @param {date} date Date that if set converts to JSON representation.
+     * @description
+     * Returns JSON date.
+     * @returns {string} JSON date.
+     */
     var parseDate = function (date) {
       var str = '';
       if (_.isDate(date)) {
@@ -2253,38 +2286,60 @@ angular.module('angularPoint')
       return str;
     };
 
-    var parseMultiChoice = function (arr) {
-      var str = '';
+    /**
+     * @ngdoc function
+     * @name angularPoint.apExportService:parseMultiChoice
+     * @methodOf angularPoint.apExportService
+     * @param {string[]} arr Array of selected choices.
+     * @param {string} [delim='; '] Custom delimiter used between the concatenated values.
+     * @description
+     * Converts an array of strings into a single concatenated string.
+     * @returns {string} Concatenated string representation.
+     */
+    var parseMultiChoice = function (arr, delim) {
+      var str = '',
+        d = delim || '; ';
       _.each(arr, function (choice, i) {
         if (i > 0) {
-          str += '; ';
+          str += d;
         }
         str += choice;
       });
       return str;
     };
 
-    var parseArray = function (arr) {
-      var str = '';
+    /**
+     * @ngdoc function
+     * @name angularPoint.apExportService:parseMultiLookup
+     * @methodOf angularPoint.apExportService
+     * @param {object[]} arr Array of lookup objects.
+     * @param {string} [delim='; '] Custom delimiter used between the concatenated values.
+     * @description
+     * Converts an array of selected lookup values into a single concatenated string.
+     * @returns {string} Concatenated string representation.
+     */
+    var parseMultiLookup = function (arr, delim) {
+      var str = '',
+        d = delim || '; ';
       _.each(arr, function (val, valIndex) {
+
         /** Add artificial delim */
         if (valIndex > 0) {
-          str += '; ';
+          str += d;
         }
 
-        if (_.isObject(val) && val.lookupValue) {
-          /** Handle an array of lookup objects */
-          str += val.lookupValue;
-        } else {
-          /** Handle an array of strings */
-          str += val;
-        }
+        str += parseLookup(val);
       });
       return str;
     };
 
     return {
       generateCSV: generateCSV,
+      parseMultiLookup: parseMultiLookup,
+      parseBoolean: parseBoolean,
+      parseDate: parseDate,
+      parseLookup: parseLookup,
+      parseMultiChoice: parseMultiChoice,
       saveCSV: saveCSV,
       saveFile: saveFile,
       saveJSON: saveJSON,
