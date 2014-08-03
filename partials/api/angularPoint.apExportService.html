@@ -148,9 +148,8 @@ apExportService.saveXML(objectToSave, 'myobject.xml');
 </div></div>
 </div>
 </li>
-<li><h3 id="methods_stringifyproperty">stringifyProperty(entity, propertyName, propertyType, delim)</h3>
-<div class="stringifyproperty"><h5 id="methods_stringifyproperty_parameters">Parameters</h5><table class="variables-matrix table table-bordered table-striped"><thead><tr><th>Param</th><th>Type</th><th>Details</th></tr></thead><tbody><tr><td>entity</td><td><a href="" class="label type-hint type-hint-object">object</a></td><td><div class="angularpoint-apexportservice-page angularpoint-apexportservice-stringifyproperty-page"><p>Entity that contains the property we&#39;d like to stringify.</p>
-</div></td></tr><tr><td>propertyName</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="angularpoint-apexportservice-page angularpoint-apexportservice-stringifyproperty-page"><p>entity.propertyName</p>
+<li><h3 id="methods_stringifyproperty">stringifyProperty(prop, propertyType, delim)</h3>
+<div class="stringifyproperty"><h5 id="methods_stringifyproperty_parameters">Parameters</h5><table class="variables-matrix table table-bordered table-striped"><thead><tr><th>Param</th><th>Type</th><th>Details</th></tr></thead><tbody><tr><td>prop</td><td><a href="" class="label type-hint type-hint-object">object</a><a href="" class="label type-hint type-hint-array">array</a><a href="" class="label type-hint type-hint-string">string</a><a href="" class="label type-hint type-hint-integer">integer</a><a href="" class="label type-hint type-hint-boolean">boolean</a></td><td><div class="angularpoint-apexportservice-page angularpoint-apexportservice-stringifyproperty-page"><p>Target that we&#39;d like to stringify.</p>
 </div></td></tr><tr><td>propertyType</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="angularpoint-apexportservice-page angularpoint-apexportservice-stringifyproperty-page"><p>Assumes by default that it&#39;s already a string.  Most of the normal field
 types identified in the model field definitions are supported.</p>
 <ul>
@@ -178,8 +177,7 @@ var project = {
 };
 
 var membersAsString = apExportService:stringifyProperty({
-  project,
-  'members',
+  project.members,
   'UserMulti',
   ' | ' //Custom Delimiter
 });
