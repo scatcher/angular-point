@@ -305,31 +305,34 @@ angular.module('angularPoint')
      */
     var stringifyProperty = function (prop, propertyType, delim) {
       var str = '';
-      switch (propertyType) {
-        case 'Lookup':
-        case 'User':
-          str = parseLookup(prop);
-          break;
-        case 'Boolean':
-          str = parseBoolean(prop);
-          break;
-        case 'DateTime':
-          str = parseDate(prop);
-          break;
-        case 'Integer':
-        case 'Number':
-        case 'Counter':
-          str = parseNumber(prop);
-          break;
-        case 'MultiChoice':
-          str = parseMultiChoice(prop, delim);
-          break;
-        case 'UserMulti':
-        case 'LookupMulti':
-          str = parseMultiLookup(prop, delim);
-          break;
-        default:
-          str = prop;
+      /** Only process if prop is defined */
+      if(prop) {
+        switch (propertyType) {
+          case 'Lookup':
+          case 'User':
+            str = parseLookup(prop);
+            break;
+          case 'Boolean':
+            str = parseBoolean(prop);
+            break;
+          case 'DateTime':
+            str = parseDate(prop);
+            break;
+          case 'Integer':
+          case 'Number':
+          case 'Counter':
+            str = parseNumber(prop);
+            break;
+          case 'MultiChoice':
+            str = parseMultiChoice(prop, delim);
+            break;
+          case 'UserMulti':
+          case 'LookupMulti':
+            str = parseMultiLookup(prop, delim);
+            break;
+          default:
+            str = prop;
+        }
       }
       return str;
     };
