@@ -251,7 +251,7 @@ angular.module('angularPoint')
           } else {
             /** Get the value based on field type defined in the model for the entity*/
             var modelDefinition = entity.getFieldDefinition(propertyName);
-            val = stringifyProperty(entity, fieldDefinition.field, modelDefinition.objectType, opts.delim)
+            val = stringifyProperty(entity[fieldDefinition.field], modelDefinition.objectType, opts.delim)
           }
           /** Add string to column */
           entityArray.push(val);
@@ -266,8 +266,7 @@ angular.module('angularPoint')
      * @ngdoc function
      * @name angularPoint.apExportService:stringifyProperty
      * @methodOf angularPoint.apExportService
-     * @param {object} entity Entity that contains the property we'd like to stringify.
-     * @param {string} propertyName entity.propertyName
+     * @param {object|array|string|integer|boolean} prop Target that we'd like to stringify.
      * @param {string} [propertyType='String'] Assumes by default that it's already a string.  Most of the normal field
      * types identified in the model field definitions are supported.
      *
@@ -294,8 +293,7 @@ angular.module('angularPoint')
       * };
      *
      * var membersAsString = apExportService:stringifyProperty({
-     *    project,
-     *    'members',
+     *    project.members,
      *    'UserMulti',
      *    ' | ' //Custom Delimiter
      * });
@@ -305,33 +303,33 @@ angular.module('angularPoint')
      * </pre>
      * @returns {string} Stringified property on the object based on the field type.
      */
-    var stringifyProperty = function (entity, propertyName, propertyType, delim) {
+    var stringifyProperty = function (prop, propertyType, delim) {
       var str = '';
       switch (propertyType) {
         case 'Lookup':
         case 'User':
-          str = parseLookup(entity[propertyName]);
+          str = parseLookup(prop);
           break;
         case 'Boolean':
-          str = parseBoolean(entity[propertyName]);
+          str = parseBoolean(prop);
           break;
         case 'DateTime':
-          str = parseDate(entity[propertyName]);
+          str = parseDate(prop);
           break;
         case 'Integer':
         case 'Number':
         case 'Counter':
-          str = parseNumber(entity[propertyName]);
+          str = parseNumber(prop);
           break;
         case 'MultiChoice':
-          str = parseMultiChoice(entity[propertyName], delim);
+          str = parseMultiChoice(prop, delim);
           break;
         case 'UserMulti':
         case 'LookupMulti':
-          str = parseMultiLookup(entity[propertyName], delim);
+          str = parseMultiLookup(prop, delim);
           break;
         default:
-          str = entity[propertyName];
+          str = prop;
       }
       return str;
     };
