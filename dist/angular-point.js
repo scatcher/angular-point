@@ -727,7 +727,7 @@ angular.module('angularPoint')
              *  list so use this to extend the existing field definitions defined in the model.
              */
             if (!model.list.extendedFieldDefinitions) {
-              model.list.extendedFieldDefinitions = apDecodeService.parseFieldDefinitionXML(model.list.customFields, responseXML);
+              model.list.extendedFieldDefinitions = apDecodeService.parseFieldDefinitionXML(model.list.fields, responseXML);
             }
 
             /** Store token for future web service calls to return changes */
@@ -777,7 +777,7 @@ angular.module('angularPoint')
 
                 /** Extend the field definition in the model with the offline data */
                 if (query.operation === 'GetListItemChangesSinceToken') {
-                  model.list.extendedFieldDefinitions = apDecodeService.parseFieldDefinitionXML(model.list.customFields, responseXML);
+                  model.list.extendedFieldDefinitions = apDecodeService.parseFieldDefinitionXML(model.list.fields, responseXML);
                 }
 
                 deferred.resolve(entities);
