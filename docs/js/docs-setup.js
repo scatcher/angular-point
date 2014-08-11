@@ -41,6 +41,15 @@ NG_DOCS={
     },
     {
       "section": "api",
+      "id": "angularPoint.apDataService",
+      "shortName": "angularPoint.apDataService",
+      "type": "service",
+      "moduleName": "angularPoint",
+      "shortDescription": "Handles all interaction with SharePoint&#39;s SOAP web services.  Mostly a wrapper for SPServices functionality.",
+      "keywords": "additional anderson angularpoint apconfig apdataservice apfieldservice api apqueueservice aputilityservice calls codeplex documentation functionality handles interaction marc service services sharepoint soap spservices web wrapper"
+    },
+    {
+      "section": "api",
       "id": "angularPoint.apDecodeService",
       "shortName": "angularPoint.apDecodeService",
       "type": "service",
@@ -155,15 +164,6 @@ NG_DOCS={
       "moduleName": "angularPoint",
       "shortDescription": "A SharePoint lookup value is represented as an object containing a lookupId and lookupValue.",
       "keywords": "acronym activetask allows angularpoint api applicable arr array attempts attribute categories category class coming control-label create data-ap-select data-arr data-lookup-value data-multi data-target directive display field form form-group item items list lookup lookupid lookupvalue mind multi-select object objects options populate providing pushes reference referencing represented select select2 selected sets sharepoint span target taskcategories title true typically"
-    },
-    {
-      "section": "api",
-      "id": "apDataService",
-      "shortName": "apDataService",
-      "type": "service",
-      "moduleName": "apDataService",
-      "shortDescription": "Handles all interaction with SharePoint&#39;s SOAP web services.  Mostly a wrapper for SPServices functionality.",
-      "keywords": "additional anderson angularpoint apconfig apdataservice apfieldservice api apqueueservice aputilityservice calls codeplex documentation functionality handles interaction marc service services sharepoint soap spservices web wrapper"
     },
     {
       "section": "api",

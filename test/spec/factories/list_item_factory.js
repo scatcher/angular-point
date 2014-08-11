@@ -116,14 +116,14 @@ describe("Factory: apListItemFactory", function () {
         }));
     });
 
-    ddescribe('ListItem.deleteItem', function() {
-        it('should delete the list item', inject(function($rootScope) {
-            mockListItem.deleteItem();
-            $rootScope.$apply();
-            expect(mockListItems.length).toEqual(9);
-
-        }));
-    });
+//    ddescribe('ListItem.deleteItem', function() {
+//        it('should delete the list item', inject(function($rootScope) {
+//            mockListItem.deleteItem();
+//            $rootScope.$apply();
+//            expect(mockListItems.length).toEqual(9);
+//
+//        }));
+//    });
 
     //TODO: Add tests for all of the other async methods for the ListItem prototype
 

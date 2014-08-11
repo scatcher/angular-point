@@ -14,6 +14,16 @@
 angular.module('angularPoint')
   .service('apDecodeService', function ($q, apUtilityService, apQueueService, apConfig, apCacheService) {
 
+    return {
+      attrToJson: attrToJson,
+      lookupToJsonObject: lookupToJsonObject,
+      parseFieldDefinitionXML: parseFieldDefinitionXML,
+      parseFieldVersions: parseFieldVersions,
+      processListItems: processListItems,
+      updateLocalCache: updateLocalCache,
+      xmlToJson: xmlToJson
+    };
+
     /**
      * @ngdoc function
      * @name angularPoint.apDecodeService:processListItems
@@ -32,7 +42,7 @@ angular.module('angularPoint')
      * @param {Array} [options.target=model.getCache()] Optionally pass in array to update after processing.
      * @returns {object} Promise
      */
-    var processListItems = function (model, responseXML, options) {
+    function processListItems(model, responseXML, options) {
       var deferred = $q.defer();
 
       var defaults = {
@@ -84,7 +94,7 @@ angular.module('angularPoint')
 
       return deferred.promise;
 
-    };
+    }
 
     /**
      * @ngdoc function
@@ -142,7 +152,7 @@ angular.module('angularPoint')
      * be stripped off the field name.
      * @returns {Array} An array of JavaScript objects.
      */
-    var xmlToJson = function (rows, options) {
+    function xmlToJson(rows, options) {
 
       var defaults = {
         mapping: {},
@@ -199,7 +209,7 @@ angular.module('angularPoint')
       }
 
       return deferred.promise;
-    };
+    }
 
     /**
      * @ngdoc function
@@ -291,11 +301,19 @@ angular.module('angularPoint')
     }
 
     function intToJsonObject(s) {
-      return parseInt(s, 10);
+      if(!s) {
+        return s;
+      } else {
+        return parseInt(s, 10);
+      }
     }
 
     function floatToJsonObject(s) {
-      return parseFloat(s);
+      if(!s) {
+        return s;
+      } else {
+        return parseFloat(s);
+      }
     }
 
     function booleanToJsonObject(s) {
@@ -317,7 +335,7 @@ angular.module('angularPoint')
 
     function userMultiToJsonObject(s) {
       if (s.length === 0) {
-        return null;
+        return [];
       } else {
         var thisUserMultiObject = [];
         var thisUserMulti = s.split(';#');
@@ -526,7 +544,7 @@ angular.module('angularPoint')
       }
     }
 
-    var parseFieldDefinitionXML = function (customFields, responseXML) {
+    function parseFieldDefinitionXML(customFields, responseXML) {
       var fieldMap = {};
 
       /** Map all custom fields with keys of the internalName and values = field definition */
@@ -606,15 +624,5 @@ angular.module('angularPoint')
       });
 
       return versions;
-    }
-
-    return {
-      attrToJson: attrToJson,
-      lookupToJsonObject: lookupToJsonObject,
-      parseFieldDefinitionXML: parseFieldDefinitionXML,
-      parseFieldVersions: parseFieldVersions,
-      processListItems: processListItems,
-      updateLocalCache: updateLocalCache,
-      xmlToJson: xmlToJson
     }
   });

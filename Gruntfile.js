@@ -6,6 +6,8 @@
 // use this if you want to recursively match all subfolders:
 // 'test/spec/**/*.js'
 
+var Dgeni = require('dgeni');
+
 module.exports = function (grunt) {
 
   // Load grunt tasks automatically
@@ -41,7 +43,8 @@ module.exports = function (grunt) {
           }
         ]
       },
-      docs: 'docs'
+      docs: 'docs',
+      build: 'build'
     },
 
     ngtemplates: {
@@ -153,9 +156,32 @@ module.exports = function (grunt) {
         createTag: false,
         push: false
       }
+    },
+    karma: {
+      unit: {
+        configFile: 'karma.conf.js',
+        autoWatch: false,
+        singleRun: true
+      },
+      unitAuto: {
+        configFile: 'karma.conf.js',
+        autoWatch: true,
+        singleRun: false
+      }
     }
 
   });
+
+  grunt.registerTask('dgeni', 'Generate docs via dgeni.', function() {
+    var done = this.async();
+    var dgeni = new Dgeni([require('./dgeni/dgeni-config')]);
+    dgeni.generate().then(done);
+  });
+
+  grunt.registerTask('dgeni-docs', [
+    'clean:build',
+    'dgeni'
+  ]);
 
   grunt.registerTask('test', [
     'clean:server',
@@ -163,6 +189,14 @@ module.exports = function (grunt) {
     'autoprefixer',
     'connect:test',
     'karma'
+  ]);
+
+  grunt.registerTask('autotest', [
+    'autotest:unit'
+  ]);
+
+  grunt.registerTask('autotest:unit', [
+    'karma:unitAuto'
   ]);
 
   grunt.registerTask('build', [

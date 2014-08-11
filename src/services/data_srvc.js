@@ -2,7 +2,7 @@
 
 /**
  * @ngdoc service
- * @name apDataService
+ * @name angularPoint.apDataService
  * @description
  * Handles all interaction with SharePoint's SOAP web services.  Mostly a wrapper for SPServices functionality.
  *
@@ -10,20 +10,32 @@
  * [SPServices](http://spservices.codeplex.com/documentation) documentation.
  *
  *
- *  @requires angularPoint.apQueueService
- *  @requires angularPoint.apConfig
- *  @requires angularPoint.apUtilityService
- *  @requires angularPoint.apFieldService
+// *  @requires apQueueService
+// *  @requires apConfig
+// *  @requires apUtilityService
+// *  @requires apFieldService
  */
 angular.module('angularPoint')
   .service('apDataService', function ($q, $timeout, apQueueService, apConfig, apUtilityService, apDecodeService, apEncodeService, apFieldService, toastr) {
-    var dataService = {};
 
     /** Flag to use cached XML files from the location specified in apConfig.offlineXML */
     var offline = apConfig.offline;
     /** Allows us to make code easier to read */
     var online = !offline;
 
+    /** Exposed functionality */
+    return {
+      addUpdateItemModel: addUpdateItemModel,
+      deleteAttachment: deleteAttachment,
+      deleteItemModel: deleteItemModel,
+      getCollection: getCollection,
+      getFieldVersionHistory: getFieldVersionHistory,
+//      getList: getList,
+      getListFields: getListFields,
+      getView: getView,
+      executeQuery: executeQuery,
+      serviceWrapper: serviceWrapper
+    };
 
     /**
      * @ngdoc function
@@ -43,7 +55,7 @@ angular.module('angularPoint')
      * @param {object} fieldDefinition Field definition object from the model.
      * @returns {object[]} Promise which resolves with an array of list item changes for the specified field.
      */
-    var getFieldVersionHistory = function (options, fieldDefinition) {
+    function getFieldVersionHistory(options, fieldDefinition) {
       var defaults = {
         operation: 'GetVersionCollection'
       };
@@ -68,7 +80,7 @@ angular.module('angularPoint')
         deferred.resolve([]);
       }
       return deferred.promise;
-    };
+    }
 
     /**
      * @ngdoc function
@@ -101,7 +113,7 @@ angular.module('angularPoint')
          *       });
      * </pre>
      */
-    var getCollection = function (options) {
+    function getCollection(options) {
       apQueueService.increase();
       var defaults = {};
       var opts = _.extend({}, defaults, options);
@@ -195,7 +207,7 @@ angular.module('angularPoint')
 
       return deferred.promise;
 
-    };
+    }
 
     /**
      * @ngdoc function
@@ -217,7 +229,7 @@ angular.module('angularPoint')
      *      Otherwise returns the server response
      */
     //TODO: Make this the primary function which interacts with SPServices and makes web service call.  No need having this logic duplicated.
-    var serviceWrapper = function (options) {
+    function serviceWrapper(options) {
       var defaults = {
         /** You need to specify the offline xml file if you want to properly mock the request when offline */
         offlineXML: apConfig.offlineXML + options.operation + '.xml'
@@ -272,7 +284,7 @@ angular.module('angularPoint')
       }
 
       return deferred.promise;
-    };
+    }
 
     /**
      * @ngdoc function
@@ -283,7 +295,7 @@ angular.module('angularPoint')
      * @param {string} options.listName GUID of the list.
      * @returns {object} Promise which resolves with an array of field definitions for the list.
      */
-    var getListFields = function (options) {
+    function getListFields(options) {
       var defaults = {
         operation: 'GetList',
         filterNode: 'Field'
@@ -291,7 +303,7 @@ angular.module('angularPoint')
 
       var opts = _.extend({}, defaults, options);
       return serviceWrapper(opts);
-    };
+    }
 
     /**
      * @ngdoc function
@@ -320,7 +332,7 @@ angular.module('angularPoint')
          * };
      * </pre>
      */
-    var deleteAttachment = function (options) {
+    function deleteAttachment(options) {
       var defaults = {
         operation: 'DeleteAttachment',
         filterNode: 'Field'
@@ -329,7 +341,7 @@ angular.module('angularPoint')
       var opts = _.extend({}, defaults, options);
 
       return serviceWrapper(opts);
-    };
+    }
 
     /**
      * @ngdoc function
@@ -379,7 +391,7 @@ angular.module('angularPoint')
      * </pre>
      *
      */
-    var getView = function (options) {
+    function getView(options) {
       var defaults = {
         operation: 'GetView',
         offlineXML: apConfig.offlineXML + 'GetView.xml'
@@ -410,7 +422,7 @@ angular.module('angularPoint')
         });
 
       return deferred.promise;
-    };
+    }
 
 
     /**
@@ -426,7 +438,7 @@ angular.module('angularPoint')
      * a custom offline XML file specifically for this query.
      * @returns {object[]} - Array of list item objects.
      */
-    var executeQuery = function (model, query, options) {
+    function executeQuery(model, query, options) {
 
       var defaults = {
         target: model.getCache()
@@ -519,7 +531,7 @@ angular.module('angularPoint')
       }
 
       return deferred.promise;
-    };
+    }
 
     /**
      * @ngdoc function
@@ -646,7 +658,7 @@ angular.module('angularPoint')
      * field identified in the model.
      * @returns {object} Promise which resolves with the newly updated item.
      */
-    var addUpdateItemModel = function (model, entity, options) {
+    function addUpdateItemModel(model, entity, options) {
       var defaults = {
         mode: 'update',  //Options for what to do with local list data array in store [replace, update, return]
         buildValuePairs: true,
@@ -716,12 +728,14 @@ angular.module('angularPoint')
         };
 
         if (!entity.id) {
-          var newItem;
-          /** Include standard mock fields for new item */
+          var newItem = {};
+
+          /* Include standard mock fields for new item */
           offlineDefaults.author = {
             lookupId: 23,
             lookupValue: 'Generic User'
           };
+
           offlineDefaults.created = new Date();
 
           /** We don't know which query cache to push it to so add it to all */
@@ -743,14 +757,14 @@ angular.module('angularPoint')
 
           deferred.resolve(newItem);
         } else {
-          /** Update existing record in local cache*/
+          /** Update existing record in local cache */
           _.extend(entity, offlineDefaults);
           deferred.resolve(entity);
         }
         apQueueService.decrease();
       }
       return deferred.promise;
-    };
+    }
 
     /**
      * @ngdoc function
@@ -768,7 +782,7 @@ angular.module('angularPoint')
      * cached entity in the cache where this entity is currently stored.
      * @returns {object} Promise which resolves when the operation is complete.  Nothing of importance is returned.
      */
-    var deleteItemModel = function (model, entity, options) {
+    function deleteItemModel(model, entity, options) {
       var defaults = {
         target: _.isFunction(entity.getContainer) ? entity.getContainer() : model.getCache(),
         updateAllCaches: false,
@@ -822,23 +836,6 @@ angular.module('angularPoint')
       }
 
       return deferred.promise;
-    };
-
-    /** Exposed functionality */
-    _.extend(dataService, {
-      addUpdateItemModel: addUpdateItemModel,
-      deleteAttachment: deleteAttachment,
-      deleteItemModel: deleteItemModel,
-      getCollection: getCollection,
-      getFieldVersionHistory: getFieldVersionHistory,
-//      getList: getList,
-      getListFields: getListFields,
-      getView: getView,
-      executeQuery: executeQuery,
-      serviceWrapper: serviceWrapper
-    });
-
-    return dataService;
-
+    }
   }
 );
