@@ -4450,7 +4450,7 @@ angular.module('angularPoint')
  * @requires angularPoint.apUtilityService
  */
 angular.module('angularPoint')
-  .factory('apModelFactory', ["apModalService", "apCacheService", "apDataService", "apListFactory", "apListItemFactory", "apQueryFactory", "apUtilityService", "apFieldService", "$q", "toastr", function (apModalService, apCacheService, apDataService, apListFactory, apListItemFactory, apQueryFactory, apUtilityService, apFieldService, $q, toastr) {
+  .factory('apModelFactory', ["apModalService", "apCacheService", "apDataService", "apListFactory", "apListItemFactory", "apQueryFactory", "apUtilityService", "apFieldService", "apConfigService", "$q", "toastr", function (apModalService, apCacheService, apDataService, apListFactory, apListItemFactory, apQueryFactory, apUtilityService, apFieldService, apConfigService, $q, toastr) {
 
     var defaultQueryName = 'primary';
 
@@ -4705,6 +4705,7 @@ angular.module('angularPoint')
      * Inherited from Model constructor
      * Attempts to retrieve the requested list item from the server.
      * @returns {object} Promise that resolves with the requested list item if found.  Otherwise it returns null.
+     * When working offline it returns a mock entity and replaces the mock id with the id provided.
      * @example
      * <pre>
      * //Taken from a fictitious projectsModel.js
@@ -4721,17 +4722,25 @@ angular.module('angularPoint')
         defaults = { listName: model.list.guid },
         opts = _.extend({}, defaults, options);
 
-      /** Fetch from the server */
-      apDataService.getListItemById(entityId, opts)
-        .then(function (entitiesArray) {
-          /** Should be a single entity in the array if found */
-          if (entitiesArray.length === 1) {
-            deferred.resolve(entitiesArray[0]);
-          } else {
-            /** List item not found */
-            deferred.resolve(null);
-          }
-        });
+      /** Working Online */
+      if(!apConfigService.offline) {
+        /** Fetch from the server */
+        apDataService.getListItemById(entityId, opts)
+          .then(function (entitiesArray) {
+            /** Should be a single entity in the array if found */
+            if (entitiesArray.length === 1) {
+              deferred.resolve(entitiesArray[0]);
+            } else {
+              /** List item not found */
+              deferred.resolve(null);
+            }
+          });
+      } else {
+        /** Working offline so generate a mock record using provided id */
+        var mock = model.generateMockData({quantity: 1});
+        mock.id = entityId;
+        deferred.resolve(mock);
+      }
       return deferred.promise;
     };
 

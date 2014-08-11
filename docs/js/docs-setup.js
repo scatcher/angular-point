@@ -523,7 +523,7 @@ NG_DOCS={
       "type": "function",
       "moduleName": "Model",
       "shortDescription": "Inherited from Model constructor",
-      "keywords": "$scope apdataservice api attempts defaults entity entityid fictitious function getlistitembyid inherited item js list located model null options override project projectmodel projectsmodel promise requested resolves retrieve returns server"
+      "keywords": "$scope apdataservice api attempts defaults entity entityid fictitious function getlistitembyid inherited item js list located mock model null offline options override project projectmodel projectsmodel promise provided replaces requested resolves retrieve returns server working"
     },
     {
       "section": "api",
