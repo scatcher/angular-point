@@ -32,6 +32,7 @@ angular.module('angularPoint')
       getFieldVersionHistory: getFieldVersionHistory,
 //      getList: getList,
       getListFields: getListFields,
+      getListItemById: getListItemById,
       getView: getView,
       executeQuery: executeQuery,
       serviceWrapper: serviceWrapper
@@ -299,6 +300,36 @@ angular.module('angularPoint')
       var defaults = {
         operation: 'GetList',
         filterNode: 'Field'
+      };
+
+      var opts = _.extend({}, defaults, options);
+      return serviceWrapper(opts);
+    }
+
+    /**
+     * @ngdoc function
+     * @name apDataService.getListItemById
+     * @description
+     * Returns a single list item with the provided id.
+     * @param {number} entityId Id of the item being requested.
+     * @param {object} options Configuration parameters.
+     * @param {string} options.listName GUID of the list.
+     * @returns {object} Promise which resolves with the requested entity if found.
+     */
+    function getListItemById(entityId, options) {
+      var defaults = {
+        operation: 'GetListItems',
+        filterNode: 'z:row',
+        CAMLRowLimit: 1,
+        CAMLQuery: '' +
+          '<Query>' +
+          ' <Where>' +
+          '   <Eq>' +
+          '     <FieldRef Name="ID"/>' +
+          '     <Value Type="Number">' + entityId + '</Value>' +
+          '   </Eq>' +
+          ' </Where>' +
+          '</Query>'
       };
 
       var opts = _.extend({}, defaults, options);

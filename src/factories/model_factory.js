@@ -263,6 +263,45 @@ angular.module('angularPoint')
 
     /**
      * @ngdoc function
+     * @name Model.getListItemById
+     * @param {number} entityId Id of the item being requested.
+     * @param {object} options Used to override apDataService defaults.
+     * @description
+     * Inherited from Model constructor
+     * Attempts to retrieve the requested list item from the server.
+     * @returns {object} Promise that resolves with the requested list item if found.  Otherwise it returns null.
+     * @example
+     * <pre>
+     * //Taken from a fictitious projectsModel.js
+     * projectModel.getListItemById().then(function(entity) {
+         *     //Do something with the located entity
+         *     $scope.project = entity;
+         * };
+     * </pre>
+     */
+    Model.prototype.getListItemById = function (entityId, options) {
+      var model = this,
+        deferred = $q.defer(),
+        /** Only required option for apDataService is listName which is avalable on model */
+        defaults = { listName: model.list.guid },
+        opts = _.extend({}, defaults, options);
+
+      /** Fetch from the server */
+      apDataService.getListItemById(entityId, opts)
+        .then(function (entitiesArray) {
+          /** Should be a single entity in the array if found */
+          if (entitiesArray.length === 1) {
+            deferred.resolve(entitiesArray[0]);
+          } else {
+            /** List item not found */
+            deferred.resolve(null);
+          }
+        });
+      return deferred.promise;
+    };
+
+    /**
+     * @ngdoc function
      * @name Model.addNewItem
      * @module Model
      * @description

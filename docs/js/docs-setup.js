@@ -230,6 +230,15 @@ NG_DOCS={
     },
     {
       "section": "api",
+      "id": "apDataService.getListItemById",
+      "shortName": "apDataService.getListItemById",
+      "type": "function",
+      "moduleName": "apDataService",
+      "shortDescription": "Returns a single list item with the provided id.",
+      "keywords": "apdataservice api configuration entity entityid function getlistitembyid guid item list listname options parameters promise provided requested resolves returns single"
+    },
+    {
+      "section": "api",
       "id": "apDataService.getView",
       "shortName": "apDataService.getView",
       "type": "function",
@@ -506,6 +515,15 @@ NG_DOCS={
       "moduleName": "Model",
       "shortDescription": "Returns the field definition from the definitions defined in the custom fields array within a model.",
       "keywords": "api array building custom defined definition definitions field fieldname fields function getfielddefinition internal location locationdefinition lookupid lookupvalue metadata model project projectsmodel returns title var"
+    },
+    {
+      "section": "api",
+      "id": "Model.getListItemById",
+      "shortName": "Model.getListItemById",
+      "type": "function",
+      "moduleName": "Model",
+      "shortDescription": "Inherited from Model constructor",
+      "keywords": "$scope apdataservice api attempts defaults entity entityid fictitious function getlistitembyid inherited item js list located model null options override project projectmodel projectsmodel promise requested resolves retrieve returns server"
     },
     {
       "section": "api",
