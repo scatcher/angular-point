@@ -4450,7 +4450,7 @@ angular.module('angularPoint')
  * @requires angularPoint.apUtilityService
  */
 angular.module('angularPoint')
-  .factory('apModelFactory', ["apModalService", "apCacheService", "apDataService", "apListFactory", "apListItemFactory", "apQueryFactory", "apUtilityService", "apFieldService", "apConfigService", "$q", "toastr", function (apModalService, apCacheService, apDataService, apListFactory, apListItemFactory, apQueryFactory, apUtilityService, apFieldService, apConfigService, $q, toastr) {
+  .factory('apModelFactory', ["apModalService", "apCacheService", "apDataService", "apListFactory", "apListItemFactory", "apQueryFactory", "apUtilityService", "apFieldService", "apConfig", "$q", "toastr", function (apModalService, apCacheService, apDataService, apListFactory, apListItemFactory, apQueryFactory, apUtilityService, apFieldService, apConfig, $q, toastr) {
 
     var defaultQueryName = 'primary';
 
@@ -4723,7 +4723,7 @@ angular.module('angularPoint')
         opts = _.extend({}, defaults, options);
 
       /** Working Online */
-      if(!apConfigService.offline) {
+      if(!apConfig.offline) {
         /** Fetch from the server */
         apDataService.getListItemById(entityId, opts)
           .then(function (entitiesArray) {
