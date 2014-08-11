@@ -2697,7 +2697,7 @@ angular.module('angularPoint')
       var mock;
       var fieldDefinition = getDefinition(fieldType);
       if (fieldDefinition) {
-        if(_.isFunction(chance) && options && !options.staticValue) {
+        if(_.isFunction(Chance) && options && !options.staticValue) {
           /** Return dynamic data if ChanceJS is available and flag isn't set requiring static data */
           mock = fieldDefinition.dynamicMock(options);
         } else {
