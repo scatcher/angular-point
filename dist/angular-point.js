@@ -2477,6 +2477,15 @@ angular.module('angularPoint')
       return chance.word() + ' ' + chance.word();
     }
 
+    function randomStringArray() {
+      var randomArr = [];
+      /** Create a random (1-4) number of strings and add to array */
+      _.times(_.random(1,4), function () {
+        randomArr.push(randomString());
+      });
+      return randomArr;
+    }
+
     function randomParagraph() {
       return chance.paragraph();
     }
@@ -2620,6 +2629,8 @@ angular.module('angularPoint')
       Text: {defaultValue: '', staticMock: 'Test String', dynamicMock: randomString},
       TextLong: {defaultValue: '', staticMock: 'This is a sentence.', dynamicMock: randomParagraph},
       Boolean: { defaultValue: null, staticMock: true, dynamicMock: randomBoolean },
+      Choice: { defaultValue: '', staticMock: 'My Choice', dynamicMock: randomString },
+      ChoiceMulti: { defaultValue: [], staticMock: ['A Good Choice', 'A Bad Choice'], dynamicMock: randomStringArray },
       Counter: { defaultValue: null, staticMock: getUniqueCounter(), dynamicMock: getUniqueCounter },
       Currency: { defaultValue: null, staticMock: 120.50, dynamicMock: randomCurrency },
       DateTime: { defaultValue: null, staticMock: new Date(2014, 5, 4, 11, 33, 25), dynamicMock: randomDate },
@@ -2686,8 +2697,13 @@ angular.module('angularPoint')
       var mock;
       var fieldDefinition = getDefinition(fieldType);
       if (fieldDefinition) {
-        //Return static data if the flag is set or ChanceJS isn't available
-        mock = (options && (options.staticValue || !_.isFunction(chance))) ? fieldDefinition.staticMock : fieldDefinition.dynamicMock(options);
+        if(_.isFunction(chance) && options && !options.staticValue) {
+          /** Return dynamic data if ChanceJS is available and flag isn't set requiring static data */
+          mock = fieldDefinition.dynamicMock(options);
+        } else {
+          /** Return static data if the flag is set or ChanceJS isn't available */
+          mock = fieldDefinition.staticMock;
+        }
       }
       return mock;
     }
