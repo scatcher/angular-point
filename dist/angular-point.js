@@ -40,7 +40,7 @@ angular.module('angularPoint', [
  * the dependencies of your components are (avoids leaky abstractions).
  * It also allows you to mock these dependencies, where it makes sense.
  */
-angular.module('one-app-pmam')
+angular.module('angularPoint')
   /** lodash */
   .constant('_', _)
 
