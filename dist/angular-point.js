@@ -30,9 +30,11 @@ angular.module('angularPoint', [
   'toastr'
 ])
 
-  .run(function () {
+  .run(["apConfig", function (apConfig) {
 
-  });
+        /** Add a convenience flag, inverse of offline */
+        apConfig.online = !apConfig.offline;
+  }]);
 
 ;/**
  * Provides a way to inject vendor libraries that otherwise are globals.
