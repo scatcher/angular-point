@@ -41,7 +41,7 @@
  * </pre>
  */
 angular.module('angularPoint')
-  .directive('apSelect', function () {
+  .directive('apSelect', function (_) {
     return {
       restrict: 'A',
       replace: true,

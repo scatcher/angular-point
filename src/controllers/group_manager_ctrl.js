@@ -1,7 +1,7 @@
 'use strict';
 
 angular.module('angularPoint')
-  .controller('groupManagerCtrl', function ($scope, $q, $timeout, $filter, ngTableParams, apConfig, apDataService, toastr) {
+  .controller('groupManagerCtrl', function ($scope, $q, $timeout, $filter, _, ngTableParams, apConfig, apDataService, toastr) {
     $scope.availableOptions = [];
     $scope.assignedOptions = [];
 

@@ -8,7 +8,7 @@
  * @requires angularPoint.apUtilityService
  */
 angular.module('angularPoint')
-  .service('apFieldService', function (apUtilityService) {
+  .service('apFieldService', function (_, apUtilityService) {
 
     var getUniqueCounter = function () {
       var self = getUniqueCounter;

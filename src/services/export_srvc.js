@@ -8,7 +8,7 @@
  * @requires angularPoint.apUtilityService
  */
 angular.module('angularPoint')
-  .service('apExportService', function (apUtilityService) {
+  .service('apExportService', function (_, apUtilityService) {
 
     /**
      * @ngdoc function

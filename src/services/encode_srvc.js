@@ -10,7 +10,7 @@
  * @requires angularPoint.apUtilityService
  */
 angular.module('angularPoint')
-  .service('apEncodeService', function (apConfig, apUtilityService) {
+  .service('apEncodeService', function (_, apConfig, apUtilityService) {
 
     /** Flag to use cached XML files from the src/dev folder */
     var offline = apConfig.offline;

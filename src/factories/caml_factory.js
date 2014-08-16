@@ -8,7 +8,7 @@
  *
  */
 angular.module('angularPoint')
-  .factory('apCamlFactory', function () {
+  .factory('apCamlFactory', function (_) {
 
     /**
      * @ngdoc function

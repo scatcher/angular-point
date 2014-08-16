@@ -3,7 +3,7 @@
 /**Angular will instantiate this singleton by calling "new" on this function the first time it's referenced
  /* State will persist throughout life of session*/
 angular.module('angularPoint')
-  .service('apUserModel', function ($q, apDataService, apConfig) {
+  .service('apUserModel', function ($q, _, apDataService, apConfig) {
 
     var model = {};
 

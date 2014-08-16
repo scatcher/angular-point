@@ -16,7 +16,7 @@
 // *  @requires apFieldService
  */
 angular.module('angularPoint')
-  .service('apDataService', function ($q, $timeout, apQueueService, apConfig, apUtilityService, apDecodeService, apEncodeService, apFieldService, toastr) {
+  .service('apDataService', function ($q, $timeout, _, apQueueService, apConfig, apUtilityService, apDecodeService, apEncodeService, apFieldService, toastr) {
 
     /** Flag to use cached XML files from the location specified in apConfig.offlineXML */
     var offline = apConfig.offline;

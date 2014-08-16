@@ -8,29 +8,28 @@
  * resolve once a requested list item is registered in the future.
  */
 angular.module('angularPoint')
-  .service('apCacheService', function ($q, $log) {
+  .service('apCacheService', function ($q, $log, _) {
     var listItemCache = {}, entityNameToType = {}, entityCache = {};
 
-    var registerModel = function (model) {
+    function registerModel(model) {
       if (model.list && model.list.guid && model.list.title) {
         entityNameToType[model.list.title] = {
           model: model,
           entityType: getEntityTypeKey(model.list.guid)
         };
       }
-    };
+    }
 
-    var getEntityTypeByName = function (name) {
+    function getEntityTypeByName(name) {
       if (entityNameToType[name] && entityNameToType[name].entityType) {
         return entityNameToType[name].entityType;
       } else {
         $log.error('The requested list name isn\'t valid: ', name);
       }
-    };
+    }
 
     /** Allows us to use either the List Name or the list GUID and returns the lowercase GUID */
-    var getEntityTypeKey = function (keyString) {
-      /** A GUID will contain "{", where a list title won't */
+    function getEntityTypeKey(keyString) {
       if (_.isGuid(keyString)) {
         /** GUID */
         return keyString.toLowerCase();
@@ -38,7 +37,7 @@ angular.module('angularPoint')
         /** List Title */
         return getEntityTypeByName(keyString);
       }
-    };
+    }
 
     /**
      * @name EntityCache
@@ -49,13 +48,13 @@ angular.module('angularPoint')
      * @param {string} entityType GUID for list the list item belongs to.
      * @param {number} entityId The entity.id.
      */
-    var EntityCache = function (entityType, entityId) {
+    function EntityCache(entityType, entityId) {
       var self = this;
       self.associationQueue = [];
       self.updateCount = 0;
       self.entityType = getEntityTypeKey(entityType);
       self.entityId = entityId;
-    };
+    }
 
     /**
      * @name EntityCache.getEntity
@@ -85,10 +84,10 @@ angular.module('angularPoint')
      * @param {number} entityId The entity.id.
      * @returns {promise} entity
      */
-    var getEntity = function (entityType, entityId) {
+    function getEntity(entityType, entityId) {
       var entityCache = getEntityCache(entityType, entityId);
       return entityCache.getEntity();
-    };
+    }
 
     EntityCache.prototype.addEntity = function (entity) {
       var self = this;
@@ -111,11 +110,11 @@ angular.module('angularPoint')
      * Registers an entity in the cache and fulfills any pending deferred requests for the entity.
      * @param {object} entity Pass in a newly created entity to add to the cache.
      */
-    var registerEntity = function (entity) {
+    function registerEntity(entity) {
       var entityType = entity.getModel().list.guid;
       var entityCache = getEntityCache(entityType, entity.id);
       return entityCache.addEntity(entity);
-    };
+    }
 
 
     EntityCache.prototype.removeEntity = function () {
@@ -131,12 +130,12 @@ angular.module('angularPoint')
      * @param {string} entityType GUID for list the list item belongs to.
      * @param {number} entityId The entity.id.
      */
-    var removeEntity = function (entityType, entityId) {
+    function removeEntity(entityType, entityId) {
       var entityCache = getEntityCache(entityType, entityId);
       entityCache.removeEntity();
-    };
+    }
 
-    var getEntityCache = function (entityType, entityId) {
+    function getEntityCache(entityType, entityId) {
       var entityTypeKey = getEntityTypeKey(entityType);
       /** Create the object structure if it doesn't already exist */
       if (!entityCache[entityTypeKey] || !entityCache[entityTypeKey][entityId]) {
@@ -144,29 +143,29 @@ angular.module('angularPoint')
         entityCache[entityTypeKey][entityId] = new EntityCache(entityTypeKey, entityId);
       }
       return entityCache[entityTypeKey][entityId];
-    };
+    }
 
     /** Older List Item Functionality */
-    //TODO: Remove these if there not being used
+    //TODO: Remove these if they're not being used
 
-    var addToCache = function (uniqueId, constructorName, entity) {
+    function addToCache(uniqueId, constructorName, entity) {
       var cache = getCache(uniqueId, constructorName);
       cache[constructorName] = entity;
       return cache[constructorName];
-    };
+    }
 
-    var getCache = function (uniqueId, constructorName) {
+    function getCache(uniqueId, constructorName) {
       listItemCache[uniqueId] = listItemCache[uniqueId] || {};
       listItemCache[uniqueId][constructorName] = listItemCache[uniqueId][constructorName] || {};
       return listItemCache[uniqueId][constructorName];
-    };
+    }
 
-    var removeFromCache = function (uniqueId, constructorName, entity) {
+    function removeFromCache(uniqueId, constructorName, entity) {
       var cache = getCache(uniqueId, constructorName);
       if (cache && cache[constructorName] && cache[constructorName][entity.id]) {
         delete cache[constructorName][entity.id];
       }
-    };
+    }
 
     return {
       getEntity: getEntity,

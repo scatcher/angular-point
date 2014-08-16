@@ -13,7 +13,7 @@
  * @requires angularPoint.apUtilityService
  */
 angular.module('angularPoint')
-  .factory('apListItemFactory', function ($q, apCacheService, apDataService, apEncodeService, apUtilityService, apConfig) {
+  .factory('apListItemFactory', function ($q, _, apCacheService, apDataService, apEncodeService, apUtilityService, apConfig) {
 
 
     /**

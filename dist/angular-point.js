@@ -30,6 +30,20 @@ angular.module('angularPoint', [
   'toastr'
 ])
 
+  .run(function () {
+
+  });
+
+;/**
+ * Provides a way to inject vendor libraries that otherwise are globals.
+ * This improves code testability by allowing you to more easily know what
+ * the dependencies of your components are (avoids leaky abstractions).
+ * It also allows you to mock these dependencies, where it makes sense.
+ */
+angular.module('one-app-pmam')
+  /** lodash */
+  .constant('_', _)
+
 /**
  * @ngdoc object
  * @name angularPoint.apConfig
@@ -79,15 +93,11 @@ angular.module('angularPoint', [
     debug: false,
     firebaseURL: "The optional url of your firebase source",
     offline: window.location.href.indexOf('localhost') > -1 ||
-      window.location.href.indexOf('http://0.') > -1 ||
-      window.location.href.indexOf('http://10.') > -1 ||
-      window.location.href.indexOf('http://192.') > -1,
+    window.location.href.indexOf('http://0.') > -1 ||
+    window.location.href.indexOf('http://10.') > -1 ||
+    window.location.href.indexOf('http://192.') > -1,
     offlineXML: 'dev/'
-  })
-  .run(function () {
-
   });
-
 ;'use strict';
 
 /**
@@ -98,29 +108,28 @@ angular.module('angularPoint', [
  * resolve once a requested list item is registered in the future.
  */
 angular.module('angularPoint')
-  .service('apCacheService', ["$q", "$log", function ($q, $log) {
+  .service('apCacheService', ["$q", "$log", "_", function ($q, $log, _) {
     var listItemCache = {}, entityNameToType = {}, entityCache = {};
 
-    var registerModel = function (model) {
+    function registerModel(model) {
       if (model.list && model.list.guid && model.list.title) {
         entityNameToType[model.list.title] = {
           model: model,
           entityType: getEntityTypeKey(model.list.guid)
         };
       }
-    };
+    }
 
-    var getEntityTypeByName = function (name) {
+    function getEntityTypeByName(name) {
       if (entityNameToType[name] && entityNameToType[name].entityType) {
         return entityNameToType[name].entityType;
       } else {
         $log.error('The requested list name isn\'t valid: ', name);
       }
-    };
+    }
 
     /** Allows us to use either the List Name or the list GUID and returns the lowercase GUID */
-    var getEntityTypeKey = function (keyString) {
-      /** A GUID will contain "{", where a list title won't */
+    function getEntityTypeKey(keyString) {
       if (_.isGuid(keyString)) {
         /** GUID */
         return keyString.toLowerCase();
@@ -128,7 +137,7 @@ angular.module('angularPoint')
         /** List Title */
         return getEntityTypeByName(keyString);
       }
-    };
+    }
 
     /**
      * @name EntityCache
@@ -139,13 +148,13 @@ angular.module('angularPoint')
      * @param {string} entityType GUID for list the list item belongs to.
      * @param {number} entityId The entity.id.
      */
-    var EntityCache = function (entityType, entityId) {
+    function EntityCache(entityType, entityId) {
       var self = this;
       self.associationQueue = [];
       self.updateCount = 0;
       self.entityType = getEntityTypeKey(entityType);
       self.entityId = entityId;
-    };
+    }
 
     /**
      * @name EntityCache.getEntity
@@ -175,10 +184,10 @@ angular.module('angularPoint')
      * @param {number} entityId The entity.id.
      * @returns {promise} entity
      */
-    var getEntity = function (entityType, entityId) {
+    function getEntity(entityType, entityId) {
       var entityCache = getEntityCache(entityType, entityId);
       return entityCache.getEntity();
-    };
+    }
 
     EntityCache.prototype.addEntity = function (entity) {
       var self = this;
@@ -201,11 +210,11 @@ angular.module('angularPoint')
      * Registers an entity in the cache and fulfills any pending deferred requests for the entity.
      * @param {object} entity Pass in a newly created entity to add to the cache.
      */
-    var registerEntity = function (entity) {
+    function registerEntity(entity) {
       var entityType = entity.getModel().list.guid;
       var entityCache = getEntityCache(entityType, entity.id);
       return entityCache.addEntity(entity);
-    };
+    }
 
 
     EntityCache.prototype.removeEntity = function () {
@@ -221,12 +230,12 @@ angular.module('angularPoint')
      * @param {string} entityType GUID for list the list item belongs to.
      * @param {number} entityId The entity.id.
      */
-    var removeEntity = function (entityType, entityId) {
+    function removeEntity(entityType, entityId) {
       var entityCache = getEntityCache(entityType, entityId);
       entityCache.removeEntity();
-    };
+    }
 
-    var getEntityCache = function (entityType, entityId) {
+    function getEntityCache(entityType, entityId) {
       var entityTypeKey = getEntityTypeKey(entityType);
       /** Create the object structure if it doesn't already exist */
       if (!entityCache[entityTypeKey] || !entityCache[entityTypeKey][entityId]) {
@@ -234,29 +243,29 @@ angular.module('angularPoint')
         entityCache[entityTypeKey][entityId] = new EntityCache(entityTypeKey, entityId);
       }
       return entityCache[entityTypeKey][entityId];
-    };
+    }
 
     /** Older List Item Functionality */
-    //TODO: Remove these if there not being used
+    //TODO: Remove these if they're not being used
 
-    var addToCache = function (uniqueId, constructorName, entity) {
+    function addToCache(uniqueId, constructorName, entity) {
       var cache = getCache(uniqueId, constructorName);
       cache[constructorName] = entity;
       return cache[constructorName];
-    };
+    }
 
-    var getCache = function (uniqueId, constructorName) {
+    function getCache(uniqueId, constructorName) {
       listItemCache[uniqueId] = listItemCache[uniqueId] || {};
       listItemCache[uniqueId][constructorName] = listItemCache[uniqueId][constructorName] || {};
       return listItemCache[uniqueId][constructorName];
-    };
+    }
 
-    var removeFromCache = function (uniqueId, constructorName, entity) {
+    function removeFromCache(uniqueId, constructorName, entity) {
       var cache = getCache(uniqueId, constructorName);
       if (cache && cache[constructorName] && cache[constructorName][entity.id]) {
         delete cache[constructorName][entity.id];
       }
-    };
+    }
 
     return {
       getEntity: getEntity,
@@ -288,7 +297,7 @@ angular.module('angularPoint')
 // *  @requires apFieldService
  */
 angular.module('angularPoint')
-  .service('apDataService', ["$q", "$timeout", "apQueueService", "apConfig", "apUtilityService", "apDecodeService", "apEncodeService", "apFieldService", "toastr", function ($q, $timeout, apQueueService, apConfig, apUtilityService, apDecodeService, apEncodeService, apFieldService, toastr) {
+  .service('apDataService', ["$q", "$timeout", "_", "apQueueService", "apConfig", "apUtilityService", "apDecodeService", "apEncodeService", "apFieldService", "toastr", function ($q, $timeout, _, apQueueService, apConfig, apUtilityService, apDecodeService, apEncodeService, apFieldService, toastr) {
 
     /** Flag to use cached XML files from the location specified in apConfig.offlineXML */
     var offline = apConfig.offline;
@@ -1155,7 +1164,7 @@ angular.module('angularPoint')
  * @requires angularPoint.apCacheService
  */
 angular.module('angularPoint')
-  .service('apDecodeService', ["$q", "apUtilityService", "apQueueService", "apConfig", "apCacheService", function ($q, apUtilityService, apQueueService, apConfig, apCacheService) {
+  .service('apDecodeService', ["$q", "_", "apUtilityService", "apQueueService", "apConfig", "apCacheService", function ($q, _, apUtilityService, apQueueService, apConfig, apCacheService) {
 
     return {
       attrToJson: attrToJson,
@@ -1781,7 +1790,7 @@ angular.module('angularPoint')
  * @requires angularPoint.apUtilityService
  */
 angular.module('angularPoint')
-  .service('apEncodeService', ["apConfig", "apUtilityService", function (apConfig, apUtilityService) {
+  .service('apEncodeService', ["_", "apConfig", "apUtilityService", function (_, apConfig, apUtilityService) {
 
     /** Flag to use cached XML files from the src/dev folder */
     var offline = apConfig.offline;
@@ -1992,7 +2001,7 @@ angular.module('angularPoint')
  * @requires angularPoint.apUtilityService
  */
 angular.module('angularPoint')
-  .service('apExportService', ["apUtilityService", function (apUtilityService) {
+  .service('apExportService', ["_", "apUtilityService", function (_, apUtilityService) {
 
     /**
      * @ngdoc function
@@ -2460,7 +2469,7 @@ angular.module('angularPoint')
  * @requires angularPoint.apUtilityService
  */
 angular.module('angularPoint')
-  .service('apFieldService', ["apUtilityService", function (apUtilityService) {
+  .service('apFieldService', ["_", "apUtilityService", function (_, apUtilityService) {
 
     var getUniqueCounter = function () {
       var self = getUniqueCounter;
@@ -2788,7 +2797,7 @@ angular.module('angularPoint')
  *
  */
 angular.module('angularPoint')
-  .service('apModalService', ["$modal", "toastr", function ($modal, toastr) {
+  .service('apModalService', ["$modal", "_", "toastr", function ($modal, _, toastr) {
 
     /**
      * @ngdoc function
@@ -3130,7 +3139,7 @@ angular.module('angularPoint')
  * @requires angularPoint.apConfig
  */
 angular.module('angularPoint')
-  .service('apUtilityService', ["$q", "apConfig", "$log", function ($q, apConfig, $log) {
+  .service('apUtilityService', ["$q", "_", "apConfig", "$log", function ($q, _, apConfig, $log) {
     // AngularJS will instantiate a singleton by calling "new" on this function
 
     /** Extend underscore with a simple helper function */
@@ -3455,7 +3464,7 @@ angular.module('angularPoint')
  *
  */
 angular.module('angularPoint')
-  .factory('apCamlFactory', function () {
+  .factory('apCamlFactory', ["_", function (_) {
 
     /**
      * @ngdoc function
@@ -3578,7 +3587,7 @@ angular.module('angularPoint')
       createCamlContainsSelector: createCamlContainsSelector
     }
 
-  });;'use strict';
+  }]);;'use strict';
 
 /**
  * @ngdoc object
@@ -3590,7 +3599,7 @@ angular.module('angularPoint')
  * @requires angularPoint.apFieldService
  */
 angular.module('angularPoint')
-  .factory('apListFactory', ["apConfig", "apFieldService", function (apConfig, apFieldService) {
+  .factory('apListFactory', ["_", "apConfig", "apFieldService", function (_, apConfig, apFieldService) {
 
     /**
      * @ngdoc object
@@ -3848,7 +3857,7 @@ angular.module('angularPoint')
  * @requires angularPoint.apUtilityService
  */
 angular.module('angularPoint')
-  .factory('apListItemFactory', ["$q", "apCacheService", "apDataService", "apEncodeService", "apUtilityService", "apConfig", function ($q, apCacheService, apDataService, apEncodeService, apUtilityService, apConfig) {
+  .factory('apListItemFactory', ["$q", "_", "apCacheService", "apDataService", "apEncodeService", "apUtilityService", "apConfig", function ($q, _, apCacheService, apDataService, apEncodeService, apUtilityService, apConfig) {
 
 
     /**
@@ -4466,7 +4475,7 @@ angular.module('angularPoint')
  * @requires angularPoint.apUtilityService
  */
 angular.module('angularPoint')
-  .factory('apModelFactory', ["apModalService", "apCacheService", "apDataService", "apListFactory", "apListItemFactory", "apQueryFactory", "apUtilityService", "apFieldService", "apConfig", "$q", "toastr", function (apModalService, apCacheService, apDataService, apListFactory, apListItemFactory, apQueryFactory, apUtilityService, apFieldService, apConfig, $q, toastr) {
+  .factory('apModelFactory', ["_", "apModalService", "apCacheService", "apDataService", "apListFactory", "apListItemFactory", "apQueryFactory", "apUtilityService", "apFieldService", "apConfig", "$q", "toastr", function (_, apModalService, apCacheService, apDataService, apListFactory, apListItemFactory, apQueryFactory, apUtilityService, apFieldService, apConfig, $q, toastr) {
 
     var defaultQueryName = 'primary';
 
@@ -5470,7 +5479,7 @@ angular.module('angularPoint')
  * @requires angularPoint.apConfig
  */
 angular.module('angularPoint')
-  .factory('apQueryFactory', ["apModalService", "apCacheService", "apDataService", "apConfig", "$q", function (apModalService, apCacheService, apDataService, apConfig, $q) {
+  .factory('apQueryFactory', ["_", "apModalService", "apCacheService", "apDataService", "apConfig", "$q", function (_, apModalService, apCacheService, apDataService, apConfig, $q) {
 
 
     /**
@@ -5696,7 +5705,7 @@ angular.module('angularPoint')
 /**Angular will instantiate this singleton by calling "new" on this function the first time it's referenced
  /* State will persist throughout life of session*/
 angular.module('angularPoint')
-  .service('apUserModel', ["$q", "apDataService", "apConfig", function ($q, apDataService, apConfig) {
+  .service('apUserModel', ["$q", "_", "apDataService", "apConfig", function ($q, _, apDataService, apConfig) {
 
     var model = {};
 
@@ -5792,7 +5801,7 @@ angular.module('angularPoint')
  * </pre>
  */
 angular.module('angularPoint')
-  .directive('apAttachments', ["$sce", "toastr", function ($sce, toastr) {
+  .directive('apAttachments', ["$sce", "toastr", "_", function ($sce, toastr, _) {
     return {
       restrict: "A",
       replace: true,
@@ -5943,7 +5952,7 @@ angular.module('angularPoint')
  * </pre>
  */
 angular.module('angularPoint')
-  .directive('apSelect', function () {
+  .directive('apSelect', ["_", function (_) {
     return {
       restrict: 'A',
       replace: true,
@@ -6027,7 +6036,7 @@ angular.module('angularPoint')
 
       }
     };
-  });;angular.module('angularPoint').run(['$templateCache', function($templateCache) {
+  }]);;angular.module('angularPoint').run(['$templateCache', function($templateCache) {
   'use strict';
 
   $templateCache.put('src/directives/ap_attachments/ap_attachments_tmpl.html',
@@ -6051,48 +6060,27 @@ angular.module('angularPoint')
 
 
   $templateCache.put('src/views/group_manager_view.html',
-    "<style>select.multiselect {\r" +
+    "<style>select.multiselect {\n" +
+    "        min-height: 400px;\n" +
+    "    }\n" +
     "\n" +
-    "        min-height: 400px;\r" +
-    "\n" +
-    "    }\r" +
-    "\n" +
-    "\r" +
-    "\n" +
-    "    .ui-match {\r" +
-    "\n" +
-    "        background: yellow;\r" +
-    "\n" +
-    "    }</style><div class=container><ul class=\"nav nav-tabs\"><li ng-class=\"{active: state.activeTab === 'Users'}\"><a href ng-click=\"updateTab('Users')\">Users</a></li><li ng-class=\"{active: state.activeTab === 'Groups'}\"><a href ng-click=\"updateTab('Groups')\">Groups</a></li><li ng-class=\"{active: state.activeTab === 'Merge'}\"><a href ng-click=\"state.activeTab = 'Merge'\">Merge</a></li><li ng-class=\"{active: state.activeTab === 'UserList'}\"><a href ng-click=\"state.activeTab = 'UserList'\">User List</a></li><li ng-class=\"{active: state.activeTab === 'GroupList'}\"><a href ng-click=\"state.activeTab = 'GroupList'\">Group List</a></li></ul><div ng-if=\"state.activeTab === 'Users'\"><div class=\"panel panel-default\"><div class=panel-heading><div class=row><div class=col-xs-5><span style=font-weight:bold>Select a Group:</span><select class=form-control ng-model=users.filter ng-options=\"group.Name for group in groups.all\" ng-change=updateAvailableUsers(users.filter) style=\"min-width: 100px\"></select></div><div class=col-xs-7><span style=font-weight:bold>Site/Site Collection:</span> <input class=form-control ng-model=state.siteUrl ng-change=updateAvailableUsers(users.filter)></div></div><div class=row ng-if=users.filter.Description><div class=col-xs-12><p class=help-block>Description: {{ users.filter.Description }}</p></div></div></div><div class=panel-body><div class=row><div class=col-xs-12><div colspan=3 class=description>This tab will allow you to quickly assign multiple users to a selected group.</div></div></div><hr class=hr-sm><div class=row><div class=col-xs-5><div class=form-group><label>Available Users ({{users.available.length}})</label><select ng-model=users.selectedAvailable ng-options=\"user.Name for user in users.available\" multiple class=\"multiselect form-control\"></select></div></div><div class=\"col-xs-2 text-center\" style=\"padding-top: 175px\"><button class=\"btn btn-default\" style=width:80px ng-click=\"updatePermissions('AddUserToGroup', users.selectedAvailable, [users.filter])\" title=\"Add user\"><i class=\"fa fa-2x fa-angle-double-right\"></i></button><br><br><button class=\"btn btn-default\" style=width:80px ng-click=\"updatePermissions('RemoveUserFromGroup', users.selectedAssigned, [users.filter])\"><i class=\"fa fa-2x fa-angle-double-left\"></i></button></div><div class=col-xs-5><div class=form-group><label>Assigned Users ({{users.assigned.length}})</label><select ng-model=users.selectedAssigned ng-options=\"user.Name for user in users.assigned\" multiple class=\"multiselect form-control\"></select></div></div></div></div></div></div><div ng-if=\"state.activeTab === 'Groups'\"><div class=\"panel panel-default\"><div class=panel-heading><div class=row><div class=col-xs-5><span style=font-weight:bold>Select a User:</span><select class=form-control ng-model=groups.filter ng-options=\"user.Name for user in users.all\" ng-change=updateAvailableGroups(groups.filter) style=\"min-width: 100px\"></select></div><div class=col-xs-7><span style=font-weight:bold>Site/Site Collection:</span> <input class=form-control ng-model=state.siteUrl ng-change=updateAvailableGroups(groups.filter)></div></div></div><div class=panel-body><div class=row><div class=col-xs-12><div colspan=3 class=description>This page was created to make the process of managing users/groups within the site collection more manageable. When a user is selected, the available groups are displayed on the left and the groups that the user is currently a member of will show on the right. Selecting multiple groups is supported.</div></div></div><hr class=hr-sm><div class=row><div class=col-xs-5><div class=form-group><label>Available Groups ({{groups.available.length}})</label><select ng-model=groups.selectedAvailable ng-options=\"group.Name for group in groups.available\" multiple class=\"multiselect form-control\"></select></div></div><div class=\"col-xs-2 text-center\" style=\"padding-top: 175px\"><button class=\"btn btn-default\" style=width:80px ng-click=\"updatePermissions('AddUserToGroup', [groups.filter], groups.selectedAvailable)\" title=\"Add to group\"><i class=\"fa fa-2x fa-angle-double-right\"></i></button><br><br><button class=\"btn btn-default\" style=width:80px ng-click=\"updatePermissions('RemoveUserFromGroup', [groups.filter], groups.selectedAssigned)\"><i class=\"fa fa-2x fa-angle-double-left\"></i></button></div><div class=col-xs-5><div class=form-group><label>Assigned Users ({{users.assigned.length}})</label><select ng-model=groups.selectedAssigned ng-options=\"group.Name for group in groups.assigned\" multiple class=\"multiselect form-control\"></select></div></div></div></div></div></div><div ng-if=\"state.activeTab === 'Merge'\"><div class=\"panel panel-default\"><div class=panel-body><div class=row><div class=col-xs-12><div class=description>This tab allows us to copy the members from the \"Source\" group over to the \"Target\" group. It's not a problem if any of the users already exist in the destination group. Note: This is a onetime operation so any additional members added to the Source group will not automatically be added to the destination group. You will need to repeat this process.</div></div></div><hr class=hr-sm><div class=row><div class=col-xs-5><fieldset><legend>Step 1</legend><div class=well><div class=form-group><label>Source Group</label><select class=form-control ng-model=state.sourceGroup ng-options=\"group.Name for group in groups.all\" ng-change=updateAvailableUsers(state.sourceGroup) style=\"min-width: 100px\"></select></div></div></fieldset></div><div class=col-xs-5><fieldset><legend>Step 2</legend><div class=well><div class=form-group><label>Source Group</label><select class=form-control ng-model=state.targetGroup ng-options=\"group.Name for group in groups.all\" style=\"min-width: 100px\"></select></div></div></fieldset></div><div class=col-xs-2><fieldset><legend>Step 3</legend><button class=\"btn btn-success\" ng-disabled=\"state.sourceGroup.length < 1 || state.targetGroup.length < 1\" ng-click=mergeGroups() title=\"Copy all members from the source group over to the destination group.\"><i class=\"fa fa-2x fa-magic\"></i> Merge</button></fieldset></div></div></div></div></div><div ng-if=\"state.activeTab === 'UserList'\"><div class=\"panel panel-default\"><div class=panel-heading><span style=font-weight:bold>User Filter</span> <input class=form-control ng-model=state.userFilter ng-change=usersTable.reload()></div><table ng-table=usersTable class=table template-pagination=custom/pager><tr ng-repeat=\"user in $data\"><td data-title=\"'ID'\">{{ user.ID }}</td><td data-title=\"'Name'\"><a href ng-click=userDetailsLink(user) ng-bind-html=\"user.Name |  highlight:state.userFilter\"></a></td><td data-title=\"'Email'\">{{ user.Email }}</td></tr></table></div></div><div ng-if=\"state.activeTab === 'GroupList'\"><div class=\"panel panel-default\"><div class=panel-heading><span style=font-weight:bold>Group Filter</span> <input class=form-control ng-model=state.groupFilter ng-change=groupsTable.reload()></div><table ng-table=groupsTable class=table template-pagination=custom/pager><tr ng-repeat=\"group in $data\"><td data-title=\"'ID'\">{{ group.ID }}</td><td data-title=\"'Name'\"><a href ng-click=groupDetailsLink(group) ng-bind-html=\"group.Name |  highlight:state.groupFilter\"></a></td><td data-title=\"'Description'\">{{ group.Description }}</td></tr></table></div></div></div><script type=text/ng-template id=custom/pager><div class=\"row\">\r" +
-    "\n" +
-    "        <div class=\"col-xs-12\">\r" +
-    "\n" +
-    "            <ul class=\"pager ng-cloak\">\r" +
-    "\n" +
-    "                <li ng-repeat=\"page in pages\"\r" +
-    "\n" +
-    "                    ng-class=\"{'disabled': !page.active}\"\r" +
-    "\n" +
-    "                    ng-show=\"page.type == 'prev' || page.type == 'next'\" ng-switch=\"page.type\">\r" +
-    "\n" +
-    "                    <a ng-switch-when=\"prev\" ng-click=\"params.page(page.number)\" href=\"\">\r" +
-    "\n" +
-    "                        <i class=\"fa fa-chevron-left\"></i>\r" +
-    "\n" +
-    "                    </a>\r" +
-    "\n" +
-    "                    <a ng-switch-when=\"next\" ng-click=\"params.page(page.number)\" href=\"\">\r" +
-    "\n" +
-    "                        <i class=\"fa fa-chevron-right\"></i>\r" +
-    "\n" +
-    "                    </a>\r" +
-    "\n" +
-    "                </li>\r" +
-    "\n" +
-    "            </ul>\r" +
-    "\n" +
-    "        </div>\r" +
-    "\n" +
+    "    .ui-match {\n" +
+    "        background: yellow;\n" +
+    "    }</style><div class=container><ul class=\"nav nav-tabs\"><li ng-class=\"{active: state.activeTab === 'Users'}\"><a href ng-click=\"updateTab('Users')\">Users</a></li><li ng-class=\"{active: state.activeTab === 'Groups'}\"><a href ng-click=\"updateTab('Groups')\">Groups</a></li><li ng-class=\"{active: state.activeTab === 'Merge'}\"><a href ng-click=\"state.activeTab = 'Merge'\">Merge</a></li><li ng-class=\"{active: state.activeTab === 'UserList'}\"><a href ng-click=\"state.activeTab = 'UserList'\">User List</a></li><li ng-class=\"{active: state.activeTab === 'GroupList'}\"><a href ng-click=\"state.activeTab = 'GroupList'\">Group List</a></li></ul><div ng-if=\"state.activeTab === 'Users'\"><div class=\"panel panel-default\"><div class=panel-heading><div class=row><div class=col-xs-5><span style=font-weight:bold>Select a Group:</span><select class=form-control ng-model=users.filter ng-options=\"group.Name for group in groups.all\" ng-change=updateAvailableUsers(users.filter) style=\"min-width: 100px\"></select></div><div class=col-xs-7><span style=font-weight:bold>Site/Site Collection:</span> <input class=form-control ng-model=state.siteUrl ng-change=updateAvailableUsers(users.filter)></div></div><div class=row ng-if=users.filter.Description><div class=col-xs-12><p class=help-block>Description: {{ users.filter.Description }}</p></div></div></div><div class=panel-body><div class=row><div class=col-xs-12><div colspan=3 class=description>This tab will allow you to quickly assign multiple users to a selected group.</div></div></div><hr class=hr-sm><div class=row><div class=col-xs-5><div class=form-group><label>Available Users ({{users.available.length}})</label><select ng-model=users.selectedAvailable ng-options=\"user.Name for user in users.available\" multiple class=\"multiselect form-control\"></select></div></div><div class=\"col-xs-2 text-center\" style=\"padding-top: 175px\"><button class=\"btn btn-default\" style=width:80px ng-click=\"updatePermissions('AddUserToGroup', users.selectedAvailable, [users.filter])\" title=\"Add user\"><i class=\"fa fa-2x fa-angle-double-right\"></i></button><br><br><button class=\"btn btn-default\" style=width:80px ng-click=\"updatePermissions('RemoveUserFromGroup', users.selectedAssigned, [users.filter])\"><i class=\"fa fa-2x fa-angle-double-left\"></i></button></div><div class=col-xs-5><div class=form-group><label>Assigned Users ({{users.assigned.length}})</label><select ng-model=users.selectedAssigned ng-options=\"user.Name for user in users.assigned\" multiple class=\"multiselect form-control\"></select></div></div></div></div></div></div><div ng-if=\"state.activeTab === 'Groups'\"><div class=\"panel panel-default\"><div class=panel-heading><div class=row><div class=col-xs-5><span style=font-weight:bold>Select a User:</span><select class=form-control ng-model=groups.filter ng-options=\"user.Name for user in users.all\" ng-change=updateAvailableGroups(groups.filter) style=\"min-width: 100px\"></select></div><div class=col-xs-7><span style=font-weight:bold>Site/Site Collection:</span> <input class=form-control ng-model=state.siteUrl ng-change=updateAvailableGroups(groups.filter)></div></div></div><div class=panel-body><div class=row><div class=col-xs-12><div colspan=3 class=description>This page was created to make the process of managing users/groups within the site collection more manageable. When a user is selected, the available groups are displayed on the left and the groups that the user is currently a member of will show on the right. Selecting multiple groups is supported.</div></div></div><hr class=hr-sm><div class=row><div class=col-xs-5><div class=form-group><label>Available Groups ({{groups.available.length}})</label><select ng-model=groups.selectedAvailable ng-options=\"group.Name for group in groups.available\" multiple class=\"multiselect form-control\"></select></div></div><div class=\"col-xs-2 text-center\" style=\"padding-top: 175px\"><button class=\"btn btn-default\" style=width:80px ng-click=\"updatePermissions('AddUserToGroup', [groups.filter], groups.selectedAvailable)\" title=\"Add to group\"><i class=\"fa fa-2x fa-angle-double-right\"></i></button><br><br><button class=\"btn btn-default\" style=width:80px ng-click=\"updatePermissions('RemoveUserFromGroup', [groups.filter], groups.selectedAssigned)\"><i class=\"fa fa-2x fa-angle-double-left\"></i></button></div><div class=col-xs-5><div class=form-group><label>Assigned Users ({{users.assigned.length}})</label><select ng-model=groups.selectedAssigned ng-options=\"group.Name for group in groups.assigned\" multiple class=\"multiselect form-control\"></select></div></div></div></div></div></div><div ng-if=\"state.activeTab === 'Merge'\"><div class=\"panel panel-default\"><div class=panel-body><div class=row><div class=col-xs-12><div class=description>This tab allows us to copy the members from the \"Source\" group over to the \"Target\" group. It's not a problem if any of the users already exist in the destination group. Note: This is a onetime operation so any additional members added to the Source group will not automatically be added to the destination group. You will need to repeat this process.</div></div></div><hr class=hr-sm><div class=row><div class=col-xs-5><fieldset><legend>Step 1</legend><div class=well><div class=form-group><label>Source Group</label><select class=form-control ng-model=state.sourceGroup ng-options=\"group.Name for group in groups.all\" ng-change=updateAvailableUsers(state.sourceGroup) style=\"min-width: 100px\"></select></div></div></fieldset></div><div class=col-xs-5><fieldset><legend>Step 2</legend><div class=well><div class=form-group><label>Source Group</label><select class=form-control ng-model=state.targetGroup ng-options=\"group.Name for group in groups.all\" style=\"min-width: 100px\"></select></div></div></fieldset></div><div class=col-xs-2><fieldset><legend>Step 3</legend><button class=\"btn btn-success\" ng-disabled=\"state.sourceGroup.length < 1 || state.targetGroup.length < 1\" ng-click=mergeGroups() title=\"Copy all members from the source group over to the destination group.\"><i class=\"fa fa-2x fa-magic\"></i> Merge</button></fieldset></div></div></div></div></div><div ng-if=\"state.activeTab === 'UserList'\"><div class=\"panel panel-default\"><div class=panel-heading><span style=font-weight:bold>User Filter</span> <input class=form-control ng-model=state.userFilter ng-change=usersTable.reload()></div><table ng-table=usersTable class=table template-pagination=custom/pager><tr ng-repeat=\"user in $data\"><td data-title=\"'ID'\">{{ user.ID }}</td><td data-title=\"'Name'\"><a href ng-click=userDetailsLink(user) ng-bind-html=\"user.Name |  highlight:state.userFilter\"></a></td><td data-title=\"'Email'\">{{ user.Email }}</td></tr></table></div></div><div ng-if=\"state.activeTab === 'GroupList'\"><div class=\"panel panel-default\"><div class=panel-heading><span style=font-weight:bold>Group Filter</span> <input class=form-control ng-model=state.groupFilter ng-change=groupsTable.reload()></div><table ng-table=groupsTable class=table template-pagination=custom/pager><tr ng-repeat=\"group in $data\"><td data-title=\"'ID'\">{{ group.ID }}</td><td data-title=\"'Name'\"><a href ng-click=groupDetailsLink(group) ng-bind-html=\"group.Name |  highlight:state.groupFilter\"></a></td><td data-title=\"'Description'\">{{ group.Description }}</td></tr></table></div></div></div><script type=text/ng-template id=custom/pager><div class=\"row\">\n" +
+    "        <div class=\"col-xs-12\">\n" +
+    "            <ul class=\"pager ng-cloak\">\n" +
+    "                <li ng-repeat=\"page in pages\"\n" +
+    "                    ng-class=\"{'disabled': !page.active}\"\n" +
+    "                    ng-show=\"page.type == 'prev' || page.type == 'next'\" ng-switch=\"page.type\">\n" +
+    "                    <a ng-switch-when=\"prev\" ng-click=\"params.page(page.number)\" href=\"\">\n" +
+    "                        <i class=\"fa fa-chevron-left\"></i>\n" +
+    "                    </a>\n" +
+    "                    <a ng-switch-when=\"next\" ng-click=\"params.page(page.number)\" href=\"\">\n" +
+    "                        <i class=\"fa fa-chevron-right\"></i>\n" +
+    "                    </a>\n" +
+    "                </li>\n" +
+    "            </ul>\n" +
+    "        </div>\n" +
     "    </div></script>"
   );
 

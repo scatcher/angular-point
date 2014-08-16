@@ -24,7 +24,7 @@
  * </pre>
  */
 angular.module('angularPoint')
-  .directive('apAttachments', function ($sce, toastr) {
+  .directive('apAttachments', function ($sce, toastr, _) {
     return {
       restrict: "A",
       replace: true,

@@ -9,7 +9,7 @@
  * @requires angularPoint.apConfig
  */
 angular.module('angularPoint')
-  .service('apUtilityService', function ($q, apConfig, $log) {
+  .service('apUtilityService', function ($q, _, apConfig, $log) {
     // AngularJS will instantiate a singleton by calling "new" on this function
 
     /** Extend underscore with a simple helper function */

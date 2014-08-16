@@ -8,7 +8,7 @@
  *
  */
 angular.module('angularPoint')
-  .service('apModalService', function ($modal, toastr) {
+  .service('apModalService', function ($modal, _, toastr) {
 
     /**
      * @ngdoc function

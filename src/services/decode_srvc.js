@@ -12,7 +12,7 @@
  * @requires angularPoint.apCacheService
  */
 angular.module('angularPoint')
-  .service('apDecodeService', function ($q, apUtilityService, apQueueService, apConfig, apCacheService) {
+  .service('apDecodeService', function ($q, _, apUtilityService, apQueueService, apConfig, apCacheService) {
 
     return {
       attrToJson: attrToJson,

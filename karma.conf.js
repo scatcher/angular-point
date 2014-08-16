@@ -26,6 +26,7 @@ module.exports = function (config) {
 
       // Angular Point
       'src/app.js',
+      'src/constants.js',
       'src/services/*.js',
       'src/factories/*.js',
       'src/models/*.js',

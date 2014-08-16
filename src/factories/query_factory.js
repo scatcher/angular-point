@@ -12,7 +12,7 @@
  * @requires angularPoint.apConfig
  */
 angular.module('angularPoint')
-  .factory('apQueryFactory', function (apModalService, apCacheService, apDataService, apConfig, $q) {
+  .factory('apQueryFactory', function (_, apModalService, apCacheService, apDataService, apConfig, $q) {
 
 
     /**

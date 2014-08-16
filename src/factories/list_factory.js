@@ -10,7 +10,7 @@
  * @requires angularPoint.apFieldService
  */
 angular.module('angularPoint')
-  .factory('apListFactory', function (apConfig, apFieldService) {
+  .factory('apListFactory', function (_, apConfig, apFieldService) {
 
     /**
      * @ngdoc object

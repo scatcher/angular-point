@@ -74,6 +74,7 @@ module.exports = function (grunt) {
       dist: {
         src: [
           '<%= config.src %>/app.js',
+          '<%= config.src %>/constants.js',
           '<%= config.services %>/*.js',
           '<%= config.factories %>/*.js',
           '<%= config.src %>/models/user_model.js',
@@ -135,6 +136,7 @@ module.exports = function (grunt) {
       api: {
         src: [
           '<%= config.src %>/app.js',
+          '<%= config.src %>/constants.js',
           '<%= config.services %>/*.js',
           '<%= config.factories %>/*.js',
           '<%= config.src %>/directives/**/*.js'
