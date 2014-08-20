@@ -7,12 +7,13 @@
 <div class="description"><div class="angularpoint-apconfig-page"><p>Basic config for the application (unique for each environment).  Update to change for your environment.</p>
 </div></div>
 <h2 id="usage">Usage</h2>
-<div class="usage"><pre class="prettyprint linenums">apConfig(appTitle, debug, defaultUrl, [firebaseUrl], [offline], offlineXML);</pre>
+<div class="usage"><pre class="prettyprint linenums">apConfig(appTitle, debug, defaultUrl, defaultQueryName, [firebaseUrl], [offline], offlineXML);</pre>
 <h4 id="usage_parameters">Parameters</h4><table class="variables-matrix table table-bordered table-striped"><thead><tr><th>Param</th><th>Type</th><th>Details</th></tr></thead><tbody><tr><td>appTitle</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="angularpoint-apconfig-page"><p>Name of the application in case you need to reference.</p>
 </div></td></tr><tr><td>debug</td><td><a href="" class="label type-hint type-hint-boolean">boolean</a></td><td><div class="angularpoint-apconfig-page"><p>Determines if we should show debug code.</p>
 </div></td></tr><tr><td>defaultUrl</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="angularpoint-apconfig-page"><p>Automatically sets the defaultUrl for web service calls so we don&#39;t need to make the
 initial blocking call by SPServices.</p>
-</div></td></tr><tr><td>[firebaseUrl]</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="angularpoint-apconfig-page"><p>Necessary if you&#39;re using apSyncService.  Look there for more details.</p>
+</div></td></tr><tr><td>defaultQueryName</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="angularpoint-apconfig-page"><p>The name that a query is registered with on a model if a name isn&#39;t specified.</p>
+</div> <p><em>(default: 'primary')</em></p></td></tr><tr><td>[firebaseUrl]</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="angularpoint-apconfig-page"><p>Necessary if you&#39;re using apSyncService.  Look there for more details.</p>
 </div></td></tr><tr><td>[offline]</td><td><a href="" class="label type-hint type-hint-boolean">boolean</a></td><td><div class="angularpoint-apconfig-page"><p>Automatically set based on the URL of the site.  Pulls offline XML when hosted locally.</p>
 </div></td></tr><tr><td>offlineXML</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="angularpoint-apconfig-page"><p>The location to look for offline xml files.</p>
 </div> <p><em>(default: 'dev/')</em></p></td></tr></tbody></table></div>

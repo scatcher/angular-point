@@ -15,9 +15,16 @@ Provides the Following
 <h2 id="usage">Usage</h2>
 <div class="usage"><pre class="prettyprint linenums">Model(config);</pre>
 <h4 id="usage_parameters">Parameters</h4><table class="variables-matrix table table-bordered table-striped"><thead><tr><th>Param</th><th>Type</th><th>Details</th></tr></thead><tbody><tr><td>config</td><td><a href="" class="label type-hint type-hint-object">object</a></td><td><div class="model-page"><p>Object containing optional params.</p>
-</div></td></tr><tr><td>[config.factory</td><td><a href="" class="label type-hint type-hint-object">object</a></td><td><div class="model-page"><p>= apListItemFactory.createGenericFactory()] - Constructor function for individual list items.</p>
-</div></td></tr><tr><td>config.list</td><td><a href="" class="label type-hint type-hint-object">object</a></td><td><div class="model-page"><ul>
-<li>Definition of the list in SharePoint; This object will
+</div></td></tr><tr><td>[config.factory</td><td><a href="" class="label type-hint type-hint-object">object</a></td><td><div class="model-page"><p>= apListItemFactory.createGenericFactory()] - Constructor function for
+individual list items.</p>
+</div></td></tr><tr><td>config.fieldDefinitionsExtended</td><td><a href="" class="label type-hint type-hint-boolean">boolean</a></td><td><div class="model-page"><p>Queries using the GetListItemChangesSinceToken
+operation return the full list definition along with the requested entities.  The first time one of these
+queries is executed we will try to extend our field definitions defined in the model with the additional
+information provided from the server.  Examples are options for a Choice field, display name of the field,
+field description, and any other field information provided for the fields specified in the model.  This
+flag is set once the first query is complete so we don&#39;t process again.</p>
+</div> <p><em>(default: false)</em></p></td></tr><tr><td>config.list</td><td><a href="" class="label type-hint type-hint-object">object</a></td><td><div class="model-page"><ul>
+<li>Definition of the list in SharePoint.
 be passed to the list constructor to extend further</li>
 </ul>
 </div></td></tr><tr><td>config.list.title</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="model-page"><ul>

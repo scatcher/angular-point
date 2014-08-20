@@ -1,21 +1,16 @@
 <h1><code ng:non-bindable="">FieldDefinition</code>
-<div><span class="hint">service in module <code ng:non-bindable="">List</code>
-</span>
+<div><span class="hint"></span>
 </div>
 </h1>
 <div><h2 id="description">Description</h2>
-<div class="description"><div class="list-fielddefinition-page"><p>Defined in the MODEL.list.fieldDefinitions array.  Each field definition object maps an internal field
+<div class="description"><div class="fielddefinition-page"><p>Defined in the MODEL.list.fieldDefinitions array.  Each field definition object maps an internal field
 in a SharePoint list/library to a JavaScript object using the internal SharePoint field name, the field
-type, and the desired JavaScript property name to add onto the parsed list item object. Ignore shown usage,
-each field definition is just an object within the fieldDefinitions array.</p>
+type, and the desired JavaScript property name to add onto the parsed list item object.</p>
 </div></div>
-<div class="member property"><h2 id="properties">Properties</h2>
-<ul class="properties"><li><h3 id="properties_internalname">internalName</h3>
-<div class="internalname"><div class="list-fielddefinition-page"><p>The actual SharePoint field name.</p>
-</div></div>
-</li>
-<li><h3 id="properties_[objecttype=text]">[objectType='Text']</h3>
-<div class="[objecttype=text]"><div class="list-fielddefinition-page"><dl>
+<h2 id="usage">Usage</h2>
+<div class="usage"><pre class="prettyprint linenums">FieldDefinition(internalName, objectType, mappedName, readOnly);</pre>
+<h4 id="usage_parameters">Parameters</h4><table class="variables-matrix table table-bordered table-striped"><thead><tr><th>Param</th><th>Type</th><th>Details</th></tr></thead><tbody><tr><td>internalName</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="fielddefinition-page"><p>The actual SharePoint field name.</p>
+</div></td></tr><tr><td>objectType</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="fielddefinition-page"><dl>
 <dt>Boolean</dt>
 <dd>Used to store a TRUE/FALSE value (stored in SharePoint as 0 or 1).</dd>
 <dt>Calc</dt>
@@ -53,8 +48,7 @@ thrown with additional info on specifically what is invalid.</dd>
 <dt>Lookup</dt>
 <dd>Passes string to Lookup constructor where it is broken into an object containing
 a &quot;lookupValue&quot; and &quot;lookupId&quot; attribute.  Inherits additional prototype methods from
-Lookup.  See <a href="#/api/Lookup">Lookup</a> for more information.
-</dd>
+Lookup.  See &quot;Lookup&quot; for more info.</dd>
 <dt>LookupMulti</dt>
 <dd>Converts multiple delimited &quot;;#&quot; strings into an array of Lookup objects.</dd>
 <dt>MultiChoice</dt>
@@ -70,32 +64,16 @@ later.
 <dt>User</dt>
 <dd>Similar to Lookup but uses the &quot;User&quot; prototype as a constructor to convert into a
 User object with &quot;lookupId&quot; and &quot;lookupValue&quot; attributes.  The lookupId is the site collection
-ID for the user and the lookupValue is typically the display name.
-See <a href="#/api/User">User</a> for more information.
-</dd>
+ID for the user and the lookupValue is typically the display name.</dd>
 <dt>UserMulti</dt>
-<dd>Parses delimited string to returns an array of User objects.</dd>
-</dl></div></div>
-</li>
-<li><h3 id="properties_mappedname">mappedName</h3>
-<div class="mappedname"><div class="list-fielddefinition-page"><p>The attribute name we&#39;d like to use
+<dd></dd>
+</dl></div> <p><em>(default: 'Text')</em></p></td></tr><tr><td>mappedName</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="fielddefinition-page"><p>The attribute name we&#39;d like to use
 for this field on the newly created JS object.</p>
-</div></div>
-</li>
-<li><h3 id="properties_[readonly=false]">[readOnly=false]</h3>
-<div class="[readonly=false]"><div class="list-fielddefinition-page"><p>When saving, we only push fields
+</div></td></tr><tr><td>readOnly</td><td><a href="" class="label type-hint type-hint-boolean">boolean</a></td><td><div class="fielddefinition-page"><p>When saving, we only push fields
 that are mapped and not read only.</p>
-</div></div>
-</li>
-<li><h3 id="properties_[required=false]">[required=false]</h3>
-<div class="[required=false]"><div class="list-fielddefinition-page"><p>Allows us to validate the field to ensure it is valid based
-on field type.</p>
-</div></div>
-</li>
-</ul>
-</div>
+</div> <p><em>(default: false)</em></p></td></tr></tbody></table></div>
 <h2 id="example">Example</h2>
-<div class="example"><div class="list-fielddefinition-page"><pre class="prettyprint linenums">
+<div class="example"><div class="fielddefinition-page"><pre class="prettyprint linenums">
 angular.module('App')
  .service('taskerModel', function (apModelFactory) {
     // Object Constructor (class)

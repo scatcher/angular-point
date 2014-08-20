@@ -29,6 +29,31 @@ See <a href="#/api/List.FieldDefinition">List.customFields</a> for additional in
 </div></td></tr></tbody></table><h5 id="methods_attrtojson_returns">Returns</h5><table class="variables-matrix"><tr><td><a href="" class="label type-hint type-hint-object">*</a></td><td><div class="angularpoint-apdecodeservice-page angularpoint-apdecodeservice-attrtojson-page"><p>The newly instantiated JavaScript value based on field type.</p>
 </div></td></tr></table></div>
 </li>
+<li><h3 id="methods_extendfielddefinitionsfromxml">extendFieldDefinitionsFromXML(fieldDefinitions, responseXML)</h3>
+<div class="extendfielddefinitionsfromxml"><div class="angularpoint-apdecodeservice-page angularpoint-apdecodeservice-extendfielddefinitionsfromxml-page"><p>Takes the XML response from a web service call and extends any field definitions in the model
+with additional field metadata.  Important to note that all properties will coming from the XML start
+with a capital letter.</p>
+</div><h5 id="methods_extendfielddefinitionsfromxml_parameters">Parameters</h5><table class="variables-matrix table table-bordered table-striped"><thead><tr><th>Param</th><th>Type</th><th>Details</th></tr></thead><tbody><tr><td>fieldDefinitions</td><td><a href="" class="label type-hint type-hint-object">object[]</a></td><td><div class="angularpoint-apdecodeservice-page angularpoint-apdecodeservice-extendfielddefinitionsfromxml-page"><p>Field definitions from the model.</p>
+</div></td></tr><tr><td>responseXML</td><td><a href="" class="label type-hint type-hint-object">object</a></td><td><div class="angularpoint-apdecodeservice-page angularpoint-apdecodeservice-extendfielddefinitionsfromxml-page"><p>XML response from the server.</p>
+</div></td></tr></tbody></table></div>
+</li>
+<li><h3 id="methods_extendlistdefinitionfromxml">extendListDefinitionFromXML(list, responseXML)</h3>
+<div class="extendlistdefinitionfromxml"><div class="angularpoint-apdecodeservice-page angularpoint-apdecodeservice-extendlistdefinitionfromxml-page"><p>Takes the XML response from a web service call and extends the list definition in the model
+with additional field metadata.  Important to note that all properties will coming from the XML start
+with a capital letter.</p>
+</div><h5 id="methods_extendlistdefinitionfromxml_parameters">Parameters</h5><table class="variables-matrix table table-bordered table-striped"><thead><tr><th>Param</th><th>Type</th><th>Details</th></tr></thead><tbody><tr><td>list</td><td><a href="" class="label type-hint type-hint-object">object</a></td><td><div class="angularpoint-apdecodeservice-page angularpoint-apdecodeservice-extendlistdefinitionfromxml-page"><p>model.list</p>
+</div></td></tr><tr><td>responseXML</td><td><a href="" class="label type-hint type-hint-object">object</a></td><td><div class="angularpoint-apdecodeservice-page angularpoint-apdecodeservice-extendlistdefinitionfromxml-page"><p>XML response from the server.</p>
+</div></td></tr></tbody></table></div>
+</li>
+<li><h3 id="methods_extendobjectwithxmlattributes">extendObjectWithXMLAttributes(xmlObject, jsObject)</h3>
+<div class="extendobjectwithxmlattributes"><div class="angularpoint-apdecodeservice-page angularpoint-apdecodeservice-extendobjectwithxmlattributes-page"><p>Takes an XML element and copies all attributes over to a given JS object with corresponding values.  If
+no JS Object is provided, it extends an empty object and returns it.
+Note: Properties are not necessarily CAMLCase.</p>
+</div><h5 id="methods_extendobjectwithxmlattributes_parameters">Parameters</h5><table class="variables-matrix table table-bordered table-striped"><thead><tr><th>Param</th><th>Type</th><th>Details</th></tr></thead><tbody><tr><td>xmlObject</td><td><a href="" class="label type-hint type-hint-object">object</a></td><td><div class="angularpoint-apdecodeservice-page angularpoint-apdecodeservice-extendobjectwithxmlattributes-page"><p>An XML element.</p>
+</div></td></tr><tr><td>jsObject</td><td><a href="" class="label type-hint type-hint-object">object</a></td><td><div class="angularpoint-apdecodeservice-page angularpoint-apdecodeservice-extendobjectwithxmlattributes-page"><p>An optional JS Object to extend XML attributes to.</p>
+</div> <p><em>(default: {})</em></p></td></tr></tbody></table><h5 id="methods_extendobjectwithxmlattributes_returns">Returns</h5><table class="variables-matrix"><tr><td><a href="" class="label type-hint type-hint-object">object</a></td><td><div class="angularpoint-apdecodeservice-page angularpoint-apdecodeservice-extendobjectwithxmlattributes-page"><p>JS Object</p>
+</div></td></tr></table></div>
+</li>
 <li><h3 id="methods_parsefieldversions">parseFieldVersions(responseXML, fieldDefinition)</h3>
 <div class="parsefieldversions"><div class="angularpoint-apdecodeservice-page angularpoint-apdecodeservice-parsefieldversions-page"><p>Takes an XML response from SharePoint webservice and returns an array of field versions.</p>
 </div><h5 id="methods_parsefieldversions_parameters">Parameters</h5><table class="variables-matrix table table-bordered table-striped"><thead><tr><th>Param</th><th>Type</th><th>Details</th></tr></thead><tbody><tr><td>responseXML</td><td><a href="" class="label type-hint type-hint-xml">xml</a></td><td><div class="angularpoint-apdecodeservice-page angularpoint-apdecodeservice-parsefieldversions-page"><p>Returned XML from web service call.</p>
