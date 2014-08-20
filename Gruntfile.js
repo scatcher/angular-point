@@ -110,7 +110,7 @@ module.exports = function (grunt) {
         'copy:styles'
       ],
       test: [
-        'copy:styles'
+        //'copy:styles'
       ],
       dist: [
         'copy:styles',
@@ -186,10 +186,10 @@ module.exports = function (grunt) {
   ]);
 
   grunt.registerTask('test', [
-    'clean:server',
-    'concurrent:test',
-    'autoprefixer',
-    'connect:test',
+    //'clean:server',
+    //'concurrent:test',
+    //'autoprefixer',
+    //'connect:test',
     'karma'
   ]);
 

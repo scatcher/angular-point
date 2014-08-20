@@ -16,8 +16,10 @@ angular.module('angularPoint')
 
         return {
             attrToJson: attrToJson,
+            checkResponseForErrors: checkResponseForErrors,
+            extendFieldDefinitionsFromXML: extendFieldDefinitionsFromXML,
+            extendListDefinitionFromXML: extendListDefinitionFromXML,
             lookupToJsonObject: lookupToJsonObject,
-            parseFieldDefinitionXML: parseFieldDefinitionXML,
             parseFieldVersions: parseFieldVersions,
             processListItems: processListItems,
             updateLocalCache: updateLocalCache,
@@ -67,7 +69,7 @@ angular.module('angularPoint')
                 mapping: model.list.mapping,
                 mode: 'update',
                 target: model.getCache(),
-                /** Don't want to throttle if we're offline */
+                /** Don't want to throttle if we're testing offline */
                 throttle: apConfig.online
             };
 
@@ -96,6 +98,15 @@ angular.module('angularPoint')
 
             return deferred.promise;
 
+        }
+
+        function checkResponseForErrors(responseXML) {
+            var errorString = null;
+            /** Responses with a <errorstring></errorstring> element with details on what happened */
+            $(responseXML).find("errorstring").each(function() {
+                errorString = $(this).text();
+            });
+            return errorString;
         }
 
         /**
@@ -550,48 +561,99 @@ angular.module('angularPoint')
             }
         }
 
-        function parseFieldDefinitionXML(customFields, responseXML) {
+
+        /**
+         * @ngdoc function
+         * @name angularPoint.apDecodeService:extendObjectWithXMLAttributes
+         * @methodOf angularPoint.apDecodeService
+         * @description
+         * Takes an XML element and copies all attributes over to a given JS object with corresponding values.  If
+         * no JS Object is provided, it extends an empty object and returns it.
+         * Note: Properties are not necessarily CAMLCase.
+         * @param {object} xmlObject An XML element.
+         * @param {object} [jsObject={}] An optional JS Object to extend XML attributes to.
+         * @returns {object} JS Object
+         */
+        function extendObjectWithXMLAttributes(xmlObject, jsObject) {
+            var objectToExtend = jsObject || {};
+            var xmlAttributes = xmlObject.attributes;
+
+            _.each(xmlAttributes, function (attr, attrNum) {
+                var attrName = xmlAttributes[attrNum].name;
+                objectToExtend[attrName] = $(xmlObject).attr(attrName);
+            });
+            return objectToExtend;
+        }
+
+
+        /**
+         * @ngdoc function
+         * @name angularPoint.apDecodeService:extendListDefinitionFromXML
+         * @methodOf angularPoint.apDecodeService
+         * @description
+         * Takes the XML response from a web service call and extends the list definition in the model
+         * with additional field metadata.  Important to note that all properties will coming from the XML start
+         * with a capital letter.
+         * @param {object} list model.list
+         * @param {object} responseXML XML response from the server.
+         */
+        function extendListDefinitionFromXML(list, responseXML) {
+            $(responseXML).find("List").each(function() {
+                extendObjectWithXMLAttributes(this, list);
+            });
+        }
+
+
+        /**
+         * @ngdoc function
+         * @name angularPoint.apDecodeService:extendFieldDefinitionsFromXML
+         * @methodOf angularPoint.apDecodeService
+         * @description
+         * Takes the XML response from a web service call and extends any field definitions in the model
+         * with additional field metadata.  Important to note that all properties will coming from the XML start
+         * with a capital letter.
+         * @param {object[]} fieldDefinitions Field definitions from the model.
+         * @param {object} responseXML XML response from the server.
+         */
+        function extendFieldDefinitionsFromXML(fieldDefinitions, responseXML) {
             var fieldMap = {};
 
             /** Map all custom fields with keys of the internalName and values = field definition */
-            _.each(customFields, function (field) {
+            _.each(fieldDefinitions, function (field) {
                 if (field.internalName) {
                     fieldMap[field.internalName] = field;
                 }
             });
 
             /** Iterate over each of the field nodes */
-            $(responseXML).SPFilterNode('Field').each(function () {
-                var field = this;
-                var staticName = $(field).attr('StaticName');
+            var fields = $(responseXML).SPFilterNode('Field');
+
+            _.each(fields, function (xmlField) {
+
+
+                var staticName = $(xmlField).attr('StaticName');
+                var fieldDefinition = fieldMap[staticName];
+
                 /** If we've defined this field then we should extend it */
-                if (fieldMap[staticName]) {
+                if (fieldDefinition) {
 
-                    var row = {};
-                    var rowAttrs = field.attributes;
-
-                    _.each(rowAttrs, function (attr, attrNum) {
-                        var attrName = rowAttrs[attrNum].name;
-                        row[attrName] = $(field).attr(attrName);
-                    });
+                    extendObjectWithXMLAttributes(xmlField, fieldDefinition);
 
                     /** Additional processing for Choice fields to include the default value and choices */
-                    if (fieldMap[staticName].objectType === 'Choice' || fieldMap[staticName].objectType === 'MultiChoice') {
-                        row.choices = [];
+                    if (fieldDefinition.objectType === 'Choice' || fieldDefinition.objectType === 'MultiChoice') {
+                        fieldDefinition.Choices = [];
                         /** Convert XML Choices object to an array of choices */
-                        $(this).find('CHOICE').each(function () {
-                            row.choices.push($(this).text());
+                        var xmlChoices = $(xmlField).find('CHOICE');
+                        _.each(xmlChoices, function(xmlChoice) {
+                            fieldDefinition.Choices.push($(xmlChoice).text());
                         });
-                        row.Default = $(this).find('Default').text();
+                        fieldDefinition.Default = $(xmlField).find('Default').text();
                     }
-
-                    /** Extend the existing field definition with field attributes from SharePoint */
-                    _.extend(fieldMap[staticName], row);
                 }
             });
 
-            return true;
-        };
+            return fieldDefinitions;
+        }
 
 
         /**

@@ -5,8 +5,8 @@
  * It also allows you to mock these dependencies, where it makes sense.
  */
 angular.module('angularPoint')
-  /** lodash */
-  .constant('_', _)
+/** lodash */
+    .constant('_', _)
 
 /**
  * @ngdoc object
@@ -18,6 +18,7 @@ angular.module('angularPoint')
  * @param {boolean} debug Determines if we should show debug code.
  * @param {string} defaultUrl Automatically sets the defaultUrl for web service calls so we don't need to make the
  * initial blocking call by SPServices.
+ * @param {string} [defaultQueryName='primary'] The name that a query is registered with on a model if a name isn't specified.
  * @param {string} [firebaseUrl] Necessary if you're using apSyncService.  Look there for more details.
  * @param {boolean} [offline] Automatically set based on the URL of the site.  Pulls offline XML when hosted locally.
  * @param {string} [offlineXML='dev/'] The location to look for offline xml files.
@@ -52,13 +53,14 @@ angular.module('angularPoint')
  *      });
  * </pre>
  */
-  .constant('apConfig', {
-    appTitle: 'Angular-Point',
-    debug: false,
-    firebaseURL: "The optional url of your firebase source",
-    offline: window.location.href.indexOf('localhost') > -1 ||
-    window.location.href.indexOf('http://0.') > -1 ||
-    window.location.href.indexOf('http://10.') > -1 ||
-    window.location.href.indexOf('http://192.') > -1,
-    offlineXML: 'dev/'
-  });
+    .constant('apConfig', {
+        appTitle: 'Angular-Point',
+        debug: false,
+        defaultQueryName: 'primary',
+        firebaseURL: "The optional url of your firebase source",
+        offline: window.location.href.indexOf('localhost') > -1 ||
+        window.location.href.indexOf('http://0.') > -1 ||
+        window.location.href.indexOf('http://10.') > -1 ||
+        window.location.href.indexOf('http://192.') > -1,
+        offlineXML: 'dev/'
+    });

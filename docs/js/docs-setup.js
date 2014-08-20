@@ -37,7 +37,7 @@ NG_DOCS={
       "type": "object",
       "moduleName": "angularPoint",
       "shortDescription": "Basic config for the application (unique for each environment).  Update to change for your environment.",
-      "keywords": "$urlrouterprovider angular angular-point angularpoint apconfig api application apptitle apsyncservice automatically based basic blocking call calls case change code config configuration constant debug debugenabled default defaulturl dependencies details determines dev don environment files firebase firebaseurl hosted href http indexof initial localhost locally location module myapp mycachedqueries myserver object offline offlinexml optional override pulls reference root routes service set sets site source spservices true update url web window xml"
+      "keywords": "$urlrouterprovider angular angular-point angularpoint apconfig api application apptitle apsyncservice automatically based basic blocking call calls case change code config configuration constant debug debugenabled default defaulturl dependencies details determines dev don environment files firebase firebaseurl hosted href http indexof initial isn localhost locally location model module myapp mycachedqueries myserver object offline offlinexml optional override primary pulls query reference registered root routes service set sets site source spservices true update url web window xml"
     },
     {
       "section": "api",
@@ -55,7 +55,7 @@ NG_DOCS={
       "type": "service",
       "moduleName": "angularPoint",
       "shortDescription": "Processes the XML received from SharePoint and converts it into JavaScript objects based on predefined field types.",
-      "keywords": "additional allow allows angularpoint apcacheservice apconfig apdecodeservice api apqueueservice aputilityservice array attributes based batch browsers cache call change child chunks configuration constructors conversions converts correctly ctor customfields cut data define definition definitions don downside elements entities entity evergreen exist factory field fielddefinition filter find formatted function getcache getlistitems handle hit includeallattrs info instantiated item items iterate javascript large leading list lists local localcache long mappedname mapping maps merged mode model modified newly node number object objects objecttype optional optionally options ows_ parent parsed pass performance post predefined prevent processed processes processing promise property propertyname provided query received reference removeows replace replaced representation resolved resolves response responsexml return returned returning returns rows running server service set sharepoint slow slowdowns spservices spxmltojson store stored string stripped takes target text throttle true type types typically ui unnecessarily update updated updating version versions web webservice xml"
+      "keywords": "additional allow allows angularpoint apcacheservice apconfig apdecodeservice api apqueueservice aputilityservice array attributes based batch browsers cache call camlcase capital change child chunks coming configuration constructors conversions converts copies correctly corresponding ctor customfields cut data define definition definitions don downside element elements empty entities entity evergreen exist extend extends factory field fielddefinition fielddefinitions filter find formatted function getcache getlistitems handle hit includeallattrs info instantiated item items iterate javascript js large leading letter list lists local localcache long mappedname mapping maps merged metadata mode model modified newly node note number object objects objecttype optional optionally options ows_ parent parsed pass performance post predefined prevent processed processes processing promise properties property propertyname provided query received reference removeows replace replaced representation resolved resolves response responsexml return returned returning returns rows running server service set sharepoint slow slowdowns spservices spxmltojson start store stored string stripped takes target text throttle true type types typically ui unnecessarily update updated updating values version versions web webservice xml xmlobject"
     },
     {
       "section": "api",
@@ -245,6 +245,15 @@ NG_DOCS={
       "moduleName": "apDataService",
       "shortDescription": "Returns the schema of the specified view for the specified list.",
       "keywords": "apdataservice api aspx attachments baseviewid configuration created datetime default defaultview desired displayname enddate eventdate formatted frecurrence function getview guid html linktitle list listname lists location object options override paged parameters promise provided resolves returns rowlimit schema true type url view view_name viewfields viewname web weburl workspacelink xml"
+    },
+    {
+      "section": "api",
+      "id": "apDataService.logErrorsToConsole",
+      "shortName": "apDataService.logErrorsToConsole",
+      "type": "function",
+      "moduleName": "apDataService",
+      "shortDescription": "Helper function to look for errors in a response from the server and output them to console.",
+      "keywords": "apdataservice api attempted console errors function helper logerrorstoconsole operation output response responsexml server type xml"
     },
     {
       "section": "api",
@@ -451,7 +460,7 @@ NG_DOCS={
       "type": "function",
       "moduleName": "Model",
       "shortDescription": "Model Constructor",
-      "keywords": "active addnewitem adds apconfig api aplistitemfactory apmodelfactory application array attachments boolean builds config costestimate creategenericfactory currency customer customfields customlist data deferred definition denotes empty extend factory false fictitious field fields file formats function getalllistitems group guid identifies individual internalname items js list ll lookup mappedname maps model named names obj object objecttype offline offlinexml optional params passed project projectdescription projectgroup projects projectsmodel queries read readonly ready sharepoint spaces status taskmanager text title true types unique user var xml"
+      "keywords": "active additional addnewitem adds apconfig api aplistitemfactory apmodelfactory application array attachments boolean builds choice complete config costestimate creategenericfactory currency customer customfields customlist data deferred defined definition definitions denotes description display don empty entities examples executed extend factory false fictitious field fielddefinitionsextended fields file flag formats full function getalllistitems getlistitemchangessincetoken group guid identifies individual internalname items js list ll lookup mappedname maps model named names obj object objecttype offline offlinexml operation optional options params passed process project projectdescription projectgroup projects projectsmodel provided queries query read readonly ready requested return server set sharepoint spaces status taskmanager text time title true types unique user var xml"
     },
     {
       "section": "api",

@@ -26,18 +26,21 @@ angular.module('angularPoint')
                 title: 'MockList', /**Maps to the offline XML file in dev folder (no spaces) */
                 guid: '{}', /**List GUID can be found in list properties in SharePoint designer */
                 customFields: [
-                    { internalName: "Text", objectType: "Text", mappedName: "text", readOnly:false },
+                    { internalName: "Title", objectType: "Text", mappedName: "text", readOnly:false },
                     // Has required = true to test field validation.
                     { internalName: "Boolean", objectType: "Boolean", mappedName: "boolean", readOnly:false, required: true},
+                    { internalName: "Calculated", objectType: "Calculated", mappedName: "calculated", readOnly:true },
+                    { internalName: "Choice", objectType: "Choice", mappedName: "choice", readOnly: false },
+                    { internalName: 'MultiChoice', objectType: 'MultiChoice', mappedName: 'multiChoice', readOnly: false },
                     { internalName: "Currency", objectType: "Currency", mappedName: "currency", readOnly:false },
+                    { internalName: "Date", objectType: "DateTime", mappedName: "date", readOnly:false },
                     { internalName: "DateTime", objectType: "DateTime", mappedName: "dateTime", readOnly:false },
                     { internalName: "Integer", objectType: "Integer", mappedName: "integer", readOnly:false },
                     { internalName: "JSON", objectType: "JSON", mappedName: "json", readOnly:false },
                     { internalName: "Lookup", objectType: "Lookup", mappedName: "lookup", readOnly:false },
                     { internalName: "LookupMulti", objectType: "LookupMulti", mappedName: "lookupMulti", readOnly:false },
                     { internalName: "User", objectType: "User", mappedName: "user", readOnly:false },
-                    { internalName: "UserMulti", objectType: "UserMulti", mappedName: "userMulti", readOnly:false },
-                    { internalName: "ReadOnly", objectType: "Text", mappedName: "readOnly", readOnly:true }
+                    { internalName: "UserMulti", objectType: "UserMulti", mappedName: "userMulti", readOnly:false }
                 ]
             }
         });
