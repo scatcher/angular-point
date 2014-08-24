@@ -19,7 +19,7 @@ NG_DOCS={
       "type": "service",
       "moduleName": "angularPoint",
       "shortDescription": "Stores a reference for all list items based on list GUID and list item id.  Allows us to then register promises that",
-      "keywords": "add allows angularpoint apcacheservice api assuming based belongs cache created deferred entity entityid entitytype eventually fulfills function future guid item items list local newly object pass pending point promises reference register registered registers removes requested requests resolve resolves returns service stores"
+      "keywords": "add allows angularpoint apcacheservice api assuming based belongs cache created deferred entity entityid entitytype eventually existing exists extend fulfills function future guid instance item items list local newly object pass pending point promises reference register registered registers removes requested requests resolve resolves return returns service single stores updated withing"
     },
     {
       "section": "api",
@@ -55,7 +55,7 @@ NG_DOCS={
       "type": "service",
       "moduleName": "angularPoint",
       "shortDescription": "Processes the XML received from SharePoint and converts it into JavaScript objects based on predefined field types.",
-      "keywords": "additional allow allows angularpoint apcacheservice apconfig apdecodeservice api apqueueservice aputilityservice array attributes based batch browsers cache call camlcase capital change child chunks coming configuration constructors conversions converts copies correctly corresponding ctor customfields cut data define definition definitions don downside element elements empty entities entity evergreen exist extend extends factory field fielddefinition fielddefinitions filter find formatted function getcache getlistitems handle hit includeallattrs info instantiated item items iterate javascript js large leading letter list lists local localcache long mappedname mapping maps merged metadata mode model modified newly node note number object objects objecttype optional optionally options ows_ parent parsed pass performance post predefined prevent processed processes processing promise properties property propertyname provided query received reference removeows replace replaced representation resolved resolves response responsexml return returned returning returns rows running server service set sharepoint slow slowdowns spservices spxmltojson start store stored string stripped takes target text throttle true type types typically ui unnecessarily update updated updating values version versions web webservice xml xmlobject"
+      "keywords": "additional allow allows angularpoint apcacheservice apconfig apdecodeservice api apqueueservice aputilityservice array attributes based batch cache call camlcase capital change checks child coming configuration constructors container conversions convert converts copies correctly corresponding customfields data define defined definition definitions don element elements empty entities entity error errors errorstring exist exists extend extends factory fetch field fielddefinition fielddefinitions fields filter find formatted function future getcache getlistitems includeallattrs info initial instantiated item items iterate javascript js keeping large leading letter list listitemprovider lists ll localcache location mappedname mapping maps merged metadata model modified newly node note null number object objects objecttype optional optionally options opts ows_ parent parsed pass post predefined prevent processed processes processing promise properties property propertyname provided pushing query received reference references removeows replaced representation resolved resolves response responsexml retrieve return returned returning returns rows scope server service set sharepoint slowdowns spservices spxmltojson start stored string stripped takes target text throw true type types typically ui update updated updating values version versions web webservice xhr xml xmlentities xmlobject"
     },
     {
       "section": "api",
@@ -104,6 +104,15 @@ NG_DOCS={
     },
     {
       "section": "api",
+      "id": "angularPoint.apLookupFactory",
+      "shortName": "angularPoint.apLookupFactory",
+      "type": "function",
+      "moduleName": "angularPoint",
+      "shortDescription": "Tools to assist with the creation of CAML queries.",
+      "keywords": "angularpoint api aplookupfactory assist caml creation field function instantiates lookup queries returns tools"
+    },
+    {
+      "section": "api",
       "id": "angularPoint.apModalService",
       "shortName": "angularPoint.apModalService",
       "type": "service",
@@ -137,6 +146,15 @@ NG_DOCS={
       "moduleName": "angularPoint",
       "shortDescription": "Simple service to monitor the number of active requests we have open with SharePoint",
       "keywords": "active angularpoint animation api apqueueservice call callback change count counter current decrease decrementing display function increase incrementing loading monitor number observer open register requests reset service sharepoint simple sort typical"
+    },
+    {
+      "section": "api",
+      "id": "angularPoint.apUserFactory",
+      "shortName": "angularPoint.apUserFactory",
+      "type": "function",
+      "moduleName": "angularPoint",
+      "shortDescription": "Tools to assist with the creation of CAML queries.",
+      "keywords": "angularpoint api apuserfactory assist caml creation field function instantiates queries returns tools user"
     },
     {
       "section": "api",
@@ -371,15 +389,6 @@ NG_DOCS={
       "moduleName": "ListItem",
       "shortDescription": "Requests all attachments for a given list item.",
       "keywords": "api attachments current fetchattachments function getattachmentcollection item list listitem promise requests resolves scope var"
-    },
-    {
-      "section": "api",
-      "id": "ListItem.getDataService",
-      "shortName": "ListItem.getDataService",
-      "type": "function",
-      "moduleName": "ListItem",
-      "shortDescription": "Allows us to reference when out of scope",
-      "keywords": "allows api dataservice event function getdataservice listitem reference scope"
     },
     {
       "section": "api",

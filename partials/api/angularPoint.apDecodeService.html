@@ -29,6 +29,13 @@ See <a href="#/api/List.FieldDefinition">List.customFields</a> for additional in
 </div></td></tr></tbody></table><h5 id="methods_attrtojson_returns">Returns</h5><table class="variables-matrix"><tr><td><a href="" class="label type-hint type-hint-object">*</a></td><td><div class="angularpoint-apdecodeservice-page angularpoint-apdecodeservice-attrtojson-page"><p>The newly instantiated JavaScript value based on field type.</p>
 </div></td></tr></table></div>
 </li>
+<li><h3 id="methods_checkresponseforerrors">checkResponseForErrors(responseXML)</h3>
+<div class="checkresponseforerrors"><div class="angularpoint-apdecodeservice-page angularpoint-apdecodeservice-checkresponseforerrors-page"><p>Errors don&#39;t always throw correctly from SPServices so this function checks to see if part
+of the XHR response contains an &quot;errorstring&quot; element.</p>
+</div><h5 id="methods_checkresponseforerrors_parameters">Parameters</h5><table class="variables-matrix table table-bordered table-striped"><thead><tr><th>Param</th><th>Type</th><th>Details</th></tr></thead><tbody><tr><td>responseXML</td><td><a href="" class="label type-hint type-hint-object">object</a></td><td><div class="angularpoint-apdecodeservice-page angularpoint-apdecodeservice-checkresponseforerrors-page"><p>XHR response from the server.</p>
+</div></td></tr></tbody></table><h5 id="methods_checkresponseforerrors_returns">Returns</h5><table class="variables-matrix"><tr><td><a href="" class="label type-hint type-hint-string">string|null</a></td><td><div class="angularpoint-apdecodeservice-page angularpoint-apdecodeservice-checkresponseforerrors-page"><p>Returns an error string if present, otherwise returns null.</p>
+</div></td></tr></table></div>
+</li>
 <li><h3 id="methods_extendfielddefinitionsfromxml">extendFieldDefinitionsFromXML(fieldDefinitions, responseXML)</h3>
 <div class="extendfielddefinitionsfromxml"><div class="angularpoint-apdecodeservice-page angularpoint-apdecodeservice-extendfielddefinitionsfromxml-page"><p>Takes the XML response from a web service call and extends any field definitions in the model
 with additional field metadata.  Important to note that all properties will coming from the XML start
@@ -54,11 +61,33 @@ Note: Properties are not necessarily CAMLCase.</p>
 </div> <p><em>(default: {})</em></p></td></tr></tbody></table><h5 id="methods_extendobjectwithxmlattributes_returns">Returns</h5><table class="variables-matrix"><tr><td><a href="" class="label type-hint type-hint-object">object</a></td><td><div class="angularpoint-apdecodeservice-page angularpoint-apdecodeservice-extendobjectwithxmlattributes-page"><p>JS Object</p>
 </div></td></tr></table></div>
 </li>
+<li><h3 id="methods_listitemprovider">listItemProvider(model, query, container)</h3>
+<div class="listitemprovider"><div class="angularpoint-apdecodeservice-page angularpoint-apdecodeservice-listitemprovider-page"><p>The initial constructor for a list item that references the array where the entity exists and the
+query used to fetch the entity.  From there it extends the entity using the factory defined in the
+model for the list item.</p>
+</div><h5 id="methods_listitemprovider_parameters">Parameters</h5><table class="variables-matrix table table-bordered table-striped"><thead><tr><th>Param</th><th>Type</th><th>Details</th></tr></thead><tbody><tr><td>model</td><td><a href="" class="label type-hint type-hint-object">object</a></td><td><div class="angularpoint-apdecodeservice-page angularpoint-apdecodeservice-listitemprovider-page"><p>Reference to the model for the list item.</p>
+</div></td></tr><tr><td>query</td><td><a href="" class="label type-hint type-hint-object">object</a></td><td><div class="angularpoint-apdecodeservice-page angularpoint-apdecodeservice-listitemprovider-page"><p>Reference to the query object used to retrieve the entity.</p>
+</div></td></tr><tr><td>container</td><td><a href="" class="label type-hint type-hint-array">array</a></td><td><div class="angularpoint-apdecodeservice-page angularpoint-apdecodeservice-listitemprovider-page"><p>Location where we&#39;ll be pushing the new entity.</p>
+</div></td></tr></tbody></table><h5 id="methods_listitemprovider_returns">Returns</h5><table class="variables-matrix"><tr><td><a href="" class="label type-hint type-hint-function">Function</a></td><td><div class="angularpoint-apdecodeservice-page angularpoint-apdecodeservice-listitemprovider-page"><p>Returns a function that takes the new list item while keeping model, query,
+and container in scope for future reference.</p>
+</div></td></tr></table></div>
+</li>
 <li><h3 id="methods_parsefieldversions">parseFieldVersions(responseXML, fieldDefinition)</h3>
 <div class="parsefieldversions"><div class="angularpoint-apdecodeservice-page angularpoint-apdecodeservice-parsefieldversions-page"><p>Takes an XML response from SharePoint webservice and returns an array of field versions.</p>
 </div><h5 id="methods_parsefieldversions_parameters">Parameters</h5><table class="variables-matrix table table-bordered table-striped"><thead><tr><th>Param</th><th>Type</th><th>Details</th></tr></thead><tbody><tr><td>responseXML</td><td><a href="" class="label type-hint type-hint-xml">xml</a></td><td><div class="angularpoint-apdecodeservice-page angularpoint-apdecodeservice-parsefieldversions-page"><p>Returned XML from web service call.</p>
 </div></td></tr><tr><td>fieldDefinition</td><td><a href="" class="label type-hint type-hint-object">object</a></td><td><div class="angularpoint-apdecodeservice-page angularpoint-apdecodeservice-parsefieldversions-page"><p>Field definition from the model.</p>
 </div></td></tr></tbody></table><h5 id="methods_parsefieldversions_returns">Returns</h5><table class="variables-matrix"><tr><td><a href="" class="label type-hint type-hint-array">Array</a></td><td><div class="angularpoint-apdecodeservice-page angularpoint-apdecodeservice-parsefieldversions-page"><p>Array objects containing the various version of a field for each change.</p>
+</div></td></tr></table></div>
+</li>
+<li><h3 id="methods_parsexmlentity">parseXMLEntity(item, opts)</h3>
+<div class="parsexmlentity"><div class="angularpoint-apdecodeservice-page angularpoint-apdecodeservice-parsexmlentity-page"><p>Convert an XML list item into a JS object using the fields defined in the model for the given list item.</p>
+</div><h5 id="methods_parsexmlentity_parameters">Parameters</h5><table class="variables-matrix table table-bordered table-striped"><thead><tr><th>Param</th><th>Type</th><th>Details</th></tr></thead><tbody><tr><td>item</td><td><a href="" class="label type-hint type-hint-object">object</a></td><td><div class="angularpoint-apdecodeservice-page angularpoint-apdecodeservice-parsexmlentity-page"><p>XML Object.</p>
+</div></td></tr><tr><td>opts</td><td><a href="" class="label type-hint type-hint-object">object</a></td><td><div class="angularpoint-apdecodeservice-page angularpoint-apdecodeservice-parsexmlentity-page"><p>Configuration options.</p>
+</div></td></tr><tr><td>opts.mapping</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="angularpoint-apdecodeservice-page angularpoint-apdecodeservice-parsexmlentity-page"><p>Mapping of fields we&#39;d like to extend on our JS object.</p>
+</div></td></tr><tr><td>opts.includeAllAttrs</td><td><a href="" class="label type-hint type-hint-boolean">boolean</a></td><td><div class="angularpoint-apdecodeservice-page angularpoint-apdecodeservice-parsexmlentity-page"><p>If true, return all attributes, regardless whether</p>
+</div> <p><em>(default: false)</em></p></td></tr><tr><td>[opts.listItemProvider]</td><td><a href="" class="label type-hint type-hint-boolean">boolean</a></td><td><div class="angularpoint-apdecodeservice-page angularpoint-apdecodeservice-parsexmlentity-page"><p>List item constructor.</p>
+</div></td></tr><tr><td>opts.removeOws</td><td><a href="" class="label type-hint type-hint-boolean">boolean</a></td><td><div class="angularpoint-apdecodeservice-page angularpoint-apdecodeservice-parsexmlentity-page"><p>Specifically for GetListItems, if true, the leading ows_ will</p>
+</div> <p><em>(default: true)</em></p></td></tr></tbody></table><h5 id="methods_parsexmlentity_returns">Returns</h5><table class="variables-matrix"><tr><td><a href="" class="label type-hint type-hint-object">object</a></td><td><div class="angularpoint-apdecodeservice-page angularpoint-apdecodeservice-parsexmlentity-page"><p>New entity using the factory on the model.</p>
 </div></td></tr></table></div>
 </li>
 <li><h3 id="methods_processlistitems">processListItems(model, responseXML, [options])</h3>
@@ -70,10 +99,8 @@ the processed entities.  Promise allows us to batch conversions of large lists t
 </div></td></tr><tr><td>options.factory</td><td><a href="" class="label type-hint type-hint-function">function</a></td><td><div class="angularpoint-apdecodeservice-page angularpoint-apdecodeservice-processlistitems-page"><p>Constructor function typically stored on the model.</p>
 </div> <p><em>(default: model.factory)</em></p></td></tr><tr><td>options.filter</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="angularpoint-apdecodeservice-page angularpoint-apdecodeservice-processlistitems-page"><p>XML filter string used to find the elements to iterate over.</p>
 </div> <p><em>(default: 'z:row')</em></p></td></tr><tr><td>options.mapping</td><td><a href="" class="label type-hint type-hint-array">Array</a></td><td><div class="angularpoint-apdecodeservice-page angularpoint-apdecodeservice-processlistitems-page"><p>Field definitions, typically stored on the model.</p>
-</div> <p><em>(default: model.list.mapping)</em></p></td></tr><tr><td>options.mode</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="angularpoint-apdecodeservice-page angularpoint-apdecodeservice-processlistitems-page"><p>Options for what to do with local list data array in
-store [&#39;replace&#39;, &#39;update&#39;, &#39;return&#39;]</p>
-</div> <p><em>(default: 'update')</em></p></td></tr><tr><td>options.target</td><td><a href="" class="label type-hint type-hint-array">Array</a></td><td><div class="angularpoint-apdecodeservice-page angularpoint-apdecodeservice-processlistitems-page"><p>Optionally pass in array to update after processing.</p>
-</div> <p><em>(default: model.getCache())</em></p></td></tr></tbody></table><h5 id="methods_processlistitems_returns">Returns</h5><table class="variables-matrix"><tr><td><a href="" class="label type-hint type-hint-object">object</a></td><td><div class="angularpoint-apdecodeservice-page angularpoint-apdecodeservice-processlistitems-page"><p>Promise</p>
+</div> <p><em>(default: model.list.mapping)</em></p></td></tr><tr><td>options.target</td><td><a href="" class="label type-hint type-hint-array">Array</a></td><td><div class="angularpoint-apdecodeservice-page angularpoint-apdecodeservice-processlistitems-page"><p>Optionally pass in array to update after processing.</p>
+</div> <p><em>(default: model.getCache())</em></p></td></tr></tbody></table><h5 id="methods_processlistitems_returns">Returns</h5><table class="variables-matrix"><tr><td><a href="" class="label type-hint type-hint-object">object[]</a></td><td><div class="angularpoint-apdecodeservice-page angularpoint-apdecodeservice-processlistitems-page"><p>List items.</p>
 </div></td></tr></table></div>
 </li>
 <li><h3 id="methods_updatelocalcache">updateLocalCache(localCache, entities)</h3>
@@ -84,19 +111,17 @@ or replaced if they do.</p>
 </div></td></tr></tbody></table><h5 id="methods_updatelocalcache_returns">Returns</h5><table class="variables-matrix"><tr><td><a href="" class="label type-hint type-hint-object">object</a></td><td><div class="angularpoint-apdecodeservice-page angularpoint-apdecodeservice-updatelocalcache-page"><p>{created: number, updated: number}</p>
 </div></td></tr></table></div>
 </li>
-<li><h3 id="methods_xmltojson">xmlToJson(rows, options)</h3>
+<li><h3 id="methods_xmltojson">xmlToJson(xmlEntities, options)</h3>
 <div class="xmltojson"><div class="angularpoint-apdecodeservice-page angularpoint-apdecodeservice-xmltojson-page"><p>Converts an XML node set to Javascript object array. This is a modified version of the SPServices
 &quot;SPXmlToJson&quot; function.</p>
-</div><h5 id="methods_xmltojson_parameters">Parameters</h5><table class="variables-matrix table table-bordered table-striped"><thead><tr><th>Param</th><th>Type</th><th>Details</th></tr></thead><tbody><tr><td>rows</td><td><a href="" class="label type-hint type-hint-array">array</a></td><td><div class="angularpoint-apdecodeservice-page angularpoint-apdecodeservice-xmltojson-page"><p>[&quot;z:rows&quot;] XML rows that need to be parsed.</p>
+</div><h5 id="methods_xmltojson_parameters">Parameters</h5><table class="variables-matrix table table-bordered table-striped"><thead><tr><th>Param</th><th>Type</th><th>Details</th></tr></thead><tbody><tr><td>xmlEntities</td><td><a href="" class="label type-hint type-hint-array">array</a></td><td><div class="angularpoint-apdecodeservice-page angularpoint-apdecodeservice-xmltojson-page"><p>[&quot;z:rows&quot;] XML rows that need to be parsed.</p>
 </div></td></tr><tr><td>options</td><td><a href="" class="label type-hint type-hint-object">object</a></td><td><div class="angularpoint-apdecodeservice-page angularpoint-apdecodeservice-xmltojson-page"><p>Options object.</p>
 </div></td></tr><tr><td>options.mapping</td><td><a href="" class="label type-hint type-hint-object">object[]</a></td><td><div class="angularpoint-apdecodeservice-page angularpoint-apdecodeservice-xmltojson-page"><p>[columnName: &quot;mappedName&quot;, objectType: &quot;objectType&quot;]</p>
 </div></td></tr><tr><td>options.includeAllAttrs</td><td><a href="" class="label type-hint type-hint-boolean">boolean</a></td><td><div class="angularpoint-apdecodeservice-page angularpoint-apdecodeservice-xmltojson-page"><p>If true, return all attributes, regardless whether</p>
-</div> <p><em>(default: false)</em></p></td></tr><tr><td>[options.ctor]</td><td><a href="" class="label type-hint type-hint-boolean">boolean</a></td><td><div class="angularpoint-apdecodeservice-page angularpoint-apdecodeservice-xmltojson-page"><p>List item constructor.</p>
-</div></td></tr><tr><td>options.throttle</td><td><a href="" class="label type-hint type-hint-boolean">boolean</a></td><td><div class="angularpoint-apdecodeservice-page angularpoint-apdecodeservice-xmltojson-page"><p>Cut long running conversions into chunks to prevent ui performance
-hit.  The downside is most evergreen browsers can handle it so it could slow them down unnecessarily.</p>
-</div> <p><em>(default: true)</em></p></td></tr><tr><td>options.removeOws</td><td><a href="" class="label type-hint type-hint-boolean">boolean</a></td><td><div class="angularpoint-apdecodeservice-page angularpoint-apdecodeservice-xmltojson-page"><p>Specifically for GetListItems, if true, the leading ows_ will
+</div> <p><em>(default: false)</em></p></td></tr><tr><td>[options.listItemProvider]</td><td><a href="" class="label type-hint type-hint-boolean">boolean</a></td><td><div class="angularpoint-apdecodeservice-page angularpoint-apdecodeservice-xmltojson-page"><p>List item constructor.</p>
+</div></td></tr><tr><td>options.removeOws</td><td><a href="" class="label type-hint type-hint-boolean">boolean</a></td><td><div class="angularpoint-apdecodeservice-page angularpoint-apdecodeservice-xmltojson-page"><p>Specifically for GetListItems, if true, the leading ows_ will
 be stripped off the field name.</p>
-</div> <p><em>(default: true)</em></p></td></tr></tbody></table><h5 id="methods_xmltojson_returns">Returns</h5><table class="variables-matrix"><tr><td><a href="" class="label type-hint type-hint-array">Array</a></td><td><div class="angularpoint-apdecodeservice-page angularpoint-apdecodeservice-xmltojson-page"><p>An array of JavaScript objects.</p>
+</div> <p><em>(default: true)</em></p></td></tr></tbody></table><h5 id="methods_xmltojson_returns">Returns</h5><table class="variables-matrix"><tr><td><a href="" class="label type-hint type-hint-object">object[]</a></td><td><div class="angularpoint-apdecodeservice-page angularpoint-apdecodeservice-xmltojson-page"><p>An array of JavaScript objects.</p>
 </div></td></tr></table></div>
 </li>
 </ul>

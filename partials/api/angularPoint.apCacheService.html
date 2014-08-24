@@ -17,7 +17,9 @@ point in the future assuming the entity is eventually registered.</p>
 </div></td></tr></table></div>
 </li>
 <li><h3 id="methods_registerentity">registerEntity(entity)</h3>
-<div class="registerentity"><div class="angularpoint-apcacheservice-page angularpoint-apcacheservice-registerentity-page"><p>Registers an entity in the cache and fulfills any pending deferred requests for the entity.</p>
+<div class="registerentity"><div class="angularpoint-apcacheservice-page angularpoint-apcacheservice-registerentity-page"><p>Registers an entity in the cache and fulfills any pending deferred requests for the entity. If the
+entity already exists in the cache, we extend the existing object with the updated entity and return a
+reference to this updated object so the there is only a single instance of this entity withing the cache.</p>
 </div><h5 id="methods_registerentity_parameters">Parameters</h5><table class="variables-matrix table table-bordered table-striped"><thead><tr><th>Param</th><th>Type</th><th>Details</th></tr></thead><tbody><tr><td>entity</td><td><a href="" class="label type-hint type-hint-object">object</a></td><td><div class="angularpoint-apcacheservice-page angularpoint-apcacheservice-registerentity-page"><p>Pass in a newly created entity to add to the cache.</p>
 </div></td></tr></tbody></table></div>
 </li>
