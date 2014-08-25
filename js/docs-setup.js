@@ -55,7 +55,7 @@ NG_DOCS={
       "type": "service",
       "moduleName": "angularPoint",
       "shortDescription": "Processes the XML received from SharePoint and converts it into JavaScript objects based on predefined field types.",
-      "keywords": "additional allow allows angularpoint apcacheservice apconfig apdecodeservice api apqueueservice aputilityservice array attributes based batch cache call camlcase capital change checks child coming configuration constructors container conversions convert converts copies correctly corresponding customfields data define defined definition definitions don element elements empty entities entity error errors errorstring exist exists extend extends factory fetch field fielddefinition fielddefinitions fields filter find formatted function future getcache getlistitems includeallattrs info initial instantiated item items iterate javascript js keeping large leading letter list listitemprovider lists ll localcache location mappedname mapping maps merged metadata model modified newly node note null number object objects objecttype optional optionally options opts ows_ parent parsed pass post predefined prevent processed processes processing promise properties property propertyname provided pushing query received reference references removeows replaced representation resolved resolves response responsexml retrieve return returned returning returns rows scope server service set sharepoint slowdowns spservices spxmltojson start stored string stripped takes target text throw true type types typically ui update updated updating values version versions web webservice xhr xml xmlentities xmlobject"
+      "keywords": "additional allow allows angularpoint apcacheservice apconfig apdecodeservice api apqueueservice aputilityservice array attributes based batch build cache cached call camlcase capital change checks child coming configuration constructors container conversions convert converts copies correctly corresponding customfields data define defined definition definitions don element elements empty entities entity error errors errorstring exist exists extend extends factory fetch field fielddefinition fielddefinitions fields filter find formatted function future getcache getlistitems includeallattrs indexedcache info initial instantiated item items iterate javascript js keeping large leading letter list listitemprovider lists ll localcache location mappedname mapping maps merged metadata model modified newly node note null number object objects objecttype optional optionally options opts ows_ parent parsed pass post predefined prevent processed processes processing promise properties property propertyname provided push pushing query received reference references registers removeows replaced representation requesting resolved resolves response responsexml responsible retrieve return returned returning returns rows scope server service set sharepoint slowdowns spservices spxmltojson start stored string stripped takes target text throw true type types typically ui update updated updating values version versions web webservice xhr xml xmlentities xmlentity xmlobject"
     },
     {
       "section": "api",
@@ -83,6 +83,15 @@ NG_DOCS={
       "moduleName": "angularPoint",
       "shortDescription": "Handles the mapping of the various types of fields used within a SharePoint list",
       "keywords": "addlistitems allows angularpoint apfieldservice api appropriate approveitems aputilityservice array based build chancejs coded combine container creates data decorates default defaults defined defines definition deletelistitems dynamic dynamically editlistitems empty expected field fields fieldtype full fullmask function generate generates handles hard https included levels list lists main mapping mask mock mockdata model modelservice obj object optional options param params permask permission permissionlevel populates produce query read reference requested resolvepermissions return returns service sharepoint simulation specific staticvalue string takes type types values viewfields viewlistitems xml"
+    },
+    {
+      "section": "api",
+      "id": "angularPoint.apIndexedCacheFactory",
+      "shortName": "angularPoint.apIndexedCacheFactory",
+      "type": "object",
+      "moduleName": "angularPoint",
+      "shortDescription": "Exposes the EntityFactory prototype and a constructor to instantiate a new Entity Factory in apCacheService.",
+      "keywords": "angularpoint apcacheservice api apindexedcachefactory cache entity entityfactory exposes factory function grunt indexed instantiate instantiates object prototype returns"
     },
     {
       "section": "api",
@@ -185,12 +194,21 @@ NG_DOCS={
     },
     {
       "section": "api",
+      "id": "angularPoint.IndexedCache",
+      "shortName": "angularPoint.IndexedCache",
+      "type": "object",
+      "moduleName": "angularPoint",
+      "shortDescription": "Cache constructor that is extended to make it easier to work with via prototype methods.  Located in",
+      "keywords": "add adds angularpoint api apindexedcachefactory array cache cached clears currently easier elements entities entity extended function indexedcache key located methods number object prototype remove removes returns strings turns work"
+    },
+    {
+      "section": "api",
       "id": "apDataService.addUpdateItemModel",
       "shortName": "apDataService.addUpdateItemModel",
       "type": "function",
       "moduleName": "apDataService",
       "shortDescription": "Adds or updates a list item based on if the item passed in contains an id attribute.",
-      "keywords": "adds addupdateitemmodel apdataservice api applicable attribute automatically based buildvaluepairs cache cached configuration currently default defined ensure entities entity field fields function generate generating identified instances intensive item javascript list mode model newly note object optional pairs params passed precomputed process promise query reference replace representing resolves return search sharepoint stored update updateallcaches updated updates updating valuepairs"
+      "keywords": "adds addupdateitemmodel apdataservice api attribute automatically based buildvaluepairs configuration defined entities entity field fields function generate generating identified item javascript list model newly object optional pairs params passed precomputed promise reference representing resolves sharepoint updated updates valuepairs"
     },
     {
       "section": "api",
@@ -208,7 +226,7 @@ NG_DOCS={
       "type": "function",
       "moduleName": "apDataService",
       "shortDescription": "Typically called directly from a list item, removes the list item from SharePoint",
-      "keywords": "apdataservice api cache cached called complete configuration copy currently default delete deleteitemmodel directly ensure entities entity function getcontainer intensive item javascript list local location model object operation optional params process promise query reference remove removed removes representing resolves returned search sharepoint stored target typically updateallcaches"
+      "keywords": "apdataservice api cache cached called complete configuration copy currently default delete deleteitemmodel directly ensure entities entity function getcache intensive item javascript list local location model object operation optional params process promise query reference remove removed removes representing resolves returned search sharepoint stored target typically updateallcaches"
     },
     {
       "section": "api",
@@ -217,7 +235,7 @@ NG_DOCS={
       "type": "function",
       "moduleName": "apDataService",
       "shortDescription": "Primary method of retrieving list items from SharePoint.  Look at Query and Model for specifics.",
-      "keywords": "apdataservice api array call configuration custom destination entities executequery file function getcache include item items list location making method model objects offline offlinexml optional optionally parameters primary query reference resides retrieving returned sharepoint specifics target title xml"
+      "keywords": "apdataservice api call configuration custom destination entities entity executequery file function getcache hash include item items key list location making method model offline offlinexml optional optionally parameters primary query reference resides retrieving returned sharepoint specifics target title xml"
     },
     {
       "section": "api",
@@ -280,7 +298,7 @@ NG_DOCS={
       "type": "function",
       "moduleName": "apDataService",
       "shortDescription": "GetListItemChangesSinceToken returns items that have been added as well as deleted so we need",
-      "keywords": "apdataservice api array cache cached deleted entityarray function getlistitemchangessincetoken items list local processdeletionssincetoken query remove response responsexml returns server xml"
+      "keywords": "apdataservice api array cache cached deleted function getlistitemchangessincetoken indexedcache items list local processdeletionssincetoken query remove response responsexml returns server xml"
     },
     {
       "section": "api",
@@ -289,7 +307,7 @@ NG_DOCS={
       "type": "function",
       "moduleName": "apDataService",
       "shortDescription": "Searches for an entity based on list item ID and removes it from the cached array if it exists.",
-      "keywords": "apdataservice api array based cached determine entity entityarray entityid evaluate exists function item items list match query removed removeentityfromlocalcache removes returns searches true"
+      "keywords": "apdataservice api array based cached determine entity entityid evaluate exists function indexedcache item items list match query removed removeentityfromlocalcache removes returns searches true"
     },
     {
       "section": "api",
@@ -317,15 +335,6 @@ NG_DOCS={
       "moduleName": "apDataService",
       "shortDescription": "Generic wrapper for any SPServices web service call.  The big benefit to this function is it allows us",
       "keywords": "$q allows apdataservice api application benefit big call check clean codeplex consistent continue details directly elements expected experience filter filternode find function generic http implementation items iterate list model node objects operation options parameters params parsed passed payload promise provided raw resolved response returns server service servicewrapper spservices string typically web weburl wrapper xml"
-    },
-    {
-      "section": "api",
-      "id": "apDataService.updateAllCaches",
-      "shortName": "apDataService.updateAllCaches",
-      "type": "function",
-      "moduleName": "apDataService",
-      "shortDescription": "Propagates a change to all duplicate entities in all cached queries within a given model.",
-      "keywords": "apdataservice api automatically cached change don duplicate entities entity function item javascript list model number object process propagates queries query reference representing sharepoint updateallcaches updated"
     },
     {
       "section": "api",

@@ -14,7 +14,7 @@ and the local cache.</p>
 </div></td></tr><tr><td>[options]</td><td><a href="" class="label type-hint type-hint-object">object</a></td><td><div class="apdataservice-deleteitemmodel-page"><p>Optional configuration params.</p>
 </div></td></tr><tr><td>options.target</td><td><a href="" class="label type-hint type-hint-array">Array</a></td><td><div class="apdataservice-deleteitemmodel-page"><p>Optional location to search through and remove the
 local cached copy.</p>
-</div> <p><em>(default: item.getContainer())</em></p></td></tr><tr><td>options.updateAllCaches</td><td><a href="" class="label type-hint type-hint-boolean">boolean</a></td><td><div class="apdataservice-deleteitemmodel-page"><p>Search through the cache for each query on the model
+</div> <p><em>(default: item.getCache())</em></p></td></tr><tr><td>options.updateAllCaches</td><td><a href="" class="label type-hint type-hint-boolean">boolean</a></td><td><div class="apdataservice-deleteitemmodel-page"><p>Search through the cache for each query on the model
 to ensure entity is removed everywhere.  This is more process intensive so by default we only delete the
 cached entity in the cache where this entity is currently stored.</p>
 </div> <p><em>(default: false)</em></p></td></tr></tbody></table><h4 id="usage_returns">Returns</h4><table class="variables-matrix"><tr><td><a href="" class="label type-hint type-hint-object">object</a></td><td><div class="apdataservice-deleteitemmodel-page"><p>Promise which resolves when the operation is complete.  Nothing of importance is returned.</p>
