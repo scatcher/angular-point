@@ -15,9 +15,7 @@
  * @requires angularPoint.apUtilityService
  */
 angular.module('angularPoint')
-    .factory('apModelFactory', function (_, apModalService, apCacheService, apDataService, apListFactory,
-                                         apListItemFactory, apQueryFactory, apUtilityService, apFieldService,
-                                         apConfig, $q, toastr) {
+    .factory('apModelFactory', function (_, apModalService, apCacheService, apDataService, apListFactory, apListItemFactory, apQueryFactory, apUtilityService, apFieldService, apConfig, $q, toastr) {
 
         var defaultQueryName = apConfig.defaultQueryName;
 
@@ -219,34 +217,95 @@ angular.module('angularPoint')
             };
             /** Extend defaults with any provided options */
             var opts = _.extend({}, defaults, options);
-            /** Create a cache if it doesn't already exist */
-            model._cachedIndexes = model._cachedIndexes || {};
-            model._cachedIndexes[opts.cacheName] = model._cachedIndexes[opts.cacheName] || {};
-            var cache = model._cachedIndexes[opts.cacheName];
-            var properties = opts.propertyPath.split('.');
-            _.each(properties, function (attribute) {
-                cache[attribute] = cache[attribute] || {};
-                /** Update cache reference to another level down the cache object */
-                cache = cache[attribute];
-            });
-            cache.map = cache.map || [];
-            /** Remap if no existing map, the number of items in the array has changed, or the rebuild flag is set */
-            if (!_.isNumber(cache.count) || cache.count !== opts.localCache.length || opts.rebuildIndex) {
-                cache.map = _.deepPluck(opts.localCache, opts.propertyPath);
-                /** Store the current length of the array for future comparisons */
-                cache.count = opts.localCache.length;
-            }
-            /** Allow an array of values to be passed in */
-            if (_.isArray(value)) {
-                response = [];
-                _.each(value, function (key) {
-                    response.push(opts.localCache[cache.map.indexOf(key)]);
-                });
+
+            if(opts.propertyPath === 'id') {
+                response = opts.localCache[value];
             } else {
-                response = opts.localCache[cache.map.indexOf(value)];
+                /** Create a cache if it doesn't already exist */
+                model._cachedIndexes = model._cachedIndexes || {};
+                model._cachedIndexes[opts.cacheName] = model._cachedIndexes[opts.cacheName] || {};
+                var cache = model._cachedIndexes[opts.cacheName];
+                var properties = opts.propertyPath.split('.');
+                _.each(properties, function (attribute) {
+                    cache[attribute] = cache[attribute] || {};
+                    /** Update cache reference to another level down the cache object */
+                    cache = cache[attribute];
+                });
+                cache.map = cache.map || [];
+                /** Remap if no existing map, the number of items in the array has changed, or the rebuild flag is set */
+                if (!_.isNumber(cache.count) || cache.count !== opts.localCache.length || opts.rebuildIndex) {
+                    cache.map = _.deepPluck(opts.localCache, opts.propertyPath);
+                    /** Store the current length of the array for future comparisons */
+                    cache.count = opts.localCache.length;
+                }
+                /** Allow an array of values to be passed in */
+                if (_.isArray(value)) {
+                    response = [];
+                    _.each(value, function (key) {
+                        response.push(opts.localCache[cache.map.indexOf(key)]);
+                    });
+                } else {
+                    response = opts.localCache[cache.map.indexOf(value)];
+                }
             }
+
             return response;
         }
+
+//        function searchLocalCache(value, options) {
+//            var model = this,
+//                searchCache,
+//                response,
+//                defaults = {
+//                    propertyPath: 'id',
+//                    localCache: model.getCache(),
+//                    cacheName: 'main',
+//                    rebuildIndex: false
+//                };
+//            /** Extend defaults with any provided options */
+//            var opts = _.extend({}, defaults, options);
+//
+//            if (opts.propertyPath === 'id') {
+//                /** No need to index or iterate, we can directly check to see if it exists */
+//                searchCache = function(propertyPath) {
+//                    return opts.localCache[propertyPath];
+//                }
+//            } else {
+//                /** We need to utilize a custom cache */
+//                /** Create a cache if it doesn't already exist */
+//                model._cachedIndexes = model._cachedIndexes || {};
+//                model._cachedIndexes[opts.cacheName] = model._cachedIndexes[opts.cacheName] || {};
+//                var cache = model._cachedIndexes[opts.cacheName];
+//                var properties = opts.propertyPath.split('.');
+//                _.each(properties, function (attribute) {
+//                    cache[attribute] = cache[attribute] || {};
+//                    /** Update cache reference to another level down the cache object */
+//                    cache = cache[attribute];
+//                });
+//                cache.map = cache.map || [];
+//                /** Remap if no existing map, the number of items in the array has changed, or the rebuild flag is set */
+//                if (!_.isNumber(cache.count) || cache.count !== opts.localCache.count() || opts.rebuildIndex) {
+//                    cache.map = _.deepPluck(opts.localCache, opts.propertyPath);
+//                    /** Store the current length of the array for future comparisons */
+//                    cache.count = opts.localCache.count();
+//                }
+//                searchCache = function() {
+//                    return opts.localCache[cache.map.indexOf(value)];
+//                }
+//            }
+//
+//            /** Allow an array of values to be passed in */
+//            if (_.isArray(value)) {
+//                response = [];
+//                _.each(value, function (key) {
+//                    response.push(searchCache(key));
+////                    response.push(opts.localCache[cache.map.indexOf(key)]);
+//                });
+//            } else {
+//                response = searchCache(value);
+//            }
+//            return response;
+//        }
 
         /**
          * @ngdoc function

@@ -1,6 +1,6 @@
 'use strict';
 
-describe('Factory: apModelFactory', function () {
+ddescribe('Factory: apModelFactory', function () {
 
     beforeEach(module('angularPoint'));
 
@@ -28,8 +28,8 @@ describe('Factory: apModelFactory', function () {
         });
     });
 
-    deepArray = [
-        {
+    deepArray = {
+        1: {
             level1: {
                 value: 'value 1_1',
                 level2: {
@@ -41,7 +41,7 @@ describe('Factory: apModelFactory', function () {
             },
             id: 1
         },
-        {
+        2: {
             level1: {
                 value: 'value 1_2',
                 matchingValue: 'iMatch',
@@ -54,7 +54,7 @@ describe('Factory: apModelFactory', function () {
             },
             id: 2
         },
-        {
+        3: {
             level1: {
                 value: 'value 1_3',
                 matchingValue: 'iMatch',
@@ -67,16 +67,15 @@ describe('Factory: apModelFactory', function () {
             },
             id: 3
         },
-        {
+        4: {
             level1: {
                 level2: {
                     level3: { }
                 }
             },
             id: 4
-        },
-        {}
-    ];
+        }
+    };
 
     describe('searchLocalCache', function () {
 

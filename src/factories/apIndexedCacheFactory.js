@@ -32,6 +32,7 @@ angular.module('angularPoint')
             first: first,
             keys: keys,
             last: last,
+            nthEntity: nthEntity,
             removeEntity: removeEntity,
             toArray: toArray
         };
@@ -54,10 +55,10 @@ angular.module('angularPoint')
         function addEntity(entity) {
             var cache = this;
 
-            if (_.isObject(entity) && entity.id) {
+            if (_.isObject(entity) && entity[cache.keyProperty]) {
                 /** Only add the entity to the cache if it's not already there */
-                if(!cache[entity.id]) {
-                    cache[entity.id] = entity;
+                if(!cache[entity[cache.keyProperty]]) {
+                    cache[entity[cache.keyProperty]] = entity;
                 }
             }else {
                 console.error('A valid entity wasn\'t found: ', entity);
@@ -91,6 +92,24 @@ angular.module('angularPoint')
             return _.keys(cache);
         }
 
+
+        /**
+         * @ngdoc function
+         * @name angularPoint.IndexedCache:nthEntity
+         * @methodOf angularPoint.IndexedCache
+         * @description
+         * Based on the
+         * @param index
+         * @returns {object} First entity in cache.
+         */
+        function nthEntity(index) {
+            var cache = this;
+            var keys = cache.keys();
+            return cache[keys[index]];
+        }
+
+
+
         /**
          * @ngdoc function
          * @name angularPoint.IndexedCache:first
@@ -101,8 +120,7 @@ angular.module('angularPoint')
          */
         function first() {
             var cache = this;
-            var keys = cache.keys();
-            return (keys.length > 0) ? cache[keys[0]] : undefined;
+            return cache.nthEntity(0);
         }
 
         /**
@@ -116,7 +134,7 @@ angular.module('angularPoint')
         function last() {
             var cache = this;
             var keys = cache.keys();
-            return (keys.length > 0) ? cache[keys[keys.length - 1]] : undefined;
+            return cache[keys[keys.length - 1]];
         }
 
         /**
@@ -142,8 +160,8 @@ angular.module('angularPoint')
          */
         function removeEntity(entity) {
             var cache = this;
-            if(_.isObject && entity.id && cache[entity.id]) {
-                delete cache[entity.id];
+            if(_.isObject && entity[cache.keyProperty] && cache[entity[cache.keyProperty]]) {
+                delete cache[entity[cache.keyProperty]];
             }
         }
 
