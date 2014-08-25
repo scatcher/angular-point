@@ -222,7 +222,7 @@ angular.module('angularPoint')
         function logErrorsToConsole(responseXML, operation) {
             /** Errors can still be resolved without throwing an error so check the XML */
             var errorMessage = apDecodeService.checkResponseForErrors(responseXML);
-            if(errorMessage) {
+            if (errorMessage) {
                 console.error(operation, errorMessage);
             }
         }
@@ -489,7 +489,7 @@ angular.module('angularPoint')
          * @param {Array} [options.target=model.getCache()] The target destination for returned entities
          * @param {string} [options.offlineXML=apConfig.offlineXML + model.list.title + '.xml'] Optionally include the location of
          * a custom offline XML file specifically for this query.
-         * @returns {object[]} - Array of list item objects.
+         * @returns {object} - Key value hash containing all list item id's as keys with the entity as the value.
          */
         function executeQuery(model, query, options) {
 
@@ -543,13 +543,11 @@ angular.module('angularPoint')
                     }
 
                     /** Convert the XML into JS objects */
-                    apDecodeService.processListItems(model, responseXML, opts)
-                        .then(function (entities) {
-                            /** Set date time to allow for time based updates */
-                            query.lastRun = new Date();
-                            apQueueService.decrease();
-                            deferred.resolve(entities);
-                        });
+                    apDecodeService.processListItems(model, query, responseXML, opts);
+                    /** Set date time to allow for time based updates */
+                    query.lastRun = new Date();
+                    apQueueService.decrease();
+                    deferred.resolve(entities);
                 });
             } else {
                 /** Simulate an web service call if working offline */
@@ -561,26 +559,24 @@ angular.module('angularPoint')
                     /** Query has already been run, resolve reference to existing data */
                     query.lastRun = new Date();
                     apQueueService.decrease();
-                    deferred.resolve(query.cache);
+                    deferred.resolve(query.getCache());
                 } else {
                     /** First run for query
                      *  Get offline XML file from the location specified in apConfig.offlineXML
                      */
                     $.ajax(offlineData).then(function (responseXML) {
-                        apDecodeService.processListItems(model, responseXML, opts)
-                            .then(function (entities) {
-                                /** Set date time to allow for time based updates */
-                                query.lastRun = new Date();
-                                apQueueService.decrease();
+                        var entities = apDecodeService.processListItems(model, query, responseXML, opts);
+                        /** Set date time to allow for time based updates */
+                        query.lastRun = new Date();
+                        apQueueService.decrease();
 
-                                /** Extend the field and list definition in the model with the offline data */
-                                if (query.operation === 'GetListItemChangesSinceToken') {
-                                    apDecodeService.extendListDefinitionFromXML(model.list, responseXML);
-                                    apDecodeService.extendFieldDefinitionsFromXML(model.list.fields, responseXML);
-                                }
+                        /** Extend the field and list definition in the model with the offline data */
+                        if (query.operation === 'GetListItemChangesSinceToken') {
+                            apDecodeService.extendListDefinitionFromXML(model.list, responseXML);
+                            apDecodeService.extendFieldDefinitionsFromXML(model.list.fields, responseXML);
+                        }
 
-                                deferred.resolve(entities);
-                            });
+                        deferred.resolve(entities);
                     }, function () {
                         var mockData = model.generateMockData();
                         deferred.resolve(mockData);
@@ -597,24 +593,18 @@ angular.module('angularPoint')
          * @name apDataService.removeEntityFromLocalCache
          * @description
          * Searches for an entity based on list item ID and removes it from the cached array if it exists.
-         * @param {Array} entityArray Cached array of list items for a query.
+         * @param {Array} indexedCache Cached array of list items for a query.
          * @param {Number} entityId The ID to evaluate against to determine if there is a match.
          * @returns {boolean} Returns true if a list item was successfully found and removed.
          */
-        function removeEntityFromLocalCache(entityArray, entityId) {
+        function removeEntityFromLocalCache(indexedCache, entityId) {
             var successfullyDeleted = false;
 
-            /** Remove from local data array */
-            var item = _.findWhere(entityArray, {id: entityId});
-            /** Use lodash _.indexOf to workaround IE issues */
-            var index = _.indexOf(entityArray, item);
-
-            if (index > -1) {
-                /** Remove the locally cached record */
-                entityArray.splice(index, 1);
+            /** Remove from indexed cache if found */
+            if(indexedCache[entityId]) {
+                delete indexedCache[entityId];
                 successfullyDeleted = true;
             }
-
             return successfullyDeleted;
         }
 
@@ -649,9 +639,9 @@ angular.module('angularPoint')
          * GetListItemChangesSinceToken returns items that have been added as well as deleted so we need
          * to remove the deleted items from the local cache.
          * @param {xml} responseXML XML response from the server.
-         * @param {Array} entityArray Cached array of list items for a query.
+         * @param {Array} indexedCache Cached array of list items for a query.
          */
-        function processDeletionsSinceToken(responseXML, entityArray) {
+        function processDeletionsSinceToken(responseXML, indexedCache) {
             var deleteCount = 0;
 
             /** Remove any locally cached entities that were deleted from the server */
@@ -662,7 +652,7 @@ angular.module('angularPoint')
                 if (changeType === 'Delete') {
                     var entityId = parseInt($(this).text(), 10);
                     /** Remove from local data array */
-                    var foundAndRemoved = removeEntityFromLocalCache(entityArray, entityId);
+                    var foundAndRemoved = removeEntityFromLocalCache(indexedCache, entityId);
                     if (foundAndRemoved) {
                         deleteCount++;
                     }
@@ -693,7 +683,7 @@ angular.module('angularPoint')
                 /** Process all query caches except the one originally used to retrieve entity because
                  * that is automatically updated by "apDecodeService.processListItems". */
                 if (query != exemptQuery) {
-                    apDecodeService.updateLocalCache(query.cache, [entity]);
+                    apDecodeService.updateLocalCache(query.getCache(), [entity]);
                 }
             });
             return queriesUpdated;
@@ -756,15 +746,14 @@ angular.module('angularPoint')
 
                 webServiceCall.then(function () {
                     /** Success */
-                    apDecodeService.processListItems(model, webServiceCall.responseXML, opts).then(function (output) {
-                        var updatedEntity = output[0];
+                    var output = apDecodeService.processListItems(model, entity.getQuery(), webServiceCall.responseXML, opts);
+                    var updatedEntity = output[0];
 
-                        /** Optionally search through each cache on the model and update any other references to this entity */
-                        if (opts.updateAllCaches && _.isNumber(entity.id)) {
-                            updateAllCaches(model, updatedEntity, entity.getQuery());
-                        }
-                        deferred.resolve(updatedEntity);
-                    });
+                    /** Optionally search through each cache on the model and update any other references to this entity */
+                    if (opts.updateAllCaches && _.isNumber(entity.id)) {
+                        updateAllCaches(model, updatedEntity, entity.getQuery());
+                    }
+                    deferred.resolve(updatedEntity);
                 }, function (outcome) {
                     /** In the event of an error, display toast */
                     toastr.error('There was an error getting the requested data from ' + model.list.name);
@@ -801,7 +790,7 @@ angular.module('angularPoint')
                     _.each(model.queries, function (query) {
                         /** Find next logical id to assign */
                         var maxId = 1;
-                        _.each(query.cache, function (entity) {
+                        _.each(query.getCache(), function (entity) {
                             if (entity.id > maxId) {
                                 maxId = entity.id;
                             }
@@ -811,7 +800,7 @@ angular.module('angularPoint')
                         _.extend(entity, offlineDefaults);
                         /** Use factory to build new object */
                         newItem = new model.factory(entity);
-                        query.cache.push(newItem);
+                        query.getCache().push(newItem);
                     });
 
                     deferred.resolve(newItem);
@@ -861,7 +850,7 @@ angular.module('angularPoint')
                 if (opts.updateAllCaches) {
                     var model = entity.getModel();
                     _.each(model.queries, function (query) {
-                        var entityRemoved = removeEntityFromLocalCache(query.cache, entity.id);
+                        var entityRemoved = removeEntityFromLocalCache(query.getCache(), entity.id);
                         if (entityRemoved) {
                             deleteCount++;
                         }

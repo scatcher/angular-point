@@ -47,11 +47,11 @@ describe("Factory: apListItemFactory", function () {
     });
 
 
-    describe('getDataService', function () {
-        it("should return a reference to the service", function() {
-            expect(mockListItem.getDataService()).toEqual(apDataService);
-        });
-    });
+    //describe('getDataService', function () {
+    //    it("should return a reference to the service", function() {
+    //        expect(mockListItem.getDataService()).toEqual(apDataService);
+    //    });
+    //});
 
     describe('getFieldDefinition', function () {
         it('Should return the field definition.', function () {

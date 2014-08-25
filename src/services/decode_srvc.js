@@ -12,7 +12,9 @@
  * @requires angularPoint.apCacheService
  */
 angular.module('angularPoint')
-    .service('apDecodeService', function ($q, _, apUtilityService, apQueueService, apConfig, apCacheService) {
+    .service('apDecodeService', function ($q, _, apUtilityService, apQueueService, apConfig, apCacheService,
+                                          apLookupFactory, apUserFactory) {
+
 
         return {
             attrToJson: attrToJson,
@@ -26,6 +28,9 @@ angular.module('angularPoint')
             xmlToJson: xmlToJson
         };
 
+        /*********************** Private ****************************/
+
+
         /**
          * @ngdoc function
          * @name angularPoint.apDecodeService:processListItems
@@ -34,43 +39,21 @@ angular.module('angularPoint')
          * Post processing of data after returning list items from server.  Returns a promise that resolves with
          * the processed entities.  Promise allows us to batch conversions of large lists to prevent ui slowdowns.
          * @param {object} model Reference to allow updating of model.
+         * @param {object} query Reference to the query responsible for requesting entities.
          * @param {xml} responseXML Resolved promise from SPServices web service call.
          * @param {object} [options] Optional configuration object.
          * @param {function} [options.factory=model.factory] Constructor function typically stored on the model.
          * @param {string} [options.filter='z:row'] XML filter string used to find the elements to iterate over.
          * @param {Array} [options.mapping=model.list.mapping] Field definitions, typically stored on the model.
-         * @param {string} [options.mode='update'] Options for what to do with local list data array in
-         * store ['replace', 'update', 'return']
          * @param {Array} [options.target=model.getCache()] Optionally pass in array to update after processing.
-         * @returns {object} Promise
+         * @returns {object[]} List items.
          */
-        function processListItems(model, responseXML, options) {
-            var deferred = $q.defer();
-
+        function processListItems(model, query, responseXML, options) {
             var defaults = {
-                /** Default list item constructor */
-                ctor: function (item) {
-                    /** Allow us to reference the originating query that generated this object */
-                    item.getQuery = function () {
-                        return opts.getQuery();
-                    };
-                    /** Create Reference to the containing array */
-                    item.getContainer = function () {
-                        return opts.target;
-                    };
-                    var listItem = new model.factory(item);
-
-                    /** Register in global application entity cache */
-                    apCacheService.registerEntity(listItem);
-                    return listItem;
-                },
                 factory: model.factory,
                 filter: 'z:row',
                 mapping: model.list.mapping,
-                mode: 'update',
-                target: model.getCache(),
-                /** Don't want to throttle if we're testing offline */
-                throttle: apConfig.online
+                target: model.getCache()
             };
 
             var opts = _.extend({}, defaults, options);
@@ -78,35 +61,44 @@ angular.module('angularPoint')
             /** Map returned XML to JS objects based on mapping from model */
             var filteredNodes = $(responseXML).SPFilterNode(opts.filter);
 
-            xmlToJson(filteredNodes, opts).then(function (entities) {
-                if (opts.mode === 'replace') {
-                    /** Replace any existing data */
-                    opts.target = entities;
-                    if (apConfig.offline) {
-                        console.log(model.list.title + ' Replaced with ' + opts.target.length + ' new records.');
-                    }
-                } else if (opts.mode === 'update') {
-                    var updateStats = updateLocalCache(opts.target, entities);
-                    if (apConfig.offline) {
-                        console.log(model.list.title + ' Changes (Create: ' + updateStats.created +
-                        ' | Update: ' + updateStats.updated + ')');
-                    }
-                }
-                apQueueService.decrease();
-                deferred.resolve(entities);
-            });
+            /** Prepare constructor for XML entities with references to the query and cached container */
+            var listItemProvider= createListItemProvider(model, query, options.target);
+            var entities = xmlToJson(filteredNodes, listItemProvider, opts);
 
-            return deferred.promise;
-
+            return entities;
         }
 
-        function checkResponseForErrors(responseXML) {
-            var errorString = null;
-            /** Responses with a <errorstring></errorstring> element with details on what happened */
-            $(responseXML).find("errorstring").each(function() {
-                errorString = $(this).text();
-            });
-            return errorString;
+        /**
+         * @ngdoc function
+         * @name angularPoint.apDecodeService:createListItemProvider
+         * @methodOf angularPoint.apDecodeService
+         * @description
+         * The initial constructor for a list item that references the array where the entity exists and the
+         * query used to fetch the entity.  From there it extends the entity using the factory defined in the
+         * model for the list item.
+         * @param {object} model Reference to the model for the list item.
+         * @param {object} query Reference to the query object used to retrieve the entity.
+         * @param {array} container Location where we'll be pushing the new entity.
+         * @returns {Function} Returns a function that takes the new list item while keeping model, query,
+         * and container in scope for future reference.
+         */
+        function createListItemProvider(model, query, container) {
+            return function (listItem) {
+                /** Create Reference to the containing array */
+                listItem.getContainer = function () {
+                    return container;
+                };
+                /** Allow us to reference the originating query that generated this object */
+                listItem.getQuery = function () {
+                    return query;
+                };
+
+                var entity = new model.factory(listItem);
+
+                /** Register in global application entity cache and extends the existing entity if it
+                 * already exists */
+                return apCacheService.registerEntity(entity, container);
+            }
         }
 
         /**
@@ -146,7 +138,6 @@ angular.module('angularPoint')
             };
         }
 
-
         /**
          * @ngdoc function
          * @name angularPoint.apDecodeService:xmlToJson
@@ -154,78 +145,75 @@ angular.module('angularPoint')
          * @description
          * Converts an XML node set to Javascript object array. This is a modified version of the SPServices
          * "SPXmlToJson" function.
-         * @param {array} rows ["z:rows"] XML rows that need to be parsed.
+         * @param {array} xmlEntities ["z:rows"] XML rows that need to be parsed.
+         * @param {function} listItemProvider Constructor function used to build the list item with references to
+         * the query, cached container, and registers each list item in the apCacheService.
          * @param {object} options Options object.
          * @param {object[]} options.mapping [columnName: "mappedName", objectType: "objectType"]
          * @param {boolean} [options.includeAllAttrs=false] If true, return all attributes, regardless whether
-         * @param {boolean} [options.ctor] List item constructor.
-         * @param {boolean} [options.throttle=true] Cut long running conversions into chunks to prevent ui performance
-         * hit.  The downside is most evergreen browsers can handle it so it could slow them down unnecessarily.
+         * @param {boolean} [options.listItemProvider] List item constructor.
          * @param {boolean} [options.removeOws=true] Specifically for GetListItems, if true, the leading ows_ will
          * be stripped off the field name.
-         * @returns {Array} An array of JavaScript objects.
+         * @param {array} [options.target] Optional location to push parsed entities.
+         * @returns {object[]} An array of JavaScript objects.
          */
-        function xmlToJson(rows, options) {
+        function xmlToJson(xmlEntities, listItemProvider, options) {
 
             var defaults = {
                 mapping: {},
                 includeAllAttrs: false,
-                removeOws: true,
-                throttle: true
+                removeOws: true
             };
-
-            var deferred = $q.defer();
-
 
             var opts = _.extend({}, defaults, options);
+            var parsedEntities = [];
 
-            var attrNum;
-            var entities = [];
+            _.each(xmlEntities, function (xmlEntity) {
+                var parsedEntity = parseXMLEntity(xmlEntity, listItemProvider, opts);
+                parsedEntities.push(parsedEntity);
+            });
 
-            var processRow = function (item) {
-                var row = {};
-                var rowAttrs = item.attributes;
+            return parsedEntities;
+        }
 
-                /** Bring back all mapped columns, even those with no value */
-                _.each(opts.mapping, function (prop) {
-                    row[prop.mappedName] = '';
-                });
+        /**
+         * @ngdoc function
+         * @name angularPoint.apDecodeService:parseXMLEntity
+         * @methodOf angularPoint.apDecodeService
+         * @description
+         * Convert an XML list item into a JS object using the fields defined in the model for the given list item.
+         * @param {object} xmlEntity XML Object.
+         * @param {object} opts Configuration options.
+         * @param {string} opts.mapping Mapping of fields we'd like to extend on our JS object.
+         * @param {boolean} [opts.includeAllAttrs=false] If true, return all attributes, regardless whether
+         * @param {boolean} [opts.listItemProvider] List item constructor.
+         * @param {boolean} [opts.removeOws=true] Specifically for GetListItems, if true, the leading ows_ will
+         * @returns {object} New entity using the factory on the model.
+         */
+        function parseXMLEntity(xmlEntity, listItemProvider, opts) {
+            var entity = {};
+            var rowAttrs = xmlEntity.attributes;
 
-                // Parse through the element's attributes
-                for (attrNum = 0; attrNum < rowAttrs.length; attrNum++) {
-                    var thisAttrName = rowAttrs[attrNum].name;
-                    var thisMapping = opts.mapping[thisAttrName];
-                    var thisObjectName = typeof thisMapping !== 'undefined' ? thisMapping.mappedName : opts.removeOws ? thisAttrName.split('ows_')[1] : thisAttrName;
-                    var thisObjectType = typeof thisMapping !== 'undefined' ? thisMapping.objectType : undefined;
-                    if (opts.includeAllAttrs || thisMapping !== undefined) {
-                        row[thisObjectName] = attrToJson(rowAttrs[attrNum].value, thisObjectType, {
-                            getQuery: opts.getQuery,
-                            entity: row,
-                            propertyName: thisObjectName
-                        });
-                    }
-                }
-                /** Push the newly created list item into the return array */
-                if (_.isFunction(opts.ctor)) {
-                    /** Use provided list item constructor */
-                    entities.push(opts.ctor(row));
-                } else {
-                    entities.push(row);
-                }
-            };
+            /** Bring back all mapped columns, even those with no value */
+            _.each(opts.mapping, function (prop) {
+                entity[prop.mappedName] = '';
+            });
 
-            if (opts.throttle) {
-                /** Action is async so wait until promise from batchProcess is resolved */
-                apUtilityService.batchProcess(rows, processRow, this, 25)
-                    .then(function () {
-                        deferred.resolve(entities);
+            /** Parse through the element's attributes */
+            _.each(rowAttrs, function (attr) {
+                var thisAttrName = attr.name;
+                var thisMapping = opts.mapping[thisAttrName];
+                var thisObjectName = typeof thisMapping !== 'undefined' ? thisMapping.mappedName : opts.removeOws ? thisAttrName.split('ows_')[1] : thisAttrName;
+                var thisObjectType = typeof thisMapping !== 'undefined' ? thisMapping.objectType : undefined;
+                if (opts.includeAllAttrs || thisMapping !== undefined) {
+                    entity[thisObjectName] = attrToJson(attr.value, thisObjectType, {
+                        entity: entity,
+                        propertyName: thisObjectName
                     });
-            } else {
-                _.each(rows, processRow);
-                deferred.resolve(entities);
-            }
+                }
 
-            return deferred.promise;
+            });
+            return listItemProvider(entity);
         }
 
         /**
@@ -347,7 +335,7 @@ angular.module('angularPoint')
                 return null;
             }
             //Send to constructor
-            return new User(s);
+            return apUserFactory.create(s);
         }
 
         function userMultiToJsonObject(s) {
@@ -369,7 +357,7 @@ angular.module('angularPoint')
                 return null;
             } else {
                 //Send to constructor
-                return new Lookup(s, options);
+                return apLookupFactory.create(s, options);
             }
         }
 
@@ -418,152 +406,6 @@ angular.module('angularPoint')
 
         /**
          * @ngdoc function
-         * @name Lookup
-         * @description
-         * Allows for easier distinction when debugging if object type is shown as either Lookup or User.  Also allows us
-         * to create an async request for the entity being referenced by the lookup
-         * @param {string} s String to split into lookupValue and lookupId
-         * @param {object} options Contains a reference to the parent list item and the property name.
-         * @param {object} options.entity Reference to parent list item.
-         * @param {object} options.propertyName Key on list item object.
-         * @constructor
-         */
-        function Lookup(s, options) {
-            var lookup = this;
-            var thisLookup = new apUtilityService.SplitIndex(s);
-            lookup.lookupId = thisLookup.id;
-            lookup.lookupValue = thisLookup.value;
-            lookup._props = function () {
-                return options;
-            };
-        }
-
-        /**
-         * @ngdoc function
-         * @name Lookup.getEntity
-         * @methodOf Lookup
-         * @description
-         * Allows us to create a promise that will resolve with the entity referenced in the lookup whenever that list
-         * item is registered.
-         * @example
-         * <pre>
-         * var project = {
-         *    title: 'Project 1',
-         *    location: {
-         *        lookupId: 5,
-         *        lookupValue: 'Some Building'
-         *    }
-         * };
-         *
-         * //To get the location entity
-         * project.location.getEntity().then(function(entity) {
-         *     //Resolves with the full location entity once it's registered in the cache
-         *
-         *    });
-         * </pre>
-         * @returns {promise} Resolves with the object the lookup is referencing.
-         */
-        Lookup.prototype.getEntity = function () {
-            var self = this;
-            var props = self._props();
-
-            if (!props.getEntity) {
-                var query = props.getQuery();
-                var listItem = query.searchLocalCache(props.entity.id);
-
-                /** Create a new deferred object if this is the first run */
-                props.getEntity = $q.defer();
-                listItem.getLookupReference(props.propertyName, self.lookupId)
-                    .then(function (entity) {
-                        props.getEntity.resolve(entity);
-                    })
-            }
-            return props.getEntity.promise;
-        };
-
-        /**
-         * @ngdoc function
-         * @name Lookup.getProperty
-         * @methodOf Lookup
-         * @description
-         * Returns a promise which resolves with the value of a property in the referenced object.
-         * @param {string} propertyPath The dot separated propertyPath.
-         * @example
-         * <pre>
-         * var project = {
-         *    title: 'Project 1',
-         *    location: {
-         *        lookupId: 5,
-         *        lookupValue: 'Some Building'
-         *    }
-         * };
-         *
-         * //To get the location.city
-         * project.location.getProperty('city').then(function(city) {
-         *    //Resolves with the city property from the referenced location entity
-         *
-         *    });
-         * </pre>
-         * @returns {promise} Resolves with the value, or undefined if it doesn't exists.
-         */
-        Lookup.prototype.getProperty = function (propertyPath) {
-            var self = this;
-            var deferred = $q.defer();
-            self.getEntity().then(function (entity) {
-                deferred.resolve(_.deepGetOwnValue(entity, propertyPath));
-            });
-            return deferred.promise;
-        };
-
-        /**
-         * @ngdoc function
-         * @name User
-         * @description
-         * Allows for easier distinction when debugging if object type is shown as a User.  Turns a delimited ";#"
-         * string into an object shown below depeinding on field settings:
-         * <pre>
-         * {
-         *      lookupId: 1,
-         *      lookupValue: 'Joe User'
-         * }
-         * </pre>
-         * or
-         * <pre>
-         * {
-         *      lookupId: 1,
-         *      lookupValue: 'Joe User',
-         *      loginName: 'joe.user',
-         *      email: 'joe@company.com',
-         *      sipAddress: 'whatever',
-         *      title: 'Sr. Widget Maker'
-         * }
-         * </pre>
-         * @param {string} s Delimited string used to create a User object.
-         * @constructor
-         */
-        function User(s) {
-            var self = this;
-            var thisUser = new apUtilityService.SplitIndex(s);
-
-            var thisUserExpanded = thisUser.value.split(',#');
-            if (thisUserExpanded.length === 1) {
-                //Standard user columns only return a id,#value pair
-                self.lookupId = thisUser.id;
-                self.lookupValue = thisUser.value;
-            } else {
-                //Allow for case where user adds additional properties when setting up field
-                self.lookupId = thisUser.id;
-                self.lookupValue = thisUserExpanded[0].replace(/(,,)/g, ',');
-                self.loginName = thisUserExpanded[1].replace(/(,,)/g, ',');
-                self.email = thisUserExpanded[2].replace(/(,,)/g, ',');
-                self.sipAddress = thisUserExpanded[3].replace(/(,,)/g, ',');
-                self.title = thisUserExpanded[4].replace(/(,,)/g, ',');
-            }
-        }
-
-
-        /**
-         * @ngdoc function
          * @name angularPoint.apDecodeService:extendObjectWithXMLAttributes
          * @methodOf angularPoint.apDecodeService
          * @description
@@ -598,7 +440,7 @@ angular.module('angularPoint')
          * @param {object} responseXML XML response from the server.
          */
         function extendListDefinitionFromXML(list, responseXML) {
-            $(responseXML).find("List").each(function() {
+            $(responseXML).find("List").each(function () {
                 extendObjectWithXMLAttributes(this, list);
             });
         }
@@ -644,7 +486,7 @@ angular.module('angularPoint')
                         fieldDefinition.Choices = [];
                         /** Convert XML Choices object to an array of choices */
                         var xmlChoices = $(xmlField).find('CHOICE');
-                        _.each(xmlChoices, function(xmlChoice) {
+                        _.each(xmlChoices, function (xmlChoice) {
                             fieldDefinition.Choices.push($(xmlChoice).text());
                         });
                         fieldDefinition.Default = $(xmlField).find('Default').text();
@@ -692,5 +534,24 @@ angular.module('angularPoint')
             });
 
             return versions;
+        }
+
+        /**
+         * @ngdoc function
+         * @name angularPoint.apDecodeService:checkResponseForErrors
+         * @methodOf angularPoint.apDecodeService
+         * @description
+         * Errors don't always throw correctly from SPServices so this function checks to see if part
+         * of the XHR response contains an "errorstring" element.
+         * @param {object} responseXML XHR response from the server.
+         * @returns {string|null} Returns an error string if present, otherwise returns null.
+         */
+        function checkResponseForErrors(responseXML) {
+            var errorString = null;
+            /** Responses with a <errorstring></errorstring> element with details on what happened */
+            $(responseXML).find("errorstring").each(function () {
+                errorString = $(this).text();
+            });
+            return errorString;
         }
     });

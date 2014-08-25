@@ -21,7 +21,6 @@ angular.module('angularPoint')
 
         var defaultQueryName = apConfig.defaultQueryName;
 
-
         /**
          * @ngdoc function
          * @name Model
@@ -138,6 +137,8 @@ angular.module('angularPoint')
 
             /** Set the constructor's prototype to inherit from ListItem so we can inherit functionality */
             model.factory.prototype = apListItemFactory.create();
+            /** Constructor for ListItem is Object so ensure we update to properly reference ListItem */
+            model.factory.constructor = apListItemFactory.ListItem;
 
             /** Make the model directly accessible from the list item */
             model.factory.prototype.getModel = function () {
@@ -159,21 +160,23 @@ angular.module('angularPoint')
         }
 
         /** All Models inherit the following from their base prototype */
-        Model.prototype.addNewItem = addNewItem;
-        Model.prototype.createEmptyItem = createEmptyItem;
-        Model.prototype.executeQuery = executeQuery;
-        Model.prototype.generateMockData = generateMockData;
-        Model.prototype.getAllListItems = getAllListItems;
-        Model.prototype.getCache = getCache;
-        Model.prototype.getFieldDefinition = getFieldDefinition;
-        Model.prototype.getListItemById = getListItemById;
-        Model.prototype.getLocalEntity = getLocalEntity;
-        Model.prototype.getQuery = getQuery;
-        Model.prototype.initializeModalState = initializeModalState;
-        Model.prototype.isInitialised = isInitialised;
-        Model.prototype.resolvePermissions = resolvePermissions;
-        Model.prototype.registerQuery = registerQuery;
-        Model.prototype.validateEntity = validateEntity;
+        Model.prototype = {
+            addNewItem: addNewItem,
+            createEmptyItem: createEmptyItem,
+            executeQuery: executeQuery,
+            generateMockData: generateMockData,
+            getAllListItems: getAllListItems,
+            getCache: getCache,
+            getFieldDefinition: getFieldDefinition,
+            getListItemById: getListItemById,
+            getLocalEntity: getLocalEntity,
+            getQuery: getQuery,
+            initializeModalState: initializeModalState,
+            isInitialised: isInitialised,
+            resolvePermissions: resolvePermissions,
+            registerQuery: registerQuery,
+            validateEntity: validateEntity
+        };
 
         return {
             create: create,
@@ -623,8 +626,8 @@ angular.module('angularPoint')
         function getCache(queryName) {
             var model = this, query, cache;
             query = model.getQuery(queryName);
-            if (query && query.cache) {
-                cache = query.cache;
+            if (query && query.indexedCache) {
+                cache = query.indexedCache;
             }
             return cache;
         }

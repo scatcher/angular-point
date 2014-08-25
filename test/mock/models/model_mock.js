@@ -4,7 +4,7 @@
  /*  State will persist throughout life of session
  */
 angular.module('angularPoint')
-    .service('mockModel', function (apModelFactory, apModalService) {
+    .service('mockModel', function (apModelFactory, apModalService, apDecodeService, mockXMLService) {
 
         /**
          * Entity Constructor
@@ -24,7 +24,7 @@ angular.module('angularPoint')
             factory: Mock,
             list: {
                 title: 'MockList', /**Maps to the offline XML file in dev folder (no spaces) */
-                guid: '{}', /**List GUID can be found in list properties in SharePoint designer */
+                guid: '{F5345FE7-2F7C-49F7-87D0-DBFEBDD0CE61}', /**List GUID can be found in list properties in SharePoint designer */
                 customFields: [
                     { internalName: "Title", objectType: "Text", mappedName: "text", readOnly:false },
                     // Has required = true to test field validation.
@@ -54,6 +54,7 @@ angular.module('angularPoint')
          */
         model.registerQuery({
             name: 'primary',
+            offlineXML: '../mock.xml',
             query: '' +
                 '<Query>' +
                 '   <OrderBy>' +
@@ -61,6 +62,18 @@ angular.module('angularPoint')
                 '   </OrderBy>' +
                 '</Query>'
         });
+
+        model.registerQuery({
+            name: 'secondary',
+            offlineXML: '../mock.xml',
+            query: '' +
+                '<Query>' +
+                '   <OrderBy>' +
+                '       <FieldRef Name="ID" Ascending="TRUE"/>' +
+                '   </OrderBy>' +
+                '</Query>'
+        });
+
 
         /********************* Model Specific Shared Functions ***************************************/
 
@@ -74,6 +87,17 @@ angular.module('angularPoint')
         Mock.prototype.openModal = function () {
             return model.openModal(this);
         };
+
+
+        model.importMocks = function () {
+            var cache = model.getCache();
+            //cache.clear();
+            apDecodeService.processListItems(model, model.getQuery(), mockXMLService.listItemsSinceChangeToken, {
+                target: cache
+            });
+            return cache;
+        };
+
 
 
         return model;

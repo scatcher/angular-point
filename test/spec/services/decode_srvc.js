@@ -6,6 +6,7 @@ describe("Factory: apDecodeService", function () {
 
     var apDecodeService,
         mockChangeTokenXML,
+        mockEntities,
         mockModel,
         mockXMLService;
 
@@ -16,7 +17,6 @@ describe("Factory: apDecodeService", function () {
         mockModel = _mockModel_;
 
         mockChangeTokenXML = mockXMLService.listItemsSinceChangeToken;
-
     }));
 
 
@@ -176,6 +176,7 @@ describe("Factory: apDecodeService", function () {
     });
 
 
+
     describe('extendListDefinitionFromXML', function () {
 
         beforeEach(function () {
@@ -198,7 +199,6 @@ describe("Factory: apDecodeService", function () {
             /** Extend the list with XML */
             apDecodeService.extendFieldDefinitionsFromXML(mockModel.list.fields, mockChangeTokenXML);
             multiChoiceFieldDefinition = mockModel.getFieldDefinition('multiChoice');
-            console.log(multiChoiceFieldDefinition);
         });
 
         it('should add all of the specified choices', function () {
@@ -209,6 +209,44 @@ describe("Factory: apDecodeService", function () {
             expect(multiChoiceFieldDefinition.displayName).toEqual('Multi Choice');
         });
     });
+
+    describe('dependent methods', function () {
+        beforeEach(function () {
+            mockEntities = mockModel.getCache();
+            apDecodeService.processListItems(mockModel, mockModel.getQuery(), mockChangeTokenXML, {
+                target: mockEntities
+            });
+        });
+
+
+        //describe('Lookup', function () {
+        //
+        //    describe('Lookup.getEntity', function () {
+        //
+        //        it('gets the correct property', function () {
+        //            expect(_.isFunction(mockEntities[0].lookup.getProperty)).toBe(true);
+        //        });
+        //
+        //        it('reference to the field name of the lookup', function () {
+        //            expect(mockEntities[0].lookup.getProperty()).toEqual('lookup');
+        //        });
+        //
+        //    });
+        //
+        //
+        //});
+
+
+        describe('processListItems', function () {
+
+            it('creates 2 entities', function () {
+                expect(mockEntities.count()).toBe(2);
+            });
+
+        });
+
+    });
+
 
 
     describe('create', function () {
