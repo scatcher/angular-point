@@ -165,7 +165,7 @@ angular.module('angularPoint')
 
         function getEntityCache(entityType, entityId) {
             var entityTypeKey = getEntityTypeKey(entityType);
-            var modelCache = getModelCache(entityType);
+            var modelCache = getModelCache(entityTypeKey);
             /** Create the object structure if it doesn't already exist */
             modelCache[entityId] = modelCache[entityId] || new EntityCache(entityTypeKey, entityId);
             return modelCache[entityId];

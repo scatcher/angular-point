@@ -78,15 +78,15 @@ angular.module('angularPoint')
          * model for the list item.
          * @param {object} model Reference to the model for the list item.
          * @param {object} query Reference to the query object used to retrieve the entity.
-         * @param {array} container Location where we'll be pushing the new entity.
+         * @param {object} indexedCache Location where we'll be pushing the new entity.
          * @returns {Function} Returns a function that takes the new list item while keeping model, query,
          * and container in scope for future reference.
          */
-        function createListItemProvider(model, query, container) {
+        function createListItemProvider(model, query, indexedCache) {
             return function (listItem) {
-                /** Create Reference to the containing array */
-                listItem.getContainer = function () {
-                    return container;
+                /** Create Reference to the indexed cache */
+                listItem.getCache = function () {
+                    return indexedCache;
                 };
                 /** Allow us to reference the originating query that generated this object */
                 listItem.getQuery = function () {
@@ -97,7 +97,7 @@ angular.module('angularPoint')
 
                 /** Register in global application entity cache and extends the existing entity if it
                  * already exists */
-                return apCacheService.registerEntity(entity, container);
+                return apCacheService.registerEntity(entity, indexedCache);
             }
         }
 

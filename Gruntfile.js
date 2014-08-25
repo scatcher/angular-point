@@ -77,7 +77,7 @@ module.exports = function (grunt) {
           '<%= config.src %>/constants.js',
           '<%= config.services %>/*.js',
           '<%= config.factories %>/*.js',
-          '<%= config.src %>/models/user_model.js',
+          '<%= config.src %>/models/*.js',
           '<%= config.src %>/directives/**/*.js',
           '!<%= config.src %>/directives/ap_comments/*.js',
           '.tmp/angular-point-templates.js'

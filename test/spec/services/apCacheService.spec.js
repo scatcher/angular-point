@@ -12,16 +12,16 @@ describe('Service: apCacheService', function () {
     beforeEach(module("angularPoint"));
 
     var apCacheService,
-        mockEntities,
+        mockEntityCache,
         mockModel,
         mockXMLService,
         updatedMock = {
             "id": 1,
-            "text": "Updated Mock"
+            "titleText": "Updated Mock"
         },
         newMock = {
             id: 3,
-            text: "New Mock"
+            titleText: "New Mock"
         },
         emptyEntityCache,
         resolvedEntityCache;
@@ -31,10 +31,10 @@ describe('Service: apCacheService', function () {
         apCacheService = _apCacheService_;
         mockXMLService = _mockXMLService_;
         mockModel = _mockModel_;
-        mockEntities = mockModel.importMocks();
+        mockEntityCache = mockModel.importMocks();
 
     }));
-    
+
     describe('getEntityTypeKey', function () {
         it('returns the key when passed a guid', function () {
             expect(apCacheService.getEntityTypeKey(mockModel.list.guid)).toEqual(mockModel.list.guid.toLowerCase());
@@ -47,17 +47,17 @@ describe('Service: apCacheService', function () {
 
     describe('registerEntity', function () {
         beforeEach(function () {
-            apCacheService.registerEntity(new mockModel.factory(updatedMock), mockEntities);
-            apCacheService.registerEntity(new mockModel.factory(newMock), mockEntities);
+            apCacheService.registerEntity(new mockModel.factory(updatedMock), mockEntityCache);
+            apCacheService.registerEntity(new mockModel.factory(newMock), mockEntityCache);
 
         });
 
         it('extends the existing record', function () {
-            expect(mockEntities.first().text).toEqual('Updated Mock');
+            expect(mockEntityCache.first().titleText).toEqual('Updated Mock');
         });
 
         it('adds a entity when a new mock is registered', function () {
-            expect(mockEntities.count()).toEqual(3);
+            expect(mockEntityCache.count()).toEqual(3);
         });
     });
 
@@ -80,7 +80,11 @@ describe('Service: apCacheService', function () {
     describe('removeEntity', function () {
         beforeEach(function () {
             resolvedEntityCache = apCacheService.getEntityCache(mockModel.list.guid.toLowerCase(), 1);
+            //Remove entity 1
             resolvedEntityCache.removeEntity();
+            //Reinstantiate entity 1 without adding an entity
+            resolvedEntityCache = apCacheService.getEntityCache(mockModel.list.guid.toLowerCase(), 1);
+
         });
         it('should remove 1 of the 2 cache\'s', function () {
             expect(resolvedEntityCache.entity).toBeUndefined();

@@ -26,7 +26,7 @@ angular.module('angularPoint')
                 title: 'MockList', /**Maps to the offline XML file in dev folder (no spaces) */
                 guid: '{F5345FE7-2F7C-49F7-87D0-DBFEBDD0CE61}', /**List GUID can be found in list properties in SharePoint designer */
                 customFields: [
-                    { internalName: "Title", objectType: "Text", mappedName: "text", readOnly:false },
+                    { internalName: "Title", objectType: "Text", mappedName: "titleText", readOnly:false },
                     // Has required = true to test field validation.
                     { internalName: "Boolean", objectType: "Boolean", mappedName: "boolean", readOnly:false, required: true},
                     { internalName: "Calculated", objectType: "Calculated", mappedName: "calculated", readOnly:true },
@@ -90,15 +90,18 @@ angular.module('angularPoint')
 
 
         model.importMocks = function () {
-            var cache = model.getCache();
-            //cache.clear();
-            apDecodeService.processListItems(model, model.getQuery(), mockXMLService.listItemsSinceChangeToken, {
-                target: cache
+            var primaryCache = model.getCache('primary');
+            var secondaryCache = model.getCache('secondary');
+            primaryCache.clear();
+            secondaryCache.clear();
+            apDecodeService.processListItems(model, model.getQuery('primary'), mockXMLService.listItemsSinceChangeToken, {
+                target: primaryCache
             });
-            return cache;
+            /** Populate secondary query cache with same objects */
+            _.extend(secondaryCache, primaryCache);
+
+            return primaryCache;
         };
-
-
 
         return model;
     });

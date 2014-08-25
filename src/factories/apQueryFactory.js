@@ -143,6 +143,7 @@ angular.module('angularPoint')
 
         Query.prototype = {
             execute: execute,
+            getCache: getCache,
             searchLocalCache: searchLocalCache
         };
 
@@ -182,7 +183,7 @@ angular.module('angularPoint')
 
                 var defaults = {
                     /** Designate the central cache for this query if not already set */
-                    target: query.cache
+                    target: query.getCache()
                 };
 
                 /** Extend defaults with any options */
@@ -209,6 +210,11 @@ angular.module('angularPoint')
             }
         }
 
+        function getCache() {
+            var query = this;
+            return query.indexedCache;
+        }
+
         /**
          * @ngdoc function
          * @name Query.searchLocalCache
@@ -224,7 +230,7 @@ angular.module('angularPoint')
             var model = query.getModel();
             var defaults = {
                 cacheName: query.name,
-                localCache: query.cache
+                localCache: query.getCache()
             };
             var opts = _.extend({}, defaults, options);
             return model.searchLocalCache(value, opts);

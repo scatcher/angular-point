@@ -26,15 +26,18 @@ angular.module('angularPoint')
         /** Exposed functionality */
         return {
             addUpdateItemModel: addUpdateItemModel,
+            cleanCache: cleanCache,
             deleteAttachment: deleteAttachment,
             deleteItemModel: deleteItemModel,
+            executeQuery: executeQuery,
             getCollection: getCollection,
             getFieldVersionHistory: getFieldVersionHistory,
-//      getList: getList,
             getListFields: getListFields,
             getListItemById: getListItemById,
             getView: getView,
-            executeQuery: executeQuery,
+            retrieveChangeToken: retrieveChangeToken,
+            removeEntityFromLocalCache: removeEntityFromLocalCache,
+            retrievePermMask: retrievePermMask,
             serviceWrapper: serviceWrapper
         };
 
@@ -502,11 +505,6 @@ angular.module('angularPoint')
             /** Extend defaults **/
             var opts = _.extend({}, defaults, options);
 
-            /** Allow a list item to reference the query which generated it */
-            opts.getQuery = function () {
-                return query;
-            };
-
             /** Trigger processing animation */
             apQueueService.increase();
 
@@ -664,30 +662,30 @@ angular.module('angularPoint')
         }
 
 
-        /**
-         * @ngdoc function
-         * @name apDataService.updateAllCaches
-         * @description
-         * Propagates a change to all duplicate entities in all cached queries within a given model.
-         * @param {object} model Reference to the entities model.
-         * @param {object} entity JavaScript object representing the SharePoint list item.
-         * @param {object} [exemptQuery] - The query containing the updated item is automatically updated so we don't
-         * need to process it.
-         *
-         * @returns {number} The number of queries where the entity was found and updated.
-         */
-        function updateAllCaches(model, entity, exemptQuery) {
-            var queriesUpdated = 0;
-            /** Search through each of the queries and update any occurrence of this entity */
-            _.each(model.queries, function (query) {
-                /** Process all query caches except the one originally used to retrieve entity because
-                 * that is automatically updated by "apDecodeService.processListItems". */
-                if (query != exemptQuery) {
-                    apDecodeService.updateLocalCache(query.getCache(), [entity]);
-                }
-            });
-            return queriesUpdated;
-        }
+//        /**
+//         * @ngdoc function
+//         * @name apDataService.updateAllCaches
+//         * @description
+//         * Propagates a change to all duplicate entities in all cached queries within a given model.
+//         * @param {object} model Reference to the entities model.
+//         * @param {object} entity JavaScript object representing the SharePoint list item.
+//         * @param {object} [exemptQuery] - The query containing the updated item is automatically updated so we don't
+//         * need to process it.
+//         *
+//         * @returns {number} The number of queries where the entity was found and updated.
+//         */
+//        function updateAllCaches(model, entity, exemptQuery) {
+//            var queriesUpdated = 0;
+//            /** Search through each of the queries and update any occurrence of this entity */
+//            _.each(model.queries, function (query) {
+//                /** Process all query caches except the one originally used to retrieve entity because
+//                 * that is automatically updated by "apDecodeService.processListItems". */
+//                if (query != exemptQuery) {
+//                    apDecodeService.updateLocalCache(query.getCache(), [entity]);
+//                }
+//            });
+//            return queriesUpdated;
+//        }
 
         /**
          * @ngdoc function
@@ -697,12 +695,7 @@ angular.module('angularPoint')
          * @param {object} model Reference to the entities model.
          * @param {object} entity JavaScript object representing the SharePoint list item.
          * @param {object} [options] Optional configuration params.
-         * @param {string} [options.mode='update'] [update, replace, return]
          * @param {boolean} [options.buildValuePairs=true] Automatically generate pairs based on fields defined in model.
-         * @param {boolean} [options.updateAllCaches=false] Search through the cache for each query on the model and
-         * update all instances of this entity to ensure entity is updated everywhere.  This is more process intensive
-         * so by default we only update the cached entity in the cache where this entity is currently stored.  Note: Only
-         * applicable when updating an entity.
          * @param {Array[]} [options.valuePairs] Precomputed value pairs to use instead of generating them for each
          * field identified in the model.
          * @returns {object} Promise which resolves with the newly updated item.
@@ -714,6 +707,8 @@ angular.module('angularPoint')
                 updateAllCaches: false,
                 valuePairs: []
             };
+            /** Reference to the the query that needs to be updated if this is an existing entity */
+            var query;
             var deferred = $q.defer();
             var opts = _.extend({}, defaults, options);
 
@@ -735,9 +730,13 @@ angular.module('angularPoint')
                 /** Updating existing list item */
                 payload.batchCmd = 'Update';
                 payload.ID = entity.id;
+                query = entity.getQuery();
             } else {
                 /** Creating new list item */
                 payload.batchCmd = 'New';
+                payload.indexedCache = {};
+                payload.getCache = function () {return payload.indexedCache;};
+                query = payload;
             }
 
             if (online) {
@@ -746,14 +745,14 @@ angular.module('angularPoint')
 
                 webServiceCall.then(function () {
                     /** Success */
-                    var output = apDecodeService.processListItems(model, entity.getQuery(), webServiceCall.responseXML, opts);
-                    var updatedEntity = output[0];
-
-                    /** Optionally search through each cache on the model and update any other references to this entity */
-                    if (opts.updateAllCaches && _.isNumber(entity.id)) {
-                        updateAllCaches(model, updatedEntity, entity.getQuery());
-                    }
-                    deferred.resolve(updatedEntity);
+                    var responseArray = apDecodeService.processListItems(model, query, webServiceCall.responseXML, opts);
+//                    var updatedEntity = output[0];
+//
+//                    /** Optionally search through each cache on the model and update any other references to this entity */
+//                    if (opts.updateAllCaches && _.isNumber(entity.id)) {
+//                        updateAllCaches(model, updatedEntity, entity.getQuery());
+//                    }
+                    deferred.resolve(responseArray[0]);
                 }, function (outcome) {
                     /** In the event of an error, display toast */
                     toastr.error('There was an error getting the requested data from ' + model.list.name);
@@ -790,17 +789,17 @@ angular.module('angularPoint')
                     _.each(model.queries, function (query) {
                         /** Find next logical id to assign */
                         var maxId = 1;
-                        _.each(query.getCache(), function (entity) {
-                            if (entity.id > maxId) {
-                                maxId = entity.id;
-                            }
-                        });
+                        /** Find the entity with the highest ID number */
+                        var lastEntity = query.getCache().last();
+                        if(lastEntity) {
+                            maxId = lastEntity.id;
+                        }
                         offlineDefaults.id = maxId + 1;
                         /** Add default attributes */
                         _.extend(entity, offlineDefaults);
                         /** Use factory to build new object */
                         newItem = new model.factory(entity);
-                        query.getCache().push(newItem);
+                        query.getCache().addEntity(newItem);
                     });
 
                     deferred.resolve(newItem);
@@ -823,7 +822,7 @@ angular.module('angularPoint')
          * @param {object} model Reference to the entities model.
          * @param {object} entity JavaScript object representing the SharePoint list item.
          * @param {object} [options] Optional configuration params.
-         * @param {Array} [options.target=item.getContainer()] Optional location to search through and remove the
+         * @param {Array} [options.target=item.getCache()] Optional location to search through and remove the
          * local cached copy.
          * @param {boolean} [options.updateAllCaches=false] Search through the cache for each query on the model
          * to ensure entity is removed everywhere.  This is more process intensive so by default we only delete the
@@ -832,7 +831,7 @@ angular.module('angularPoint')
          */
         function deleteItemModel(model, entity, options) {
             var defaults = {
-                target: _.isFunction(entity.getContainer) ? entity.getContainer() : model.getCache(),
+                target: _.isFunction(entity.getCache) ? entity.getCache() : model.getCache(),
                 updateAllCaches: false,
                 operation: 'UpdateListItems',
                 webURL: model.list.webURL,
@@ -845,30 +844,11 @@ angular.module('angularPoint')
 
             var deferred = $q.defer();
 
-            function cleanCache() {
-                var deleteCount = 0;
-                if (opts.updateAllCaches) {
-                    var model = entity.getModel();
-                    _.each(model.queries, function (query) {
-                        var entityRemoved = removeEntityFromLocalCache(query.getCache(), entity.id);
-                        if (entityRemoved) {
-                            deleteCount++;
-                        }
-                    });
-                } else {
-                    var entityRemoved = removeEntityFromLocalCache(opts.target, entity.id);
-                    if (entityRemoved) {
-                        deleteCount++;
-                    }
-                }
-                return deleteCount;
-            }
-
             if (online) {
                 serviceWrapper(opts)
                     .then(function () {
                         /** Success */
-                        cleanCache();
+                        cleanCache(entity, opts);
                         apQueueService.decrease();
                         deferred.resolve(opts.target);
                     }, function (outcome) {
@@ -879,11 +859,38 @@ angular.module('angularPoint')
             } else {
                 /** Offline debug mode */
                 /** Simulate deletion and remove locally */
-                cleanCache();
+                cleanCache(entity, opts);
                 deferred.resolve(opts.target);
             }
 
             return deferred.promise;
         }
+
+        function cleanCache(entity, options) {
+            var model = entity.getModel();
+            var defaults = {
+                target: _.isFunction(entity.getCache) ? entity.getCache() : model.getCache(),
+                updateAllCaches: false
+            };
+
+            var opts = _.extend({}, defaults, options);
+            var deleteCount = 0;
+
+            if (opts.updateAllCaches) {
+                _.each(model.queries, function (query) {
+                    var entityRemoved = removeEntityFromLocalCache(query.getCache(), entity.id);
+                    if (entityRemoved) {
+                        deleteCount++;
+                    }
+                });
+            } else {
+                var entityRemoved = removeEntityFromLocalCache(opts.target, entity.id);
+                if (entityRemoved) {
+                    deleteCount++;
+                }
+            }
+            return deleteCount;
+        }
+
     }
 );

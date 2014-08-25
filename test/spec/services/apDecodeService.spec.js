@@ -6,7 +6,7 @@ describe("Factory: apDecodeService", function () {
 
     var apDecodeService,
         mockChangeTokenXML,
-        mockEntities,
+        mockEntityCache,
         mockModel,
         mockXMLService;
 
@@ -212,9 +212,9 @@ describe("Factory: apDecodeService", function () {
 
     describe('dependent methods', function () {
         beforeEach(function () {
-            mockEntities = mockModel.getCache();
+            mockEntityCache = mockModel.getCache();
             apDecodeService.processListItems(mockModel, mockModel.getQuery(), mockChangeTokenXML, {
-                target: mockEntities
+                target: mockEntityCache
             });
         });
 
@@ -224,11 +224,11 @@ describe("Factory: apDecodeService", function () {
         //    describe('Lookup.getEntity', function () {
         //
         //        it('gets the correct property', function () {
-        //            expect(_.isFunction(mockEntities[0].lookup.getProperty)).toBe(true);
+        //            expect(_.isFunction(mockEntityCache[0].lookup.getProperty)).toBe(true);
         //        });
         //
         //        it('reference to the field name of the lookup', function () {
-        //            expect(mockEntities[0].lookup.getProperty()).toEqual('lookup');
+        //            expect(mockEntityCache[0].lookup.getProperty()).toEqual('lookup');
         //        });
         //
         //    });
@@ -240,7 +240,7 @@ describe("Factory: apDecodeService", function () {
         describe('processListItems', function () {
 
             it('creates 2 entities', function () {
-                expect(mockEntities.count()).toBe(2);
+                expect(mockEntityCache.count()).toBe(2);
             });
 
         });
