@@ -180,7 +180,9 @@ angular.module('angularPoint')
 
         return {
             create: create,
-            Model: Model
+            deepGroup: deepGroup,
+            Model: Model,
+            searchLocalCache: searchLocalCache
         };
 
 
@@ -210,6 +212,7 @@ angular.module('angularPoint')
          */
         function searchLocalCache(value, options) {
             var model = this,
+                searchCache,
                 searchIndex,
                 searchResults,
                 defaults = {
@@ -227,23 +230,40 @@ angular.module('angularPoint')
                 /** Create a cache if it doesn't already exist */
                 model._cachedIndexes = model._cachedIndexes || {};
                 model._cachedIndexes[opts.cacheName] = model._cachedIndexes[opts.cacheName] || {};
-                var cache = model._cachedIndexes[opts.cacheName];
+                searchCache = model._cachedIndexes[opts.cacheName];
                 var properties = opts.propertyPath.split('.');
+                /** Create cache location with the same property map as the one provided
+                 * @example
+                 * <pre>
+                 * model._cachedIndexes{
+                 *      main: { //Default Cache name unless otherwise specified
+                 *          lookup: {
+                 *              lookupId: { ///// Cache Location for 'lookup.lookupId' //////// }
+                 *          },
+                 *          user: {
+                 *              lookupValue: { ///// Cache Location for 'user.lookupValue' //////// }
+                 *          }
+                 *      }
+                 * }
+                 * </pre>
+                 */
                 _.each(properties, function (attribute) {
-                    cache[attribute] = cache[attribute] || {};
+                    searchCache[attribute] = searchCache[attribute] || {};
                     /** Update cache reference to another level down the cache object */
-                    cache = cache[attribute];
+                    searchCache = searchCache[attribute];
                 });
-                //cache.map = cache.map || [];
-                /** Remap if no existing map, the number of items in the array has changed, or the rebuild flag is set */
-                if (!_.isNumber(cache.count) || cache.count !== opts.localCache.count() || opts.rebuildIndex) {
-                    cache.indexedCache = deepGroup(opts.localCache, opts.propertyPath);
-                    /** Store the current length of the array for future comparisons */
-                    cache.count = opts.localCache.count();
-                }
-                searchIndex = cache.indexedCache;
-            }
 
+                /** Remap if no existing map, the number of items in the array has changed, or the rebuild flag is set */
+                if (!_.isNumber(searchCache.count) || searchCache.count !== opts.localCache.count() || opts.rebuildIndex) {
+                    searchCache.indexedCache = deepGroup(opts.localCache, opts.propertyPath);
+                    /** Store the current length of the array for future comparisons */
+                    searchCache.count = opts.localCache.count();
+                    /** Simple counter to gauge the frequency we rebuild cache */
+                    searchCache.buildCount = searchCache.buildCount || 0;
+                    searchCache.buildCount++;
+                }
+                searchIndex = searchCache.indexedCache;
+            }
 
             /** Allow an array of values to be passed in */
             if (_.isArray(value)) {
@@ -251,15 +271,33 @@ angular.module('angularPoint')
                 _.each(value, function (key) {
                     searchResults.push(searchIndex[key]);
                 });
+            /** Primitive passed in */
             } else {
                 searchResults = searchIndex[value];
             }
-
-
-            return searchIndex;
+            return searchResults;
         }
 
+        /**
+         * @ngdoc function
+         * @name Model.deepGroup
+         * @module Model
+         * @description
+         * Creates an indexed cache of entities using a provided property path string to find the key for the cache.
+         * @param {object} object A cached index object.
+         * @param {string} propertyPath Dot separated property path that leads to the desired property to use as a key.
+         * @returns {object} New indexed cache based on the provided property path string.
+         */
         function deepGroup(object, propertyPath) {
+
+            function DeepGroup() {
+            }
+
+            /** Use the methods on the IndexedCacheFactory for the base prototype */
+            DeepGroup.prototype = apIndexedCacheFactory.IndexedCache;
+            /** Overwrite the addEntity method on base prototype to allow for dynamic property path */
+            DeepGroup.prototype.addEntity = addEntity;
+
 
             var group = new DeepGroup();
             _.each(object, function (entity) {
@@ -268,13 +306,6 @@ angular.module('angularPoint')
 
             return group;
 
-            function DeepGroup() {
-            }
-
-            /** Use the methods on the IndexedCacheFactory for the base prototype */
-            DeepGroup.prototype = apIndexedCacheFactory.IndexedCache;
-            /** Overwrite the addEntity method on base prototype to allow for dynamic property path */
-            DeepGroup.addEntity = addEntity;
 
             function addEntity(entity) {
                 var cache = this;
@@ -284,61 +315,6 @@ angular.module('angularPoint')
                 }
             }
         }
-
-//        function searchLocalCache(value, options) {
-//            var model = this,
-//                searchCache,
-//                response,
-//                defaults = {
-//                    propertyPath: 'id',
-//                    localCache: model.getCache(),
-//                    cacheName: 'main',
-//                    rebuildIndex: false
-//                };
-//            /** Extend defaults with any provided options */
-//            var opts = _.extend({}, defaults, options);
-//
-//            if (opts.propertyPath === 'id') {
-//                /** No need to index or iterate, we can directly check to see if it exists */
-//                searchCache = function(propertyPath) {
-//                    return opts.localCache[propertyPath];
-//                }
-//            } else {
-//                /** We need to utilize a custom cache */
-//                /** Create a cache if it doesn't already exist */
-//                model._cachedIndexes = model._cachedIndexes || {};
-//                model._cachedIndexes[opts.cacheName] = model._cachedIndexes[opts.cacheName] || {};
-//                var cache = model._cachedIndexes[opts.cacheName];
-//                var properties = opts.propertyPath.split('.');
-//                _.each(properties, function (attribute) {
-//                    cache[attribute] = cache[attribute] || {};
-//                    /** Update cache reference to another level down the cache object */
-//                    cache = cache[attribute];
-//                });
-//                cache.map = cache.map || [];
-//                /** Remap if no existing map, the number of items in the array has changed, or the rebuild flag is set */
-//                if (!_.isNumber(cache.count) || cache.count !== opts.localCache.count() || opts.rebuildIndex) {
-//                    cache.map = _.deepPluck(opts.localCache, opts.propertyPath);
-//                    /** Store the current length of the array for future comparisons */
-//                    cache.count = opts.localCache.count();
-//                }
-//                searchCache = function() {
-//                    return opts.localCache[cache.map.indexOf(value)];
-//                }
-//            }
-//
-//            /** Allow an array of values to be passed in */
-//            if (_.isArray(value)) {
-//                response = [];
-//                _.each(value, function (key) {
-//                    response.push(searchCache(key));
-////                    response.push(opts.localCache[cache.map.indexOf(key)]);
-//                });
-//            } else {
-//                response = searchCache(value);
-//            }
-//            return response;
-//        }
 
         /**
          * @ngdoc function

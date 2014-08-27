@@ -53,7 +53,7 @@ describe("Factory: apIndexedCacheFactory", function () {
 
     describe('removeEntity', function () {
         beforeEach(function () {
-            mockCache.removeEntity(entityOne);
+            mockCache.removeEntity(mockCache[1]);
         });
         it('removes the first cached value', function () {
             expect(mockCache.first().title).toEqual('test2');

@@ -190,6 +190,20 @@ angular.module('angularPoint')
 
         /**
          * @ngdoc function
+         * @name angularPoint.apCacheService:getCachedEntity
+         * @methodOf angularPoint.apCacheService
+         * @description
+         * Synchronise call to return a cached entity;
+         * @param {string} entityType GUID for list the list item belongs to.
+         * @param {number} entityId The entity.id.
+         * @returns {object} entity || undefined
+         */
+        function getCachedEntity(entityType, entityId) {
+            return getEntityContainer(entityType, entityId).entity;
+        }
+
+        /**
+         * @ngdoc function
          * @name angularPoint.apCacheService:getEntity
          * @methodOf angularPoint.apCacheService
          * @description
@@ -200,7 +214,7 @@ angular.module('angularPoint')
          * @returns {promise} entity
          */
         function getEntity(entityType, entityId) {
-            var entityCache = getEntityCache(entityType, entityId);
+            var entityCache = getEntityContainer(entityType, entityId);
             return entityCache.getEntity();
         }
 
@@ -216,7 +230,7 @@ angular.module('angularPoint')
          */
         function registerEntity(entity, targetCache) {
             var model = entity.getModel();
-            var entityCache = getEntityCache(model.list.guid, entity.id);
+            var entityCache = getEntityContainer(model.list.guid, entity.id);
             /** Maintain a single object in cache for this entity */
             if (!_.isObject(entityCache.entity)) {
                 /** Entity isn't currently in the cache */
@@ -258,7 +272,7 @@ angular.module('angularPoint')
          * @param {number} entityId The entity.id.
          */
         function removeEntity(entityType, entityId) {
-            var entityCache = getEntityCache(entityType, entityId);
+            var entityCache = getEntityContainer(entityType, entityId);
             entityCache.removeEntity();
         }
 
@@ -267,7 +281,7 @@ angular.module('angularPoint')
             return entityCache[entityTypeKey];
         }
 
-        function getEntityCache(entityType, entityId) {
+        function getEntityContainer(entityType, entityId) {
             var entityTypeKey = getEntityTypeKey(entityType);
             var modelCache = getModelCache(entityTypeKey);
             /** Create the object structure if it doesn't already exist */
@@ -299,8 +313,9 @@ angular.module('angularPoint')
 
         return {
             entityCache: entityCache,
+            getCachedEntity: getCachedEntity,
             getEntity: getEntity,
-            getEntityCache: getEntityCache,
+            getEntityContainer: getEntityContainer,
             getEntityTypeKey: getEntityTypeKey,
             removeEntity: removeEntity,
             registerEntity: registerEntity,
@@ -3598,6 +3613,7 @@ angular.module('angularPoint')
             first: first,
             keys: keys,
             last: last,
+            nthEntity: nthEntity,
             removeEntity: removeEntity,
             toArray: toArray
         };
@@ -3620,7 +3636,7 @@ angular.module('angularPoint')
         function addEntity(entity) {
             var cache = this;
 
-            if (_.isObject(entity) && entity.id) {
+            if (_.isObject(entity)) {
                 /** Only add the entity to the cache if it's not already there */
                 if(!cache[entity.id]) {
                     cache[entity.id] = entity;
@@ -3657,6 +3673,24 @@ angular.module('angularPoint')
             return _.keys(cache);
         }
 
+
+        /**
+         * @ngdoc function
+         * @name angularPoint.IndexedCache:nthEntity
+         * @methodOf angularPoint.IndexedCache
+         * @description
+         * Based on the
+         * @param index
+         * @returns {object} First entity in cache.
+         */
+        function nthEntity(index) {
+            var cache = this;
+            var keys = cache.keys();
+            return cache[keys[index]];
+        }
+
+
+
         /**
          * @ngdoc function
          * @name angularPoint.IndexedCache:first
@@ -3667,8 +3701,7 @@ angular.module('angularPoint')
          */
         function first() {
             var cache = this;
-            var keys = cache.keys();
-            return (keys.length > 0) ? cache[keys[0]] : undefined;
+            return cache.nthEntity(0);
         }
 
         /**
@@ -3682,7 +3715,7 @@ angular.module('angularPoint')
         function last() {
             var cache = this;
             var keys = cache.keys();
-            return (keys.length > 0) ? cache[keys[keys.length - 1]] : undefined;
+            return cache[keys[keys.length - 1]];
         }
 
         /**
@@ -4787,9 +4820,9 @@ angular.module('angularPoint')
  * @requires angularPoint.apUtilityService
  */
 angular.module('angularPoint')
-    .factory('apModelFactory', ["_", "apModalService", "apCacheService", "apDataService", "apListFactory", "apListItemFactory", "apQueryFactory", "apUtilityService", "apFieldService", "apConfig", "$q", "toastr", function (_, apModalService, apCacheService, apDataService, apListFactory,
-                                         apListItemFactory, apQueryFactory, apUtilityService, apFieldService,
-                                         apConfig, $q, toastr) {
+    .factory('apModelFactory', ["_", "apModalService", "apCacheService", "apDataService", "apListFactory", "apListItemFactory", "apQueryFactory", "apUtilityService", "apFieldService", "apConfig", "apIndexedCacheFactory", "$q", "toastr", function (_, apModalService, apCacheService, apDataService, apListFactory,
+                                         apListItemFactory, apQueryFactory, apUtilityService, apFieldService, apConfig,
+                                         apIndexedCacheFactory, $q, toastr) {
 
         var defaultQueryName = apConfig.defaultQueryName;
 
@@ -4952,7 +4985,9 @@ angular.module('angularPoint')
 
         return {
             create: create,
-            Model: Model
+            deepGroup: deepGroup,
+            Model: Model,
+            searchLocalCache: searchLocalCache
         };
 
 
@@ -4980,44 +5015,110 @@ angular.module('angularPoint')
          *
          * @returns {(object|object[])} Either the object(s) that you're searching for or undefined if not found.
          */
-        function searchLocalCache (value, options) {
-            var model = this;
-            var response;
-            var defaults = {
-                propertyPath: 'id',
-                localCache: model.getCache(),
-                cacheName: 'main',
-                rebuildIndex: false
-            };
+        function searchLocalCache(value, options) {
+            var model = this,
+                searchCache,
+                searchIndex,
+                searchResults,
+                defaults = {
+                    propertyPath: 'id',
+                    localCache: model.getCache(),
+                    cacheName: 'main',
+                    rebuildIndex: false
+                };
             /** Extend defaults with any provided options */
             var opts = _.extend({}, defaults, options);
-            /** Create a cache if it doesn't already exist */
-            model._cachedIndexes = model._cachedIndexes || {};
-            model._cachedIndexes[opts.cacheName] = model._cachedIndexes[opts.cacheName] || {};
-            var cache = model._cachedIndexes[opts.cacheName];
-            var properties = opts.propertyPath.split('.');
-            _.each(properties, function (attribute) {
-                cache[attribute] = cache[attribute] || {};
-                /** Update cache reference to another level down the cache object */
-                cache = cache[attribute];
-            });
-            cache.map = cache.map || [];
-            /** Remap if no existing map, the number of items in the array has changed, or the rebuild flag is set */
-            if (!_.isNumber(cache.count) || cache.count !== opts.localCache.length || opts.rebuildIndex) {
-                cache.map = _.deepPluck(opts.localCache, opts.propertyPath);
-                /** Store the current length of the array for future comparisons */
-                cache.count = opts.localCache.length;
+
+            if (opts.propertyPath === 'id') {
+                searchIndex = opts.localCache;
+            } else {
+                /** Create a cache if it doesn't already exist */
+                model._cachedIndexes = model._cachedIndexes || {};
+                model._cachedIndexes[opts.cacheName] = model._cachedIndexes[opts.cacheName] || {};
+                searchCache = model._cachedIndexes[opts.cacheName];
+                var properties = opts.propertyPath.split('.');
+                /** Create cache location with the same property map as the one provided
+                 * @example
+                 * <pre>
+                 * model._cachedIndexes{
+                 *      main: { //Default Cache name unless otherwise specified
+                 *          lookup: {
+                 *              lookupId: { ///// Cache Location for 'lookup.lookupId' //////// }
+                 *          },
+                 *          user: {
+                 *              lookupValue: { ///// Cache Location for 'user.lookupValue' //////// }
+                 *          }
+                 *      }
+                 * }
+                 * </pre>
+                 */
+                _.each(properties, function (attribute) {
+                    searchCache[attribute] = searchCache[attribute] || {};
+                    /** Update cache reference to another level down the cache object */
+                    searchCache = searchCache[attribute];
+                });
+
+                /** Remap if no existing map, the number of items in the array has changed, or the rebuild flag is set */
+                if (!_.isNumber(searchCache.count) || searchCache.count !== opts.localCache.count() || opts.rebuildIndex) {
+                    searchCache.indexedCache = deepGroup(opts.localCache, opts.propertyPath);
+                    /** Store the current length of the array for future comparisons */
+                    searchCache.count = opts.localCache.count();
+                    /** Simple counter to gauge the frequency we rebuild cache */
+                    searchCache.buildCount = searchCache.buildCount || 0;
+                    searchCache.buildCount++;
+                }
+                searchIndex = searchCache.indexedCache;
             }
+
             /** Allow an array of values to be passed in */
             if (_.isArray(value)) {
-                response = [];
+                searchResults = [];
                 _.each(value, function (key) {
-                    response.push(opts.localCache[cache.map.indexOf(key)]);
+                    searchResults.push(searchIndex[key]);
                 });
+            /** Primitive passed in */
             } else {
-                response = opts.localCache[cache.map.indexOf(value)];
+                searchResults = searchIndex[value];
             }
-            return response;
+            return searchResults;
+        }
+
+        /**
+         * @ngdoc function
+         * @name Model.deepGroup
+         * @module Model
+         * @description
+         * Creates an indexed cache of entities using a provided property path string to find the key for the cache.
+         * @param {object} object A cached index object.
+         * @param {string} propertyPath Dot separated property path that leads to the desired property to use as a key.
+         * @returns {object} New indexed cache based on the provided property path string.
+         */
+        function deepGroup(object, propertyPath) {
+
+            function DeepGroup() {
+            }
+
+            /** Use the methods on the IndexedCacheFactory for the base prototype */
+            DeepGroup.prototype = apIndexedCacheFactory.IndexedCache;
+            /** Overwrite the addEntity method on base prototype to allow for dynamic property path */
+            DeepGroup.prototype.addEntity = addEntity;
+
+
+            var group = new DeepGroup();
+            _.each(object, function (entity) {
+                group.addEntity(entity);
+            });
+
+            return group;
+
+
+            function addEntity(entity) {
+                var cache = this;
+                var targetProperty = _.deepGet(entity, propertyPath);
+                if (targetProperty) {
+                    cache[targetProperty] = entity;
+                }
+            }
         }
 
         /**

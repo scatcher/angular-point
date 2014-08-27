@@ -49,7 +49,6 @@ describe('Service: apCacheService', function () {
         beforeEach(function () {
             apCacheService.registerEntity(new mockModel.factory(updatedMock), mockEntityCache);
             apCacheService.registerEntity(new mockModel.factory(newMock), mockEntityCache);
-
         });
 
         it('extends the existing record', function () {
@@ -61,11 +60,18 @@ describe('Service: apCacheService', function () {
         });
     });
 
+    describe('Function: getCachedEntity', function () {
+        it('finds the correct entity via the cache service istead of the model', function () {
+            var entity = apCacheService.getCachedEntity(mockModel.list.guid, 1);
+            expect(entity.titleText).toEqual('Mock 1');
+        });
+    });
 
-    describe('getEntityCache', function () {
+
+    describe('getEntityContainer', function () {
         beforeEach(function () {
-            emptyEntityCache = apCacheService.getEntityCache(mockModel.list.guid.toLowerCase(), 100);
-            resolvedEntityCache = apCacheService.getEntityCache(mockModel.list.guid.toLowerCase(), 1);
+            emptyEntityCache = apCacheService.getEntityContainer(mockModel.list.guid.toLowerCase(), 100);
+            resolvedEntityCache = apCacheService.getEntityContainer(mockModel.list.guid.toLowerCase(), 1);
         });
         it('shouldn\'t have a valid entity for a new cache', function () {
             expect(emptyEntityCache.entity).toBeUndefined();
@@ -79,11 +85,11 @@ describe('Service: apCacheService', function () {
 
     describe('removeEntity', function () {
         beforeEach(function () {
-            resolvedEntityCache = apCacheService.getEntityCache(mockModel.list.guid.toLowerCase(), 1);
+            resolvedEntityCache = apCacheService.getEntityContainer(mockModel.list.guid.toLowerCase(), 1);
             //Remove entity 1
             resolvedEntityCache.removeEntity();
             //Reinstantiate entity 1 without adding an entity
-            resolvedEntityCache = apCacheService.getEntityCache(mockModel.list.guid.toLowerCase(), 1);
+            resolvedEntityCache = apCacheService.getEntityContainer(mockModel.list.guid.toLowerCase(), 1);
 
         });
         it('should remove 1 of the 2 cache\'s', function () {

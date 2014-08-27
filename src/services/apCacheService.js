@@ -86,6 +86,20 @@ angular.module('angularPoint')
 
         /**
          * @ngdoc function
+         * @name angularPoint.apCacheService:getCachedEntity
+         * @methodOf angularPoint.apCacheService
+         * @description
+         * Synchronise call to return a cached entity;
+         * @param {string} entityType GUID for list the list item belongs to.
+         * @param {number} entityId The entity.id.
+         * @returns {object} entity || undefined
+         */
+        function getCachedEntity(entityType, entityId) {
+            return getEntityContainer(entityType, entityId).entity;
+        }
+
+        /**
+         * @ngdoc function
          * @name angularPoint.apCacheService:getEntity
          * @methodOf angularPoint.apCacheService
          * @description
@@ -96,7 +110,7 @@ angular.module('angularPoint')
          * @returns {promise} entity
          */
         function getEntity(entityType, entityId) {
-            var entityCache = getEntityCache(entityType, entityId);
+            var entityCache = getEntityContainer(entityType, entityId);
             return entityCache.getEntity();
         }
 
@@ -112,7 +126,7 @@ angular.module('angularPoint')
          */
         function registerEntity(entity, targetCache) {
             var model = entity.getModel();
-            var entityCache = getEntityCache(model.list.guid, entity.id);
+            var entityCache = getEntityContainer(model.list.guid, entity.id);
             /** Maintain a single object in cache for this entity */
             if (!_.isObject(entityCache.entity)) {
                 /** Entity isn't currently in the cache */
@@ -154,7 +168,7 @@ angular.module('angularPoint')
          * @param {number} entityId The entity.id.
          */
         function removeEntity(entityType, entityId) {
-            var entityCache = getEntityCache(entityType, entityId);
+            var entityCache = getEntityContainer(entityType, entityId);
             entityCache.removeEntity();
         }
 
@@ -163,7 +177,7 @@ angular.module('angularPoint')
             return entityCache[entityTypeKey];
         }
 
-        function getEntityCache(entityType, entityId) {
+        function getEntityContainer(entityType, entityId) {
             var entityTypeKey = getEntityTypeKey(entityType);
             var modelCache = getModelCache(entityTypeKey);
             /** Create the object structure if it doesn't already exist */
@@ -195,8 +209,9 @@ angular.module('angularPoint')
 
         return {
             entityCache: entityCache,
+            getCachedEntity: getCachedEntity,
             getEntity: getEntity,
-            getEntityCache: getEntityCache,
+            getEntityContainer: getEntityContainer,
             getEntityTypeKey: getEntityTypeKey,
             removeEntity: removeEntity,
             registerEntity: registerEntity,

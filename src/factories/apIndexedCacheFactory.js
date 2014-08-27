@@ -55,10 +55,10 @@ angular.module('angularPoint')
         function addEntity(entity) {
             var cache = this;
 
-            if (_.isObject(entity) && entity[cache.keyProperty]) {
+            if (_.isObject(entity)) {
                 /** Only add the entity to the cache if it's not already there */
-                if(!cache[entity[cache.keyProperty]]) {
-                    cache[entity[cache.keyProperty]] = entity;
+                if(!cache[entity.id]) {
+                    cache[entity.id] = entity;
                 }
             }else {
                 console.error('A valid entity wasn\'t found: ', entity);
@@ -160,8 +160,8 @@ angular.module('angularPoint')
          */
         function removeEntity(entity) {
             var cache = this;
-            if(_.isObject && entity[cache.keyProperty] && cache[entity[cache.keyProperty]]) {
-                delete cache[entity[cache.keyProperty]];
+            if(_.isObject && entity.id && cache[entity.id]) {
+                delete cache[entity.id];
             }
         }
 
