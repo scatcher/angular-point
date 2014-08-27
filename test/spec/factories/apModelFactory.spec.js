@@ -4,12 +4,15 @@ ddescribe('Factory: apModelFactory', function () {
 
     beforeEach(module('angularPoint'));
 
-    var mockModel, apModelFactory, deepArray;
+    var mockModel, apModelFactory, deepArray, mockEntityCache;
 
     beforeEach(module("ui.bootstrap"));
     beforeEach(inject(function (_mockModel_, _apModelFactory_) {
         mockModel = _mockModel_;
         apModelFactory = _apModelFactory_;
+
+        mockModel.importMocks();
+        mockEntityCache = mockModel.getCache('primary');
     }));
 
 
@@ -79,13 +82,13 @@ ddescribe('Factory: apModelFactory', function () {
 
     describe('searchLocalCache', function () {
 
-        it('should return the correct object when using an attribute directly on the object', function () {
+        it('returns the correct object when using an attribute directly on the object', function () {
             var searchResults = mockModel.searchLocalCache(1, {
                 propertyPath: 'id',
                 localCache: deepArray,
                 cacheName: 'mock'
             });
-            expect(searchResults).toEqual(deepArray[0]);
+            expect(searchResults).toEqual(deepArray[1]);
         });
 
         it('should return the correct object when a nested property path is used', function () {

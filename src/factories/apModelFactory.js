@@ -15,7 +15,9 @@
  * @requires angularPoint.apUtilityService
  */
 angular.module('angularPoint')
-    .factory('apModelFactory', function (_, apModalService, apCacheService, apDataService, apListFactory, apListItemFactory, apQueryFactory, apUtilityService, apFieldService, apConfig, $q, toastr) {
+    .factory('apModelFactory', function (_, apModalService, apCacheService, apDataService, apListFactory,
+                                         apListItemFactory, apQueryFactory, apUtilityService, apFieldService, apConfig,
+                                         apIndexedCacheFactory, $q, toastr) {
 
         var defaultQueryName = apConfig.defaultQueryName;
 
@@ -206,20 +208,21 @@ angular.module('angularPoint')
          *
          * @returns {(object|object[])} Either the object(s) that you're searching for or undefined if not found.
          */
-        function searchLocalCache (value, options) {
-            var model = this;
-            var response;
-            var defaults = {
-                propertyPath: 'id',
-                localCache: model.getCache(),
-                cacheName: 'main',
-                rebuildIndex: false
-            };
+        function searchLocalCache(value, options) {
+            var model = this,
+                searchIndex,
+                searchResults,
+                defaults = {
+                    propertyPath: 'id',
+                    localCache: model.getCache(),
+                    cacheName: 'main',
+                    rebuildIndex: false
+                };
             /** Extend defaults with any provided options */
             var opts = _.extend({}, defaults, options);
 
-            if(opts.propertyPath === 'id') {
-                response = opts.localCache[value];
+            if (opts.propertyPath === 'id') {
+                searchIndex = opts.localCache;
             } else {
                 /** Create a cache if it doesn't already exist */
                 model._cachedIndexes = model._cachedIndexes || {};
@@ -231,25 +234,55 @@ angular.module('angularPoint')
                     /** Update cache reference to another level down the cache object */
                     cache = cache[attribute];
                 });
-                cache.map = cache.map || [];
+                //cache.map = cache.map || [];
                 /** Remap if no existing map, the number of items in the array has changed, or the rebuild flag is set */
-                if (!_.isNumber(cache.count) || cache.count !== opts.localCache.length || opts.rebuildIndex) {
-                    cache.map = _.deepPluck(opts.localCache, opts.propertyPath);
+                if (!_.isNumber(cache.count) || cache.count !== opts.localCache.count() || opts.rebuildIndex) {
+                    cache.indexedCache = deepGroup(opts.localCache, opts.propertyPath);
                     /** Store the current length of the array for future comparisons */
-                    cache.count = opts.localCache.length;
+                    cache.count = opts.localCache.count();
                 }
-                /** Allow an array of values to be passed in */
-                if (_.isArray(value)) {
-                    response = [];
-                    _.each(value, function (key) {
-                        response.push(opts.localCache[cache.map.indexOf(key)]);
-                    });
-                } else {
-                    response = opts.localCache[cache.map.indexOf(value)];
-                }
+                searchIndex = cache.indexedCache;
             }
 
-            return response;
+
+            /** Allow an array of values to be passed in */
+            if (_.isArray(value)) {
+                searchResults = [];
+                _.each(value, function (key) {
+                    searchResults.push(searchIndex[key]);
+                });
+            } else {
+                searchResults = searchIndex[value];
+            }
+
+
+            return searchIndex;
+        }
+
+        function deepGroup(object, propertyPath) {
+
+            var group = new DeepGroup();
+            _.each(object, function (entity) {
+                group.addEntity(entity);
+            });
+
+            return group;
+
+            function DeepGroup() {
+            }
+
+            /** Use the methods on the IndexedCacheFactory for the base prototype */
+            DeepGroup.prototype = apIndexedCacheFactory.IndexedCache;
+            /** Overwrite the addEntity method on base prototype to allow for dynamic property path */
+            DeepGroup.addEntity = addEntity;
+
+            function addEntity(entity) {
+                var cache = this;
+                var targetProperty = _.deepGet(entity, propertyPath);
+                if (targetProperty) {
+                    cache[targetProperty] = entity;
+                }
+            }
         }
 
 //        function searchLocalCache(value, options) {
