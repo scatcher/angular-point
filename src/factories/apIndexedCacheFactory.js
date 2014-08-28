@@ -99,7 +99,7 @@ angular.module('angularPoint')
          * @methodOf angularPoint.IndexedCache
          * @description
          * Based on the
-         * @param index
+         * @param {number} index The index of the item requested.
          * @returns {object} First entity in cache.
          */
         function nthEntity(index) {

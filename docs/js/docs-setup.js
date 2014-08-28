@@ -19,7 +19,7 @@ NG_DOCS={
       "type": "service",
       "moduleName": "angularPoint",
       "shortDescription": "Stores a reference for all list items based on list GUID and list item id.  Allows us to then register promises that",
-      "keywords": "add allows angularpoint apcacheservice api assuming based belongs cache created deferred entity entityid entitytype eventually existing exists extend fulfills function future guid instance item items list local newly object pass pending point promises reference register registered registers removes requested requests resolve resolves return returns service single stores updated withing"
+      "keywords": "add allows angularpoint apcacheservice api assuming based belongs cache cached call create created creates deferred entity entitycontainer entityid entitytype equaling eventually existing exists extend fulfills function future guid instance item items key keystring list local lookup lowercase model modelcache newly object optionally pass pending point promises provide reference register registered registers removes requested requests resolve resolves return returns secondary service single stored stores synchronise undefined updated withing"
     },
     {
       "section": "api",
@@ -199,7 +199,7 @@ NG_DOCS={
       "type": "object",
       "moduleName": "angularPoint",
       "shortDescription": "Cache constructor that is extended to make it easier to work with via prototype methods.  Located in",
-      "keywords": "add adds angularpoint api apindexedcachefactory array cache cached clears currently easier elements entities entity extended function indexedcache key located methods number object prototype remove removes returns strings turns work"
+      "keywords": "add adds angularpoint api apindexedcachefactory array based cache cached clears currently easier elements entities entity extended function indexedcache item key located methods number object prototype remove removes requested returns strings turns work"
     },
     {
       "section": "api",
@@ -254,6 +254,15 @@ NG_DOCS={
       "moduleName": "apDataService",
       "shortDescription": "Returns the version history for a field in a list item.",
       "keywords": "apconfig apdataservice api array changes configuration defaulturl definition field fielddefinition function getfieldversionhistory getversioncollection guid history internalname item list listitem model object operation options passed promise resolves returns spservices strfieldname strlistid strlistitemid var version weburl"
+    },
+    {
+      "section": "api",
+      "id": "apDataService.getList",
+      "shortName": "apDataService.getList",
+      "type": "function",
+      "moduleName": "apDataService",
+      "shortDescription": "Returns all list details including field and lsit config.",
+      "keywords": "apdataservice api array config configuration definitions details field function getlist guid including list listname lsit options parameters promise resolves returns"
     },
     {
       "section": "api",
@@ -500,12 +509,30 @@ NG_DOCS={
     },
     {
       "section": "api",
+      "id": "Model.deepGroup",
+      "shortName": "Model.deepGroup",
+      "type": "function",
+      "moduleName": "Model",
+      "shortDescription": "Creates an indexed cache of entities using a provided property path string to find the key for the cache.",
+      "keywords": "api based cache cached creates deepgroup desired dot entities find function indexed key leads model object path property propertypath provided separated string"
+    },
+    {
+      "section": "api",
       "id": "Model.executeQuery",
       "shortName": "Model.executeQuery",
       "type": "function",
       "moduleName": "Model",
       "shortDescription": "The primary method for retrieving data from a query registered on a model.  It returns a promise",
       "keywords": "$scope api array cache call changes check constructors data defined entities executequery function identify inherit items key list listitem local method model mycustomquery optionally options pass post primary processing project projectmodel promise prototype query reference registered resolves retrieving returns service stored subsetofprojects unique"
+    },
+    {
+      "section": "api",
+      "id": "Model.extendListDefinition",
+      "shortName": "Model.extendListDefinition",
+      "type": "function",
+      "moduleName": "Model",
+      "shortDescription": "Extends the List and Fields with list information returned from the server.",
+      "keywords": "apdataservice api extendlistdefinition extends fields function getlist list model options pass-through promise resolved returned server"
     },
     {
       "section": "api",

@@ -16,7 +16,8 @@
  // *  @requires apFieldService
  */
 angular.module('angularPoint')
-    .service('apDataService', function ($q, $timeout, _, apQueueService, apConfig, apUtilityService, apDecodeService, apEncodeService, apFieldService, toastr) {
+    .service('apDataService', function ($q, $timeout, _, apQueueService, apConfig, apUtilityService, apDecodeService,
+                                        apEncodeService, apFieldService, toastr) {
 
         /** Flag to use cached XML files from the location specified in apConfig.offlineXML */
         var offline = apConfig.offline;
@@ -32,6 +33,7 @@ angular.module('angularPoint')
             executeQuery: executeQuery,
             getCollection: getCollection,
             getFieldVersionHistory: getFieldVersionHistory,
+            getList: getList,
             getListFields: getListFields,
             getListItemById: getListItemById,
             getView: getView,
@@ -211,6 +213,10 @@ angular.module('angularPoint')
             }
 
             return deferred.promise;
+        }
+
+        //TODO Make a function that wraps SPServices and removes all Online/Offline logic from within the other methods
+        function submitRequest(payload){
 
         }
 
@@ -312,6 +318,24 @@ angular.module('angularPoint')
             return deferred.promise;
         }
 
+        /**
+         * @ngdoc function
+         * @name apDataService.getList
+         * @description
+         * Returns all list details including field and lsit config.
+         * @param {object} options Configuration parameters.
+         * @param {string} options.listName GUID of the list.
+         * @returns {object} Promise which resolves with an array of field definitions for the list.
+         */
+        function getList(options) {
+            var defaults = {
+                operation: 'GetList'
+            };
+
+            var opts = _.extend({}, defaults, options);
+            return serviceWrapper(opts);
+        }
+
 
         /**
          * @ngdoc function
@@ -323,13 +347,16 @@ angular.module('angularPoint')
          * @returns {object} Promise which resolves with an array of field definitions for the list.
          */
         function getListFields(options) {
-            var defaults = {
-                operation: 'GetList',
-                filterNode: 'Field'
-            };
-
-            var opts = _.extend({}, defaults, options);
-            return serviceWrapper(opts);
+            var deferred = $q.defer();
+            getList(options)
+                .then(function (responseXml) {
+                    var fields = $(responseXml).SPFilterNode('Field').SPXmlToJson({
+                        includeAllAttrs: true,
+                        removeOws: false
+                    });
+                    deferred.resolve(fields);
+                });
+            return deferred.promise;
         }
 
         /**

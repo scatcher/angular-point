@@ -113,43 +113,24 @@ angular.module('angularPoint')
  */
 angular.module('angularPoint')
     .service('apCacheService', ["$q", "$log", "_", "apIndexedCacheFactory", function ($q, $log, _, apIndexedCacheFactory) {
-        var entityNameToType = {},
-            entityCache = {};
+        /** Stores list names when a new model is registered along with the GUID to allow us to retrieve the GUID in future */
+        var entityNameToType = {};
+        /** The Main cache object which stores ModelCache objects.  Keys being the model GUID and value being an a ModelCache object */
+        var entityCache = {};
 
+        /**
+         * @name ModelCache
+         * @description
+         * Cache of Entity Containers for each registered entity retrieved by the model.
+         * @constructor
+         */
         function ModelCache() {
         }
-
         ModelCache.prototype = apIndexedCacheFactory.IndexedCache;
+
         /** Make sure to properly set the appropriate constructor instead of using the one inherited from IndexedCache*/
         ModelCache.constructor = ModelCache;
 
-        function registerModel(model) {
-            if (model.list && model.list.guid && model.list.title) {
-                entityNameToType[model.list.title] = {
-                    model: model,
-                    entityType: getEntityTypeKey(model.list.guid)
-                };
-            }
-        }
-
-        function getEntityTypeByName(name) {
-            if (entityNameToType[name] && entityNameToType[name].entityType) {
-                return entityNameToType[name].entityType;
-            } else {
-                $log.error('The requested list name isn\'t valid: ', name);
-            }
-        }
-
-        /** Allows us to use either the List Name or the list GUID and returns the lowercase GUID */
-        function getEntityTypeKey(keyString) {
-            if (_.isGuid(keyString)) {
-                /** GUID */
-                return keyString.toLowerCase();
-            } else {
-                /** List Title */
-                return getEntityTypeByName(keyString);
-            }
-        }
 
         /**
          * @name EntityCache
@@ -160,7 +141,7 @@ angular.module('angularPoint')
          * @param {string} entityType GUID for list the list item belongs to.
          * @param {number} entityId The entity.id.
          */
-        function EntityCache(entityType, entityId) {
+        function EntityContainer(entityType, entityId) {
             var self = this;
             self.associationQueue = [];
             self.updateCount = 0;
@@ -169,24 +150,98 @@ angular.module('angularPoint')
             self.entityLocations = [];
         }
 
-        EntityCache.prototype.registerEntity = registerEntity;
+        EntityContainer.prototype = {
+            getEntity:  _getEntity,
+            removeEntity: _removeEntity
+        };
+
+
+        return {
+            entityCache: entityCache,
+            getCachedEntity: getCachedEntity,
+            getEntity: getEntity,
+            getEntityContainer: getEntityContainer,
+            getEntityTypeKey: getEntityTypeKey,
+            removeEntity: removeEntity,
+            registerEntity: registerEntity,
+            registerModel: registerModel
+        };
+
+
+        /********************* Private **************************/
+
 
         /**
-         * @name EntityCache.getEntity
+         * @ngdoc function
+         * @name angularPoint.apCacheService:registerModel
+         * @methodOf angularPoint.apCacheService
+         * @description
+         * Creates a new ModelCache for the provide model where all list items will be stored with the key equaling
+         * the entity id's and value being a EntityContainer.  The entity is stored at EntityContainer.entity.
+         * @param {object} model Model to create the cache for.
+         */
+        function registerModel(model) {
+            if (model.list && model.list.guid && model.list.title) {
+                entityNameToType[model.list.title] = {
+                    model: model,
+                    entityType: getEntityTypeKey(model.list.guid)
+                };
+            }
+        }
+
+        /**
+         * @ngdoc function
+         * @name angularPoint.apCacheService:getEntityTypeByName
+         * @methodOf angularPoint.apCacheService
+         * @description
+         * Allows us to lookup an entity cache using the name of the list instead of the GUID.
+         * @param {string} name The name of the list.
+         * @returns {string} GUID for the list.
+         */
+        function getEntityTypeByName(name) {
+            if (entityNameToType[name] && entityNameToType[name].entityType) {
+                return entityNameToType[name].entityType;
+            } else {
+                $log.error('The requested list name isn\'t valid: ', name);
+            }
+        }
+
+        /**
+         * @ngdoc function
+         * @name angularPoint.apCacheService:getEntityTypeByName
+         * @methodOf angularPoint.apCacheService
+         * @description
+         * Allows us to use either the List Name or the list GUID and returns the lowercase GUID
+         * @param {string} keyString List GUID or name.
+         * @returns {string} Lowercase list GUID.
+         */
+        function getEntityTypeKey(keyString) {
+            if (_.isGuid(keyString)) {
+                /** GUID */
+                return keyString.toLowerCase();
+            } else {
+                /** List Title */
+                return getEntityTypeByName(keyString);
+            }
+        }
+
+
+        /**
+         * @name EntityContainer.getEntity
          * @description
          * Promise which returns the requested entity once it has been registered in the cache.
          */
-        EntityCache.prototype.getEntity = function () {
-            var self = this;
+        function _getEntity () {
+            var entityContainer = this;
             var deferred = $q.defer();
-            if (self.entity) {
+            if (entityContainer.entity) {
                 /** Entity already exists so resolve immediately */
-                deferred.resolve(self.entity);
+                deferred.resolve(entityContainer.entity);
             } else {
-                self.associationQueue.push(deferred);
+                entityContainer.associationQueue.push(deferred);
             }
             return deferred.promise;
-        };
+        }
 
         /**
          * @ngdoc function
@@ -214,8 +269,8 @@ angular.module('angularPoint')
          * @returns {promise} entity
          */
         function getEntity(entityType, entityId) {
-            var entityCache = getEntityContainer(entityType, entityId);
-            return entityCache.getEntity();
+            var entityContainer = getEntityContainer(entityType, entityId);
+            return entityContainer.getEntity();
         }
 
         /**
@@ -227,21 +282,22 @@ angular.module('angularPoint')
          * entity already exists in the cache, we extend the existing object with the updated entity and return a
          * reference to this updated object so the there is only a single instance of this entity withing the cache.
          * @param {object} entity Pass in a newly created entity to add to the cache.
+         * @param {object} [targetCache] Optionally pass in a secondary cache to add a reference to this entity.
          */
         function registerEntity(entity, targetCache) {
             var model = entity.getModel();
-            var entityCache = getEntityContainer(model.list.guid, entity.id);
+            var entityContainer = getEntityContainer(model.list.guid, entity.id);
             /** Maintain a single object in cache for this entity */
-            if (!_.isObject(entityCache.entity)) {
+            if (!_.isObject(entityContainer.entity)) {
                 /** Entity isn't currently in the cache */
-                entityCache.entity = entity;
+                entityContainer.entity = entity;
             } else {
                 /** Already exists so update to maintain any other references being used for this entity. */
-                _.extend(entityCache.entity, entity);
+                _.extend(entityContainer.entity, entity);
             }
 
             /** Counter to keep track of the number of updates for this entity */
-            entityCache.updateCount++;
+            entityContainer.updateCount++;
             if (_.isObject(targetCache) && !_.isArray(targetCache)) {
                 /** Entity hasn't been added to the target cache yet */
                 targetCache[entity.id] = entity;
@@ -249,18 +305,19 @@ angular.module('angularPoint')
 
 
             /** Resolve any requests for this entity */
-            _.each(entityCache.associationQueue, function (deferredRequest) {
+            _.each(entityContainer.associationQueue, function (deferredRequest) {
                 deferredRequest.resolve(entity);
                 /** Remove request from queue */
-                entityCache.associationQueue.shift();
+                entityContainer.associationQueue.shift();
             });
-            return entityCache.entity;
+            return entityContainer.entity;
         }
 
 
-        EntityCache.prototype.removeEntity = function () {
-            delete entityCache[this.entityType][this.entityId];
-        };
+        function _removeEntity() {
+            var entityContainer = this;
+            removeEntity(entityContainer.entityType, entityContainer.entityId);
+        }
 
         /**
          * @ngdoc function
@@ -272,10 +329,13 @@ angular.module('angularPoint')
          * @param {number} entityId The entity.id.
          */
         function removeEntity(entityType, entityId) {
-            var entityCache = getEntityContainer(entityType, entityId);
-            entityCache.removeEntity();
+            var modelCache = getModelCache(entityType, entityId);
+            if(modelCache[entityId]) {
+                delete modelCache[entityId];
+            }
         }
 
+        /** Locates the stored cache for a model */
         function getModelCache(entityTypeKey) {
             entityCache[entityTypeKey] = entityCache[entityTypeKey] || new ModelCache();
             return entityCache[entityTypeKey];
@@ -285,44 +345,9 @@ angular.module('angularPoint')
             var entityTypeKey = getEntityTypeKey(entityType);
             var modelCache = getModelCache(entityTypeKey);
             /** Create the object structure if it doesn't already exist */
-            modelCache[entityId] = modelCache[entityId] || new EntityCache(entityTypeKey, entityId);
+            modelCache[entityId] = modelCache[entityId] || new EntityContainer(entityTypeKey, entityId);
             return modelCache[entityId];
         }
-
-        ///** Older List Item Functionality */
-        //    //TODO: Remove these if they're not being used
-        //
-        //function addToCache(uniqueId, constructorName, entity) {
-        //    var cache = getCache(uniqueId, constructorName);
-        //    cache[constructorName] = entity;
-        //    return cache[constructorName];
-        //}
-        //
-        //function getCache(uniqueId, constructorName) {
-        //    listItemCache[uniqueId] = listItemCache[uniqueId] || {};
-        //    listItemCache[uniqueId][constructorName] = listItemCache[uniqueId][constructorName] || {};
-        //    return listItemCache[uniqueId][constructorName];
-        //}
-        //
-        //function removeFromCache(uniqueId, constructorName, entity) {
-        //    var cache = getCache(uniqueId, constructorName);
-        //    if (cache && cache[constructorName] && cache[constructorName][entity.id]) {
-        //        delete cache[constructorName][entity.id];
-        //    }
-        //}
-
-        return {
-            entityCache: entityCache,
-            getCachedEntity: getCachedEntity,
-            getEntity: getEntity,
-            getEntityContainer: getEntityContainer,
-            getEntityTypeKey: getEntityTypeKey,
-            removeEntity: removeEntity,
-            registerEntity: registerEntity,
-            registerModel: registerModel
-        };
-
-
     }]);
 ;'use strict';
 
@@ -342,7 +367,8 @@ angular.module('angularPoint')
  // *  @requires apFieldService
  */
 angular.module('angularPoint')
-    .service('apDataService', ["$q", "$timeout", "_", "apQueueService", "apConfig", "apUtilityService", "apDecodeService", "apEncodeService", "apFieldService", "toastr", function ($q, $timeout, _, apQueueService, apConfig, apUtilityService, apDecodeService, apEncodeService, apFieldService, toastr) {
+    .service('apDataService', ["$q", "$timeout", "_", "apQueueService", "apConfig", "apUtilityService", "apDecodeService", "apEncodeService", "apFieldService", "toastr", function ($q, $timeout, _, apQueueService, apConfig, apUtilityService, apDecodeService,
+                                        apEncodeService, apFieldService, toastr) {
 
         /** Flag to use cached XML files from the location specified in apConfig.offlineXML */
         var offline = apConfig.offline;
@@ -358,6 +384,7 @@ angular.module('angularPoint')
             executeQuery: executeQuery,
             getCollection: getCollection,
             getFieldVersionHistory: getFieldVersionHistory,
+            getList: getList,
             getListFields: getListFields,
             getListItemById: getListItemById,
             getView: getView,
@@ -537,6 +564,10 @@ angular.module('angularPoint')
             }
 
             return deferred.promise;
+        }
+
+        //TODO Make a function that wraps SPServices and removes all Online/Offline logic from within the other methods
+        function submitRequest(payload){
 
         }
 
@@ -638,6 +669,24 @@ angular.module('angularPoint')
             return deferred.promise;
         }
 
+        /**
+         * @ngdoc function
+         * @name apDataService.getList
+         * @description
+         * Returns all list details including field and lsit config.
+         * @param {object} options Configuration parameters.
+         * @param {string} options.listName GUID of the list.
+         * @returns {object} Promise which resolves with an array of field definitions for the list.
+         */
+        function getList(options) {
+            var defaults = {
+                operation: 'GetList'
+            };
+
+            var opts = _.extend({}, defaults, options);
+            return serviceWrapper(opts);
+        }
+
 
         /**
          * @ngdoc function
@@ -649,13 +698,16 @@ angular.module('angularPoint')
          * @returns {object} Promise which resolves with an array of field definitions for the list.
          */
         function getListFields(options) {
-            var defaults = {
-                operation: 'GetList',
-                filterNode: 'Field'
-            };
-
-            var opts = _.extend({}, defaults, options);
-            return serviceWrapper(opts);
+            var deferred = $q.defer();
+            getList(options)
+                .then(function (responseXml) {
+                    var fields = $(responseXml).SPFilterNode('Field').SPXmlToJson({
+                        includeAllAttrs: true,
+                        removeOws: false
+                    });
+                    deferred.resolve(fields);
+                });
+            return deferred.promise;
         }
 
         /**
@@ -3680,7 +3732,7 @@ angular.module('angularPoint')
          * @methodOf angularPoint.IndexedCache
          * @description
          * Based on the
-         * @param index
+         * @param {number} index The index of the item requested.
          * @returns {object} First entity in cache.
          */
         function nthEntity(index) {
@@ -4820,9 +4872,9 @@ angular.module('angularPoint')
  * @requires angularPoint.apUtilityService
  */
 angular.module('angularPoint')
-    .factory('apModelFactory', ["_", "apModalService", "apCacheService", "apDataService", "apListFactory", "apListItemFactory", "apQueryFactory", "apUtilityService", "apFieldService", "apConfig", "apIndexedCacheFactory", "$q", "toastr", function (_, apModalService, apCacheService, apDataService, apListFactory,
+    .factory('apModelFactory', ["_", "apModalService", "apCacheService", "apDataService", "apListFactory", "apListItemFactory", "apQueryFactory", "apUtilityService", "apFieldService", "apConfig", "apIndexedCacheFactory", "apDecodeService", "$q", "toastr", function (_, apModalService, apCacheService, apDataService, apListFactory,
                                          apListItemFactory, apQueryFactory, apUtilityService, apFieldService, apConfig,
-                                         apIndexedCacheFactory, $q, toastr) {
+                                         apIndexedCacheFactory, apDecodeService, $q, toastr) {
 
         var defaultQueryName = apConfig.defaultQueryName;
 
@@ -4969,6 +5021,7 @@ angular.module('angularPoint')
             addNewItem: addNewItem,
             createEmptyItem: createEmptyItem,
             executeQuery: executeQuery,
+            extendListMetadata: extendListMetadata,
             generateMockData: generateMockData,
             getAllListItems: getAllListItems,
             getCache: getCache,
@@ -5201,7 +5254,7 @@ angular.module('angularPoint')
                 opts = _.extend({}, defaults, options);
 
             /** Working Online */
-            if (!apConfig.offline) {
+            if (apConfig.online) {
                 /** Fetch from the server */
                 apDataService.getListItemById(entityId, opts)
                     .then(function (entitiesArray) {
@@ -5533,6 +5586,37 @@ angular.module('angularPoint')
             if (query) {
                 return query.execute(options);
             }
+        }
+
+        /**
+         * @ngdoc function
+         * @name Model.extendListDefinition
+         * @module Model
+         * @description
+         * Extends the List and Fields with list information returned from the server.
+         * @param {object} [options] Pass-through options to apDataService.getList
+         * @returns {object} Promise that is resolved once the information has been added.
+         */
+        function extendListMetadata(options) {
+            var model = this,
+                deferred = $q.defer(),
+                defaults = { listName: model.list.guid};
+
+            /** Only request information if the list hasn't already been extended */
+            if(!model.fieldDefinitionsExtended) {
+                var opts = _.extend({}, defaults, options);
+                apDataService.getList(opts)
+                    .then(function (responseXML) {
+                        apDecodeService.extendListDefinitionFromXML(model.list, responseXML);
+                        apDecodeService.extendFieldDefinitionsFromXML(model.list.fields, responseXML);
+                        model.fieldDefinitionsExtended = true;
+                        deferred.resolve(model);
+                    });
+            } else {
+                /** The list has already been extended */
+                deferred.resolve(model);
+            }
+            return deferred.promise;
         }
 
         /**

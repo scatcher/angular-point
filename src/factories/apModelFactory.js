@@ -17,7 +17,7 @@
 angular.module('angularPoint')
     .factory('apModelFactory', function (_, apModalService, apCacheService, apDataService, apListFactory,
                                          apListItemFactory, apQueryFactory, apUtilityService, apFieldService, apConfig,
-                                         apIndexedCacheFactory, $q, toastr) {
+                                         apIndexedCacheFactory, apDecodeService, $q, toastr) {
 
         var defaultQueryName = apConfig.defaultQueryName;
 
@@ -164,6 +164,7 @@ angular.module('angularPoint')
             addNewItem: addNewItem,
             createEmptyItem: createEmptyItem,
             executeQuery: executeQuery,
+            extendListMetadata: extendListMetadata,
             generateMockData: generateMockData,
             getAllListItems: getAllListItems,
             getCache: getCache,
@@ -396,7 +397,7 @@ angular.module('angularPoint')
                 opts = _.extend({}, defaults, options);
 
             /** Working Online */
-            if (!apConfig.offline) {
+            if (apConfig.online) {
                 /** Fetch from the server */
                 apDataService.getListItemById(entityId, opts)
                     .then(function (entitiesArray) {
@@ -728,6 +729,37 @@ angular.module('angularPoint')
             if (query) {
                 return query.execute(options);
             }
+        }
+
+        /**
+         * @ngdoc function
+         * @name Model.extendListDefinition
+         * @module Model
+         * @description
+         * Extends the List and Fields with list information returned from the server.
+         * @param {object} [options] Pass-through options to apDataService.getList
+         * @returns {object} Promise that is resolved once the information has been added.
+         */
+        function extendListMetadata(options) {
+            var model = this,
+                deferred = $q.defer(),
+                defaults = { listName: model.list.guid};
+
+            /** Only request information if the list hasn't already been extended */
+            if(!model.fieldDefinitionsExtended) {
+                var opts = _.extend({}, defaults, options);
+                apDataService.getList(opts)
+                    .then(function (responseXML) {
+                        apDecodeService.extendListDefinitionFromXML(model.list, responseXML);
+                        apDecodeService.extendFieldDefinitionsFromXML(model.list.fields, responseXML);
+                        model.fieldDefinitionsExtended = true;
+                        deferred.resolve(model);
+                    });
+            } else {
+                /** The list has already been extended */
+                deferred.resolve(model);
+            }
+            return deferred.promise;
         }
 
         /**
