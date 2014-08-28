@@ -4,7 +4,7 @@
 module.exports = function (config) {
     config.set({
         // base path, that will be used to resolve files and exclude
-        basePath: '',
+        //basePath: '',
 
         // testing framework to use (jasmine/mocha/qunit/...)
         frameworks: ['jasmine'],
@@ -61,11 +61,14 @@ module.exports = function (config) {
         // - Safari (only Mac)
         // - PhantomJS
         // - IE (only Windows)
-        browsers: ['Chrome'],
-        //browsers: ['PhantomJS'],
+        //browsers: ['Chrome'],
+        browsers: ['PhantomJS'],
 
         preprocessors: {
-            //'src/{services, factories, models, directives}/**/*.js': ['coverage']
+            'src/services/*.js': ['coverage'],
+            'src/factories/*.js': ['coverage'],
+            'src/models/*.js': ['coverage'],
+            'src/directives/**/*.js': ['coverage']
         },
 
         proxies: {
