@@ -126,7 +126,7 @@ angular.module('angularPoint')
          */
         function ModelCache() {
         }
-        ModelCache.prototype = apIndexedCacheFactory.IndexedCache;
+        ModelCache.prototype = apIndexedCacheFactory.create();
 
         /** Make sure to properly set the appropriate constructor instead of using the one inherited from IndexedCache*/
         ModelCache.constructor = ModelCache;
@@ -159,6 +159,7 @@ angular.module('angularPoint')
         return {
             entityCache: entityCache,
             getCachedEntity: getCachedEntity,
+            getCachedEntities: getCachedEntities,
             getEntity: getEntity,
             getEntityContainer: getEntityContainer,
             getEntityTypeKey: getEntityTypeKey,
@@ -259,6 +260,28 @@ angular.module('angularPoint')
 
         /**
          * @ngdoc function
+         * @name angularPoint.apCacheService:getCachedEntities
+         * @methodOf angularPoint.apCacheService
+         * @description
+         * Returns all entities for a given model as an indexed cache with keys being the entity id's.
+         * @param {string} entityType GUID for list the list item belongs to.
+         * @returns {object} Indexed cache containing all entities for a model.
+         */
+        function getCachedEntities(entityType) {
+            var modelCache = getModelCache(entityType),
+                allEntities = apIndexedCacheFactory.create();
+            if(modelCache) {
+                _.each(modelCache, function(entityContainer) {
+                    if(entityContainer.entity && entityContainer.entity.id) {
+                        allEntities.addEntity(entityContainer.entity);
+                    }
+                });
+            }
+            return allEntities;
+        }
+
+        /**
+         * @ngdoc function
          * @name angularPoint.apCacheService:getEntity
          * @methodOf angularPoint.apCacheService
          * @description
@@ -336,7 +359,8 @@ angular.module('angularPoint')
         }
 
         /** Locates the stored cache for a model */
-        function getModelCache(entityTypeKey) {
+        function getModelCache(entityType) {
+            var entityTypeKey = getEntityTypeKey(entityType);
             entityCache[entityTypeKey] = entityCache[entityTypeKey] || new ModelCache();
             return entityCache[entityTypeKey];
         }
@@ -367,8 +391,8 @@ angular.module('angularPoint')
  // *  @requires apFieldService
  */
 angular.module('angularPoint')
-    .service('apDataService', ["$q", "$timeout", "_", "apQueueService", "apConfig", "apUtilityService", "apDecodeService", "apEncodeService", "apFieldService", "toastr", function ($q, $timeout, _, apQueueService, apConfig, apUtilityService, apDecodeService,
-                                        apEncodeService, apFieldService, toastr) {
+    .service('apDataService', ["$q", "$timeout", "_", "apQueueService", "apConfig", "apUtilityService", "apDecodeService", "apEncodeService", "apFieldService", "apIndexedCacheFactory", "apMocksService", "toastr", function ($q, $timeout, _, apQueueService, apConfig, apUtilityService, apDecodeService,
+                                        apEncodeService, apFieldService, apIndexedCacheFactory, apMocksService, toastr) {
 
         /** Flag to use cached XML files from the location specified in apConfig.offlineXML */
         var offline = apConfig.offline;
@@ -474,8 +498,10 @@ angular.module('angularPoint')
          * </pre>
          */
         function getCollection(options) {
-            apQueueService.increase();
-            var defaults = {};
+            var defaults = {
+                offlineData: apConfig.offlineXML + opts.operation + '.xml',
+                postProcess: processXML
+            };
             var opts = _.extend({}, defaults, options);
 
             /** Determine the XML node to iterate over if filterNode isn't provided */
@@ -484,7 +510,7 @@ angular.module('angularPoint')
             var deferred = $q.defer();
 
             /** Convert the xml returned from the server into an array of js objects */
-            var processXML = function (serverResponse) {
+            function processXML(serverResponse) {
                 var convertedItems = [];
                 /** Get attachments only returns the links associated with a list item */
                 if (opts.operation === 'GetAttachmentCollection') {
@@ -499,76 +525,93 @@ angular.module('angularPoint')
                     });
                 }
                 return convertedItems;
-            };
+            }
 
-            if (offline) {
-                var offlineData = apConfig.offlineXML + opts.operation + '.xml';
-
-                /** Get offline data */
-                $.ajax(offlineData).then(
-                    function (offlineData) {
-                        apQueueService.decrease();
-                        /** Pass back the group array */
-                        deferred.resolve(processXML(offlineData));
-                    }, function (outcome) {
-                        toastr.error('You need to have a ' + apConfig.offlineXML + opts.operation + '.xml ' +
-                        'in order to get the group collection in offline mode.');
-                        deferred.reject(outcome);
-                        apQueueService.decrease();
+            var validPayload = validateCollectionPayload(opts);
+            if (validPayload) {
+                serviceWrapper(opts)
+                    .then(function (response) {
+                        deferred.resolve(response);
                     });
             } else {
-                var validPayload = true;
-                var payload = _.extend({}, opts);
-
-                var verifyParams = function (params) {
-                    _.each(params, function (param) {
-                        if (!payload[param]) {
-                            toastr.error('options' + param + ' is required to complete this operation');
-                            validPayload = false;
-                            deferred.reject([]);
-                        }
-                    });
-                };
-
-                //Verify all required params are included
-                switch (opts.operation) {
-                    case 'GetGroupCollectionFromUser':
-                        verifyParams(['userLoginName']);
-                        break;
-                    case 'GetUserCollectionFromGroup':
-                        verifyParams(['groupName']);
-                        break;
-                    case 'GetViewCollection':
-                        verifyParams(['listName']);
-                        break;
-                    case 'GetAttachmentCollection':
-                        verifyParams(['listName', 'ID']);
-                        break;
-                }
-
-                if (validPayload) {
-                    var webServiceCall = $().SPServices(payload);
-
-                    webServiceCall.then(function () {
-                        //Success
-                        apQueueService.decrease();
-                        logErrorsToConsole(webServiceCall.responseXML, opts.operation);
-                        deferred.resolve(processXML(webServiceCall.responseXML));
-                    }, function (outcome) {
-                        //Failure
-                        toastr.error('Failed to fetch list collection.');
-                        apQueueService.decrease();
-                        deferred.reject(outcome);
-                    });
-                }
+                toastr.error('Invalid payload:', opts);
+                deferred.reject();
             }
+
+            //if(online) {
+            //    var validPayload = validateCollectionPayload(opts);
+            //
+            //    if (validPayload) {
+            //        serviceWrapper(opts)
+            //            .then(function (response) {
+            //
+            //            });
+            //        var webServiceCall = $().SPServices(opts);
+            //        webServiceCall.then(function () {
+            //            //Success
+            //            apQueueService.decrease();
+            //            logErrorsToConsole(webServiceCall.responseXML, opts.operation);
+            //            deferred.resolve(processXML(webServiceCall.responseXML));
+            //        }, function (outcome) {
+            //            //Failure
+            //            toastr.error('Failed to fetch list collection.');
+            //            apQueueService.decrease();
+            //            deferred.reject(outcome);
+            //        });
+            //    } else {
+            //        deferred.reject();
+            //    }
+            //} else {
+            //    /** Get offline data */
+            //    $.ajax(opts.offlineData).then(
+            //        function (offlineData) {
+            //            apQueueService.decrease();
+            //            /** Pass back the group array */
+            //            deferred.resolve(processXML(offlineData));
+            //        }, function (outcome) {
+            //            toastr.error('You need to have a ' + apConfig.offlineXML + opts.operation + '.xml ' +
+            //            'in order to get the group collection in offline mode.');
+            //            deferred.reject(outcome);
+            //            apQueueService.decrease();
+            //        });
+            //}
 
             return deferred.promise;
         }
 
-        //TODO Make a function that wraps SPServices and removes all Online/Offline logic from within the other methods
-        function submitRequest(payload){
+        /**
+         * @description
+         * Simply verifies that all components of the payload are present.
+         * @param {object} opts Payload config.
+         * @returns {boolean} Collection is valid.
+         */
+        function validateCollectionPayload(opts) {
+            var validPayload = true;
+            var verifyParams = function (params) {
+                _.each(params, function (param) {
+                    if (!opts[param]) {
+                        toastr.error('options' + param + ' is required to complete this operation');
+                        validPayload = false;
+                    }
+                });
+            };
 
+            //Verify all required params are included
+            switch (opts.operation) {
+                case 'GetGroupCollectionFromUser':
+                    verifyParams(['userLoginName']);
+                    break;
+                case 'GetUserCollectionFromGroup':
+                    verifyParams(['groupName']);
+                    break;
+                case 'GetViewCollection':
+                    verifyParams(['listName']);
+                    break;
+                case 'GetAttachmentCollection':
+                    verifyParams(['listName', 'ID']);
+                    break;
+            }
+            return validPayload;
         }
 
         /**
@@ -611,7 +654,8 @@ angular.module('angularPoint')
         function serviceWrapper(options) {
             var defaults = {
                 /** You need to specify the offline xml file if you want to properly mock the request when offline */
-                offlineXML: apConfig.offlineXML + options.operation + '.xml'
+                offlineXML: apConfig.offlineXML + options.operation + '.xml',
+                postProcess: processXML
             };
             var opts = _.extend({}, defaults, options);
             var deferred = $q.defer();
@@ -619,7 +663,7 @@ angular.module('angularPoint')
             apQueueService.increase();
 
             /** Convert the xml returned from the server into an array of js objects */
-            var processXML = function (serverResponse) {
+            function processXML(serverResponse) {
                 if (opts.filterNode) {
                     return $(serverResponse).SPFilterNode(opts.filterNode).SPXmlToJson({
                         includeAllAttrs: true,
@@ -628,41 +672,30 @@ angular.module('angularPoint')
                 } else {
                     return serverResponse;
                 }
-            };
+            }
 
             if (online) {
-                /** Add in webURL to speed up call, set to default if not specified */
-                var payload = {};
-
-                _.extend(payload, opts);
-
-                var webServiceCall = $().SPServices(payload);
+                var webServiceCall = $().SPServices(opts);
 
                 webServiceCall.then(function () {
                     /** Success */
-                    apQueueService.decrease();
                     /** Errors can still be resolved without throwing an error so check the XML */
-                    logErrorsToConsole(webServiceCall.responseXML, opts.operation);
-                    deferred.resolve(processXML(webServiceCall.responseXML));
-
-
+                    logErrorsToConsole(webServiceCall.responseXML, opts);
+                    deferred.resolve(opts.postProcess(webServiceCall.responseXML));
+                    apQueueService.decrease();
                 }, function (outcome) {
                     /** Failure */
                     toastr.error('Failed to complete the requested ' + opts.operation + ' operation.');
-                    apQueueService.decrease();
                     deferred.reject(outcome);
+                    apQueueService.decrease();
                 });
             } else {
-                /** Get offline data */
-                $.ajax(opts.offlineXML).then(
-                    function (offlineData) {
-                        apQueueService.decrease();
-                        /** Pass back the group array */
-                        deferred.resolve(processXML(offlineData));
-                    }, function (outcome) {
-                        toastr.error('You need to have a ' + opts.offlineXML + ' file in order mock this request.');
-                        deferred.reject(outcome);
-                        apQueueService.decrease();
+                /** Allow this method to be overloaded and pass any additional arguments to the mock service */
+                var additionalArgs = Array.prototype.slice.call(arguments, 1);
+
+                apMocksService.mockRequest(opts, additionalArgs)
+                    .then(function (response) {
+                        deferred.resolve(opts.postProcess(response));
                     });
             }
 
@@ -829,6 +862,7 @@ angular.module('angularPoint')
         function getView(options) {
             var defaults = {
                 operation: 'GetView',
+                /** Optionally set alternate offline XML location */
                 offlineXML: apConfig.offlineXML + 'GetView.xml'
             };
 
@@ -883,83 +917,75 @@ angular.module('angularPoint')
             /** Extend defaults **/
             var opts = _.extend({}, defaults, options);
 
-            /** Trigger processing animation */
-            apQueueService.increase();
+            /** Set the location of the offline xml file */
+            query.offlineData = opts.offlineXML || query.offlineXML || apConfig.offlineXML + model.list.title + '.xml';
 
-            if (online) {
-                var webServiceCall = $().SPServices(query);
-                webServiceCall.then(function () {
-                    var responseXML = webServiceCall.responseXML;
-
-                    /** Errors can still be resolved without throwing an error so check the XML */
-                    logErrorsToConsole(webServiceCall.responseXML, opts.operation);
-
-                    if (query.operation === 'GetListItemChangesSinceToken') {
-
-                        /** The initial call to GetListItemChangesSinceToken also includes the field definitions for the
-                         *  list so use this to extend the existing field definitions and list defined in the model. */
-                        if (!model.fieldDefinitionsExtended) {
-                            apDecodeService.extendListDefinitionFromXML(model.list, responseXML);
-                            apDecodeService.extendFieldDefinitionsFromXML(model.list.fields, responseXML);
-                            model.fieldDefinitionsExtended = true;
-                        }
-
-                        /** Store token for future web service calls to return changes */
-                        query.changeToken = retrieveChangeToken(responseXML);
-
-
-                        /** Update the user permissions for this list */
-                        var effectivePermissionMask = retrievePermMask(responseXML);
-                        if (effectivePermissionMask) {
-                            model.list.effectivePermMask = effectivePermissionMask;
-                        }
-
-                        /** Change token query includes deleted items as well so we need to process them separately */
-                        processDeletionsSinceToken(responseXML, opts.target);
-                    }
-
-                    /** Convert the XML into JS objects */
-                    apDecodeService.processListItems(model, query, responseXML, opts);
+            serviceWrapper(query)
+                .then(function (response) {
                     /** Set date time to allow for time based updates */
                     query.lastRun = new Date();
-                    apQueueService.decrease();
-                    deferred.resolve(entities);
-                });
-            } else {
-                /** Simulate an web service call if working offline */
-                /** Optionally set alternate offline XML location but default to value in model */
-                var offlineData = opts.offlineXML || query.offlineXML || apConfig.offlineXML + model.list.title + '.xml';
 
-                /** Only pull down offline xml if this is the first time the query is run */
-                if (query.lastRun) {
-                    /** Query has already been run, resolve reference to existing data */
-                    query.lastRun = new Date();
-                    apQueueService.decrease();
-                    deferred.resolve(query.getCache());
-                } else {
-                    /** First run for query
-                     *  Get offline XML file from the location specified in apConfig.offlineXML
-                     */
-                    $.ajax(offlineData).then(function (responseXML) {
-                        var entities = apDecodeService.processListItems(model, query, responseXML, opts);
-                        /** Set date time to allow for time based updates */
-                        query.lastRun = new Date();
-                        apQueueService.decrease();
-
-                        /** Extend the field and list definition in the model with the offline data */
+                    if (offline && query.lastRun) {
+                        /** Entities have already been previously processed so just return the existing cache */
+                        deferred.resolve(response);
+                    } else {
                         if (query.operation === 'GetListItemChangesSinceToken') {
-                            apDecodeService.extendListDefinitionFromXML(model.list, responseXML);
-                            apDecodeService.extendFieldDefinitionsFromXML(model.list.fields, responseXML);
+
+                            /** The initial call to GetListItemChangesSinceToken also includes the field definitions for the
+                             *  list so use this to extend the existing field definitions and list defined in the model. */
+                            if (!model.fieldDefinitionsExtended) {
+                                apDecodeService.extendListDefinitionFromXML(model.list, response);
+                                apDecodeService.extendFieldDefinitionsFromXML(model.list.fields, response);
+                                model.fieldDefinitionsExtended = true;
+                            }
+
+                            /** Store token for future web service calls to return changes */
+                            query.changeToken = retrieveChangeToken(response);
+
+                            /** Update the user permissions for this list */
+                            var effectivePermissionMask = retrievePermMask(response);
+                            if (effectivePermissionMask) {
+                                model.list.effectivePermMask = effectivePermissionMask;
+                            }
+
+                            /** Change token query includes deleted items as well so we need to process them separately */
+                            processDeletionsSinceToken(response, opts.target);
                         }
 
+                        /** Convert the XML into JS objects */
+                        var entities = apDecodeService.processListItems(model, query, response, opts);
                         deferred.resolve(entities);
-                    }, function () {
-                        var mockData = model.generateMockData();
-                        deferred.resolve(mockData);
-                        toastr.error('There was a problem locating the "' + apConfig.offlineXML + model.list.title + '.xml"');
-                    });
-                }
-            }
+                    }
+                });
+            //} else {
+            //    /** Offline */
+            //
+            //    /** Only pull down offline xml if this is the first time the query is run */
+            //    if (query.lastRun) {
+            //        /** Query has already been run, resolve reference to existing data */
+            //        query.lastRun = new Date();
+            //        apQueueService.decrease();
+            //        deferred.resolve(query.getCache());
+            //    } else {
+            //        /** First run for query
+            //         *  Get offline XML file from the location specified in apConfig.offlineXML
+            //         */
+            //        serviceWrapper(opts)
+            //            .then(function (responseXML) {
+            //                var entities = apDecodeService.processListItems(model, query, responseXML, opts);
+            //                /** Set date time to allow for time based updates */
+            //                query.lastRun = new Date();
+            //
+            //                /** Extend the field and list definition in the model with the offline data */
+            //                if (query.operation === 'GetListItemChangesSinceToken') {
+            //                    apDecodeService.extendListDefinitionFromXML(model.list, responseXML);
+            //                    apDecodeService.extendFieldDefinitionsFromXML(model.list.fields, responseXML);
+            //                }
+            //
+            //                deferred.resolve(entities);
+            //            });
+            //    }
+            //}
 
             return deferred.promise;
         }
@@ -977,7 +1003,7 @@ angular.module('angularPoint')
             var successfullyDeleted = false;
 
             /** Remove from indexed cache if found */
-            if(indexedCache[entityId]) {
+            if (indexedCache[entityId]) {
                 delete indexedCache[entityId];
                 successfullyDeleted = true;
             }
@@ -1090,9 +1116,6 @@ angular.module('angularPoint')
             var deferred = $q.defer();
             var opts = _.extend({}, defaults, options);
 
-            /** Display loading animation */
-            apQueueService.increase();
-
             if (opts.buildValuePairs === true) {
                 var editableFields = _.where(model.list.fields, {readOnly: false});
                 opts.valuePairs = apEncodeService.generateValuePairs(editableFields, entity);
@@ -1112,82 +1135,99 @@ angular.module('angularPoint')
             } else {
                 /** Creating new list item */
                 payload.batchCmd = 'New';
-                payload.indexedCache = {};
-                payload.getCache = function () {return payload.indexedCache;};
+                payload.indexedCache = apIndexedCacheFactory.create({});
+                payload.getCache = function () {
+                    return payload.indexedCache;
+                };
                 query = payload;
             }
-
-            if (online) {
-                /** Make call to lists web service */
-                var webServiceCall = $().SPServices(payload);
-
-                webServiceCall.then(function () {
-                    /** Success */
-                    var responseArray = apDecodeService.processListItems(model, query, webServiceCall.responseXML, opts);
-//                    var updatedEntity = output[0];
-//
-//                    /** Optionally search through each cache on the model and update any other references to this entity */
-//                    if (opts.updateAllCaches && _.isNumber(entity.id)) {
-//                        updateAllCaches(model, updatedEntity, entity.getQuery());
-//                    }
-                    deferred.resolve(responseArray[0]);
-                }, function (outcome) {
-                    /** In the event of an error, display toast */
-                    toastr.error('There was an error getting the requested data from ' + model.list.name);
-                    deferred.reject(outcome);
-                }).always(function () {
-                    apQueueService.decrease();
-                });
-            } else {
-                /** Logic to simulate expected behavior when working offline */
-                /** Offline mode */
-                window.console.log(payload);
-
-                /** Mock data */
-                var offlineDefaults = {
-                    modified: new Date(),
-                    editor: {
-                        lookupId: 23,
-                        lookupValue: 'Generic User'
+            /** Overload the function the pass anything past the first parameter to the supporting methods */
+            serviceWrapper(payload, entity, model)
+                .then(function (response) {
+                    if (online) {
+                        /** Online this should return an XML object */
+                        var responseArray = apDecodeService.processListItems(model, query, response, opts);
+                        deferred.resolve(responseArray[0]);
+                    } else {
+                        /** Offline response should be the updated entity as a JS Object */
+                        deferred.resolve(response);
                     }
-                };
+                });
 
-                if (!entity.id) {
-                    var newItem = {};
 
-                    /* Include standard mock fields for new item */
-                    offlineDefaults.author = {
-                        lookupId: 23,
-                        lookupValue: 'Generic User'
-                    };
+            //if (online) {
 
-                    offlineDefaults.created = new Date();
 
-                    /** We don't know which query cache to push it to so add it to all */
-                    _.each(model.queries, function (query) {
-                        /** Find next logical id to assign */
-                        var maxId = 1;
-                        /** Find the entity with the highest ID number */
-                        var lastEntity = query.getCache().last();
-                        if(lastEntity) {
-                            maxId = lastEntity.id;
-                        }
-                        offlineDefaults.id = maxId + 1;
-                        /** Add default attributes */
-                        _.extend(entity, offlineDefaults);
-                        /** Use factory to build new object */
-                        newItem = new model.factory(entity);
-                        query.getCache().addEntity(newItem);
-                    });
-
-                    deferred.resolve(newItem);
-                } else {
-                    /** Update existing record in local cache */
-                    _.extend(entity, offlineDefaults);
-                    deferred.resolve(entity);
-                }
-                apQueueService.decrease();
-            }
+//                /** Make call to lists web service */
+//                var webServiceCall = $().SPServices(payload);
+//
+//                webServiceCall.then(function () {
+//                    /** Success */
+//                    var responseArray = apDecodeService.processListItems(model, query, webServiceCall.responseXML, opts);
+////                    var updatedEntity = output[0];
+////
+////                    /** Optionally search through each cache on the model and update any other references to this entity */
+////                    if (opts.updateAllCaches && _.isNumber(entity.id)) {
+////                        updateAllCaches(model, updatedEntity, entity.getQuery());
+////                    }
+//                    deferred.resolve(responseArray[0]);
+//                }, function (outcome) {
+//                    /** In the event of an error, display toast */
+//                    toastr.error('There was an error getting the requested data from ' + model.list.name);
+//                    deferred.reject(outcome);
+//                }).always(function () {
+//                    apQueueService.decrease();
+//                });
+//            } else {
+//                /** Logic to simulate expected behavior when working offline */
+//                /** Offline mode */
+//                window.console.log(payload);
+//
+//                /** Mock data */
+//                var offlineDefaults = {
+//                    modified: new Date(),
+//                    editor: {
+//                        lookupId: 23,
+//                        lookupValue: 'Generic User'
+//                    }
+//                };
+//
+//                if (!entity.id) {
+//                    var newItem = {};
+//
+//                    /* Include standard mock fields for new item */
+//                    offlineDefaults.author = {
+//                        lookupId: 23,
+//                        lookupValue: 'Generic User'
+//                    };
+//
+//                    offlineDefaults.created = new Date();
+//
+//                    /** We don't know which query cache to push it to so add it to all */
+//                    _.each(model.queries, function (query) {
+//                        /** Find next logical id to assign */
+//                        var maxId = 1;
+//                        /** Find the entity with the highest ID number */
+//                        var lastEntity = query.getCache().last();
+//                        if(lastEntity) {
+//                            maxId = lastEntity.id;
+//                        }
+//                        offlineDefaults.id = maxId + 1;
+//                        /** Add default attributes */
+//                        _.extend(entity, offlineDefaults);
+//                        /** Use factory to build new object */
+//                        newItem = new model.factory(entity);
+//                        query.getCache().addEntity(newItem);
+//                    });
+//
+//                    deferred.resolve(newItem);
+//                } else {
+//                    /** Update existing record in local cache */
+//                    _.extend(entity, offlineDefaults);
+//                    deferred.resolve(entity);
+//                }
+//                apQueueService.decrease();
+//            }
             return deferred.promise;
         }
 
@@ -2839,6 +2879,113 @@ angular.module('angularPoint')
   }]);
 ;'use strict';
 
+
+angular.module('angularPoint')
+    .service('apMocksService', ["$q", "apQueueService", "apCacheService", function ($q, apQueueService, apCacheService) {
+        return {
+            mockRequest: mockRequest
+        };
+
+        function mockRequest(opts, args) {
+            switch(opts.operation) {
+                case 'UpdateListItems':
+                    return updateListItems.apply(this, args);
+                case 'GetListItemChangesSinceToken':
+                case 'GetListItems':
+                    return processListItems(opts);
+                default:
+                    return defaultRequest(opts)
+
+            }
+        }
+
+        function defaultRequest(opts) {
+            var deferred = $q.defer();
+
+            $.ajax(opts.offlineXML).then(
+                function (offlineData) {
+                    /** Pass back the group array */
+                    deferred.resolve(offlineData);
+                    apQueueService.decrease();
+                }, function (outcome) {
+                    toastr.error('You need to have a ' + opts.offlineXML + ' file in order mock this request.');
+                    deferred.reject(outcome);
+                    apQueueService.decrease();
+                });
+            return deferred.promise;
+        }
+        
+        function processListItems(opts) {
+            var deferred = $q.defer();
+
+            if (opts.lastRun) {
+                /** Query has already been run, resolve reference to existing data */
+                opts.lastRun = new Date();
+                deferred.resolve(opts.getCache());
+            } else {
+                defaultRequest(opts)
+                    .then(function (responseXML) {
+                        deferred.resolve(responseXML);
+                    })
+            }
+            return deferred.promise;
+        }
+
+        function updateListItems(entity, model) {
+            var deferred = $q.defer();
+
+            /** Mock data */
+            var offlineDefaults = {
+                modified: new Date(),
+                editor: {
+                    lookupId: 23,
+                    lookupValue: 'Generic User'
+                }
+            };
+
+            /** New Item */
+            if (!entity.id) {
+                var newItem = {};
+
+                /* Include standard mock fields for new item */
+                offlineDefaults.author = {
+                    lookupId: 23,
+                    lookupValue: 'Generic User'
+                };
+
+                offlineDefaults.created = new Date();
+
+                /** We don't know which query cache to push it to so add it to all */
+                _.each(model.queries, function (query) {
+                    /** Find next logical id to assign */
+                    var maxId = 1;
+                    /** Find the entity with the highest ID number */
+                    var lastEntity = query.getCache().last();
+                    if(lastEntity) {
+                        maxId = lastEntity.id;
+                    }
+                    offlineDefaults.id = maxId + 1;
+                    /** Add default attributes */
+                    _.extend(entity, offlineDefaults);
+                    /** Use factory to build new object */
+                    newItem = new model.factory(entity);
+
+                    /** Register entity in global cache and in each query cache */
+                    apCacheService.registerEntity(newItem, query.getCache());
+                });
+
+
+                deferred.resolve(newItem);
+            } else {
+                /** Update existing record in local cache */
+                _.extend(entity, offlineDefaults);
+                deferred.resolve(entity);
+            }
+            return deferred.promise;
+        }
+
+    }]);;'use strict';
+
 /**
  * @ngdoc service
  * @name angularPoint.apModalService
@@ -3822,8 +3969,7 @@ angular.module('angularPoint')
             return new IndexedCache();
         }
     }]
-)
-;;'use strict';
+);;'use strict';
 
 /**
  * @ngdoc object
@@ -5025,6 +5171,7 @@ angular.module('angularPoint')
             generateMockData: generateMockData,
             getAllListItems: getAllListItems,
             getCache: getCache,
+            getCachedEntity: getCachedEntity,
             getFieldDefinition: getFieldDefinition,
             getListItemById: getListItemById,
             getLocalEntity: getLocalEntity,
@@ -5556,6 +5703,21 @@ angular.module('angularPoint')
                 cache = query.indexedCache;
             }
             return cache;
+        }
+
+
+        /**
+         * @ngdoc function
+         * @name Model.getCachedEntity
+         * @module Model
+         * @description
+         * Attempts to locate a model entity by id.
+         * @param {number} entityId The ID of the requested entity.
+         * @returns {object} Returns either the requested entity or undefined if it's not found.
+         */
+        function getCachedEntity(entityId) {
+            var model = this;
+            return apCacheService.getCachedEntity(model.list.guid, entityId);
         }
 
         /**
@@ -6686,48 +6848,27 @@ angular.module('angularPoint')
 
 
   $templateCache.put('src/views/group_manager_view.html',
-    "<style>select.multiselect {\r" +
+    "<style>select.multiselect {\n" +
+    "        min-height: 400px;\n" +
+    "    }\n" +
     "\n" +
-    "        min-height: 400px;\r" +
-    "\n" +
-    "    }\r" +
-    "\n" +
-    "\r" +
-    "\n" +
-    "    .ui-match {\r" +
-    "\n" +
-    "        background: yellow;\r" +
-    "\n" +
-    "    }</style><div class=container><ul class=\"nav nav-tabs\"><li ng-class=\"{active: state.activeTab === 'Users'}\"><a href ng-click=\"updateTab('Users')\">Users</a></li><li ng-class=\"{active: state.activeTab === 'Groups'}\"><a href ng-click=\"updateTab('Groups')\">Groups</a></li><li ng-class=\"{active: state.activeTab === 'Merge'}\"><a href ng-click=\"state.activeTab = 'Merge'\">Merge</a></li><li ng-class=\"{active: state.activeTab === 'UserList'}\"><a href ng-click=\"state.activeTab = 'UserList'\">User List</a></li><li ng-class=\"{active: state.activeTab === 'GroupList'}\"><a href ng-click=\"state.activeTab = 'GroupList'\">Group List</a></li></ul><div ng-if=\"state.activeTab === 'Users'\"><div class=\"panel panel-default\"><div class=panel-heading><div class=row><div class=col-xs-5><span style=font-weight:bold>Select a Group:</span><select class=form-control ng-model=users.filter ng-options=\"group.Name for group in groups.all\" ng-change=updateAvailableUsers(users.filter) style=\"min-width: 100px\"></select></div><div class=col-xs-7><span style=font-weight:bold>Site/Site Collection:</span> <input class=form-control ng-model=state.siteUrl ng-change=updateAvailableUsers(users.filter)></div></div><div class=row ng-if=users.filter.Description><div class=col-xs-12><p class=help-block>Description: {{ users.filter.Description }}</p></div></div></div><div class=panel-body><div class=row><div class=col-xs-12><div colspan=3 class=description>This tab will allow you to quickly assign multiple users to a selected group.</div></div></div><hr class=hr-sm><div class=row><div class=col-xs-5><div class=form-group><label>Available Users ({{users.available.length}})</label><select ng-model=users.selectedAvailable ng-options=\"user.Name for user in users.available\" multiple class=\"multiselect form-control\"></select></div></div><div class=\"col-xs-2 text-center\" style=\"padding-top: 175px\"><button class=\"btn btn-default\" style=width:80px ng-click=\"updatePermissions('AddUserToGroup', users.selectedAvailable, [users.filter])\" title=\"Add user\"><i class=\"fa fa-2x fa-angle-double-right\"></i></button><br><br><button class=\"btn btn-default\" style=width:80px ng-click=\"updatePermissions('RemoveUserFromGroup', users.selectedAssigned, [users.filter])\"><i class=\"fa fa-2x fa-angle-double-left\"></i></button></div><div class=col-xs-5><div class=form-group><label>Assigned Users ({{users.assigned.length}})</label><select ng-model=users.selectedAssigned ng-options=\"user.Name for user in users.assigned\" multiple class=\"multiselect form-control\"></select></div></div></div></div></div></div><div ng-if=\"state.activeTab === 'Groups'\"><div class=\"panel panel-default\"><div class=panel-heading><div class=row><div class=col-xs-5><span style=font-weight:bold>Select a User:</span><select class=form-control ng-model=groups.filter ng-options=\"user.Name for user in users.all\" ng-change=updateAvailableGroups(groups.filter) style=\"min-width: 100px\"></select></div><div class=col-xs-7><span style=font-weight:bold>Site/Site Collection:</span> <input class=form-control ng-model=state.siteUrl ng-change=updateAvailableGroups(groups.filter)></div></div></div><div class=panel-body><div class=row><div class=col-xs-12><div colspan=3 class=description>This page was created to make the process of managing users/groups within the site collection more manageable. When a user is selected, the available groups are displayed on the left and the groups that the user is currently a member of will show on the right. Selecting multiple groups is supported.</div></div></div><hr class=hr-sm><div class=row><div class=col-xs-5><div class=form-group><label>Available Groups ({{groups.available.length}})</label><select ng-model=groups.selectedAvailable ng-options=\"group.Name for group in groups.available\" multiple class=\"multiselect form-control\"></select></div></div><div class=\"col-xs-2 text-center\" style=\"padding-top: 175px\"><button class=\"btn btn-default\" style=width:80px ng-click=\"updatePermissions('AddUserToGroup', [groups.filter], groups.selectedAvailable)\" title=\"Add to group\"><i class=\"fa fa-2x fa-angle-double-right\"></i></button><br><br><button class=\"btn btn-default\" style=width:80px ng-click=\"updatePermissions('RemoveUserFromGroup', [groups.filter], groups.selectedAssigned)\"><i class=\"fa fa-2x fa-angle-double-left\"></i></button></div><div class=col-xs-5><div class=form-group><label>Assigned Users ({{users.assigned.length}})</label><select ng-model=groups.selectedAssigned ng-options=\"group.Name for group in groups.assigned\" multiple class=\"multiselect form-control\"></select></div></div></div></div></div></div><div ng-if=\"state.activeTab === 'Merge'\"><div class=\"panel panel-default\"><div class=panel-body><div class=row><div class=col-xs-12><div class=description>This tab allows us to copy the members from the \"Source\" group over to the \"Target\" group. It's not a problem if any of the users already exist in the destination group. Note: This is a onetime operation so any additional members added to the Source group will not automatically be added to the destination group. You will need to repeat this process.</div></div></div><hr class=hr-sm><div class=row><div class=col-xs-5><fieldset><legend>Step 1</legend><div class=well><div class=form-group><label>Source Group</label><select class=form-control ng-model=state.sourceGroup ng-options=\"group.Name for group in groups.all\" ng-change=updateAvailableUsers(state.sourceGroup) style=\"min-width: 100px\"></select></div></div></fieldset></div><div class=col-xs-5><fieldset><legend>Step 2</legend><div class=well><div class=form-group><label>Source Group</label><select class=form-control ng-model=state.targetGroup ng-options=\"group.Name for group in groups.all\" style=\"min-width: 100px\"></select></div></div></fieldset></div><div class=col-xs-2><fieldset><legend>Step 3</legend><button class=\"btn btn-success\" ng-disabled=\"state.sourceGroup.length < 1 || state.targetGroup.length < 1\" ng-click=mergeGroups() title=\"Copy all members from the source group over to the destination group.\"><i class=\"fa fa-2x fa-magic\"></i> Merge</button></fieldset></div></div></div></div></div><div ng-if=\"state.activeTab === 'UserList'\"><div class=\"panel panel-default\"><div class=panel-heading><span style=font-weight:bold>User Filter</span> <input class=form-control ng-model=state.userFilter ng-change=usersTable.reload()></div><table ng-table=usersTable class=table template-pagination=custom/pager><tr ng-repeat=\"user in $data\"><td data-title=\"'ID'\">{{ user.ID }}</td><td data-title=\"'Name'\"><a href ng-click=userDetailsLink(user) ng-bind-html=\"user.Name |  highlight:state.userFilter\"></a></td><td data-title=\"'Email'\">{{ user.Email }}</td></tr></table></div></div><div ng-if=\"state.activeTab === 'GroupList'\"><div class=\"panel panel-default\"><div class=panel-heading><span style=font-weight:bold>Group Filter</span> <input class=form-control ng-model=state.groupFilter ng-change=groupsTable.reload()></div><table ng-table=groupsTable class=table template-pagination=custom/pager><tr ng-repeat=\"group in $data\"><td data-title=\"'ID'\">{{ group.ID }}</td><td data-title=\"'Name'\"><a href ng-click=groupDetailsLink(group) ng-bind-html=\"group.Name |  highlight:state.groupFilter\"></a></td><td data-title=\"'Description'\">{{ group.Description }}</td></tr></table></div></div></div><script type=text/ng-template id=custom/pager><div class=\"row\">\r" +
-    "\n" +
-    "        <div class=\"col-xs-12\">\r" +
-    "\n" +
-    "            <ul class=\"pager ng-cloak\">\r" +
-    "\n" +
-    "                <li ng-repeat=\"page in pages\"\r" +
-    "\n" +
-    "                    ng-class=\"{'disabled': !page.active}\"\r" +
-    "\n" +
-    "                    ng-show=\"page.type == 'prev' || page.type == 'next'\" ng-switch=\"page.type\">\r" +
-    "\n" +
-    "                    <a ng-switch-when=\"prev\" ng-click=\"params.page(page.number)\" href=\"\">\r" +
-    "\n" +
-    "                        <i class=\"fa fa-chevron-left\"></i>\r" +
-    "\n" +
-    "                    </a>\r" +
-    "\n" +
-    "                    <a ng-switch-when=\"next\" ng-click=\"params.page(page.number)\" href=\"\">\r" +
-    "\n" +
-    "                        <i class=\"fa fa-chevron-right\"></i>\r" +
-    "\n" +
-    "                    </a>\r" +
-    "\n" +
-    "                </li>\r" +
-    "\n" +
-    "            </ul>\r" +
-    "\n" +
-    "        </div>\r" +
-    "\n" +
+    "    .ui-match {\n" +
+    "        background: yellow;\n" +
+    "    }</style><div class=container><ul class=\"nav nav-tabs\"><li ng-class=\"{active: state.activeTab === 'Users'}\"><a href ng-click=\"updateTab('Users')\">Users</a></li><li ng-class=\"{active: state.activeTab === 'Groups'}\"><a href ng-click=\"updateTab('Groups')\">Groups</a></li><li ng-class=\"{active: state.activeTab === 'Merge'}\"><a href ng-click=\"state.activeTab = 'Merge'\">Merge</a></li><li ng-class=\"{active: state.activeTab === 'UserList'}\"><a href ng-click=\"state.activeTab = 'UserList'\">User List</a></li><li ng-class=\"{active: state.activeTab === 'GroupList'}\"><a href ng-click=\"state.activeTab = 'GroupList'\">Group List</a></li></ul><div ng-if=\"state.activeTab === 'Users'\"><div class=\"panel panel-default\"><div class=panel-heading><div class=row><div class=col-xs-5><span style=font-weight:bold>Select a Group:</span><select class=form-control ng-model=users.filter ng-options=\"group.Name for group in groups.all\" ng-change=updateAvailableUsers(users.filter) style=\"min-width: 100px\"></select></div><div class=col-xs-7><span style=font-weight:bold>Site/Site Collection:</span> <input class=form-control ng-model=state.siteUrl ng-change=updateAvailableUsers(users.filter)></div></div><div class=row ng-if=users.filter.Description><div class=col-xs-12><p class=help-block>Description: {{ users.filter.Description }}</p></div></div></div><div class=panel-body><div class=row><div class=col-xs-12><div colspan=3 class=description>This tab will allow you to quickly assign multiple users to a selected group.</div></div></div><hr class=hr-sm><div class=row><div class=col-xs-5><div class=form-group><label>Available Users ({{users.available.length}})</label><select ng-model=users.selectedAvailable ng-options=\"user.Name for user in users.available\" multiple class=\"multiselect form-control\"></select></div></div><div class=\"col-xs-2 text-center\" style=\"padding-top: 175px\"><button class=\"btn btn-default\" style=width:80px ng-click=\"updatePermissions('AddUserToGroup', users.selectedAvailable, [users.filter])\" title=\"Add user\"><i class=\"fa fa-2x fa-angle-double-right\"></i></button><br><br><button class=\"btn btn-default\" style=width:80px ng-click=\"updatePermissions('RemoveUserFromGroup', users.selectedAssigned, [users.filter])\"><i class=\"fa fa-2x fa-angle-double-left\"></i></button></div><div class=col-xs-5><div class=form-group><label>Assigned Users ({{users.assigned.length}})</label><select ng-model=users.selectedAssigned ng-options=\"user.Name for user in users.assigned\" multiple class=\"multiselect form-control\"></select></div></div></div></div></div></div><div ng-if=\"state.activeTab === 'Groups'\"><div class=\"panel panel-default\"><div class=panel-heading><div class=row><div class=col-xs-5><span style=font-weight:bold>Select a User:</span><select class=form-control ng-model=groups.filter ng-options=\"user.Name for user in users.all\" ng-change=updateAvailableGroups(groups.filter) style=\"min-width: 100px\"></select></div><div class=col-xs-7><span style=font-weight:bold>Site/Site Collection:</span> <input class=form-control ng-model=state.siteUrl ng-change=updateAvailableGroups(groups.filter)></div></div></div><div class=panel-body><div class=row><div class=col-xs-12><div colspan=3 class=description>This page was created to make the process of managing users/groups within the site collection more manageable. When a user is selected, the available groups are displayed on the left and the groups that the user is currently a member of will show on the right. Selecting multiple groups is supported.</div></div></div><hr class=hr-sm><div class=row><div class=col-xs-5><div class=form-group><label>Available Groups ({{groups.available.length}})</label><select ng-model=groups.selectedAvailable ng-options=\"group.Name for group in groups.available\" multiple class=\"multiselect form-control\"></select></div></div><div class=\"col-xs-2 text-center\" style=\"padding-top: 175px\"><button class=\"btn btn-default\" style=width:80px ng-click=\"updatePermissions('AddUserToGroup', [groups.filter], groups.selectedAvailable)\" title=\"Add to group\"><i class=\"fa fa-2x fa-angle-double-right\"></i></button><br><br><button class=\"btn btn-default\" style=width:80px ng-click=\"updatePermissions('RemoveUserFromGroup', [groups.filter], groups.selectedAssigned)\"><i class=\"fa fa-2x fa-angle-double-left\"></i></button></div><div class=col-xs-5><div class=form-group><label>Assigned Users ({{users.assigned.length}})</label><select ng-model=groups.selectedAssigned ng-options=\"group.Name for group in groups.assigned\" multiple class=\"multiselect form-control\"></select></div></div></div></div></div></div><div ng-if=\"state.activeTab === 'Merge'\"><div class=\"panel panel-default\"><div class=panel-body><div class=row><div class=col-xs-12><div class=description>This tab allows us to copy the members from the \"Source\" group over to the \"Target\" group. It's not a problem if any of the users already exist in the destination group. Note: This is a onetime operation so any additional members added to the Source group will not automatically be added to the destination group. You will need to repeat this process.</div></div></div><hr class=hr-sm><div class=row><div class=col-xs-5><fieldset><legend>Step 1</legend><div class=well><div class=form-group><label>Source Group</label><select class=form-control ng-model=state.sourceGroup ng-options=\"group.Name for group in groups.all\" ng-change=updateAvailableUsers(state.sourceGroup) style=\"min-width: 100px\"></select></div></div></fieldset></div><div class=col-xs-5><fieldset><legend>Step 2</legend><div class=well><div class=form-group><label>Source Group</label><select class=form-control ng-model=state.targetGroup ng-options=\"group.Name for group in groups.all\" style=\"min-width: 100px\"></select></div></div></fieldset></div><div class=col-xs-2><fieldset><legend>Step 3</legend><button class=\"btn btn-success\" ng-disabled=\"state.sourceGroup.length < 1 || state.targetGroup.length < 1\" ng-click=mergeGroups() title=\"Copy all members from the source group over to the destination group.\"><i class=\"fa fa-2x fa-magic\"></i> Merge</button></fieldset></div></div></div></div></div><div ng-if=\"state.activeTab === 'UserList'\"><div class=\"panel panel-default\"><div class=panel-heading><span style=font-weight:bold>User Filter</span> <input class=form-control ng-model=state.userFilter ng-change=usersTable.reload()></div><table ng-table=usersTable class=table template-pagination=custom/pager><tr ng-repeat=\"user in $data\"><td data-title=\"'ID'\">{{ user.ID }}</td><td data-title=\"'Name'\"><a href ng-click=userDetailsLink(user) ng-bind-html=\"user.Name |  highlight:state.userFilter\"></a></td><td data-title=\"'Email'\">{{ user.Email }}</td></tr></table></div></div><div ng-if=\"state.activeTab === 'GroupList'\"><div class=\"panel panel-default\"><div class=panel-heading><span style=font-weight:bold>Group Filter</span> <input class=form-control ng-model=state.groupFilter ng-change=groupsTable.reload()></div><table ng-table=groupsTable class=table template-pagination=custom/pager><tr ng-repeat=\"group in $data\"><td data-title=\"'ID'\">{{ group.ID }}</td><td data-title=\"'Name'\"><a href ng-click=groupDetailsLink(group) ng-bind-html=\"group.Name |  highlight:state.groupFilter\"></a></td><td data-title=\"'Description'\">{{ group.Description }}</td></tr></table></div></div></div><script type=text/ng-template id=custom/pager><div class=\"row\">\n" +
+    "        <div class=\"col-xs-12\">\n" +
+    "            <ul class=\"pager ng-cloak\">\n" +
+    "                <li ng-repeat=\"page in pages\"\n" +
+    "                    ng-class=\"{'disabled': !page.active}\"\n" +
+    "                    ng-show=\"page.type == 'prev' || page.type == 'next'\" ng-switch=\"page.type\">\n" +
+    "                    <a ng-switch-when=\"prev\" ng-click=\"params.page(page.number)\" href=\"\">\n" +
+    "                        <i class=\"fa fa-chevron-left\"></i>\n" +
+    "                    </a>\n" +
+    "                    <a ng-switch-when=\"next\" ng-click=\"params.page(page.number)\" href=\"\">\n" +
+    "                        <i class=\"fa fa-chevron-right\"></i>\n" +
+    "                    </a>\n" +
+    "                </li>\n" +
+    "            </ul>\n" +
+    "        </div>\n" +
     "    </div></script>"
   );
 

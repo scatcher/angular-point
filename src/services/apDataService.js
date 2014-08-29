@@ -17,7 +17,7 @@
  */
 angular.module('angularPoint')
     .service('apDataService', function ($q, $timeout, _, apQueueService, apConfig, apUtilityService, apDecodeService,
-                                        apEncodeService, apFieldService, toastr) {
+                                        apEncodeService, apFieldService, apIndexedCacheFactory, apMocksService, toastr) {
 
         /** Flag to use cached XML files from the location specified in apConfig.offlineXML */
         var offline = apConfig.offline;
@@ -123,8 +123,10 @@ angular.module('angularPoint')
          * </pre>
          */
         function getCollection(options) {
-            apQueueService.increase();
-            var defaults = {};
+            var defaults = {
+                offlineData: apConfig.offlineXML + opts.operation + '.xml',
+                postProcess: processXML
+            };
             var opts = _.extend({}, defaults, options);
 
             /** Determine the XML node to iterate over if filterNode isn't provided */
@@ -133,7 +135,7 @@ angular.module('angularPoint')
             var deferred = $q.defer();
 
             /** Convert the xml returned from the server into an array of js objects */
-            var processXML = function (serverResponse) {
+            function processXML(serverResponse) {
                 var convertedItems = [];
                 /** Get attachments only returns the links associated with a list item */
                 if (opts.operation === 'GetAttachmentCollection') {
@@ -148,76 +150,93 @@ angular.module('angularPoint')
                     });
                 }
                 return convertedItems;
-            };
+            }
 
-            if (offline) {
-                var offlineData = apConfig.offlineXML + opts.operation + '.xml';
-
-                /** Get offline data */
-                $.ajax(offlineData).then(
-                    function (offlineData) {
-                        apQueueService.decrease();
-                        /** Pass back the group array */
-                        deferred.resolve(processXML(offlineData));
-                    }, function (outcome) {
-                        toastr.error('You need to have a ' + apConfig.offlineXML + opts.operation + '.xml ' +
-                        'in order to get the group collection in offline mode.');
-                        deferred.reject(outcome);
-                        apQueueService.decrease();
+            var validPayload = validateCollectionPayload(opts);
+            if (validPayload) {
+                serviceWrapper(opts)
+                    .then(function (response) {
+                        deferred.resolve(response);
                     });
             } else {
-                var validPayload = true;
-                var payload = _.extend({}, opts);
-
-                var verifyParams = function (params) {
-                    _.each(params, function (param) {
-                        if (!payload[param]) {
-                            toastr.error('options' + param + ' is required to complete this operation');
-                            validPayload = false;
-                            deferred.reject([]);
-                        }
-                    });
-                };
-
-                //Verify all required params are included
-                switch (opts.operation) {
-                    case 'GetGroupCollectionFromUser':
-                        verifyParams(['userLoginName']);
-                        break;
-                    case 'GetUserCollectionFromGroup':
-                        verifyParams(['groupName']);
-                        break;
-                    case 'GetViewCollection':
-                        verifyParams(['listName']);
-                        break;
-                    case 'GetAttachmentCollection':
-                        verifyParams(['listName', 'ID']);
-                        break;
-                }
-
-                if (validPayload) {
-                    var webServiceCall = $().SPServices(payload);
-
-                    webServiceCall.then(function () {
-                        //Success
-                        apQueueService.decrease();
-                        logErrorsToConsole(webServiceCall.responseXML, opts.operation);
-                        deferred.resolve(processXML(webServiceCall.responseXML));
-                    }, function (outcome) {
-                        //Failure
-                        toastr.error('Failed to fetch list collection.');
-                        apQueueService.decrease();
-                        deferred.reject(outcome);
-                    });
-                }
+                toastr.error('Invalid payload:', opts);
+                deferred.reject();
             }
+
+            //if(online) {
+            //    var validPayload = validateCollectionPayload(opts);
+            //
+            //    if (validPayload) {
+            //        serviceWrapper(opts)
+            //            .then(function (response) {
+            //
+            //            });
+            //        var webServiceCall = $().SPServices(opts);
+            //        webServiceCall.then(function () {
+            //            //Success
+            //            apQueueService.decrease();
+            //            logErrorsToConsole(webServiceCall.responseXML, opts.operation);
+            //            deferred.resolve(processXML(webServiceCall.responseXML));
+            //        }, function (outcome) {
+            //            //Failure
+            //            toastr.error('Failed to fetch list collection.');
+            //            apQueueService.decrease();
+            //            deferred.reject(outcome);
+            //        });
+            //    } else {
+            //        deferred.reject();
+            //    }
+            //} else {
+            //    /** Get offline data */
+            //    $.ajax(opts.offlineData).then(
+            //        function (offlineData) {
+            //            apQueueService.decrease();
+            //            /** Pass back the group array */
+            //            deferred.resolve(processXML(offlineData));
+            //        }, function (outcome) {
+            //            toastr.error('You need to have a ' + apConfig.offlineXML + opts.operation + '.xml ' +
+            //            'in order to get the group collection in offline mode.');
+            //            deferred.reject(outcome);
+            //            apQueueService.decrease();
+            //        });
+            //}
 
             return deferred.promise;
         }
 
-        //TODO Make a function that wraps SPServices and removes all Online/Offline logic from within the other methods
-        function submitRequest(payload){
+        /**
+         * @description
+         * Simply verifies that all components of the payload are present.
+         * @param {object} opts Payload config.
+         * @returns {boolean} Collection is valid.
+         */
+        function validateCollectionPayload(opts) {
+            var validPayload = true;
+            var verifyParams = function (params) {
+                _.each(params, function (param) {
+                    if (!opts[param]) {
+                        toastr.error('options' + param + ' is required to complete this operation');
+                        validPayload = false;
+                    }
+                });
+            };
 
+            //Verify all required params are included
+            switch (opts.operation) {
+                case 'GetGroupCollectionFromUser':
+                    verifyParams(['userLoginName']);
+                    break;
+                case 'GetUserCollectionFromGroup':
+                    verifyParams(['groupName']);
+                    break;
+                case 'GetViewCollection':
+                    verifyParams(['listName']);
+                    break;
+                case 'GetAttachmentCollection':
+                    verifyParams(['listName', 'ID']);
+                    break;
+            }
+            return validPayload;
         }
 
         /**
@@ -260,7 +279,8 @@ angular.module('angularPoint')
         function serviceWrapper(options) {
             var defaults = {
                 /** You need to specify the offline xml file if you want to properly mock the request when offline */
-                offlineXML: apConfig.offlineXML + options.operation + '.xml'
+                offlineXML: apConfig.offlineXML + options.operation + '.xml',
+                postProcess: processXML
             };
             var opts = _.extend({}, defaults, options);
             var deferred = $q.defer();
@@ -268,7 +288,7 @@ angular.module('angularPoint')
             apQueueService.increase();
 
             /** Convert the xml returned from the server into an array of js objects */
-            var processXML = function (serverResponse) {
+            function processXML(serverResponse) {
                 if (opts.filterNode) {
                     return $(serverResponse).SPFilterNode(opts.filterNode).SPXmlToJson({
                         includeAllAttrs: true,
@@ -277,41 +297,30 @@ angular.module('angularPoint')
                 } else {
                     return serverResponse;
                 }
-            };
+            }
 
             if (online) {
-                /** Add in webURL to speed up call, set to default if not specified */
-                var payload = {};
-
-                _.extend(payload, opts);
-
-                var webServiceCall = $().SPServices(payload);
+                var webServiceCall = $().SPServices(opts);
 
                 webServiceCall.then(function () {
                     /** Success */
-                    apQueueService.decrease();
                     /** Errors can still be resolved without throwing an error so check the XML */
-                    logErrorsToConsole(webServiceCall.responseXML, opts.operation);
-                    deferred.resolve(processXML(webServiceCall.responseXML));
-
-
+                    logErrorsToConsole(webServiceCall.responseXML, opts);
+                    deferred.resolve(opts.postProcess(webServiceCall.responseXML));
+                    apQueueService.decrease();
                 }, function (outcome) {
                     /** Failure */
                     toastr.error('Failed to complete the requested ' + opts.operation + ' operation.');
-                    apQueueService.decrease();
                     deferred.reject(outcome);
+                    apQueueService.decrease();
                 });
             } else {
-                /** Get offline data */
-                $.ajax(opts.offlineXML).then(
-                    function (offlineData) {
-                        apQueueService.decrease();
-                        /** Pass back the group array */
-                        deferred.resolve(processXML(offlineData));
-                    }, function (outcome) {
-                        toastr.error('You need to have a ' + opts.offlineXML + ' file in order mock this request.');
-                        deferred.reject(outcome);
-                        apQueueService.decrease();
+                /** Allow this method to be overloaded and pass any additional arguments to the mock service */
+                var additionalArgs = Array.prototype.slice.call(arguments, 1);
+
+                apMocksService.mockRequest(opts, additionalArgs)
+                    .then(function (response) {
+                        deferred.resolve(opts.postProcess(response));
                     });
             }
 
@@ -478,6 +487,7 @@ angular.module('angularPoint')
         function getView(options) {
             var defaults = {
                 operation: 'GetView',
+                /** Optionally set alternate offline XML location */
                 offlineXML: apConfig.offlineXML + 'GetView.xml'
             };
 
@@ -532,83 +542,75 @@ angular.module('angularPoint')
             /** Extend defaults **/
             var opts = _.extend({}, defaults, options);
 
-            /** Trigger processing animation */
-            apQueueService.increase();
+            /** Set the location of the offline xml file */
+            query.offlineData = opts.offlineXML || query.offlineXML || apConfig.offlineXML + model.list.title + '.xml';
 
-            if (online) {
-                var webServiceCall = $().SPServices(query);
-                webServiceCall.then(function () {
-                    var responseXML = webServiceCall.responseXML;
-
-                    /** Errors can still be resolved without throwing an error so check the XML */
-                    logErrorsToConsole(webServiceCall.responseXML, opts.operation);
-
-                    if (query.operation === 'GetListItemChangesSinceToken') {
-
-                        /** The initial call to GetListItemChangesSinceToken also includes the field definitions for the
-                         *  list so use this to extend the existing field definitions and list defined in the model. */
-                        if (!model.fieldDefinitionsExtended) {
-                            apDecodeService.extendListDefinitionFromXML(model.list, responseXML);
-                            apDecodeService.extendFieldDefinitionsFromXML(model.list.fields, responseXML);
-                            model.fieldDefinitionsExtended = true;
-                        }
-
-                        /** Store token for future web service calls to return changes */
-                        query.changeToken = retrieveChangeToken(responseXML);
-
-
-                        /** Update the user permissions for this list */
-                        var effectivePermissionMask = retrievePermMask(responseXML);
-                        if (effectivePermissionMask) {
-                            model.list.effectivePermMask = effectivePermissionMask;
-                        }
-
-                        /** Change token query includes deleted items as well so we need to process them separately */
-                        processDeletionsSinceToken(responseXML, opts.target);
-                    }
-
-                    /** Convert the XML into JS objects */
-                    apDecodeService.processListItems(model, query, responseXML, opts);
+            serviceWrapper(query)
+                .then(function (response) {
                     /** Set date time to allow for time based updates */
                     query.lastRun = new Date();
-                    apQueueService.decrease();
-                    deferred.resolve(entities);
-                });
-            } else {
-                /** Simulate an web service call if working offline */
-                /** Optionally set alternate offline XML location but default to value in model */
-                var offlineData = opts.offlineXML || query.offlineXML || apConfig.offlineXML + model.list.title + '.xml';
 
-                /** Only pull down offline xml if this is the first time the query is run */
-                if (query.lastRun) {
-                    /** Query has already been run, resolve reference to existing data */
-                    query.lastRun = new Date();
-                    apQueueService.decrease();
-                    deferred.resolve(query.getCache());
-                } else {
-                    /** First run for query
-                     *  Get offline XML file from the location specified in apConfig.offlineXML
-                     */
-                    $.ajax(offlineData).then(function (responseXML) {
-                        var entities = apDecodeService.processListItems(model, query, responseXML, opts);
-                        /** Set date time to allow for time based updates */
-                        query.lastRun = new Date();
-                        apQueueService.decrease();
-
-                        /** Extend the field and list definition in the model with the offline data */
+                    if (offline && query.lastRun) {
+                        /** Entities have already been previously processed so just return the existing cache */
+                        deferred.resolve(response);
+                    } else {
                         if (query.operation === 'GetListItemChangesSinceToken') {
-                            apDecodeService.extendListDefinitionFromXML(model.list, responseXML);
-                            apDecodeService.extendFieldDefinitionsFromXML(model.list.fields, responseXML);
+
+                            /** The initial call to GetListItemChangesSinceToken also includes the field definitions for the
+                             *  list so use this to extend the existing field definitions and list defined in the model. */
+                            if (!model.fieldDefinitionsExtended) {
+                                apDecodeService.extendListDefinitionFromXML(model.list, response);
+                                apDecodeService.extendFieldDefinitionsFromXML(model.list.fields, response);
+                                model.fieldDefinitionsExtended = true;
+                            }
+
+                            /** Store token for future web service calls to return changes */
+                            query.changeToken = retrieveChangeToken(response);
+
+                            /** Update the user permissions for this list */
+                            var effectivePermissionMask = retrievePermMask(response);
+                            if (effectivePermissionMask) {
+                                model.list.effectivePermMask = effectivePermissionMask;
+                            }
+
+                            /** Change token query includes deleted items as well so we need to process them separately */
+                            processDeletionsSinceToken(response, opts.target);
                         }
 
+                        /** Convert the XML into JS objects */
+                        var entities = apDecodeService.processListItems(model, query, response, opts);
                         deferred.resolve(entities);
-                    }, function () {
-                        var mockData = model.generateMockData();
-                        deferred.resolve(mockData);
-                        toastr.error('There was a problem locating the "' + apConfig.offlineXML + model.list.title + '.xml"');
-                    });
-                }
-            }
+                    }
+                });
+            //} else {
+            //    /** Offline */
+            //
+            //    /** Only pull down offline xml if this is the first time the query is run */
+            //    if (query.lastRun) {
+            //        /** Query has already been run, resolve reference to existing data */
+            //        query.lastRun = new Date();
+            //        apQueueService.decrease();
+            //        deferred.resolve(query.getCache());
+            //    } else {
+            //        /** First run for query
+            //         *  Get offline XML file from the location specified in apConfig.offlineXML
+            //         */
+            //        serviceWrapper(opts)
+            //            .then(function (responseXML) {
+            //                var entities = apDecodeService.processListItems(model, query, responseXML, opts);
+            //                /** Set date time to allow for time based updates */
+            //                query.lastRun = new Date();
+            //
+            //                /** Extend the field and list definition in the model with the offline data */
+            //                if (query.operation === 'GetListItemChangesSinceToken') {
+            //                    apDecodeService.extendListDefinitionFromXML(model.list, responseXML);
+            //                    apDecodeService.extendFieldDefinitionsFromXML(model.list.fields, responseXML);
+            //                }
+            //
+            //                deferred.resolve(entities);
+            //            });
+            //    }
+            //}
 
             return deferred.promise;
         }
@@ -626,7 +628,7 @@ angular.module('angularPoint')
             var successfullyDeleted = false;
 
             /** Remove from indexed cache if found */
-            if(indexedCache[entityId]) {
+            if (indexedCache[entityId]) {
                 delete indexedCache[entityId];
                 successfullyDeleted = true;
             }
@@ -739,9 +741,6 @@ angular.module('angularPoint')
             var deferred = $q.defer();
             var opts = _.extend({}, defaults, options);
 
-            /** Display loading animation */
-            apQueueService.increase();
-
             if (opts.buildValuePairs === true) {
                 var editableFields = _.where(model.list.fields, {readOnly: false});
                 opts.valuePairs = apEncodeService.generateValuePairs(editableFields, entity);
@@ -761,82 +760,99 @@ angular.module('angularPoint')
             } else {
                 /** Creating new list item */
                 payload.batchCmd = 'New';
-                payload.indexedCache = {};
-                payload.getCache = function () {return payload.indexedCache;};
+                payload.indexedCache = apIndexedCacheFactory.create({});
+                payload.getCache = function () {
+                    return payload.indexedCache;
+                };
                 query = payload;
             }
-
-            if (online) {
-                /** Make call to lists web service */
-                var webServiceCall = $().SPServices(payload);
-
-                webServiceCall.then(function () {
-                    /** Success */
-                    var responseArray = apDecodeService.processListItems(model, query, webServiceCall.responseXML, opts);
-//                    var updatedEntity = output[0];
-//
-//                    /** Optionally search through each cache on the model and update any other references to this entity */
-//                    if (opts.updateAllCaches && _.isNumber(entity.id)) {
-//                        updateAllCaches(model, updatedEntity, entity.getQuery());
-//                    }
-                    deferred.resolve(responseArray[0]);
-                }, function (outcome) {
-                    /** In the event of an error, display toast */
-                    toastr.error('There was an error getting the requested data from ' + model.list.name);
-                    deferred.reject(outcome);
-                }).always(function () {
-                    apQueueService.decrease();
-                });
-            } else {
-                /** Logic to simulate expected behavior when working offline */
-                /** Offline mode */
-                window.console.log(payload);
-
-                /** Mock data */
-                var offlineDefaults = {
-                    modified: new Date(),
-                    editor: {
-                        lookupId: 23,
-                        lookupValue: 'Generic User'
+            /** Overload the function the pass anything past the first parameter to the supporting methods */
+            serviceWrapper(payload, entity, model)
+                .then(function (response) {
+                    if (online) {
+                        /** Online this should return an XML object */
+                        var responseArray = apDecodeService.processListItems(model, query, response, opts);
+                        deferred.resolve(responseArray[0]);
+                    } else {
+                        /** Offline response should be the updated entity as a JS Object */
+                        deferred.resolve(response);
                     }
-                };
+                });
 
-                if (!entity.id) {
-                    var newItem = {};
 
-                    /* Include standard mock fields for new item */
-                    offlineDefaults.author = {
-                        lookupId: 23,
-                        lookupValue: 'Generic User'
-                    };
+            //if (online) {
 
-                    offlineDefaults.created = new Date();
 
-                    /** We don't know which query cache to push it to so add it to all */
-                    _.each(model.queries, function (query) {
-                        /** Find next logical id to assign */
-                        var maxId = 1;
-                        /** Find the entity with the highest ID number */
-                        var lastEntity = query.getCache().last();
-                        if(lastEntity) {
-                            maxId = lastEntity.id;
-                        }
-                        offlineDefaults.id = maxId + 1;
-                        /** Add default attributes */
-                        _.extend(entity, offlineDefaults);
-                        /** Use factory to build new object */
-                        newItem = new model.factory(entity);
-                        query.getCache().addEntity(newItem);
-                    });
-
-                    deferred.resolve(newItem);
-                } else {
-                    /** Update existing record in local cache */
-                    _.extend(entity, offlineDefaults);
-                    deferred.resolve(entity);
-                }
-                apQueueService.decrease();
-            }
+//                /** Make call to lists web service */
+//                var webServiceCall = $().SPServices(payload);
+//
+//                webServiceCall.then(function () {
+//                    /** Success */
+//                    var responseArray = apDecodeService.processListItems(model, query, webServiceCall.responseXML, opts);
+////                    var updatedEntity = output[0];
+////
+////                    /** Optionally search through each cache on the model and update any other references to this entity */
+////                    if (opts.updateAllCaches && _.isNumber(entity.id)) {
+////                        updateAllCaches(model, updatedEntity, entity.getQuery());
+////                    }
+//                    deferred.resolve(responseArray[0]);
+//                }, function (outcome) {
+//                    /** In the event of an error, display toast */
+//                    toastr.error('There was an error getting the requested data from ' + model.list.name);
+//                    deferred.reject(outcome);
+//                }).always(function () {
+//                    apQueueService.decrease();
+//                });
+//            } else {
+//                /** Logic to simulate expected behavior when working offline */
+//                /** Offline mode */
+//                window.console.log(payload);
+//
+//                /** Mock data */
+//                var offlineDefaults = {
+//                    modified: new Date(),
+//                    editor: {
+//                        lookupId: 23,
+//                        lookupValue: 'Generic User'
+//                    }
+//                };
+//
+//                if (!entity.id) {
+//                    var newItem = {};
+//
+//                    /* Include standard mock fields for new item */
+//                    offlineDefaults.author = {
+//                        lookupId: 23,
+//                        lookupValue: 'Generic User'
+//                    };
+//
+//                    offlineDefaults.created = new Date();
+//
+//                    /** We don't know which query cache to push it to so add it to all */
+//                    _.each(model.queries, function (query) {
+//                        /** Find next logical id to assign */
+//                        var maxId = 1;
+//                        /** Find the entity with the highest ID number */
+//                        var lastEntity = query.getCache().last();
+//                        if(lastEntity) {
+//                            maxId = lastEntity.id;
+//                        }
+//                        offlineDefaults.id = maxId + 1;
+//                        /** Add default attributes */
+//                        _.extend(entity, offlineDefaults);
+//                        /** Use factory to build new object */
+//                        newItem = new model.factory(entity);
+//                        query.getCache().addEntity(newItem);
+//                    });
+//
+//                    deferred.resolve(newItem);
+//                } else {
+//                    /** Update existing record in local cache */
+//                    _.extend(entity, offlineDefaults);
+//                    deferred.resolve(entity);
+//                }
+//                apQueueService.decrease();
+//            }
             return deferred.promise;
         }
 

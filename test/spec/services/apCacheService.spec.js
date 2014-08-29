@@ -67,6 +67,13 @@ describe('Service: apCacheService', function () {
         });
     });
 
+    describe('Function: getCachedEntities', function () {
+        it('returns all entities for a given model', function () {
+            var entity = apCacheService.getCachedEntities(mockModel.list.guid, 1);
+            expect(entity.count()).toEqual(2);
+        });
+    });
+
 
     describe('getEntityContainer', function () {
         beforeEach(function () {

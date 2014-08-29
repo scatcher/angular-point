@@ -168,6 +168,7 @@ angular.module('angularPoint')
             generateMockData: generateMockData,
             getAllListItems: getAllListItems,
             getCache: getCache,
+            getCachedEntity: getCachedEntity,
             getFieldDefinition: getFieldDefinition,
             getListItemById: getListItemById,
             getLocalEntity: getLocalEntity,
@@ -699,6 +700,21 @@ angular.module('angularPoint')
                 cache = query.indexedCache;
             }
             return cache;
+        }
+
+
+        /**
+         * @ngdoc function
+         * @name Model.getCachedEntity
+         * @module Model
+         * @description
+         * Attempts to locate a model entity by id.
+         * @param {number} entityId The ID of the requested entity.
+         * @returns {object} Returns either the requested entity or undefined if it's not found.
+         */
+        function getCachedEntity(entityId) {
+            var model = this;
+            return apCacheService.getCachedEntity(model.list.guid, entityId);
         }
 
         /**

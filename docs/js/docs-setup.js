@@ -19,7 +19,7 @@ NG_DOCS={
       "type": "service",
       "moduleName": "angularPoint",
       "shortDescription": "Stores a reference for all list items based on list GUID and list item id.  Allows us to then register promises that",
-      "keywords": "add allows angularpoint apcacheservice api assuming based belongs cache cached call create created creates deferred entity entitycontainer entityid entitytype equaling eventually existing exists extend fulfills function future guid instance item items key keystring list local lookup lowercase model modelcache newly object optionally pass pending point promises provide reference register registered registers removes requested requests resolve resolves return returns secondary service single stored stores synchronise undefined updated withing"
+      "keywords": "add allows angularpoint apcacheservice api assuming based belongs cache cached call create created creates deferred entities entity entitycontainer entityid entitytype equaling eventually existing exists extend fulfills function future guid indexed instance item items key keystring list local lookup lowercase model modelcache newly object optionally pass pending point promises provide reference register registered registers removes requested requests resolve resolves return returns secondary service single stored stores synchronise undefined updated withing"
     },
     {
       "section": "api",
@@ -560,6 +560,15 @@ NG_DOCS={
       "moduleName": "Model",
       "shortDescription": "Helper function that return the local cache for a named query if provided, otherwise",
       "keywords": "api cache changes check contents current customquery function getcache helper identify key local model named namedquerycache primary primaryquerycache projectmodel provided query resolved return returns sharepoint unique var"
+    },
+    {
+      "section": "api",
+      "id": "Model.getCachedEntity",
+      "shortName": "Model.getCachedEntity",
+      "type": "function",
+      "moduleName": "Model",
+      "shortDescription": "Attempts to locate a model entity by id.",
+      "keywords": "api attempts entity entityid function getcachedentity locate model requested returns undefined"
     },
     {
       "section": "api",

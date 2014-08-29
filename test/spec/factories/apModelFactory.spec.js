@@ -18,11 +18,9 @@ describe('Factory: apModelFactory', function () {
     describe('addNewItem', function () {
         it('adds the new entity to the cacheService', function () {
             mockModel.addNewItem({titleText: 'I\'m a new item!'});
-            mockModel.getCache()[3].titleText = 'I\'m a new item!';
-        });
-        it('adds a new item to the primary cache', function () {
-            mockModel.addNewItem({titleText: 'I\'m a new item!'});
-            mockModel.getCache()[3].titleText = 'I\'m a new item!';
+            var newEntity = mockModel.getCachedEntity(3);
+            expect(newEntity).toBeDefined();
+            expect(newEntity.titleText).toEqual('I\'m a new item!');
         });
     });
 

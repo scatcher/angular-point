@@ -22,7 +22,7 @@ angular.module('angularPoint')
          */
         function ModelCache() {
         }
-        ModelCache.prototype = apIndexedCacheFactory.IndexedCache;
+        ModelCache.prototype = apIndexedCacheFactory.create();
 
         /** Make sure to properly set the appropriate constructor instead of using the one inherited from IndexedCache*/
         ModelCache.constructor = ModelCache;
@@ -55,6 +55,7 @@ angular.module('angularPoint')
         return {
             entityCache: entityCache,
             getCachedEntity: getCachedEntity,
+            getCachedEntities: getCachedEntities,
             getEntity: getEntity,
             getEntityContainer: getEntityContainer,
             getEntityTypeKey: getEntityTypeKey,
@@ -155,6 +156,28 @@ angular.module('angularPoint')
 
         /**
          * @ngdoc function
+         * @name angularPoint.apCacheService:getCachedEntities
+         * @methodOf angularPoint.apCacheService
+         * @description
+         * Returns all entities for a given model as an indexed cache with keys being the entity id's.
+         * @param {string} entityType GUID for list the list item belongs to.
+         * @returns {object} Indexed cache containing all entities for a model.
+         */
+        function getCachedEntities(entityType) {
+            var modelCache = getModelCache(entityType),
+                allEntities = apIndexedCacheFactory.create();
+            if(modelCache) {
+                _.each(modelCache, function(entityContainer) {
+                    if(entityContainer.entity && entityContainer.entity.id) {
+                        allEntities.addEntity(entityContainer.entity);
+                    }
+                });
+            }
+            return allEntities;
+        }
+
+        /**
+         * @ngdoc function
          * @name angularPoint.apCacheService:getEntity
          * @methodOf angularPoint.apCacheService
          * @description
@@ -232,7 +255,8 @@ angular.module('angularPoint')
         }
 
         /** Locates the stored cache for a model */
-        function getModelCache(entityTypeKey) {
+        function getModelCache(entityType) {
+            var entityTypeKey = getEntityTypeKey(entityType);
             entityCache[entityTypeKey] = entityCache[entityTypeKey] || new ModelCache();
             return entityCache[entityTypeKey];
         }

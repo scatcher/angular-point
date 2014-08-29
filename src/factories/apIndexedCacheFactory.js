@@ -189,5 +189,4 @@ angular.module('angularPoint')
             return new IndexedCache();
         }
     }
-)
-;
+);
