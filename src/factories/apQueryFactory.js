@@ -139,11 +139,12 @@ angular.module('angularPoint')
             query.getModel = function () {
                 return model;
             };
+
+            query.getCache = getCache;
         }
 
         Query.prototype = {
             execute: execute,
-            getCache: getCache,
             searchLocalCache: searchLocalCache
         };
 

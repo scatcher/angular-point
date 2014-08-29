@@ -2,7 +2,7 @@
 
 
 angular.module('angularPoint')
-    .service('apMocksService', function ($q, apQueueService, apCacheService) {
+    .service('apMocksService', function ($q, apCacheService) {
         return {
             mockRequest: mockRequest
         };
@@ -27,11 +27,9 @@ angular.module('angularPoint')
                 function (offlineData) {
                     /** Pass back the group array */
                     deferred.resolve(offlineData);
-                    apQueueService.decrease();
                 }, function (outcome) {
                     toastr.error('You need to have a ' + opts.offlineXML + ' file in order mock this request.');
                     deferred.reject(outcome);
-                    apQueueService.decrease();
                 });
             return deferred.promise;
         }

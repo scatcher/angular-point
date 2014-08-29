@@ -499,9 +499,12 @@ angular.module('angularPoint')
          */
         function getCollection(options) {
             var defaults = {
-                offlineData: apConfig.offlineXML + opts.operation + '.xml',
                 postProcess: processXML
             };
+            /** Set the default location for the offline XML in case it isn't manually set. */
+            if(offline && _.isString(options.operation)) {
+                defaults.offlineData = apConfig.offlineXML + options.operation + '.xml';
+            }
             var opts = _.extend({}, defaults, options);
 
             /** Determine the XML node to iterate over if filterNode isn't provided */
@@ -537,44 +540,6 @@ angular.module('angularPoint')
                 toastr.error('Invalid payload:', opts);
                 deferred.reject();
             }
-
-            //if(online) {
-            //    var validPayload = validateCollectionPayload(opts);
-            //
-            //    if (validPayload) {
-            //        serviceWrapper(opts)
-            //            .then(function (response) {
-            //
-            //            });
-            //        var webServiceCall = $().SPServices(opts);
-            //        webServiceCall.then(function () {
-            //            //Success
-            //            apQueueService.decrease();
-            //            logErrorsToConsole(webServiceCall.responseXML, opts.operation);
-            //            deferred.resolve(processXML(webServiceCall.responseXML));
-            //        }, function (outcome) {
-            //            //Failure
-            //            toastr.error('Failed to fetch list collection.');
-            //            apQueueService.decrease();
-            //            deferred.reject(outcome);
-            //        });
-            //    } else {
-            //        deferred.reject();
-            //    }
-            //} else {
-            //    /** Get offline data */
-            //    $.ajax(opts.offlineData).then(
-            //        function (offlineData) {
-            //            apQueueService.decrease();
-            //            /** Pass back the group array */
-            //            deferred.resolve(processXML(offlineData));
-            //        }, function (outcome) {
-            //            toastr.error('You need to have a ' + apConfig.offlineXML + opts.operation + '.xml ' +
-            //            'in order to get the group collection in offline mode.');
-            //            deferred.reject(outcome);
-            //            apQueueService.decrease();
-            //        });
-            //}
 
             return deferred.promise;
         }
@@ -696,6 +661,7 @@ angular.module('angularPoint')
                 apMocksService.mockRequest(opts, additionalArgs)
                     .then(function (response) {
                         deferred.resolve(opts.postProcess(response));
+                        apQueueService.decrease();
                     });
             }
 
@@ -918,14 +884,12 @@ angular.module('angularPoint')
             var opts = _.extend({}, defaults, options);
 
             /** Set the location of the offline xml file */
-            query.offlineData = opts.offlineXML || query.offlineXML || apConfig.offlineXML + model.list.title + '.xml';
+            query.offlineXML = opts.offlineXML || query.offlineXML || apConfig.offlineXML + model.list.title + '.xml';
 
             serviceWrapper(query)
                 .then(function (response) {
-                    /** Set date time to allow for time based updates */
-                    query.lastRun = new Date();
 
-                    if (offline && query.lastRun) {
+                    if (offline && !_.isNull(query.lastRun)) {
                         /** Entities have already been previously processed so just return the existing cache */
                         deferred.resolve(response);
                     } else {
@@ -956,36 +920,11 @@ angular.module('angularPoint')
                         var entities = apDecodeService.processListItems(model, query, response, opts);
                         deferred.resolve(entities);
                     }
+
+                    /** Set date time to allow for time based updates */
+                    query.lastRun = new Date();
+
                 });
-            //} else {
-            //    /** Offline */
-            //
-            //    /** Only pull down offline xml if this is the first time the query is run */
-            //    if (query.lastRun) {
-            //        /** Query has already been run, resolve reference to existing data */
-            //        query.lastRun = new Date();
-            //        apQueueService.decrease();
-            //        deferred.resolve(query.getCache());
-            //    } else {
-            //        /** First run for query
-            //         *  Get offline XML file from the location specified in apConfig.offlineXML
-            //         */
-            //        serviceWrapper(opts)
-            //            .then(function (responseXML) {
-            //                var entities = apDecodeService.processListItems(model, query, responseXML, opts);
-            //                /** Set date time to allow for time based updates */
-            //                query.lastRun = new Date();
-            //
-            //                /** Extend the field and list definition in the model with the offline data */
-            //                if (query.operation === 'GetListItemChangesSinceToken') {
-            //                    apDecodeService.extendListDefinitionFromXML(model.list, responseXML);
-            //                    apDecodeService.extendFieldDefinitionsFromXML(model.list.fields, responseXML);
-            //                }
-            //
-            //                deferred.resolve(entities);
-            //            });
-            //    }
-            //}
 
             return deferred.promise;
         }
@@ -1153,81 +1092,6 @@ angular.module('angularPoint')
                         deferred.resolve(response);
                     }
                 });
-
-
-            //if (online) {
-
-
-//                /** Make call to lists web service */
-//                var webServiceCall = $().SPServices(payload);
-//
-//                webServiceCall.then(function () {
-//                    /** Success */
-//                    var responseArray = apDecodeService.processListItems(model, query, webServiceCall.responseXML, opts);
-////                    var updatedEntity = output[0];
-////
-////                    /** Optionally search through each cache on the model and update any other references to this entity */
-////                    if (opts.updateAllCaches && _.isNumber(entity.id)) {
-////                        updateAllCaches(model, updatedEntity, entity.getQuery());
-////                    }
-//                    deferred.resolve(responseArray[0]);
-//                }, function (outcome) {
-//                    /** In the event of an error, display toast */
-//                    toastr.error('There was an error getting the requested data from ' + model.list.name);
-//                    deferred.reject(outcome);
-//                }).always(function () {
-//                    apQueueService.decrease();
-//                });
-//            } else {
-//                /** Logic to simulate expected behavior when working offline */
-//                /** Offline mode */
-//                window.console.log(payload);
-//
-//                /** Mock data */
-//                var offlineDefaults = {
-//                    modified: new Date(),
-//                    editor: {
-//                        lookupId: 23,
-//                        lookupValue: 'Generic User'
-//                    }
-//                };
-//
-//                if (!entity.id) {
-//                    var newItem = {};
-//
-//                    /* Include standard mock fields for new item */
-//                    offlineDefaults.author = {
-//                        lookupId: 23,
-//                        lookupValue: 'Generic User'
-//                    };
-//
-//                    offlineDefaults.created = new Date();
-//
-//                    /** We don't know which query cache to push it to so add it to all */
-//                    _.each(model.queries, function (query) {
-//                        /** Find next logical id to assign */
-//                        var maxId = 1;
-//                        /** Find the entity with the highest ID number */
-//                        var lastEntity = query.getCache().last();
-//                        if(lastEntity) {
-//                            maxId = lastEntity.id;
-//                        }
-//                        offlineDefaults.id = maxId + 1;
-//                        /** Add default attributes */
-//                        _.extend(entity, offlineDefaults);
-//                        /** Use factory to build new object */
-//                        newItem = new model.factory(entity);
-//                        query.getCache().addEntity(newItem);
-//                    });
-//
-//                    deferred.resolve(newItem);
-//                } else {
-//                    /** Update existing record in local cache */
-//                    _.extend(entity, offlineDefaults);
-//                    deferred.resolve(entity);
-//                }
-//                apQueueService.decrease();
-//            }
             return deferred.promise;
         }
 
@@ -1267,7 +1131,6 @@ angular.module('angularPoint')
                     .then(function () {
                         /** Success */
                         cleanCache(entity, opts);
-                        apQueueService.decrease();
                         deferred.resolve(opts.target);
                     }, function (outcome) {
                         //In the event of an error, display toast
@@ -2881,7 +2744,7 @@ angular.module('angularPoint')
 
 
 angular.module('angularPoint')
-    .service('apMocksService', ["$q", "apQueueService", "apCacheService", function ($q, apQueueService, apCacheService) {
+    .service('apMocksService', ["$q", "apCacheService", function ($q, apCacheService) {
         return {
             mockRequest: mockRequest
         };
@@ -2906,11 +2769,9 @@ angular.module('angularPoint')
                 function (offlineData) {
                     /** Pass back the group array */
                     deferred.resolve(offlineData);
-                    apQueueService.decrease();
                 }, function (outcome) {
                     toastr.error('You need to have a ' + opts.offlineXML + ' file in order mock this request.');
                     deferred.reject(outcome);
-                    apQueueService.decrease();
                 });
             return deferred.promise;
         }
@@ -6304,11 +6165,12 @@ angular.module('angularPoint')
             query.getModel = function () {
                 return model;
             };
+
+            query.getCache = getCache;
         }
 
         Query.prototype = {
             execute: execute,
-            getCache: getCache,
             searchLocalCache: searchLocalCache
         };
 
