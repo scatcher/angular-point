@@ -271,6 +271,7 @@ angular.module('angularPoint')
                     colValue = choiceMultiToJsonObject(value);
                     break;
                 case 'HTML':
+                case 'Note':
                     colValue = parseHTML(value);
                     break;
                 case 'JSON':
