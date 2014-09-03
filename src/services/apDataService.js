@@ -25,7 +25,7 @@ angular.module('angularPoint')
         var online = !offline;
 
         /** Exposed functionality */
-        return {
+        var apDataService = {
             addUpdateItemModel: addUpdateItemModel,
             cleanCache: cleanCache,
             deleteAttachment: deleteAttachment,
@@ -36,12 +36,17 @@ angular.module('angularPoint')
             getList: getList,
             getListFields: getListFields,
             getListItemById: getListItemById,
+            getMyData:getMyData,
             getView: getView,
+            logErrorsToConsole: logErrorsToConsole,
+            processChangeTokenXML: processChangeTokenXML,
             retrieveChangeToken: retrieveChangeToken,
             removeEntityFromLocalCache: removeEntityFromLocalCache,
             retrievePermMask: retrievePermMask,
             serviceWrapper: serviceWrapper
         };
+
+        return apDataService;
 
 
         /*********************** Private ****************************/
@@ -215,9 +220,12 @@ angular.module('angularPoint')
         function logErrorsToConsole(responseXML, operation) {
             /** Errors can still be resolved without throwing an error so check the XML */
             var errorMessage = apDecodeService.checkResponseForErrors(responseXML);
+            var errorString;
             if (errorMessage) {
-                console.error(operation, errorMessage);
+                errorString = operation + ': ' + errorMessage;
+                console.error(errorString);
             }
+            return errorString;
         }
 
 
@@ -263,33 +271,46 @@ angular.module('angularPoint')
                     return serverResponse;
                 }
             }
+            /** Allow this method to be overloaded and pass any additional arguments to the mock service */
+            var additionalArgs = Array.prototype.slice.call(arguments, 1);
 
-            if (online) {
-                var webServiceCall = $().SPServices(opts);
-
-                webServiceCall.then(function () {
-                    /** Success */
-                    /** Errors can still be resolved without throwing an error so check the XML */
-                    logErrorsToConsole(webServiceCall.responseXML, opts);
-                    deferred.resolve(opts.postProcess(webServiceCall.responseXML));
-                    apQueueService.decrease();
-                }, function (outcome) {
+            apDataService.getMyData(opts, additionalArgs)
+                .then(function (response) {
+                    /** Failure */
+                    var data = opts.postProcess(response);
+                    deferred.resolve(data);
+                }, function (response) {
                     /** Failure */
                     toastr.error('Failed to complete the requested ' + opts.operation + ' operation.');
-                    deferred.reject(outcome);
+                    deferred.reject(response);
+                }, function () {
                     apQueueService.decrease();
                 });
-            } else {
-                /** Allow this method to be overloaded and pass any additional arguments to the mock service */
-                var additionalArgs = Array.prototype.slice.call(arguments, 1);
 
+            return deferred.promise;
+        }
+
+        //TODO Rename Me
+        function getMyData(opts, additionalArgs) {
+            var deferred = $q.defer();
+            if (online) {
+                //var webServiceCall = $().SPServices(opts);
+                $q.when($().SPServices(opts)).then(function (webServiceCall) {
+                    /** Success */
+                    /** Errors can still be resolved without throwing an error so check the XML */
+                    logErrorsToConsole(webServiceCall.responseXML, opts.operation);
+                    deferred.resolve(opts.postProcess(webServiceCall.responseXML));
+                }, function (outcome) {
+                    /** Failure */
+                    logErrorsToConsole(response, opts.operation);
+                    deferred.reject(outcome);
+                });
+            } else {
                 apMocksService.mockRequest(opts, additionalArgs)
                     .then(function (response) {
-                        deferred.resolve(opts.postProcess(response));
-                        apQueueService.decrease();
+                        deferred.resolve(response);
                     });
             }
-
             return deferred.promise;
         }
 
@@ -297,18 +318,26 @@ angular.module('angularPoint')
          * @ngdoc function
          * @name apDataService.getList
          * @description
-         * Returns all list details including field and lsit config.
+         * Returns all list details including field and list config.
          * @param {object} options Configuration parameters.
          * @param {string} options.listName GUID of the list.
          * @returns {object} Promise which resolves with an array of field definitions for the list.
          */
         function getList(options) {
+            var deferred = $q.defer();
+
             var defaults = {
                 operation: 'GetList'
             };
 
             var opts = _.extend({}, defaults, options);
             return serviceWrapper(opts);
+            //    .then(function (responseXML) {
+            //        var listDefinition = apDecodeService
+            //            .extendListDefinitionFromXML({}, responseXML);
+            //        deferred.resolve(listDefinition);
+            //    });
+            //return deferred.promise;
         }
 
 
@@ -519,26 +548,7 @@ angular.module('angularPoint')
                         deferred.resolve(response);
                     } else {
                         if (query.operation === 'GetListItemChangesSinceToken') {
-
-                            /** The initial call to GetListItemChangesSinceToken also includes the field definitions for the
-                             *  list so use this to extend the existing field definitions and list defined in the model. */
-                            if (!model.fieldDefinitionsExtended) {
-                                apDecodeService.extendListDefinitionFromXML(model.list, response);
-                                apDecodeService.extendFieldDefinitionsFromXML(model.list.fields, response);
-                                model.fieldDefinitionsExtended = true;
-                            }
-
-                            /** Store token for future web service calls to return changes */
-                            query.changeToken = retrieveChangeToken(response);
-
-                            /** Update the user permissions for this list */
-                            var effectivePermissionMask = retrievePermMask(response);
-                            if (effectivePermissionMask) {
-                                model.list.effectivePermMask = effectivePermissionMask;
-                            }
-
-                            /** Change token query includes deleted items as well so we need to process them separately */
-                            processDeletionsSinceToken(response, opts.target);
+                            processChangeTokenXML(model, query, response, opts);
                         }
 
                         /** Convert the XML into JS objects */
@@ -552,6 +562,38 @@ angular.module('angularPoint')
                 });
 
             return deferred.promise;
+        }
+
+        /**
+         * @ngdoc function
+         * @name apDataService.processChangeTokenXML
+         * @description
+         * The initial call to GetListItemChangesSinceToken also includes the field definitions for the
+         * list so extend the existing field definitions and list defined in the model.  After that, store
+         * the change token and make any changes to the user's permissions for the list.
+         * @param {object} model List model.
+         * @param {query} query Valid query object.
+         * @param {object} responseXML XML response from the server.
+         * @param {object} opts Config options built up along the way.
+         */
+        function processChangeTokenXML(model, query, responseXML, opts) {
+            if (!model.fieldDefinitionsExtended) {
+                apDecodeService.extendListDefinitionFromXML(model.list, responseXML);
+                apDecodeService.extendFieldDefinitionsFromXML(model.list.fields, responseXML);
+                model.fieldDefinitionsExtended = true;
+            }
+
+            /** Store token for future web service calls to return changes */
+            query.changeToken = retrieveChangeToken(responseXML);
+
+            /** Update the user permissions for this list */
+            var effectivePermissionMask = retrievePermMask(responseXML);
+            if (effectivePermissionMask) {
+                model.list.effectivePermMask = effectivePermissionMask;
+            }
+
+            /** Change token query includes deleted items as well so we need to process them separately */
+            processDeletionsSinceToken(responseXML, opts.target);
         }
 
         /**

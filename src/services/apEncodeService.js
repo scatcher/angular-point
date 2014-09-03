@@ -22,7 +22,7 @@ angular.module('angularPoint')
             stringifySharePointDate: stringifySharePointDate,
             stringifySharePointMultiSelect: stringifySharePointMultiSelect
 
-        }
+        };
 
 
         /**
@@ -91,58 +91,113 @@ angular.module('angularPoint')
          * @returns {Array} [fieldName, fieldValue]
          */
         function createValuePair(fieldDefinition, value) {
-            var valuePair = [];
             var internalName = fieldDefinition.internalName;
+            var encodedValue = encodeValue(internalName, value);
+            return [internalName, encodedValue];
 
-            if (!value && !_.isBoolean(value)) {
-                /** Create empty value pair if blank or undefined but allow false */
-                valuePair = [internalName, ''];
-            } else {
-                switch (fieldDefinition.objectType) {
+            //if (value === '' || _.isUndefined(value) || _.isNull(value)) {
+            //    /** Create empty value pair if blank or undefined but allow false */
+            //    valuePair = [internalName, ''];
+            //} else {
+            //    switch (fieldDefinition.objectType) {
+            //        case 'Lookup':
+            //        case 'User':
+            //            if (!value.lookupId) {
+            //                valuePair = [internalName, ''];
+            //            } else {
+            //                valuePair = [internalName, value.lookupId];
+            //            }
+            //            break;
+            //        case 'LookupMulti':
+            //        case 'UserMulti':
+            //            var stringifiedArray = stringifySharePointMultiSelect(value, 'lookupId');
+            //            valuePair = [fieldDefinition.internalName, stringifiedArray];
+            //            break;
+            //        case 'MultiChoice':
+            //            valuePair = [fieldDefinition.internalName, choiceMultiToString(value)];
+            //            break;
+            //        case 'Boolean':
+            //            valuePair = [internalName, value ? 1 : 0];
+            //            break;
+            //        case 'DateTime':
+            //            if (_.isDate(value)) {
+            //                //A string date in ISO8601 format, e.g., '2013-05-08T01:20:29Z-05:00'
+            //                valuePair = [internalName, stringifySharePointDate(value)];
+            //            } else {
+            //                valuePair = [internalName, ''];
+            //                console.error('Invalid Date Provided: ', value);
+            //            }
+            //            break;
+            //        case 'HTML':
+            //        case 'Note':
+            //            valuePair = [internalName, _.escape(value)];
+            //            break;
+            //        case 'JSON':
+            //            valuePair = [internalName, JSON.stringify(value)];
+            //            break;
+            //        default:
+            //            valuePair = [internalName, value];
+            //    }
+            //    if (offline) {
+            //        console.log('{' + fieldDefinition.objectType + '} ' + valuePair);
+            //    }
+            //}
+            //return valuePair;
+        }
+
+        function encodeValue(fieldType, value) {
+            var str = '';
+            /** Only process if note empty, undefined, or null.  Allow false. */
+            if (value !== '' && !_.isUndefined(value) && !_.isNull(value)) {
+                switch (fieldType) {
                     case 'Lookup':
                     case 'User':
-                        if (!value.lookupId) {
-                            valuePair = [internalName, ''];
-                        } else {
-                            valuePair = [internalName, value.lookupId];
+                        if (value.lookupId) {
+                            str = value.lookupId;
                         }
                         break;
                     case 'LookupMulti':
                     case 'UserMulti':
-                        var stringifiedArray = stringifySharePointMultiSelect(value, 'lookupId');
-                        valuePair = [fieldDefinition.internalName, stringifiedArray];
+                        str = stringifySharePointMultiSelect(value, 'lookupId');
                         break;
                     case 'MultiChoice':
-                        valuePair = [fieldDefinition.internalName, choiceMultiToString(value)];
+                        str = choiceMultiToString(value);
                         break;
                     case 'Boolean':
-                        valuePair = [internalName, value ? 1 : 0];
+                        str = value ? 1 : 0;
                         break;
                     case 'DateTime':
                         if (_.isDate(value)) {
                             //A string date in ISO8601 format, e.g., '2013-05-08T01:20:29Z-05:00'
-                            valuePair = [internalName, stringifySharePointDate(value)];
+                            str = stringifySharePointDate(value);
                         } else {
-                            valuePair = [internalName, ''];
-                            console.error('Invalid Date Provided: ', value);
+                            throw new Error('Invalid Date Provided: ' + value.toString());
                         }
+                        break;
+                    case 'JSON':
+                        str = JSON.stringify(value);
                         break;
                     case 'HTML':
                     case 'Note':
-                        valuePair = [internalName, _.escape(value)];
-                        break;
-                    case 'JSON':
-                        valuePair = [internalName, JSON.stringify(value)];
-                        break;
                     default:
-                        valuePair = [internalName, value];
+                        str = value;
                 }
-                if (offline) {
-                    console.log('{' + fieldDefinition.objectType + '} ' + valuePair);
-                }
+                //if (offline) {
+                //    console.log('{' + fieldType + '} ' + str);
+                //}
             }
-            return valuePair;
+            if (_.isString(str)) {
+                /** Ensure we encode before sending to server */
+                str = _.escape(str);
+                //    .replace(/\"/g, '&' + 'quot;')
+                ///** Encode < */
+                //    .replace(/</g, '&' + 'lt;')
+                ///** Encode > */
+                //    .replace(/>/g, '&' + 'gt;');
+            }
+            return str;
         }
+
 
         /**
          * @ngdoc function
@@ -178,8 +233,6 @@ angular.module('angularPoint')
             if (!self.timeZone) {
                 //Get difference between UTC time and local time in minutes and convert to hours
                 //Store so we only need to do this once
-                window.console.log('Calculating');
-
                 self.timeZone = new Date().getTimezoneOffset() / 60;
             }
             dateString += apUtilityService.doubleDigit(self.timeZone);

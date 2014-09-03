@@ -20,11 +20,11 @@ angular.module('angularPoint')
             attrToJson: attrToJson,
             checkResponseForErrors: checkResponseForErrors,
             extendFieldDefinitionsFromXML: extendFieldDefinitionsFromXML,
-            extendListDefinitionFromXML: extendListDefinitionFromXML,
-            lookupToJsonObject: lookupToJsonObject,
+            extendListDefinitionFromXML: extendListDefinitionsFromXML,
+            lookupToJsonObject: jsLookup,
             parseFieldVersions: parseFieldVersions,
             processListItems: processListItems,
-            updateLocalCache: updateLocalCache,
+            //updateLocalCache: updateLocalCache,
             xmlToJson: xmlToJson
         };
 
@@ -101,42 +101,42 @@ angular.module('angularPoint')
             }
         }
 
-        /**
-         * @ngdoc function
-         * @name angularPoint.apDecodeService:updateLocalCache
-         * @methodOf angularPoint.apDecodeService
-         * @description
-         * Maps a cache by entity id.  All provided entities are then either added if they don't already exist
-         * or replaced if they do.
-         * @param {object[]} localCache The cache for a given query.
-         * @param {object[]} entities All entities that should be merged into the cache.
-         * @returns {object} {created: number, updated: number}
-         */
-        function updateLocalCache(localCache, entities) {
-            var updateCount = 0,
-                createCount = 0;
-
-            /** Map to only run through target list once and speed up subsequent lookups */
-            var idMap = _.pluck(localCache, 'id');
-
-            /** Update any existing items stored in the cache */
-            _.each(entities, function (entity) {
-                if (idMap.indexOf(entity.id) === -1) {
-                    /** No match found, add to target and update map */
-                    localCache.push(entity);
-                    idMap.push(entity.id);
-                    createCount++;
-                } else {
-                    /** Replace local item with updated value */
-                    localCache[idMap.indexOf(entity.id)] = entity;
-                    updateCount++;
-                }
-            });
-            return {
-                created: createCount,
-                updated: updateCount
-            };
-        }
+        ///**
+        // * @ngdoc function
+        // * @name angularPoint.apDecodeService:updateLocalCache
+        // * @methodOf angularPoint.apDecodeService
+        // * @description
+        // * Maps a cache by entity id.  All provided entities are then either added if they don't already exist
+        // * or replaced if they do.
+        // * @param {object[]} localCache The cache for a given query.
+        // * @param {object[]} entities All entities that should be merged into the cache.
+        // * @returns {object} {created: number, updated: number}
+        // */
+        //function updateLocalCache(localCache, entities) {
+        //    var updateCount = 0,
+        //        createCount = 0;
+        //
+        //    /** Map to only run through target list once and speed up subsequent lookups */
+        //    var idMap = _.pluck(localCache, 'id');
+        //
+        //    /** Update any existing items stored in the cache */
+        //    _.each(entities, function (entity) {
+        //        if (idMap.indexOf(entity.id) === -1) {
+        //            /** No match found, add to target and update map */
+        //            localCache.push(entity);
+        //            idMap.push(entity.id);
+        //            createCount++;
+        //        } else {
+        //            /** Replace local item with updated value */
+        //            localCache[idMap.indexOf(entity.id)] = entity;
+        //            updateCount++;
+        //        }
+        //    });
+        //    return {
+        //        created: createCount,
+        //        updated: updateCount
+        //    };
+        //}
 
         /**
          * @ngdoc function
@@ -223,7 +223,7 @@ angular.module('angularPoint')
          * @description
          * Converts a SharePoint string representation of a field into the correctly formatted JavaScript version
          * based on object type.
-         * @param {string} value SharePoint string.
+         * @param {string} str SharePoint string representing the value.
          * @param {string} [objectType='Text'] The type based on field definition.  See
          * See [List.customFields](#/api/List.FieldDefinition) for additional info on how to define a field type.
          * @param {object} [options] Options to pass to the object constructor.
@@ -231,62 +231,62 @@ angular.module('angularPoint')
          * @param {object} [options.propertyName] Name of property on the list item.
          * @returns {*} The newly instantiated JavaScript value based on field type.
          */
-        function attrToJson(value, objectType, options) {
+        function attrToJson(str, objectType, options) {
+
+            var unescapedValue = _.unescape(str);
 
             var colValue;
 
             switch (objectType) {
                 case 'DateTime': // For calculated columns, stored as datetime;#value
                     // Dates have dashes instead of slashes: ows_Created='2009-08-25 14:24:48'
-                    colValue = dateToJsonObject(value);
+                    colValue = jsDate(unescapedValue);
                     break;
                 case 'Lookup':
-                    colValue = lookupToJsonObject(value, options);
+                    colValue = jsLookup(unescapedValue, options);
                     break;
                 case 'User':
-                    colValue = userToJsonObject(value);
+                    colValue = jsUser(unescapedValue);
                     break;
                 case 'LookupMulti':
-                    colValue = lookupMultiToJsonObject(value, options);
+                    colValue = jsLookupMulti(unescapedValue, options);
                     break;
                 case 'UserMulti':
-                    colValue = userMultiToJsonObject(value);
+                    colValue = jsUserMulti(unescapedValue);
                     break;
                 case 'Boolean':
-                    colValue = booleanToJsonObject(value);
+                    colValue = jsBoolean(unescapedValue);
                     break;
                 case 'Integer':
                 case 'Counter':
-                    colValue = intToJsonObject(value);
+                    colValue = jsInt(unescapedValue);
                     break;
                 case 'Currency':
                 case 'Number':
                 case 'Float': // For calculated columns, stored as float;#value
-                    colValue = floatToJsonObject(value);
+                    colValue = jsFloat(unescapedValue);
                     break;
                 case 'Calc':
-                    colValue = calcToJsonObject(value);
+                    colValue = jsCalc(unescapedValue);
                     break;
                 case 'MultiChoice':
-                    colValue = choiceMultiToJsonObject(value);
-                    break;
-                case 'HTML':
-                case 'Note':
-                    colValue = parseHTML(value);
+                    colValue = jsChoiceMulti(unescapedValue);
                     break;
                 case 'JSON':
-                    colValue = parseJSON(value);
+                    colValue = jsObject(unescapedValue);
                     break;
                 case 'Choice':
+                case 'HTML':
+                case 'Note':
                 default:
                     // All other objectTypes will be simple strings
-                    colValue = stringToJsonObject(value);
+                    colValue = jsString(unescapedValue);
                     break;
             }
             return colValue;
         }
 
-        function parseJSON(s) {
+        function jsObject(s) {
             /** Ensure JSON is valid and if not throw error with additional detail */
             var json = null;
             try {
@@ -298,15 +298,11 @@ angular.module('angularPoint')
             return json;
         }
 
-        function parseHTML(s) {
-            return _.unescape(s);
-        }
-
-        function stringToJsonObject(s) {
+        function jsString(s) {
             return s;
         }
 
-        function intToJsonObject(s) {
+        function jsInt(s) {
             if (!s) {
                 return s;
             } else {
@@ -314,7 +310,7 @@ angular.module('angularPoint')
             }
         }
 
-        function floatToJsonObject(s) {
+        function jsFloat(s) {
             if (!s) {
                 return s;
             } else {
@@ -322,16 +318,16 @@ angular.module('angularPoint')
             }
         }
 
-        function booleanToJsonObject(s) {
+        function jsBoolean(s) {
             return (s === '0' || s === 'False') ? false : true;
         }
 
-        function dateToJsonObject(s) {
+        function jsDate(s) {
             /** Replace dashes with slashes and the "T" deliminator with a space if found */
             return new Date(s.replace(/-/g, '/').replace(/T/i, ' '));
         }
 
-        function userToJsonObject(s) {
+        function jsUser(s) {
             if (s.length === 0) {
                 return null;
             }
@@ -339,21 +335,21 @@ angular.module('angularPoint')
             return apUserFactory.create(s);
         }
 
-        function userMultiToJsonObject(s) {
+        function jsUserMulti(s) {
             if (s.length === 0) {
                 return [];
             } else {
                 var thisUserMultiObject = [];
                 var thisUserMulti = s.split(';#');
                 for (var i = 0; i < thisUserMulti.length; i = i + 2) {
-                    var thisUser = userToJsonObject(thisUserMulti[i] + ';#' + thisUserMulti[i + 1]);
+                    var thisUser = jsUser(thisUserMulti[i] + ';#' + thisUserMulti[i + 1]);
                     thisUserMultiObject.push(thisUser);
                 }
                 return thisUserMultiObject;
             }
         }
 
-        function lookupToJsonObject(s, options) {
+        function jsLookup(s, options) {
             if (s.length === 0) {
                 return null;
             } else {
@@ -362,21 +358,21 @@ angular.module('angularPoint')
             }
         }
 
-        function lookupMultiToJsonObject(s, options) {
+        function jsLookupMulti(s, options) {
             if (s.length === 0) {
                 return [];
             } else {
                 var thisLookupMultiObject = [];
                 var thisLookupMulti = s.split(';#');
                 for (var i = 0; i < thisLookupMulti.length; i = i + 2) {
-                    var thisLookup = lookupToJsonObject(thisLookupMulti[i] + ';#' + thisLookupMulti[i + 1], options);
+                    var thisLookup = jsLookup(thisLookupMulti[i] + ';#' + thisLookupMulti[i + 1], options);
                     thisLookupMultiObject.push(thisLookup);
                 }
                 return thisLookupMultiObject;
             }
         }
 
-        function choiceMultiToJsonObject(s) {
+        function jsChoiceMulti(s) {
             if (s.length === 0) {
                 return [];
             } else {
@@ -392,7 +388,7 @@ angular.module('angularPoint')
         }
 
 
-        function calcToJsonObject(s) {
+        function jsCalc(s) {
             if (s.length === 0) {
                 return null;
             } else {
@@ -439,11 +435,13 @@ angular.module('angularPoint')
          * with a capital letter.
          * @param {object} list model.list
          * @param {object} responseXML XML response from the server.
+         * @returns {object} Extended list object.
          */
-        function extendListDefinitionFromXML(list, responseXML) {
+        function extendListDefinitionsFromXML(list, responseXML) {
             $(responseXML).find("List").each(function () {
                 extendObjectWithXMLAttributes(this, list);
             });
+            return list;
         }
 
 

@@ -2,7 +2,7 @@
 
 
 angular.module('angularPoint')
-    .service('apMocksService', function ($q, apCacheService) {
+    .service('apMocksService', function ($q, apCacheService, toastr) {
         return {
             mockRequest: mockRequest
         };

@@ -36,15 +36,17 @@ angular.module('angularPoint')
                     { internalName: "Date", objectType: "DateTime", mappedName: "date", readOnly:false },
                     { internalName: "DateTime", objectType: "DateTime", mappedName: "dateTime", readOnly:false },
                     { internalName: "Integer", objectType: "Integer", mappedName: "integer", readOnly:false },
-                    //TODO Add HTML into the mock XML
+                    { internalName: 'Float', objectType: 'Float', mappedName: 'float', readOnly: false },
                     {internalName: 'HTML', objectType: 'HTML', mappedName: 'html', readOnly: false},
                     { internalName: "JSON", objectType: "JSON", mappedName: "json", readOnly:false },
                     { internalName: "Lookup", objectType: "Lookup", mappedName: "lookup", readOnly:false },
                     { internalName: "LookupMulti", objectType: "LookupMulti", mappedName: "lookupMulti", readOnly:false },
                     {internalName: 'Note', objectType: 'Note', mappedName: 'note', readOnly: false},
-                    //TODO Add Note into the mock XML
                     { internalName: "User", objectType: "User", mappedName: "user", readOnly:false },
-                    { internalName: "UserMulti", objectType: "UserMulti", mappedName: "userMulti", readOnly:false }
+                    { internalName: "UserMulti", objectType: "UserMulti", mappedName: "userMulti", readOnly:false },
+                    { internalName: 'Hyperlink', objectType: 'Hyperlink', mappedName: 'hyperlink', readOnly: false },
+                    { internalName: 'Picture', objectType: 'Picture', mappedName: 'picture', readOnly: false },
+                    { internalName: 'Attachments', objectType: 'Attachments', mappedName: 'attachments', readOnly: false }
                 ]
             }
         });
@@ -101,6 +103,12 @@ angular.module('angularPoint')
             apDecodeService.processListItems(model, model.getQuery('primary'), mockXMLService.listItemsSinceChangeToken, {
                 target: primaryCache
             });
+
+            /** Extend list and field definitions with mock XML */
+            apDecodeService.extendListDefinitionFromXML(model.list, mockXMLService.listItemsSinceChangeToken);
+            apDecodeService.extendFieldDefinitionsFromXML(model.list.fields, mockXMLService.listItemsSinceChangeToken);
+            model.fieldDefinitionsExtended = true;
+
             /** Populate secondary query cache with same objects */
             _.extend(secondaryCache, primaryCache);
 

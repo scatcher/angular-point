@@ -40,82 +40,82 @@ angular.module('angularPoint')
         //    getProperty: getProperty
         //};
 
-        /**
-         * @ngdoc function
-         * @name Lookup.getEntity
-         * @methodOf Lookup
-         * @description
-         * Allows us to create a promise that will resolve with the entity referenced in the lookup whenever that list
-         * item is registered.
-         * @example
-         * <pre>
-         * var project = {
-         *    title: 'Project 1',
-         *    location: {
-         *        lookupId: 5,
-         *        lookupValue: 'Some Building'
-         *    }
-         * };
-         *
-         * //To get the location entity
-         * project.location.getEntity().then(function(entity) {
-         *     //Resolves with the full location entity once it's registered in the cache
-         *
-         *    });
-         * </pre>
-         * @returns {promise} Resolves with the object the lookup is referencing.
-         */
-        function getEntity() {
-            var self = this;
-            var props = self._props();
+        ///**
+        // * @ngdoc function
+        // * @name Lookup.getEntity
+        // * @methodOf Lookup
+        // * @description
+        // * Allows us to create a promise that will resolve with the entity referenced in the lookup whenever that list
+        // * item is registered.
+        // * @example
+        // * <pre>
+        // * var project = {
+        // *    title: 'Project 1',
+        // *    location: {
+        // *        lookupId: 5,
+        // *        lookupValue: 'Some Building'
+        // *    }
+        // * };
+        // *
+        // * //To get the location entity
+        // * project.location.getEntity().then(function(entity) {
+        // *     //Resolves with the full location entity once it's registered in the cache
+        // *
+        // *    });
+        // * </pre>
+        // * @returns {promise} Resolves with the object the lookup is referencing.
+        // */
+        //function getEntity() {
+        //    var self = this;
+        //    var props = self._props();
+        //
+        //    if (!props.getEntity) {
+        //        var query = props.getQuery();
+        //        var listItem = query.searchLocalCache(props.entity.id);
+        //
+        //        /** Create a new deferred object if this is the first run */
+        //        props.getEntity = $q.defer();
+        //        listItem.getLookupReference(props.propertyName, self.lookupId)
+        //            .then(function (entity) {
+        //                props.getEntity.resolve(entity);
+        //            })
+        //    }
+        //    return props.getEntity.promise;
+        //}
 
-            if (!props.getEntity) {
-                var query = props.getQuery();
-                var listItem = query.searchLocalCache(props.entity.id);
-
-                /** Create a new deferred object if this is the first run */
-                props.getEntity = $q.defer();
-                listItem.getLookupReference(props.propertyName, self.lookupId)
-                    .then(function (entity) {
-                        props.getEntity.resolve(entity);
-                    })
-            }
-            return props.getEntity.promise;
-        }
-
-        /**
-         * @ngdoc function
-         * @name Lookup.getProperty
-         * @methodOf Lookup
-         * @description
-         * Returns a promise which resolves with the value of a property in the referenced object.
-         * @param {string} propertyPath The dot separated propertyPath.
-         * @example
-         * <pre>
-         * var project = {
-         *    title: 'Project 1',
-         *    location: {
-         *        lookupId: 5,
-         *        lookupValue: 'Some Building'
-         *    }
-         * };
-         *
-         * //To get the location.city
-         * project.location.getProperty('city').then(function(city) {
-         *    //Resolves with the city property from the referenced location entity
-         *
-         *    });
-         * </pre>
-         * @returns {promise} Resolves with the value, or undefined if it doesn't exists.
-         */
-        function getProperty(propertyPath) {
-            var self = this;
-            var deferred = $q.defer();
-            self.getEntity().then(function (entity) {
-                deferred.resolve(_.deepGetOwnValue(entity, propertyPath));
-            });
-            return deferred.promise;
-        }
+        ///**
+        // * @ngdoc function
+        // * @name Lookup.getProperty
+        // * @methodOf Lookup
+        // * @description
+        // * Returns a promise which resolves with the value of a property in the referenced object.
+        // * @param {string} propertyPath The dot separated propertyPath.
+        // * @example
+        // * <pre>
+        // * var project = {
+        // *    title: 'Project 1',
+        // *    location: {
+        // *        lookupId: 5,
+        // *        lookupValue: 'Some Building'
+        // *    }
+        // * };
+        // *
+        // * //To get the location.city
+        // * project.location.getProperty('city').then(function(city) {
+        // *    //Resolves with the city property from the referenced location entity
+        // *
+        // *    });
+        // * </pre>
+        // * @returns {promise} Resolves with the value, or undefined if it doesn't exists.
+        // */
+        //function getProperty(propertyPath) {
+        //    var self = this;
+        //    var deferred = $q.defer();
+        //    self.getEntity().then(function (entity) {
+        //        deferred.resolve(_.deepGetOwnValue(entity, propertyPath));
+        //    });
+        //    return deferred.promise;
+        //}
 
 
         /**

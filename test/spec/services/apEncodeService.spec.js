@@ -83,8 +83,8 @@ describe("Factory: apEncodeService", function () {
 
         it('doesn\'t save invalid DateTime field', function () {
             var invalidDate = 'This is a string and not a date!';
-            expect(apEncodeService.createValuePair(mockDefinition('DateTime'), invalidDate))
-                .toEqual([ 'DateTime', '' ]);
+            expect(function(){apEncodeService.createValuePair(mockDefinition('DateTime'), invalidDate)})
+                .toThrow();
         });
 
         it('correctly handles a HTML field', function () {
@@ -105,7 +105,7 @@ describe("Factory: apEncodeService", function () {
                 test2: 'sprocket'
             };
             expect(apEncodeService.createValuePair(mockDefinition('JSON'), validObject))
-                .toEqual([ 'JSON', '{"test":"cog","test2":"sprocket"}' ]);
+                .toEqual([ 'JSON', '{&quot;test&quot;:&quot;cog&quot;,&quot;test2&quot;:&quot;sprocket&quot;}' ]);
         });
 
         it('correctly handles a plan text field', function () {

@@ -28,6 +28,10 @@ describe("Factory: apIndexedCacheFactory", function () {
         it('will add the new entity to the cache', function () {
             expect(mockCache[1].title).toEqual('test');
         });
+
+        it('throws an error if a valid entity isn\'t provided', function () {
+            expect(function() {mockCache.addEntity('Not an Entity')}).toThrow();
+        });
     });
 
     describe('clear', function () {
@@ -46,8 +50,14 @@ describe("Factory: apIndexedCacheFactory", function () {
     });
 
     describe('first', function () {
-        it('will return the keys', function () {
+        it('will return the first item in the cache based on id', function () {
             expect(mockCache.first()).toBe(entityOne);
+        });
+    });
+
+    describe('last', function () {
+        it('will return the last item in the cache based on id', function () {
+            expect(mockCache.last()).toBe(entityTwo);
         });
     });
 

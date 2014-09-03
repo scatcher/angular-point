@@ -55,13 +55,13 @@ angular.module('angularPoint')
         function addEntity(entity) {
             var cache = this;
 
-            if (_.isObject(entity)) {
+            if (_.isObject(entity) && !!entity.id) {
                 /** Only add the entity to the cache if it's not already there */
                 if(!cache[entity.id]) {
                     cache[entity.id] = entity;
                 }
             }else {
-                console.error('A valid entity wasn\'t found: ', entity);
+                throw new Error('A valid entity wasn\'t found: ', entity);
             }
         }
 

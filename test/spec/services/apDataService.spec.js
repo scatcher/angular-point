@@ -9,14 +9,20 @@ describe("Service: apDataService", function () {
         secondaryMockEntityCache,
         mockModel,
         mockToUpdate,
-        mockXML;
+        mockXML,
+        mockXMLService,
+        $rootScope,
+        $q;
 
 
     beforeEach(module("ui.bootstrap"));
-    beforeEach(inject(function (_apDataService_, _mockModel_, _mockXMLService_) {
+    beforeEach(inject(function (_apDataService_, _mockModel_, _mockXMLService_, _$q_, _$rootScope_) {
         apDataService = _apDataService_;
         mockModel = _mockModel_;
-        mockXML = _mockXMLService_.listItemsSinceChangeToken;
+        $q = _$q_;
+        $rootScope = _$rootScope_;
+        mockXMLService = _mockXMLService_;
+        mockXML = mockXMLService.listItemsSinceChangeToken;
         mockModel.importMocks();
         mockEntityCache = mockModel.getCache('primary');
         secondaryMockEntityCache = mockModel.getCache('secondary');
@@ -93,7 +99,7 @@ describe("Service: apDataService", function () {
 
     describe('Function: retrieveChangeToken', function () {
         it('returns the change token from the XML', function () {
-            expect(apDataService.retrieveChangeToken(mockXML)).toEqual('1;3;f5345fe7-2f7c-49f7-87d0-dbfebdd0ce61;635440845255970000;384046');
+            expect(apDataService.retrieveChangeToken(mockXML)).toEqual('1;3;f5345fe7-2f7c-49f7-87d0-dbfebdd0ce61;635452551037430000;387547');
         })
     });
 
@@ -112,9 +118,94 @@ describe("Service: apDataService", function () {
         });
     });
 
-    describe('addUpdateItemModel', function () {
-
+    describe('Function: getCollection', function () {
+        beforeEach(function () {
+            spyOn(apDataService, 'getMyData').and.callFake(getXml('getListCollection'));
+        });
+        it('can process a GetListCollection call', function () {
+            var collection;
+            apDataService.getCollection({operation:'GetListCollection'})
+                .then(function (listCollection) {
+                    collection = listCollection;
+                });
+            $rootScope.$digest();
+            expect(collection.length).toEqual(1);
+        });
     });
+
+    describe('Function: getList', function () {
+        beforeEach(function () {
+            spyOn(apDataService, 'getMyData').and.callFake(getXml('listItemsSinceChangeToken'));
+        });
+        it('can process a list definition', function () {
+            var listXML;
+            apDataService.getList({listName:mockModel.list.guid})
+                .then(function (response) {
+                    listXML = response;
+                });
+            $rootScope.$digest();
+            expect(listXML).toEqual(mockXML);
+        });
+    });
+
+    describe('Function: getListFields', function () {
+        beforeEach(function () {
+            spyOn(apDataService, 'getMyData').and.callFake(getXml('listItemsSinceChangeToken'));
+        });
+        it('can extend the list fields', function () {
+            var fields;
+            apDataService.getListFields({listName:mockModel.list.guid})
+                .then(function (response) {
+                    fields = response;
+                });
+            $rootScope.$digest();
+            expect(fields.length).toEqual(98);
+        });
+    });
+
+    describe('Function: executeQuery', function () {
+        beforeEach(function () {
+            spyOn(apDataService, 'getMyData').and.callFake(getXml('listItemsSinceChangeToken'));
+        });
+        it('can complete a query form a known model', function () {
+            var cache = mockModel.getCache('primary');
+            cache.clear();
+            //Ensure there's nothing left in the cache
+            expect(cache.count()).toEqual(0);
+            apDataService.executeQuery(mockModel, mockModel.getQuery())
+                .then(function (response) {
+                    cache = response;
+                });
+            $rootScope.$digest();
+            expect(cache.count()).toEqual(2);
+        });
+    });
+
+
+
+    describe('Function: logErrorsToConsole', function () {
+        it('finds errors', function () {
+            var errors = apDataService.logErrorsToConsole(mockXMLService.xmlWithError, 'GetListItems');
+            expect(errors).toEqual('GetListItems: Root element is missing.');
+        });
+    });
+    
+
+    function getListCollection() {
+        var deferred = $q.defer();
+        deferred.resolve(mockXML.getListCollection);
+        return deferred.promise;
+
+    }
+
+
+    function getXml(name) {
+        return function() {
+            var deferred = $q.defer();
+            deferred.resolve(mockXMLService[name]);
+            return deferred.promise;
+        };
+    }
 
 
 

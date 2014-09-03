@@ -171,11 +171,11 @@ angular.module('angularPoint')
             getCachedEntity: getCachedEntity,
             getFieldDefinition: getFieldDefinition,
             getListItemById: getListItemById,
-            getLocalEntity: getLocalEntity,
+            //getLocalEntity: getLocalEntity,
             getQuery: getQuery,
             initializeModalState: initializeModalState,
             isInitialised: isInitialised,
-            resolvePermissions: resolvePermissions,
+            //resolvePermissions: resolvePermissions,
             registerQuery: registerQuery,
             validateEntity: validateEntity
         };
@@ -318,37 +318,37 @@ angular.module('angularPoint')
             }
         }
 
-        /**
-         * @ngdoc function
-         * @name Model.getLocalEntity
-         * @module Model
-         * @description
-         * Similar to Model.searchLocalCache but you don't need to specify a query, only searches by list item
-         * id, and returns a promise that is fulfilled once the requested list item is registered in the cache
-         *
-         * @param {number} entityId The ListItem.id of the object.
-         * @returns {promise} Will resolve once the item is registered in the cache.
-         * @example
-         * <pre>
-         * var task = {
-         *    title: 'A Task',
-         *    project: {
-         *        lookupId: 4,
-         *        lookupValue: 'Super Project'
-         *    }
-         * };
-         *
-         * // Now we'd like to get the project referenced in the task
-         * projectModel.getLocalEntity(task.project.lookupId).then(function(entity) {
-         *     var projectThatICareAbout = entity;
-         *     //Do something with it
-         * }
-         * </pre>
-         */
-        function getLocalEntity(entityId) {
-            var model = this;
-            return apCacheService.getEntity(model.list.guid, entityId);
-        }
+        ///**
+        // * @ngdoc function
+        // * @name Model.getLocalEntity
+        // * @module Model
+        // * @description
+        // * Similar to Model.searchLocalCache but you don't need to specify a query, only searches by list item
+        // * id, and returns a promise that is fulfilled once the requested list item is registered in the cache
+        // *
+        // * @param {number} entityId The ListItem.id of the object.
+        // * @returns {promise} Will resolve once the item is registered in the cache.
+        // * @example
+        // * <pre>
+        // * var task = {
+        // *    title: 'A Task',
+        // *    project: {
+        // *        lookupId: 4,
+        // *        lookupValue: 'Super Project'
+        // *    }
+        // * };
+        // *
+        // * // Now we'd like to get the project referenced in the task
+        // * projectModel.getLocalEntity(task.project.lookupId).then(function(entity) {
+        // *     var projectThatICareAbout = entity;
+        // *     //Do something with it
+        // * }
+        // * </pre>
+        // */
+        //function getLocalEntity(entityId) {
+        //    var model = this;
+        //    return apCacheService.getEntity(model.list.guid, entityId);
+        //}
 
         /**
          * @ngdoc function
@@ -397,6 +397,7 @@ angular.module('angularPoint')
                 defaults = {listName: model.list.guid},
                 opts = _.extend({}, defaults, options);
 
+            //TODO Remove Offline Logic and allow apDataService to handle
             /** Working Online */
             if (apConfig.online) {
                 /** Fetch from the server */
@@ -447,14 +448,10 @@ angular.module('angularPoint')
          */
         function addNewItem(entity, options) {
             var model = this;
-            var deferred = $q.defer();
-            apDataService.addUpdateItemModel(model, entity, options).then(function (response) {
-                deferred.resolve(response);
+            return apDataService.addUpdateItemModel(model, entity, options).then(function (response) {
                 /** Optionally broadcast change event */
                 apUtilityService.registerChange(model);
             });
-
-            return deferred.promise;
         }
 
         /**
@@ -752,7 +749,8 @@ angular.module('angularPoint')
          * @name Model.extendListDefinition
          * @module Model
          * @description
-         * Extends the List and Fields with list information returned from the server.
+         * Extends the List and Fields with list information returned from the server.  Only runs once and after that
+         * returns the existing promise.
          * @param {object} [options] Pass-through options to apDataService.getList
          * @returns {object} Promise that is resolved once the information has been added.
          */
@@ -761,8 +759,9 @@ angular.module('angularPoint')
                 deferred = $q.defer(),
                 defaults = { listName: model.list.guid};
 
-            /** Only request information if the list hasn't already been extended */
-            if(!model.fieldDefinitionsExtended) {
+            /** Only request information if the list hasn't already been extended and is not currently being requested */
+            if(!model.fieldDefinitionsExtended && !model.deferredListDefinition) {
+                model.deferredListDefinition = deferred.promise;
                 var opts = _.extend({}, defaults, options);
                 apDataService.getList(opts)
                     .then(function (responseXML) {
@@ -771,11 +770,8 @@ angular.module('angularPoint')
                         model.fieldDefinitionsExtended = true;
                         deferred.resolve(model);
                     });
-            } else {
-                /** The list has already been extended */
-                deferred.resolve(model);
             }
-            return deferred.promise;
+            return model.deferredListDefinition;
         }
 
         /**
@@ -891,7 +887,7 @@ angular.module('angularPoint')
                 var fieldValue = entity[fieldDefinition.mappedName];
                 var fieldDescriptor = '"' + fieldDefinition.objectType + '" value.';
                 /** Only evaluate required fields */
-                if (fieldDefinition.required && valid) {
+                if ((fieldDefinition.required || fieldDefinition.Required) && valid) {
                     switch (fieldDefinition.objectType) {
                         case 'Boolean':
                             valid = _.isBoolean(fieldValue);
@@ -1060,69 +1056,69 @@ angular.module('angularPoint')
             return apModalService.initializeState(entity, options, this);
         }
 
-        /**
-         * @ngdoc function
-         * @name Model.resolvePermissions
-         * @module Model
-         * @description
-         * See apModelFactory.resolvePermissions for details on what we expect to have returned.
-         * @returns {Object} Contains properties for each permission level evaluated for current user.
-         * @example
-         * Lets assume we're checking to see if a user has edit rights for a given list.
-         * <pre>
-         * var userPermissions = tasksModel.resolvePermissions();
-         * var userCanEdit = userPermissions.EditListItems;
-         * </pre>
-         * Example of what the returned object would look like
-         * for a site admin.
-         * <pre>
-         * perm = {
-         *    "ViewListItems":true,
-         *    "AddListItems":true,
-         *    "EditListItems":true,
-         *    "DeleteListItems":true,
-         *    "ApproveItems":true,
-         *    "OpenItems":true,
-         *    "ViewVersions":true,
-         *    "DeleteVersions":true,
-         *    "CancelCheckout":true,
-         *    "PersonalViews":true,
-         *    "ManageLists":true,
-         *    "ViewFormPages":true,
-         *    "Open":true,
-         *    "ViewPages":true,
-         *    "AddAndCustomizePages":true,
-         *    "ApplyThemeAndBorder":true,
-         *    "ApplyStyleSheets":true,
-         *    "ViewUsageData":true,
-         *    "CreateSSCSite":true,
-         *    "ManageSubwebs":true,
-         *    "CreateGroups":true,
-         *    "ManagePermissions":true,
-         *    "BrowseDirectories":true,
-         *    "BrowseUserInfo":true,
-         *    "AddDelPrivateWebParts":true,
-         *    "UpdatePersonalWebParts":true,
-         *    "ManageWeb":true,
-         *    "UseRemoteAPIs":true,
-         *    "ManageAlerts":true,
-         *    "CreateAlerts":true,
-         *    "EditMyUserInfo":true,
-         *    "EnumeratePermissions":true,
-         *    "FullMask":true
-         * }
-         * </pre>
-         */
-
-        function resolvePermissions() {
-            var model = this;
-            if (model.list && model.list.effectivePermMask) {
-                return apUtilityService.resolvePermissions(model.list.effectivePermMask);
-            } else {
-                window.console.error('Attempted to resolve permissions of a model that hasn\'t been initialized.', model);
-                return apUtilityService.resolvePermissions(null);
-            }
-        }
+        ///**
+        // * @ngdoc function
+        // * @name Model.resolvePermissions
+        // * @module Model
+        // * @description
+        // * See apModelFactory.resolvePermissions for details on what we expect to have returned.
+        // * @returns {Object} Contains properties for each permission level evaluated for current user.
+        // * @example
+        // * Lets assume we're checking to see if a user has edit rights for a given list.
+        // * <pre>
+        // * var userPermissions = tasksModel.resolvePermissions();
+        // * var userCanEdit = userPermissions.EditListItems;
+        // * </pre>
+        // * Example of what the returned object would look like
+        // * for a site admin.
+        // * <pre>
+        // * perm = {
+        // *    "ViewListItems":true,
+        // *    "AddListItems":true,
+        // *    "EditListItems":true,
+        // *    "DeleteListItems":true,
+        // *    "ApproveItems":true,
+        // *    "OpenItems":true,
+        // *    "ViewVersions":true,
+        // *    "DeleteVersions":true,
+        // *    "CancelCheckout":true,
+        // *    "PersonalViews":true,
+        // *    "ManageLists":true,
+        // *    "ViewFormPages":true,
+        // *    "Open":true,
+        // *    "ViewPages":true,
+        // *    "AddAndCustomizePages":true,
+        // *    "ApplyThemeAndBorder":true,
+        // *    "ApplyStyleSheets":true,
+        // *    "ViewUsageData":true,
+        // *    "CreateSSCSite":true,
+        // *    "ManageSubwebs":true,
+        // *    "CreateGroups":true,
+        // *    "ManagePermissions":true,
+        // *    "BrowseDirectories":true,
+        // *    "BrowseUserInfo":true,
+        // *    "AddDelPrivateWebParts":true,
+        // *    "UpdatePersonalWebParts":true,
+        // *    "ManageWeb":true,
+        // *    "UseRemoteAPIs":true,
+        // *    "ManageAlerts":true,
+        // *    "CreateAlerts":true,
+        // *    "EditMyUserInfo":true,
+        // *    "EnumeratePermissions":true,
+        // *    "FullMask":true
+        // * }
+        // * </pre>
+        // */
+        //
+        //function resolvePermissions() {
+        //    var model = this;
+        //    if (model.list && model.list.effectivePermMask) {
+        //        return apUtilityService.resolvePermissions(model.list.effectivePermMask);
+        //    } else {
+        //        window.console.error('Attempted to resolve permissions of a model that hasn\'t been initialized.', model);
+        //        return apUtilityService.resolvePermissions(null);
+        //    }
+        //}
 
         /**
          * @ngdoc function

@@ -13,7 +13,8 @@
  * @requires angularPoint.apUtilityService
  */
 angular.module('angularPoint')
-    .factory('apListItemFactory', function ($q, _, apCacheService, apDataService, apEncodeService, apUtilityService, apConfig) {
+    .factory('apListItemFactory', function ($q, _, apCacheService, apDataService, apEncodeService, apUtilityService,
+                                            apConfig) {
 
 
         /**
@@ -32,16 +33,12 @@ angular.module('angularPoint')
             constructor: ListItem,
 
             /** Methods on the prototype */
-            addEntityReference: addEntityReference,
             deleteAttachment: deleteAttachment,
             deleteItem: deleteItem,
             getAttachmentCollection: getAttachmentCollection,
-            getEntityReferenceCache: getEntityReferenceCache,
-            getEntityReferences: getEntityReferences,
             getFieldDefinition: getFieldDefinition,
             getFieldVersionHistory: getFieldVersionHistory,
             getLookupReference: getLookupReference,
-            removeEntityReference: removeEntityReference,
             resolvePermissions: resolvePermissions,
             saveChanges: saveChanges,
             saveFields: saveFields,
@@ -216,54 +213,32 @@ angular.module('angularPoint')
          * };
          *
          * //To get the location entity
-         * project.getLookupReference('location')
-         *     .then(function(entity) {
-         *        //Do something with the location entity
-         *
-         *     });
+         * var entity = project.getLookupReference('location');
          * </pre>
-         *
-         * <pre>
-         * var project = {
-         *    title: 'Project 1',
-         *    location: [
-         *        { lookupId: 5, lookupValue: 'Some Building' },
-         *        { lookupId: 6, lookupValue: 'Some Other Building' },
-         *    ]
-         * };
-         *
-         * //To get the location entity
-         * project.getLookupReference('location', project.location[0].lookupId)
-         *     .then(function(entity) {
-         *        //Do something with the location entity
-         *
-         *     });
-         * </pre>
-         * @returns {promise} Resolves with the entity the lookup is referencing.
+         * @returns {object} The entity the lookup is referencing or undefined if not in the cache.
          */
         function getLookupReference(fieldName, lookupId) {
             var listItem = this;
-            var deferred = $q.defer();
-            var targetId = lookupId || listItem[fieldName].lookupId;
+            if(_.isUndefined(fieldName)) {
+                throw new Error('A field name is required.', fieldName);
+            } else if(_.isEmpty(listItem[fieldName])) {
+                return '';
+            } else {
 
+                var targetId = lookupId || listItem[fieldName].lookupId;
 
-            if (fieldName) {
                 var model = listItem.getModel();
                 var fieldDefinition = model.getFieldDefinition(fieldName);
                 /** Ensure the field definition has the List attribute which contains the GUID of the list
-                 *  that a lookup is referencing.
-                 */
+                 *  that a lookup is referencing. */
                 if (fieldDefinition && fieldDefinition.List) {
-                    apCacheService.getEntity(fieldDefinition.List, targetId).then(function (entity) {
-                        deferred.resolve(entity);
-                    });
+
+                    return apCacheService.getCachedEntity(fieldDefinition.List, targetId);
                 } else {
-                    deferred.fail('Need a List GUID before we can find this in cache.');
+                    throw new Error('This isn\'t a valid Lookup field or the field definitions need to be extended ' +
+                        'before we can complete this request.', fieldName, lookupId);
                 }
-            } else {
-                deferred.fail('Need both fieldName && lookupId params');
             }
-            return deferred.promise;
         }
 
         /**
@@ -421,92 +396,6 @@ angular.module('angularPoint')
         function resolvePermissions() {
             var listItem = this;
             return apUtilityService.resolvePermissions(listItem.permMask);
-        }
-
-
-        function getEntityReferenceCache() {
-            var listItem = this;
-            return apCacheService.listItem.get(listItem.uniqueId);
-        }
-
-
-        /**
-         * @ngdoc function
-         * @name ListItem.addEntityReference
-         * @description
-         * Allows us to pass in another entity to associate superficially, only persists for the current session and
-         * no data is saved but it allows us to iterate over all of the references much faster than doing a lookup each
-         * on each digest.  Creates a item._apCache property on the list item object.  It then creates an object for each
-         * type of list item passed in using the list name in the list item model.
-         * @param {object} entity List item to associate.
-         * @returns {Object} The cache for the list of the item passed in.
-         * @example
-         * <pre>
-         * // Function to save references between a fictitious project
-         * // and corresponding associated tasks
-         * function associateProjectTasks(project) {
-         *    //Assuming project.tasks is a multi-lookup
-         *    _.each(project.tasks, function(taskLookup) {
-         *        var task = tasksModel.searchLocalCache(taskLookup.lookupId);
-         *        if(task) {
-         *            task.addEntityReference(project);
-         *            project.addEntityReference(task);
-         *        }
-         *    });
-         * }
-         * </pre>
-         *
-         * <pre>
-         * //Structure of cache
-         * listItem._apCache = {
-         *    Projects: {
-         *        14: {id: 14, title: 'Some Project'},
-         *        15: {id: 15, title: 'Another Project'}
-         *    },
-         *    Tasks: {
-         *        300: {id: 300, title: 'Task 300'},
-         *        412: {id: 412, title: 'Some Important Tasks'}
-         *    }
-         * }
-         * </pre>
-         */
-        function addEntityReference(entity) {
-            var listItem = this;
-            /** Verify that a valid entity is being provided */
-            if (entity && entity.constructor.name === 'ListItem') {
-                var uniqueId = listItem.uniqueId;
-                var constructorName = entity.getModel().list.title;
-                return apCacheService.listItem.add(uniqueId, constructorName, entity);
-            } else {
-                $log.warn('Please verify that a valid entity is being used: ', listItem, entity);
-            }
-        }
-
-        //TODO Rethink this
-        function getEntityReferences(constructorName) {
-            var listItem = this;
-            var cache = listItem.getEntityReferenceCache();
-            if (constructorName && !cache[constructorName]) {
-                return {};
-            } else if (constructorName && cache[constructorName]) {
-                return cache[constructorName];
-            } else {
-                return cache;
-            }
-        }
-
-        //TODO Rethink this
-        function removeEntityReference(entity) {
-            var listItem = this;
-            var uniqueId = listItem.uniqueId;
-            var constructorName = entity.getModel().list.title;
-            return apCacheService.listItem.remove(uniqueId, constructorName, entity);
-
-            //var pType = entity.getModel().list.title;
-            //var cache = listItem.getEntityReferenceCache();
-            //if (entity.id && cache[pType] && cache[pType][entity.id]) {
-            //    delete cache[pType][entity.id];
-            //}
         }
 
 
