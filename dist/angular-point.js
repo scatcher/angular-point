@@ -400,7 +400,7 @@ angular.module('angularPoint')
         var online = !offline;
 
         /** Exposed functionality */
-        return {
+        var apDataService = {
             addUpdateItemModel: addUpdateItemModel,
             cleanCache: cleanCache,
             deleteAttachment: deleteAttachment,
@@ -411,12 +411,17 @@ angular.module('angularPoint')
             getList: getList,
             getListFields: getListFields,
             getListItemById: getListItemById,
+            getMyData:getMyData,
             getView: getView,
+            logErrorsToConsole: logErrorsToConsole,
+            processChangeTokenXML: processChangeTokenXML,
             retrieveChangeToken: retrieveChangeToken,
             removeEntityFromLocalCache: removeEntityFromLocalCache,
             retrievePermMask: retrievePermMask,
             serviceWrapper: serviceWrapper
         };
+
+        return apDataService;
 
 
         /*********************** Private ****************************/
@@ -590,9 +595,12 @@ angular.module('angularPoint')
         function logErrorsToConsole(responseXML, operation) {
             /** Errors can still be resolved without throwing an error so check the XML */
             var errorMessage = apDecodeService.checkResponseForErrors(responseXML);
+            var errorString;
             if (errorMessage) {
-                console.error(operation, errorMessage);
+                errorString = operation + ': ' + errorMessage;
+                console.error(errorString);
             }
+            return errorString;
         }
 
 
@@ -638,33 +646,46 @@ angular.module('angularPoint')
                     return serverResponse;
                 }
             }
+            /** Allow this method to be overloaded and pass any additional arguments to the mock service */
+            var additionalArgs = Array.prototype.slice.call(arguments, 1);
 
-            if (online) {
-                var webServiceCall = $().SPServices(opts);
-
-                webServiceCall.then(function () {
-                    /** Success */
-                    /** Errors can still be resolved without throwing an error so check the XML */
-                    logErrorsToConsole(webServiceCall.responseXML, opts);
-                    deferred.resolve(opts.postProcess(webServiceCall.responseXML));
-                    apQueueService.decrease();
-                }, function (outcome) {
+            apDataService.getMyData(opts, additionalArgs)
+                .then(function (response) {
+                    /** Failure */
+                    var data = opts.postProcess(response);
+                    deferred.resolve(data);
+                }, function (response) {
                     /** Failure */
                     toastr.error('Failed to complete the requested ' + opts.operation + ' operation.');
-                    deferred.reject(outcome);
+                    deferred.reject(response);
+                }, function () {
                     apQueueService.decrease();
                 });
-            } else {
-                /** Allow this method to be overloaded and pass any additional arguments to the mock service */
-                var additionalArgs = Array.prototype.slice.call(arguments, 1);
 
+            return deferred.promise;
+        }
+
+        //TODO Rename Me
+        function getMyData(opts, additionalArgs) {
+            var deferred = $q.defer();
+            if (online) {
+                //var webServiceCall = $().SPServices(opts);
+                $q.when($().SPServices(opts)).then(function (webServiceCall) {
+                    /** Success */
+                    /** Errors can still be resolved without throwing an error so check the XML */
+                    logErrorsToConsole(webServiceCall.responseXML, opts.operation);
+                    deferred.resolve(opts.postProcess(webServiceCall.responseXML));
+                }, function (outcome) {
+                    /** Failure */
+                    logErrorsToConsole(response, opts.operation);
+                    deferred.reject(outcome);
+                });
+            } else {
                 apMocksService.mockRequest(opts, additionalArgs)
                     .then(function (response) {
-                        deferred.resolve(opts.postProcess(response));
-                        apQueueService.decrease();
+                        deferred.resolve(response);
                     });
             }
-
             return deferred.promise;
         }
 
@@ -672,18 +693,26 @@ angular.module('angularPoint')
          * @ngdoc function
          * @name apDataService.getList
          * @description
-         * Returns all list details including field and lsit config.
+         * Returns all list details including field and list config.
          * @param {object} options Configuration parameters.
          * @param {string} options.listName GUID of the list.
          * @returns {object} Promise which resolves with an array of field definitions for the list.
          */
         function getList(options) {
+            var deferred = $q.defer();
+
             var defaults = {
                 operation: 'GetList'
             };
 
             var opts = _.extend({}, defaults, options);
             return serviceWrapper(opts);
+            //    .then(function (responseXML) {
+            //        var listDefinition = apDecodeService
+            //            .extendListDefinitionFromXML({}, responseXML);
+            //        deferred.resolve(listDefinition);
+            //    });
+            //return deferred.promise;
         }
 
 
@@ -888,32 +917,13 @@ angular.module('angularPoint')
 
             serviceWrapper(query)
                 .then(function (response) {
-
+                    //TODO Remove offline logic
                     if (offline && !_.isNull(query.lastRun)) {
                         /** Entities have already been previously processed so just return the existing cache */
                         deferred.resolve(response);
                     } else {
                         if (query.operation === 'GetListItemChangesSinceToken') {
-
-                            /** The initial call to GetListItemChangesSinceToken also includes the field definitions for the
-                             *  list so use this to extend the existing field definitions and list defined in the model. */
-                            if (!model.fieldDefinitionsExtended) {
-                                apDecodeService.extendListDefinitionFromXML(model.list, response);
-                                apDecodeService.extendFieldDefinitionsFromXML(model.list.fields, response);
-                                model.fieldDefinitionsExtended = true;
-                            }
-
-                            /** Store token for future web service calls to return changes */
-                            query.changeToken = retrieveChangeToken(response);
-
-                            /** Update the user permissions for this list */
-                            var effectivePermissionMask = retrievePermMask(response);
-                            if (effectivePermissionMask) {
-                                model.list.effectivePermMask = effectivePermissionMask;
-                            }
-
-                            /** Change token query includes deleted items as well so we need to process them separately */
-                            processDeletionsSinceToken(response, opts.target);
+                            processChangeTokenXML(model, query, response, opts);
                         }
 
                         /** Convert the XML into JS objects */
@@ -927,6 +937,38 @@ angular.module('angularPoint')
                 });
 
             return deferred.promise;
+        }
+
+        /**
+         * @ngdoc function
+         * @name apDataService.processChangeTokenXML
+         * @description
+         * The initial call to GetListItemChangesSinceToken also includes the field definitions for the
+         * list so extend the existing field definitions and list defined in the model.  After that, store
+         * the change token and make any changes to the user's permissions for the list.
+         * @param {object} model List model.
+         * @param {query} query Valid query object.
+         * @param {object} responseXML XML response from the server.
+         * @param {object} opts Config options built up along the way.
+         */
+        function processChangeTokenXML(model, query, responseXML, opts) {
+            if (!model.fieldDefinitionsExtended) {
+                apDecodeService.extendListDefinitionFromXML(model.list, responseXML);
+                apDecodeService.extendFieldDefinitionsFromXML(model.list.fields, responseXML);
+                model.fieldDefinitionsExtended = true;
+            }
+
+            /** Store token for future web service calls to return changes */
+            query.changeToken = retrieveChangeToken(responseXML);
+
+            /** Update the user permissions for this list */
+            var effectivePermissionMask = retrievePermMask(responseXML);
+            if (effectivePermissionMask) {
+                model.list.effectivePermMask = effectivePermissionMask;
+            }
+
+            /** Change token query includes deleted items as well so we need to process them separately */
+            processDeletionsSinceToken(responseXML, opts.target);
         }
 
         /**
@@ -1196,11 +1238,11 @@ angular.module('angularPoint')
             attrToJson: attrToJson,
             checkResponseForErrors: checkResponseForErrors,
             extendFieldDefinitionsFromXML: extendFieldDefinitionsFromXML,
-            extendListDefinitionFromXML: extendListDefinitionFromXML,
-            lookupToJsonObject: lookupToJsonObject,
+            extendListDefinitionFromXML: extendListDefinitionsFromXML,
+            lookupToJsonObject: jsLookup,
             parseFieldVersions: parseFieldVersions,
             processListItems: processListItems,
-            updateLocalCache: updateLocalCache,
+            //updateLocalCache: updateLocalCache,
             xmlToJson: xmlToJson
         };
 
@@ -1238,10 +1280,15 @@ angular.module('angularPoint')
             var filteredNodes = $(responseXML).SPFilterNode(opts.filter);
 
             /** Prepare constructor for XML entities with references to the query and cached container */
-            var listItemProvider= createListItemProvider(model, query, options.target);
-            var entities = xmlToJson(filteredNodes, listItemProvider, opts);
+            var listItemProvider= createListItemProvider(model, query, opts.target);
 
-            return entities;
+            /** Convert XML entities into JS objects and register in cache with listItemProvider, this returns an
+             * array of entities but at this point we're not using them because the indexed cache should be more
+             * performant. */
+            xmlToJson(filteredNodes, listItemProvider, opts);
+
+            return opts.target;
+            //return entities;
         }
 
         /**
@@ -1277,42 +1324,42 @@ angular.module('angularPoint')
             }
         }
 
-        /**
-         * @ngdoc function
-         * @name angularPoint.apDecodeService:updateLocalCache
-         * @methodOf angularPoint.apDecodeService
-         * @description
-         * Maps a cache by entity id.  All provided entities are then either added if they don't already exist
-         * or replaced if they do.
-         * @param {object[]} localCache The cache for a given query.
-         * @param {object[]} entities All entities that should be merged into the cache.
-         * @returns {object} {created: number, updated: number}
-         */
-        function updateLocalCache(localCache, entities) {
-            var updateCount = 0,
-                createCount = 0;
-
-            /** Map to only run through target list once and speed up subsequent lookups */
-            var idMap = _.pluck(localCache, 'id');
-
-            /** Update any existing items stored in the cache */
-            _.each(entities, function (entity) {
-                if (idMap.indexOf(entity.id) === -1) {
-                    /** No match found, add to target and update map */
-                    localCache.push(entity);
-                    idMap.push(entity.id);
-                    createCount++;
-                } else {
-                    /** Replace local item with updated value */
-                    localCache[idMap.indexOf(entity.id)] = entity;
-                    updateCount++;
-                }
-            });
-            return {
-                created: createCount,
-                updated: updateCount
-            };
-        }
+        ///**
+        // * @ngdoc function
+        // * @name angularPoint.apDecodeService:updateLocalCache
+        // * @methodOf angularPoint.apDecodeService
+        // * @description
+        // * Maps a cache by entity id.  All provided entities are then either added if they don't already exist
+        // * or replaced if they do.
+        // * @param {object[]} localCache The cache for a given query.
+        // * @param {object[]} entities All entities that should be merged into the cache.
+        // * @returns {object} {created: number, updated: number}
+        // */
+        //function updateLocalCache(localCache, entities) {
+        //    var updateCount = 0,
+        //        createCount = 0;
+        //
+        //    /** Map to only run through target list once and speed up subsequent lookups */
+        //    var idMap = _.pluck(localCache, 'id');
+        //
+        //    /** Update any existing items stored in the cache */
+        //    _.each(entities, function (entity) {
+        //        if (idMap.indexOf(entity.id) === -1) {
+        //            /** No match found, add to target and update map */
+        //            localCache.push(entity);
+        //            idMap.push(entity.id);
+        //            createCount++;
+        //        } else {
+        //            /** Replace local item with updated value */
+        //            localCache[idMap.indexOf(entity.id)] = entity;
+        //            updateCount++;
+        //        }
+        //    });
+        //    return {
+        //        created: createCount,
+        //        updated: updateCount
+        //    };
+        //}
 
         /**
          * @ngdoc function
@@ -1399,7 +1446,7 @@ angular.module('angularPoint')
          * @description
          * Converts a SharePoint string representation of a field into the correctly formatted JavaScript version
          * based on object type.
-         * @param {string} value SharePoint string.
+         * @param {string} str SharePoint string representing the value.
          * @param {string} [objectType='Text'] The type based on field definition.  See
          * See [List.customFields](#/api/List.FieldDefinition) for additional info on how to define a field type.
          * @param {object} [options] Options to pass to the object constructor.
@@ -1407,62 +1454,62 @@ angular.module('angularPoint')
          * @param {object} [options.propertyName] Name of property on the list item.
          * @returns {*} The newly instantiated JavaScript value based on field type.
          */
-        function attrToJson(value, objectType, options) {
+        function attrToJson(str, objectType, options) {
+
+            var unescapedValue = _.unescape(str);
 
             var colValue;
 
             switch (objectType) {
                 case 'DateTime': // For calculated columns, stored as datetime;#value
                     // Dates have dashes instead of slashes: ows_Created='2009-08-25 14:24:48'
-                    colValue = dateToJsonObject(value);
+                    colValue = jsDate(unescapedValue);
                     break;
                 case 'Lookup':
-                    colValue = lookupToJsonObject(value, options);
+                    colValue = jsLookup(unescapedValue, options);
                     break;
                 case 'User':
-                    colValue = userToJsonObject(value);
+                    colValue = jsUser(unescapedValue);
                     break;
                 case 'LookupMulti':
-                    colValue = lookupMultiToJsonObject(value, options);
+                    colValue = jsLookupMulti(unescapedValue, options);
                     break;
                 case 'UserMulti':
-                    colValue = userMultiToJsonObject(value);
+                    colValue = jsUserMulti(unescapedValue);
                     break;
                 case 'Boolean':
-                    colValue = booleanToJsonObject(value);
+                    colValue = jsBoolean(unescapedValue);
                     break;
                 case 'Integer':
                 case 'Counter':
-                    colValue = intToJsonObject(value);
+                    colValue = jsInt(unescapedValue);
                     break;
                 case 'Currency':
                 case 'Number':
                 case 'Float': // For calculated columns, stored as float;#value
-                    colValue = floatToJsonObject(value);
+                    colValue = jsFloat(unescapedValue);
                     break;
                 case 'Calc':
-                    colValue = calcToJsonObject(value);
+                    colValue = jsCalc(unescapedValue);
                     break;
                 case 'MultiChoice':
-                    colValue = choiceMultiToJsonObject(value);
-                    break;
-                case 'HTML':
-                case 'Note':
-                    colValue = parseHTML(value);
+                    colValue = jsChoiceMulti(unescapedValue);
                     break;
                 case 'JSON':
-                    colValue = parseJSON(value);
+                    colValue = jsObject(unescapedValue);
                     break;
                 case 'Choice':
+                case 'HTML':
+                case 'Note':
                 default:
                     // All other objectTypes will be simple strings
-                    colValue = stringToJsonObject(value);
+                    colValue = jsString(unescapedValue);
                     break;
             }
             return colValue;
         }
 
-        function parseJSON(s) {
+        function jsObject(s) {
             /** Ensure JSON is valid and if not throw error with additional detail */
             var json = null;
             try {
@@ -1474,15 +1521,11 @@ angular.module('angularPoint')
             return json;
         }
 
-        function parseHTML(s) {
-            return _.unescape(s);
-        }
-
-        function stringToJsonObject(s) {
+        function jsString(s) {
             return s;
         }
 
-        function intToJsonObject(s) {
+        function jsInt(s) {
             if (!s) {
                 return s;
             } else {
@@ -1490,7 +1533,7 @@ angular.module('angularPoint')
             }
         }
 
-        function floatToJsonObject(s) {
+        function jsFloat(s) {
             if (!s) {
                 return s;
             } else {
@@ -1498,16 +1541,16 @@ angular.module('angularPoint')
             }
         }
 
-        function booleanToJsonObject(s) {
+        function jsBoolean(s) {
             return (s === '0' || s === 'False') ? false : true;
         }
 
-        function dateToJsonObject(s) {
+        function jsDate(s) {
             /** Replace dashes with slashes and the "T" deliminator with a space if found */
             return new Date(s.replace(/-/g, '/').replace(/T/i, ' '));
         }
 
-        function userToJsonObject(s) {
+        function jsUser(s) {
             if (s.length === 0) {
                 return null;
             }
@@ -1515,21 +1558,21 @@ angular.module('angularPoint')
             return apUserFactory.create(s);
         }
 
-        function userMultiToJsonObject(s) {
+        function jsUserMulti(s) {
             if (s.length === 0) {
                 return [];
             } else {
                 var thisUserMultiObject = [];
                 var thisUserMulti = s.split(';#');
                 for (var i = 0; i < thisUserMulti.length; i = i + 2) {
-                    var thisUser = userToJsonObject(thisUserMulti[i] + ';#' + thisUserMulti[i + 1]);
+                    var thisUser = jsUser(thisUserMulti[i] + ';#' + thisUserMulti[i + 1]);
                     thisUserMultiObject.push(thisUser);
                 }
                 return thisUserMultiObject;
             }
         }
 
-        function lookupToJsonObject(s, options) {
+        function jsLookup(s, options) {
             if (s.length === 0) {
                 return null;
             } else {
@@ -1538,21 +1581,21 @@ angular.module('angularPoint')
             }
         }
 
-        function lookupMultiToJsonObject(s, options) {
+        function jsLookupMulti(s, options) {
             if (s.length === 0) {
                 return [];
             } else {
                 var thisLookupMultiObject = [];
                 var thisLookupMulti = s.split(';#');
                 for (var i = 0; i < thisLookupMulti.length; i = i + 2) {
-                    var thisLookup = lookupToJsonObject(thisLookupMulti[i] + ';#' + thisLookupMulti[i + 1], options);
+                    var thisLookup = jsLookup(thisLookupMulti[i] + ';#' + thisLookupMulti[i + 1], options);
                     thisLookupMultiObject.push(thisLookup);
                 }
                 return thisLookupMultiObject;
             }
         }
 
-        function choiceMultiToJsonObject(s) {
+        function jsChoiceMulti(s) {
             if (s.length === 0) {
                 return [];
             } else {
@@ -1568,7 +1611,7 @@ angular.module('angularPoint')
         }
 
 
-        function calcToJsonObject(s) {
+        function jsCalc(s) {
             if (s.length === 0) {
                 return null;
             } else {
@@ -1615,11 +1658,13 @@ angular.module('angularPoint')
          * with a capital letter.
          * @param {object} list model.list
          * @param {object} responseXML XML response from the server.
+         * @returns {object} Extended list object.
          */
-        function extendListDefinitionFromXML(list, responseXML) {
+        function extendListDefinitionsFromXML(list, responseXML) {
             $(responseXML).find("List").each(function () {
                 extendObjectWithXMLAttributes(this, list);
             });
+            return list;
         }
 
 
@@ -1756,7 +1801,7 @@ angular.module('angularPoint')
             stringifySharePointDate: stringifySharePointDate,
             stringifySharePointMultiSelect: stringifySharePointMultiSelect
 
-        }
+        };
 
 
         /**
@@ -1825,58 +1870,113 @@ angular.module('angularPoint')
          * @returns {Array} [fieldName, fieldValue]
          */
         function createValuePair(fieldDefinition, value) {
-            var valuePair = [];
             var internalName = fieldDefinition.internalName;
+            var encodedValue = encodeValue(internalName, value);
+            return [internalName, encodedValue];
 
-            if (!value && !_.isBoolean(value)) {
-                /** Create empty value pair if blank or undefined but allow false */
-                valuePair = [internalName, ''];
-            } else {
-                switch (fieldDefinition.objectType) {
+            //if (value === '' || _.isUndefined(value) || _.isNull(value)) {
+            //    /** Create empty value pair if blank or undefined but allow false */
+            //    valuePair = [internalName, ''];
+            //} else {
+            //    switch (fieldDefinition.objectType) {
+            //        case 'Lookup':
+            //        case 'User':
+            //            if (!value.lookupId) {
+            //                valuePair = [internalName, ''];
+            //            } else {
+            //                valuePair = [internalName, value.lookupId];
+            //            }
+            //            break;
+            //        case 'LookupMulti':
+            //        case 'UserMulti':
+            //            var stringifiedArray = stringifySharePointMultiSelect(value, 'lookupId');
+            //            valuePair = [fieldDefinition.internalName, stringifiedArray];
+            //            break;
+            //        case 'MultiChoice':
+            //            valuePair = [fieldDefinition.internalName, choiceMultiToString(value)];
+            //            break;
+            //        case 'Boolean':
+            //            valuePair = [internalName, value ? 1 : 0];
+            //            break;
+            //        case 'DateTime':
+            //            if (_.isDate(value)) {
+            //                //A string date in ISO8601 format, e.g., '2013-05-08T01:20:29Z-05:00'
+            //                valuePair = [internalName, stringifySharePointDate(value)];
+            //            } else {
+            //                valuePair = [internalName, ''];
+            //                console.error('Invalid Date Provided: ', value);
+            //            }
+            //            break;
+            //        case 'HTML':
+            //        case 'Note':
+            //            valuePair = [internalName, _.escape(value)];
+            //            break;
+            //        case 'JSON':
+            //            valuePair = [internalName, JSON.stringify(value)];
+            //            break;
+            //        default:
+            //            valuePair = [internalName, value];
+            //    }
+            //    if (offline) {
+            //        console.log('{' + fieldDefinition.objectType + '} ' + valuePair);
+            //    }
+            //}
+            //return valuePair;
+        }
+
+        function encodeValue(fieldType, value) {
+            var str = '';
+            /** Only process if note empty, undefined, or null.  Allow false. */
+            if (value !== '' && !_.isUndefined(value) && !_.isNull(value)) {
+                switch (fieldType) {
                     case 'Lookup':
                     case 'User':
-                        if (!value.lookupId) {
-                            valuePair = [internalName, ''];
-                        } else {
-                            valuePair = [internalName, value.lookupId];
+                        if (value.lookupId) {
+                            str = value.lookupId;
                         }
                         break;
                     case 'LookupMulti':
                     case 'UserMulti':
-                        var stringifiedArray = stringifySharePointMultiSelect(value, 'lookupId');
-                        valuePair = [fieldDefinition.internalName, stringifiedArray];
+                        str = stringifySharePointMultiSelect(value, 'lookupId');
                         break;
                     case 'MultiChoice':
-                        valuePair = [fieldDefinition.internalName, choiceMultiToString(value)];
+                        str = choiceMultiToString(value);
                         break;
                     case 'Boolean':
-                        valuePair = [internalName, value ? 1 : 0];
+                        str = value ? 1 : 0;
                         break;
                     case 'DateTime':
                         if (_.isDate(value)) {
                             //A string date in ISO8601 format, e.g., '2013-05-08T01:20:29Z-05:00'
-                            valuePair = [internalName, stringifySharePointDate(value)];
+                            str = stringifySharePointDate(value);
                         } else {
-                            valuePair = [internalName, ''];
-                            console.error('Invalid Date Provided: ', value);
+                            throw new Error('Invalid Date Provided: ' + value.toString());
                         }
+                        break;
+                    case 'JSON':
+                        str = JSON.stringify(value);
                         break;
                     case 'HTML':
                     case 'Note':
-                        valuePair = [internalName, _.escape(value)];
-                        break;
-                    case 'JSON':
-                        valuePair = [internalName, JSON.stringify(value)];
-                        break;
                     default:
-                        valuePair = [internalName, value];
+                        str = value;
                 }
-                if (offline) {
-                    console.log('{' + fieldDefinition.objectType + '} ' + valuePair);
-                }
+                //if (offline) {
+                //    console.log('{' + fieldType + '} ' + str);
+                //}
             }
-            return valuePair;
+            if (_.isString(str)) {
+                /** Ensure we encode before sending to server */
+                str = _.escape(str);
+                //    .replace(/\"/g, '&' + 'quot;')
+                ///** Encode < */
+                //    .replace(/</g, '&' + 'lt;')
+                ///** Encode > */
+                //    .replace(/>/g, '&' + 'gt;');
+            }
+            return str;
         }
+
 
         /**
          * @ngdoc function
@@ -1912,8 +2012,6 @@ angular.module('angularPoint')
             if (!self.timeZone) {
                 //Get difference between UTC time and local time in minutes and convert to hours
                 //Store so we only need to do this once
-                window.console.log('Calculating');
-
                 self.timeZone = new Date().getTimezoneOffset() / 60;
             }
             dateString += apUtilityService.doubleDigit(self.timeZone);
@@ -2748,7 +2846,7 @@ angular.module('angularPoint')
 
 
 angular.module('angularPoint')
-    .service('apMocksService', ["$q", "apCacheService", function ($q, apCacheService) {
+    .service('apMocksService', ["$q", "apCacheService", "toastr", function ($q, apCacheService, toastr) {
         return {
             mockRequest: mockRequest
         };
@@ -3700,13 +3798,13 @@ angular.module('angularPoint')
         function addEntity(entity) {
             var cache = this;
 
-            if (_.isObject(entity)) {
+            if (_.isObject(entity) && !!entity.id) {
                 /** Only add the entity to the cache if it's not already there */
                 if(!cache[entity.id]) {
                     cache[entity.id] = entity;
                 }
             }else {
-                console.error('A valid entity wasn\'t found: ', entity);
+                throw new Error('A valid entity wasn\'t found: ', entity);
             }
         }
 
@@ -4104,7 +4202,8 @@ angular.module('angularPoint')
  * @requires angularPoint.apUtilityService
  */
 angular.module('angularPoint')
-    .factory('apListItemFactory', ["$q", "_", "apCacheService", "apDataService", "apEncodeService", "apUtilityService", "apConfig", function ($q, _, apCacheService, apDataService, apEncodeService, apUtilityService, apConfig) {
+    .factory('apListItemFactory', ["$q", "_", "apCacheService", "apDataService", "apEncodeService", "apUtilityService", "apConfig", function ($q, _, apCacheService, apDataService, apEncodeService, apUtilityService,
+                                            apConfig) {
 
 
         /**
@@ -4123,16 +4222,12 @@ angular.module('angularPoint')
             constructor: ListItem,
 
             /** Methods on the prototype */
-            addEntityReference: addEntityReference,
             deleteAttachment: deleteAttachment,
             deleteItem: deleteItem,
             getAttachmentCollection: getAttachmentCollection,
-            getEntityReferenceCache: getEntityReferenceCache,
-            getEntityReferences: getEntityReferences,
             getFieldDefinition: getFieldDefinition,
             getFieldVersionHistory: getFieldVersionHistory,
             getLookupReference: getLookupReference,
-            removeEntityReference: removeEntityReference,
             resolvePermissions: resolvePermissions,
             saveChanges: saveChanges,
             saveFields: saveFields,
@@ -4307,54 +4402,32 @@ angular.module('angularPoint')
          * };
          *
          * //To get the location entity
-         * project.getLookupReference('location')
-         *     .then(function(entity) {
-         *        //Do something with the location entity
-         *
-         *     });
+         * var entity = project.getLookupReference('location');
          * </pre>
-         *
-         * <pre>
-         * var project = {
-         *    title: 'Project 1',
-         *    location: [
-         *        { lookupId: 5, lookupValue: 'Some Building' },
-         *        { lookupId: 6, lookupValue: 'Some Other Building' },
-         *    ]
-         * };
-         *
-         * //To get the location entity
-         * project.getLookupReference('location', project.location[0].lookupId)
-         *     .then(function(entity) {
-         *        //Do something with the location entity
-         *
-         *     });
-         * </pre>
-         * @returns {promise} Resolves with the entity the lookup is referencing.
+         * @returns {object} The entity the lookup is referencing or undefined if not in the cache.
          */
         function getLookupReference(fieldName, lookupId) {
             var listItem = this;
-            var deferred = $q.defer();
-            var targetId = lookupId || listItem[fieldName].lookupId;
+            if(_.isUndefined(fieldName)) {
+                throw new Error('A field name is required.', fieldName);
+            } else if(_.isEmpty(listItem[fieldName])) {
+                return '';
+            } else {
 
+                var targetId = lookupId || listItem[fieldName].lookupId;
 
-            if (fieldName) {
                 var model = listItem.getModel();
                 var fieldDefinition = model.getFieldDefinition(fieldName);
                 /** Ensure the field definition has the List attribute which contains the GUID of the list
-                 *  that a lookup is referencing.
-                 */
+                 *  that a lookup is referencing. */
                 if (fieldDefinition && fieldDefinition.List) {
-                    apCacheService.getEntity(fieldDefinition.List, targetId).then(function (entity) {
-                        deferred.resolve(entity);
-                    });
+
+                    return apCacheService.getCachedEntity(fieldDefinition.List, targetId);
                 } else {
-                    deferred.fail('Need a List GUID before we can find this in cache.');
+                    throw new Error('This isn\'t a valid Lookup field or the field definitions need to be extended ' +
+                        'before we can complete this request.', fieldName, lookupId);
                 }
-            } else {
-                deferred.fail('Need both fieldName && lookupId params');
             }
-            return deferred.promise;
         }
 
         /**
@@ -4512,92 +4585,6 @@ angular.module('angularPoint')
         function resolvePermissions() {
             var listItem = this;
             return apUtilityService.resolvePermissions(listItem.permMask);
-        }
-
-
-        function getEntityReferenceCache() {
-            var listItem = this;
-            return apCacheService.listItem.get(listItem.uniqueId);
-        }
-
-
-        /**
-         * @ngdoc function
-         * @name ListItem.addEntityReference
-         * @description
-         * Allows us to pass in another entity to associate superficially, only persists for the current session and
-         * no data is saved but it allows us to iterate over all of the references much faster than doing a lookup each
-         * on each digest.  Creates a item._apCache property on the list item object.  It then creates an object for each
-         * type of list item passed in using the list name in the list item model.
-         * @param {object} entity List item to associate.
-         * @returns {Object} The cache for the list of the item passed in.
-         * @example
-         * <pre>
-         * // Function to save references between a fictitious project
-         * // and corresponding associated tasks
-         * function associateProjectTasks(project) {
-         *    //Assuming project.tasks is a multi-lookup
-         *    _.each(project.tasks, function(taskLookup) {
-         *        var task = tasksModel.searchLocalCache(taskLookup.lookupId);
-         *        if(task) {
-         *            task.addEntityReference(project);
-         *            project.addEntityReference(task);
-         *        }
-         *    });
-         * }
-         * </pre>
-         *
-         * <pre>
-         * //Structure of cache
-         * listItem._apCache = {
-         *    Projects: {
-         *        14: {id: 14, title: 'Some Project'},
-         *        15: {id: 15, title: 'Another Project'}
-         *    },
-         *    Tasks: {
-         *        300: {id: 300, title: 'Task 300'},
-         *        412: {id: 412, title: 'Some Important Tasks'}
-         *    }
-         * }
-         * </pre>
-         */
-        function addEntityReference(entity) {
-            var listItem = this;
-            /** Verify that a valid entity is being provided */
-            if (entity && entity.constructor.name === 'ListItem') {
-                var uniqueId = listItem.uniqueId;
-                var constructorName = entity.getModel().list.title;
-                return apCacheService.listItem.add(uniqueId, constructorName, entity);
-            } else {
-                $log.warn('Please verify that a valid entity is being used: ', listItem, entity);
-            }
-        }
-
-        //TODO Rethink this
-        function getEntityReferences(constructorName) {
-            var listItem = this;
-            var cache = listItem.getEntityReferenceCache();
-            if (constructorName && !cache[constructorName]) {
-                return {};
-            } else if (constructorName && cache[constructorName]) {
-                return cache[constructorName];
-            } else {
-                return cache;
-            }
-        }
-
-        //TODO Rethink this
-        function removeEntityReference(entity) {
-            var listItem = this;
-            var uniqueId = listItem.uniqueId;
-            var constructorName = entity.getModel().list.title;
-            return apCacheService.listItem.remove(uniqueId, constructorName, entity);
-
-            //var pType = entity.getModel().list.title;
-            //var cache = listItem.getEntityReferenceCache();
-            //if (entity.id && cache[pType] && cache[pType][entity.id]) {
-            //    delete cache[pType][entity.id];
-            //}
         }
 
 
@@ -4774,82 +4761,82 @@ angular.module('angularPoint')
         //    getProperty: getProperty
         //};
 
-        /**
-         * @ngdoc function
-         * @name Lookup.getEntity
-         * @methodOf Lookup
-         * @description
-         * Allows us to create a promise that will resolve with the entity referenced in the lookup whenever that list
-         * item is registered.
-         * @example
-         * <pre>
-         * var project = {
-         *    title: 'Project 1',
-         *    location: {
-         *        lookupId: 5,
-         *        lookupValue: 'Some Building'
-         *    }
-         * };
-         *
-         * //To get the location entity
-         * project.location.getEntity().then(function(entity) {
-         *     //Resolves with the full location entity once it's registered in the cache
-         *
-         *    });
-         * </pre>
-         * @returns {promise} Resolves with the object the lookup is referencing.
-         */
-        function getEntity() {
-            var self = this;
-            var props = self._props();
+        ///**
+        // * @ngdoc function
+        // * @name Lookup.getEntity
+        // * @methodOf Lookup
+        // * @description
+        // * Allows us to create a promise that will resolve with the entity referenced in the lookup whenever that list
+        // * item is registered.
+        // * @example
+        // * <pre>
+        // * var project = {
+        // *    title: 'Project 1',
+        // *    location: {
+        // *        lookupId: 5,
+        // *        lookupValue: 'Some Building'
+        // *    }
+        // * };
+        // *
+        // * //To get the location entity
+        // * project.location.getEntity().then(function(entity) {
+        // *     //Resolves with the full location entity once it's registered in the cache
+        // *
+        // *    });
+        // * </pre>
+        // * @returns {promise} Resolves with the object the lookup is referencing.
+        // */
+        //function getEntity() {
+        //    var self = this;
+        //    var props = self._props();
+        //
+        //    if (!props.getEntity) {
+        //        var query = props.getQuery();
+        //        var listItem = query.searchLocalCache(props.entity.id);
+        //
+        //        /** Create a new deferred object if this is the first run */
+        //        props.getEntity = $q.defer();
+        //        listItem.getLookupReference(props.propertyName, self.lookupId)
+        //            .then(function (entity) {
+        //                props.getEntity.resolve(entity);
+        //            })
+        //    }
+        //    return props.getEntity.promise;
+        //}
 
-            if (!props.getEntity) {
-                var query = props.getQuery();
-                var listItem = query.searchLocalCache(props.entity.id);
-
-                /** Create a new deferred object if this is the first run */
-                props.getEntity = $q.defer();
-                listItem.getLookupReference(props.propertyName, self.lookupId)
-                    .then(function (entity) {
-                        props.getEntity.resolve(entity);
-                    })
-            }
-            return props.getEntity.promise;
-        }
-
-        /**
-         * @ngdoc function
-         * @name Lookup.getProperty
-         * @methodOf Lookup
-         * @description
-         * Returns a promise which resolves with the value of a property in the referenced object.
-         * @param {string} propertyPath The dot separated propertyPath.
-         * @example
-         * <pre>
-         * var project = {
-         *    title: 'Project 1',
-         *    location: {
-         *        lookupId: 5,
-         *        lookupValue: 'Some Building'
-         *    }
-         * };
-         *
-         * //To get the location.city
-         * project.location.getProperty('city').then(function(city) {
-         *    //Resolves with the city property from the referenced location entity
-         *
-         *    });
-         * </pre>
-         * @returns {promise} Resolves with the value, or undefined if it doesn't exists.
-         */
-        function getProperty(propertyPath) {
-            var self = this;
-            var deferred = $q.defer();
-            self.getEntity().then(function (entity) {
-                deferred.resolve(_.deepGetOwnValue(entity, propertyPath));
-            });
-            return deferred.promise;
-        }
+        ///**
+        // * @ngdoc function
+        // * @name Lookup.getProperty
+        // * @methodOf Lookup
+        // * @description
+        // * Returns a promise which resolves with the value of a property in the referenced object.
+        // * @param {string} propertyPath The dot separated propertyPath.
+        // * @example
+        // * <pre>
+        // * var project = {
+        // *    title: 'Project 1',
+        // *    location: {
+        // *        lookupId: 5,
+        // *        lookupValue: 'Some Building'
+        // *    }
+        // * };
+        // *
+        // * //To get the location.city
+        // * project.location.getProperty('city').then(function(city) {
+        // *    //Resolves with the city property from the referenced location entity
+        // *
+        // *    });
+        // * </pre>
+        // * @returns {promise} Resolves with the value, or undefined if it doesn't exists.
+        // */
+        //function getProperty(propertyPath) {
+        //    var self = this;
+        //    var deferred = $q.defer();
+        //    self.getEntity().then(function (entity) {
+        //        deferred.resolve(_.deepGetOwnValue(entity, propertyPath));
+        //    });
+        //    return deferred.promise;
+        //}
 
 
         /**
@@ -5040,11 +5027,11 @@ angular.module('angularPoint')
             getCachedEntity: getCachedEntity,
             getFieldDefinition: getFieldDefinition,
             getListItemById: getListItemById,
-            getLocalEntity: getLocalEntity,
+            //getLocalEntity: getLocalEntity,
             getQuery: getQuery,
             initializeModalState: initializeModalState,
             isInitialised: isInitialised,
-            resolvePermissions: resolvePermissions,
+            //resolvePermissions: resolvePermissions,
             registerQuery: registerQuery,
             validateEntity: validateEntity
         };
@@ -5187,37 +5174,37 @@ angular.module('angularPoint')
             }
         }
 
-        /**
-         * @ngdoc function
-         * @name Model.getLocalEntity
-         * @module Model
-         * @description
-         * Similar to Model.searchLocalCache but you don't need to specify a query, only searches by list item
-         * id, and returns a promise that is fulfilled once the requested list item is registered in the cache
-         *
-         * @param {number} entityId The ListItem.id of the object.
-         * @returns {promise} Will resolve once the item is registered in the cache.
-         * @example
-         * <pre>
-         * var task = {
-         *    title: 'A Task',
-         *    project: {
-         *        lookupId: 4,
-         *        lookupValue: 'Super Project'
-         *    }
-         * };
-         *
-         * // Now we'd like to get the project referenced in the task
-         * projectModel.getLocalEntity(task.project.lookupId).then(function(entity) {
-         *     var projectThatICareAbout = entity;
-         *     //Do something with it
-         * }
-         * </pre>
-         */
-        function getLocalEntity(entityId) {
-            var model = this;
-            return apCacheService.getEntity(model.list.guid, entityId);
-        }
+        ///**
+        // * @ngdoc function
+        // * @name Model.getLocalEntity
+        // * @module Model
+        // * @description
+        // * Similar to Model.searchLocalCache but you don't need to specify a query, only searches by list item
+        // * id, and returns a promise that is fulfilled once the requested list item is registered in the cache
+        // *
+        // * @param {number} entityId The ListItem.id of the object.
+        // * @returns {promise} Will resolve once the item is registered in the cache.
+        // * @example
+        // * <pre>
+        // * var task = {
+        // *    title: 'A Task',
+        // *    project: {
+        // *        lookupId: 4,
+        // *        lookupValue: 'Super Project'
+        // *    }
+        // * };
+        // *
+        // * // Now we'd like to get the project referenced in the task
+        // * projectModel.getLocalEntity(task.project.lookupId).then(function(entity) {
+        // *     var projectThatICareAbout = entity;
+        // *     //Do something with it
+        // * }
+        // * </pre>
+        // */
+        //function getLocalEntity(entityId) {
+        //    var model = this;
+        //    return apCacheService.getEntity(model.list.guid, entityId);
+        //}
 
         /**
          * @ngdoc function
@@ -5266,6 +5253,7 @@ angular.module('angularPoint')
                 defaults = {listName: model.list.guid},
                 opts = _.extend({}, defaults, options);
 
+            //TODO Remove Offline Logic and allow apDataService to handle
             /** Working Online */
             if (apConfig.online) {
                 /** Fetch from the server */
@@ -5316,14 +5304,10 @@ angular.module('angularPoint')
          */
         function addNewItem(entity, options) {
             var model = this;
-            var deferred = $q.defer();
-            apDataService.addUpdateItemModel(model, entity, options).then(function (response) {
-                deferred.resolve(response);
+            return apDataService.addUpdateItemModel(model, entity, options).then(function (response) {
                 /** Optionally broadcast change event */
                 apUtilityService.registerChange(model);
             });
-
-            return deferred.promise;
         }
 
         /**
@@ -5621,7 +5605,8 @@ angular.module('angularPoint')
          * @name Model.extendListDefinition
          * @module Model
          * @description
-         * Extends the List and Fields with list information returned from the server.
+         * Extends the List and Fields with list information returned from the server.  Only runs once and after that
+         * returns the existing promise.
          * @param {object} [options] Pass-through options to apDataService.getList
          * @returns {object} Promise that is resolved once the information has been added.
          */
@@ -5630,8 +5615,9 @@ angular.module('angularPoint')
                 deferred = $q.defer(),
                 defaults = { listName: model.list.guid};
 
-            /** Only request information if the list hasn't already been extended */
-            if(!model.fieldDefinitionsExtended) {
+            /** Only request information if the list hasn't already been extended and is not currently being requested */
+            if(!model.fieldDefinitionsExtended && !model.deferredListDefinition) {
+                model.deferredListDefinition = deferred.promise;
                 var opts = _.extend({}, defaults, options);
                 apDataService.getList(opts)
                     .then(function (responseXML) {
@@ -5640,11 +5626,8 @@ angular.module('angularPoint')
                         model.fieldDefinitionsExtended = true;
                         deferred.resolve(model);
                     });
-            } else {
-                /** The list has already been extended */
-                deferred.resolve(model);
             }
-            return deferred.promise;
+            return model.deferredListDefinition;
         }
 
         /**
@@ -5760,7 +5743,7 @@ angular.module('angularPoint')
                 var fieldValue = entity[fieldDefinition.mappedName];
                 var fieldDescriptor = '"' + fieldDefinition.objectType + '" value.';
                 /** Only evaluate required fields */
-                if (fieldDefinition.required && valid) {
+                if ((fieldDefinition.required || fieldDefinition.Required) && valid) {
                     switch (fieldDefinition.objectType) {
                         case 'Boolean':
                             valid = _.isBoolean(fieldValue);
@@ -5929,69 +5912,69 @@ angular.module('angularPoint')
             return apModalService.initializeState(entity, options, this);
         }
 
-        /**
-         * @ngdoc function
-         * @name Model.resolvePermissions
-         * @module Model
-         * @description
-         * See apModelFactory.resolvePermissions for details on what we expect to have returned.
-         * @returns {Object} Contains properties for each permission level evaluated for current user.
-         * @example
-         * Lets assume we're checking to see if a user has edit rights for a given list.
-         * <pre>
-         * var userPermissions = tasksModel.resolvePermissions();
-         * var userCanEdit = userPermissions.EditListItems;
-         * </pre>
-         * Example of what the returned object would look like
-         * for a site admin.
-         * <pre>
-         * perm = {
-         *    "ViewListItems":true,
-         *    "AddListItems":true,
-         *    "EditListItems":true,
-         *    "DeleteListItems":true,
-         *    "ApproveItems":true,
-         *    "OpenItems":true,
-         *    "ViewVersions":true,
-         *    "DeleteVersions":true,
-         *    "CancelCheckout":true,
-         *    "PersonalViews":true,
-         *    "ManageLists":true,
-         *    "ViewFormPages":true,
-         *    "Open":true,
-         *    "ViewPages":true,
-         *    "AddAndCustomizePages":true,
-         *    "ApplyThemeAndBorder":true,
-         *    "ApplyStyleSheets":true,
-         *    "ViewUsageData":true,
-         *    "CreateSSCSite":true,
-         *    "ManageSubwebs":true,
-         *    "CreateGroups":true,
-         *    "ManagePermissions":true,
-         *    "BrowseDirectories":true,
-         *    "BrowseUserInfo":true,
-         *    "AddDelPrivateWebParts":true,
-         *    "UpdatePersonalWebParts":true,
-         *    "ManageWeb":true,
-         *    "UseRemoteAPIs":true,
-         *    "ManageAlerts":true,
-         *    "CreateAlerts":true,
-         *    "EditMyUserInfo":true,
-         *    "EnumeratePermissions":true,
-         *    "FullMask":true
-         * }
-         * </pre>
-         */
-
-        function resolvePermissions() {
-            var model = this;
-            if (model.list && model.list.effectivePermMask) {
-                return apUtilityService.resolvePermissions(model.list.effectivePermMask);
-            } else {
-                window.console.error('Attempted to resolve permissions of a model that hasn\'t been initialized.', model);
-                return apUtilityService.resolvePermissions(null);
-            }
-        }
+        ///**
+        // * @ngdoc function
+        // * @name Model.resolvePermissions
+        // * @module Model
+        // * @description
+        // * See apModelFactory.resolvePermissions for details on what we expect to have returned.
+        // * @returns {Object} Contains properties for each permission level evaluated for current user.
+        // * @example
+        // * Lets assume we're checking to see if a user has edit rights for a given list.
+        // * <pre>
+        // * var userPermissions = tasksModel.resolvePermissions();
+        // * var userCanEdit = userPermissions.EditListItems;
+        // * </pre>
+        // * Example of what the returned object would look like
+        // * for a site admin.
+        // * <pre>
+        // * perm = {
+        // *    "ViewListItems":true,
+        // *    "AddListItems":true,
+        // *    "EditListItems":true,
+        // *    "DeleteListItems":true,
+        // *    "ApproveItems":true,
+        // *    "OpenItems":true,
+        // *    "ViewVersions":true,
+        // *    "DeleteVersions":true,
+        // *    "CancelCheckout":true,
+        // *    "PersonalViews":true,
+        // *    "ManageLists":true,
+        // *    "ViewFormPages":true,
+        // *    "Open":true,
+        // *    "ViewPages":true,
+        // *    "AddAndCustomizePages":true,
+        // *    "ApplyThemeAndBorder":true,
+        // *    "ApplyStyleSheets":true,
+        // *    "ViewUsageData":true,
+        // *    "CreateSSCSite":true,
+        // *    "ManageSubwebs":true,
+        // *    "CreateGroups":true,
+        // *    "ManagePermissions":true,
+        // *    "BrowseDirectories":true,
+        // *    "BrowseUserInfo":true,
+        // *    "AddDelPrivateWebParts":true,
+        // *    "UpdatePersonalWebParts":true,
+        // *    "ManageWeb":true,
+        // *    "UseRemoteAPIs":true,
+        // *    "ManageAlerts":true,
+        // *    "CreateAlerts":true,
+        // *    "EditMyUserInfo":true,
+        // *    "EnumeratePermissions":true,
+        // *    "FullMask":true
+        // * }
+        // * </pre>
+        // */
+        //
+        //function resolvePermissions() {
+        //    var model = this;
+        //    if (model.list && model.list.effectivePermMask) {
+        //        return apUtilityService.resolvePermissions(model.list.effectivePermMask);
+        //    } else {
+        //        window.console.error('Attempted to resolve permissions of a model that hasn\'t been initialized.', model);
+        //        return apUtilityService.resolvePermissions(null);
+        //    }
+        //}
 
         /**
          * @ngdoc function
@@ -6110,7 +6093,9 @@ angular.module('angularPoint')
             var defaults = {
                 /** Container to hold returned entities */
                     //todo moved to indexedCache instead for better performance
-                cache: [],
+                //cache: [],
+                /** Reference to the most recent query when performing GetListItemChangesSinceToken */
+                changeToken: null,
                 /** Promise resolved after first time query is executed */
                 initialized: $q.defer(),
                 /** Key value hash map with key being the id of the entity */

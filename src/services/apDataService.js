@@ -542,7 +542,7 @@ angular.module('angularPoint')
 
             serviceWrapper(query)
                 .then(function (response) {
-
+                    //TODO Remove offline logic
                     if (offline && !_.isNull(query.lastRun)) {
                         /** Entities have already been previously processed so just return the existing cache */
                         deferred.resolve(response);

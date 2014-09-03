@@ -62,10 +62,15 @@ angular.module('angularPoint')
             var filteredNodes = $(responseXML).SPFilterNode(opts.filter);
 
             /** Prepare constructor for XML entities with references to the query and cached container */
-            var listItemProvider= createListItemProvider(model, query, options.target);
-            var entities = xmlToJson(filteredNodes, listItemProvider, opts);
+            var listItemProvider= createListItemProvider(model, query, opts.target);
 
-            return entities;
+            /** Convert XML entities into JS objects and register in cache with listItemProvider, this returns an
+             * array of entities but at this point we're not using them because the indexed cache should be more
+             * performant. */
+            xmlToJson(filteredNodes, listItemProvider, opts);
+
+            return opts.target;
+            //return entities;
         }
 
         /**
