@@ -17,10 +17,10 @@
 </li>
 </ul>
 <div class="member method"><h2 id="methods">Methods</h2>
-<ul class="methods"><li><h3 id="methods_attrtojson">attrToJson(value, objectType, [options])</h3>
+<ul class="methods"><li><h3 id="methods_attrtojson">attrToJson(str, objectType, [options])</h3>
 <div class="attrtojson"><div class="angularpoint-apdecodeservice-page angularpoint-apdecodeservice-attrtojson-page"><p>Converts a SharePoint string representation of a field into the correctly formatted JavaScript version
 based on object type.</p>
-</div><h5 id="methods_attrtojson_parameters">Parameters</h5><table class="variables-matrix table table-bordered table-striped"><thead><tr><th>Param</th><th>Type</th><th>Details</th></tr></thead><tbody><tr><td>value</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="angularpoint-apdecodeservice-page angularpoint-apdecodeservice-attrtojson-page"><p>SharePoint string.</p>
+</div><h5 id="methods_attrtojson_parameters">Parameters</h5><table class="variables-matrix table table-bordered table-striped"><thead><tr><th>Param</th><th>Type</th><th>Details</th></tr></thead><tbody><tr><td>str</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="angularpoint-apdecodeservice-page angularpoint-apdecodeservice-attrtojson-page"><p>SharePoint string representing the value.</p>
 </div></td></tr><tr><td>objectType</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="angularpoint-apdecodeservice-page angularpoint-apdecodeservice-attrtojson-page"><p>The type based on field definition.  See
 See <a href="#/api/List.FieldDefinition">List.customFields</a> for additional info on how to define a field type.</p>
 </div> <p><em>(default: 'Text')</em></p></td></tr><tr><td>[options]</td><td><a href="" class="label type-hint type-hint-object">object</a></td><td><div class="angularpoint-apdecodeservice-page angularpoint-apdecodeservice-attrtojson-page"><p>Options to pass to the object constructor.</p>
@@ -61,7 +61,8 @@ with additional field metadata.  Important to note that all properties will comi
 with a capital letter.</p>
 </div><h5 id="methods_extendlistdefinitionfromxml_parameters">Parameters</h5><table class="variables-matrix table table-bordered table-striped"><thead><tr><th>Param</th><th>Type</th><th>Details</th></tr></thead><tbody><tr><td>list</td><td><a href="" class="label type-hint type-hint-object">object</a></td><td><div class="angularpoint-apdecodeservice-page angularpoint-apdecodeservice-extendlistdefinitionfromxml-page"><p>model.list</p>
 </div></td></tr><tr><td>responseXML</td><td><a href="" class="label type-hint type-hint-object">object</a></td><td><div class="angularpoint-apdecodeservice-page angularpoint-apdecodeservice-extendlistdefinitionfromxml-page"><p>XML response from the server.</p>
-</div></td></tr></tbody></table></div>
+</div></td></tr></tbody></table><h5 id="methods_extendlistdefinitionfromxml_returns">Returns</h5><table class="variables-matrix"><tr><td><a href="" class="label type-hint type-hint-object">object</a></td><td><div class="angularpoint-apdecodeservice-page angularpoint-apdecodeservice-extendlistdefinitionfromxml-page"><p>Extended list object.</p>
+</div></td></tr></table></div>
 </li>
 <li><h3 id="methods_extendobjectwithxmlattributes">extendObjectWithXMLAttributes(xmlObject, jsObject)</h3>
 <div class="extendobjectwithxmlattributes"><div class="angularpoint-apdecodeservice-page angularpoint-apdecodeservice-extendobjectwithxmlattributes-page"><p>Takes an XML element and copies all attributes over to a given JS object with corresponding values.  If
@@ -102,14 +103,6 @@ the processed entities.  Promise allows us to batch conversions of large lists t
 </div> <p><em>(default: 'z:row')</em></p></td></tr><tr><td>options.mapping</td><td><a href="" class="label type-hint type-hint-array">Array</a></td><td><div class="angularpoint-apdecodeservice-page angularpoint-apdecodeservice-processlistitems-page"><p>Field definitions, typically stored on the model.</p>
 </div> <p><em>(default: model.list.mapping)</em></p></td></tr><tr><td>options.target</td><td><a href="" class="label type-hint type-hint-array">Array</a></td><td><div class="angularpoint-apdecodeservice-page angularpoint-apdecodeservice-processlistitems-page"><p>Optionally pass in array to update after processing.</p>
 </div> <p><em>(default: model.getCache())</em></p></td></tr></tbody></table><h5 id="methods_processlistitems_returns">Returns</h5><table class="variables-matrix"><tr><td><a href="" class="label type-hint type-hint-object">object[]</a></td><td><div class="angularpoint-apdecodeservice-page angularpoint-apdecodeservice-processlistitems-page"><p>List items.</p>
-</div></td></tr></table></div>
-</li>
-<li><h3 id="methods_updatelocalcache">updateLocalCache(localCache, entities)</h3>
-<div class="updatelocalcache"><div class="angularpoint-apdecodeservice-page angularpoint-apdecodeservice-updatelocalcache-page"><p>Maps a cache by entity id.  All provided entities are then either added if they don&#39;t already exist
-or replaced if they do.</p>
-</div><h5 id="methods_updatelocalcache_parameters">Parameters</h5><table class="variables-matrix table table-bordered table-striped"><thead><tr><th>Param</th><th>Type</th><th>Details</th></tr></thead><tbody><tr><td>localCache</td><td><a href="" class="label type-hint type-hint-object">object[]</a></td><td><div class="angularpoint-apdecodeservice-page angularpoint-apdecodeservice-updatelocalcache-page"><p>The cache for a given query.</p>
-</div></td></tr><tr><td>entities</td><td><a href="" class="label type-hint type-hint-object">object[]</a></td><td><div class="angularpoint-apdecodeservice-page angularpoint-apdecodeservice-updatelocalcache-page"><p>All entities that should be merged into the cache.</p>
-</div></td></tr></tbody></table><h5 id="methods_updatelocalcache_returns">Returns</h5><table class="variables-matrix"><tr><td><a href="" class="label type-hint type-hint-object">object</a></td><td><div class="angularpoint-apdecodeservice-page angularpoint-apdecodeservice-updatelocalcache-page"><p>{created: number, updated: number}</p>
 </div></td></tr></table></div>
 </li>
 <li><h3 id="methods_xmltojson">xmlToJson(xmlEntities, listItemProvider, options)</h3>
