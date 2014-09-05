@@ -8,12 +8,14 @@ describe("Factory: apEncodeService", function () {
         mockChangeTokenXML,
         mockEntityCache,
         mockModel,
-        mockXMLService;
+        mockXMLService,
+        apUtilityService;
 
-    beforeEach(inject(function (_apEncodeService_, _mockXMLService_, _mockModel_) {
+    beforeEach(inject(function (_apEncodeService_, _mockXMLService_, _mockModel_, _apUtilityService_) {
         apEncodeService = _apEncodeService_;
         mockXMLService = _mockXMLService_;
         mockModel = _mockModel_;
+        apUtilityService = _apUtilityService_;
 
         mockChangeTokenXML = mockXMLService.listItemsSinceChangeToken;
     }));
@@ -77,12 +79,12 @@ describe("Factory: apEncodeService", function () {
         it('correctly handles a DateTime field', function () {
             var validDate = new Date(2014, 5, 10, 3, 25, 30);
             expect(apEncodeService.createValuePair(mockDefinition('DateTime'), validDate))
-                .toEqual([ 'DateTime', '2014-06-10T03:25:30Z-07:00' ]);
+                .toEqual([ 'DateTime', '2014-06-10T03:25:30Z-' + getTimezoneOffsetString() ]);
         });
 
         it('handles a DateTime value as a string', function () {
             expect(apEncodeService.createValuePair(mockDefinition('DateTime'), '2014-05-06'))
-                .toEqual([ 'DateTime', '2014-05-06T00:00:00Z-07:00' ]);
+                .toEqual([ 'DateTime', '2014-05-06T00:00:00Z-' + getTimezoneOffsetString() ]);
         });
 
         it('doesn\'t save invalid DateTime field', function () {
@@ -120,6 +122,17 @@ describe("Factory: apEncodeService", function () {
 
     function mockDefinition(type) {
         return _.find(mockModel.list.customFields, {internalName: type});
+    }
+
+    /** We don't know the timezone of the test server so can't hard code it therefore we need the build system
+     * to return the anticipated offset */
+    function getTimezoneOffsetString() {
+        var offsetString = '',
+            offsetZone = new Date().getTimezoneOffset() / 60;
+
+        offsetString += apUtilityService.doubleDigit(offsetZone);
+        offsetString += ':00';
+        return offsetString;
     }
 
 });
