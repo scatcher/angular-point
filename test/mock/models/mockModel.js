@@ -4,7 +4,7 @@
  /*  State will persist throughout life of session
  */
 angular.module('angularPoint')
-    .service('mockModel', function (apModelFactory, apModalService, apDecodeService, mockXMLService) {
+    .service('mockModel', function (apModelFactory, apDecodeService, mockXMLService) {
 
         /**
          * Entity Constructor
@@ -83,15 +83,19 @@ angular.module('angularPoint')
 
         /********************* Model Specific Shared Functions ***************************************/
 
-        /** Optionally add a modal form **/
-        model.openModal = apModalService.modalModelProvider({
-            templateUrl: '',
-            controller: '',
-            expectedArguments: ['entity']
-        });
+        ///** Optionally add a modal form **/
+        //model.openModal = apModalService.modalModelProvider({
+        //    templateUrl: '',
+        //    controller: '',
+        //    expectedArguments: ['entity']
+        //});
+        //
+        //Mock.prototype.openModal = function () {
+        //    return model.openModal(this);
+        //};
 
-        Mock.prototype.openModal = function () {
-            return model.openModal(this);
+        model.getField = function(name) {
+            return _.find(model.list.fields, {mappedName: name});
         };
 
 
@@ -100,13 +104,13 @@ angular.module('angularPoint')
             var secondaryCache = model.getCache('secondary');
             primaryCache.clear();
             secondaryCache.clear();
-            apDecodeService.processListItems(model, model.getQuery('primary'), mockXMLService.listItemsSinceChangeToken, {
+            apDecodeService.processListItems(model, model.getQuery('primary'), mockXMLService.GetListItemChangesSinceToken, {
                 target: primaryCache
             });
 
             /** Extend list and field definitions with mock XML */
-            apDecodeService.extendListDefinitionFromXML(model.list, mockXMLService.listItemsSinceChangeToken);
-            apDecodeService.extendFieldDefinitionsFromXML(model.list.fields, mockXMLService.listItemsSinceChangeToken);
+            apDecodeService.extendListDefinitionFromXML(model.list, mockXMLService.GetListItemChangesSinceToken);
+            apDecodeService.extendFieldDefinitionsFromXML(model.list.fields, mockXMLService.GetListItemChangesSinceToken);
             model.fieldDefinitionsExtended = true;
 
             /** Populate secondary query cache with same objects */

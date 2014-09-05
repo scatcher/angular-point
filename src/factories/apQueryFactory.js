@@ -6,13 +6,12 @@
  * @description
  * Exposes the Query prototype and a constructor to instantiate a new Query.
  *
- * @requires angularPoint.apModalService
  * @requires angularPoint.apCacheService
  * @requires angularPoint.apDataService
  * @requires angularPoint.apConfig
  */
 angular.module('angularPoint')
-    .factory('apQueryFactory', function (_, apModalService, apCacheService, apIndexedCacheFactory, apDataService, apConfig, $q) {
+    .factory('apQueryFactory', function (_, apCacheService, apIndexedCacheFactory, apDataService, apConfig, $q) {
 
 
         /**
@@ -81,7 +80,7 @@ angular.module('angularPoint')
                     //todo moved to indexedCache instead for better performance
                 //cache: [],
                 /** Reference to the most recent query when performing GetListItemChangesSinceToken */
-                changeToken: null,
+                changeToken: undefined,
                 /** Promise resolved after first time query is executed */
                 initialized: $q.defer(),
                 /** Key value hash map with key being the id of the entity */
@@ -196,10 +195,10 @@ angular.module('angularPoint')
                     if (firstRunQuery) {
                         /** Promise resolved the first time query is completed */
                         query.initialized.resolve(queryOptions.target);
-
-                        /** Remove lock to allow for future requests */
-                        query.negotiatingWithServer = false;
                     }
+
+                    /** Remove lock to allow for future requests */
+                    query.negotiatingWithServer = false;
 
                     /** Store query completion date/time on model to allow us to identify age of data */
                     model.lastServerUpdate = new Date();

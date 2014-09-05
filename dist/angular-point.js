@@ -45,6 +45,7 @@ angular.module('angularPoint', [
 angular.module('angularPoint')
 /** lodash */
     .constant('_', _)
+    .constant('SPServices', $().SPServices)
 
 /**
  * @ngdoc object
@@ -162,6 +163,7 @@ angular.module('angularPoint')
             getCachedEntities: getCachedEntities,
             getEntity: getEntity,
             getEntityContainer: getEntityContainer,
+            getEntityTypeByName: getEntityTypeByName,
             getEntityTypeKey: getEntityTypeKey,
             removeEntity: removeEntity,
             registerEntity: registerEntity,
@@ -200,11 +202,11 @@ angular.module('angularPoint')
          * @returns {string} GUID for the list.
          */
         function getEntityTypeByName(name) {
+            var guid;
             if (entityNameToType[name] && entityNameToType[name].entityType) {
-                return entityNameToType[name].entityType;
-            } else {
-                $log.error('The requested list name isn\'t valid: ', name);
+                guid = entityNameToType[name].entityType;
             }
+            return guid;
         }
 
         /**
@@ -391,13 +393,9 @@ angular.module('angularPoint')
  // *  @requires apFieldService
  */
 angular.module('angularPoint')
-    .service('apDataService', ["$q", "$timeout", "_", "apQueueService", "apConfig", "apUtilityService", "apDecodeService", "apEncodeService", "apFieldService", "apIndexedCacheFactory", "apMocksService", "toastr", function ($q, $timeout, _, apQueueService, apConfig, apUtilityService, apDecodeService,
-                                        apEncodeService, apFieldService, apIndexedCacheFactory, apMocksService, toastr) {
-
-        /** Flag to use cached XML files from the location specified in apConfig.offlineXML */
-        var offline = apConfig.offline;
-        /** Allows us to make code easier to read */
-        var online = !offline;
+    .service('apDataService', ["$q", "$timeout", "_", "apQueueService", "apConfig", "apUtilityService", "apDecodeService", "apEncodeService", "apFieldService", "apIndexedCacheFactory", "apMocksService", "toastr", "SPServices", function ($q, $timeout, _, apQueueService, apConfig, apUtilityService, apDecodeService,
+                                        apEncodeService, apFieldService, apIndexedCacheFactory, apMocksService, toastr,
+                                        SPServices) {
 
         /** Exposed functionality */
         var apDataService = {
@@ -411,10 +409,10 @@ angular.module('angularPoint')
             getList: getList,
             getListFields: getListFields,
             getListItemById: getListItemById,
-            getMyData:getMyData,
+            requestData: requestData,
             getView: getView,
-            logErrorsToConsole: logErrorsToConsole,
             processChangeTokenXML: processChangeTokenXML,
+            processDeletionsSinceToken: processDeletionsSinceToken,
             retrieveChangeToken: retrieveChangeToken,
             removeEntityFromLocalCache: removeEntityFromLocalCache,
             retrievePermMask: retrievePermMask,
@@ -452,11 +450,11 @@ angular.module('angularPoint')
 
             var deferred = $q.defer();
 
-            if (online) {
+            if (apConfig.online) {
                 serviceWrapper(opts)
                     .then(function (response) {
                         /** Parse XML response */
-                        var versions = apDecodeService.parseFieldVersions(response.responseText, fieldDefinition);
+                        var versions = apDecodeService.parseFieldVersions(response, fieldDefinition);
                         /** Resolve with an array of all field versions */
                         deferred.resolve(versions);
                     }, function (outcome) {
@@ -507,7 +505,7 @@ angular.module('angularPoint')
                 postProcess: processXML
             };
             /** Set the default location for the offline XML in case it isn't manually set. */
-            if(offline && _.isString(options.operation)) {
+            if (apConfig.offline && _.isString(options.operation)) {
                 defaults.offlineData = apConfig.offlineXML + options.operation + '.xml';
             }
             var opts = _.extend({}, defaults, options);
@@ -586,26 +584,6 @@ angular.module('angularPoint')
 
         /**
          * @ngdoc function
-         * @name apDataService.logErrorsToConsole
-         * @description
-         * Helper function to look for errors in a response from the server and output them to console.
-         * @param {object} responseXML XML response from the server.
-         * @param {string} operation The type of operation that was being attempted.
-         */
-        function logErrorsToConsole(responseXML, operation) {
-            /** Errors can still be resolved without throwing an error so check the XML */
-            var errorMessage = apDecodeService.checkResponseForErrors(responseXML);
-            var errorString;
-            if (errorMessage) {
-                errorString = operation + ': ' + errorMessage;
-                console.error(errorString);
-            }
-            return errorString;
-        }
-
-
-        /**
-         * @ngdoc function
          * @name apDataService.serviceWrapper
          * @description
          * Generic wrapper for any SPServices web service call.  The big benefit to this function is it allows us
@@ -633,8 +611,6 @@ angular.module('angularPoint')
             var opts = _.extend({}, defaults, options);
             var deferred = $q.defer();
 
-            apQueueService.increase();
-
             /** Convert the xml returned from the server into an array of js objects */
             function processXML(serverResponse) {
                 if (opts.filterNode) {
@@ -646,39 +622,51 @@ angular.module('angularPoint')
                     return serverResponse;
                 }
             }
+
             /** Allow this method to be overloaded and pass any additional arguments to the mock service */
             var additionalArgs = Array.prototype.slice.call(arguments, 1);
 
-            apDataService.getMyData(opts, additionalArgs)
+            /** Display any async animations listening */
+            apQueueService.increase();
+
+            apDataService.requestData(opts, additionalArgs)
                 .then(function (response) {
                     /** Failure */
                     var data = opts.postProcess(response);
+                    apQueueService.decrease();
                     deferred.resolve(data);
                 }, function (response) {
                     /** Failure */
                     toastr.error('Failed to complete the requested ' + opts.operation + ' operation.');
-                    deferred.reject(response);
-                }, function () {
                     apQueueService.decrease();
+                    deferred.reject(response);
                 });
 
             return deferred.promise;
         }
 
         //TODO Rename Me
-        function getMyData(opts, additionalArgs) {
+        function requestData(opts, additionalArgs) {
             var deferred = $q.defer();
-            if (online) {
-                //var webServiceCall = $().SPServices(opts);
-                $q.when($().SPServices(opts)).then(function (webServiceCall) {
+
+            if (apConfig.online) {
+                //TODO Convert jQuery style promise into $q promise for consistency
+                var webServiceCall = SPServices(opts);
+                //$q.when($().SPServices(opts)).then(function (webServiceCall) {
+                webServiceCall.then(function () {
                     /** Success */
                     /** Errors can still be resolved without throwing an error so check the XML */
-                    logErrorsToConsole(webServiceCall.responseXML, opts.operation);
-                    deferred.resolve(opts.postProcess(webServiceCall.responseXML));
-                }, function (outcome) {
+                    var error = apDecodeService.checkResponseForErrors(webServiceCall.responseXML);
+                    if (error) {
+                        console.error(error, opts);
+                        deferred.reject(error);
+                    } else {
+                        deferred.resolve(webServiceCall.responseXML);
+                    }
+                }, function (error) {
                     /** Failure */
-                    logErrorsToConsole(response, opts.operation);
-                    deferred.reject(outcome);
+                    console.error(error, opts);
+                    deferred.reject(error);
                 });
             } else {
                 apMocksService.mockRequest(opts, additionalArgs)
@@ -744,14 +732,16 @@ angular.module('angularPoint')
          * @description
          * Returns a single list item with the provided id.
          * @param {number} entityId Id of the item being requested.
+         * @param {object} model Model this entity belongs to.
          * @param {object} options Configuration parameters.
          * @param {string} options.listName GUID of the list.
          * @returns {object} Promise which resolves with the requested entity if found.
          */
-        function getListItemById(entityId, options) {
+        function getListItemById(entityId, model, options) {
+            var deferred = $q.defer();
+
             var defaults = {
                 operation: 'GetListItems',
-                filterNode: 'z:row',
                 CAMLRowLimit: 1,
                 CAMLQuery: '' +
                 '<Query>' +
@@ -761,11 +751,21 @@ angular.module('angularPoint')
                 '     <Value Type="Number">' + entityId + '</Value>' +
                 '   </Eq>' +
                 ' </Where>' +
-                '</Query>'
+                '</Query>',
+                /** Create a temporary cache to store response */
+                target: apIndexedCacheFactory.create()
             };
 
             var opts = _.extend({}, defaults, options);
-            return serviceWrapper(opts);
+
+            serviceWrapper(opts).then(function (responseXML) {
+                var parsedEntities = apDecodeService.processListItems(model, null, responseXML, opts);
+
+                /** Should return an indexed object with a single entity so just return that entity */
+                deferred.resolve(parsedEntities.first());
+            });
+
+            return deferred.promise;
         }
 
         /**
@@ -868,13 +868,11 @@ angular.module('angularPoint')
 
             serviceWrapper(opts)
                 .then(function (response) {
-                    /** Already have the correct node if offline, otherwise if offline we need the responseText prop */
-                    var responseText = apConfig.offline ? response : response.responseText;
                     /** Success */
                     var output = {
-                        query: '<Query>' + $(responseText).find('Query').html() + '</Query>',
-                        viewFields: '<ViewFields>' + $(responseText).find('ViewFields').html() + '</ViewFields>',
-                        rowLimit: $(responseText).find('RowLimit').html()
+                        query: '<Query>' + $(response).find('Query').html() + '</Query>',
+                        viewFields: '<ViewFields>' + $(response).find('ViewFields').html() + '</ViewFields>',
+                        rowLimit: $(response).find('RowLimit').html()
                     };
 
                     /** Pass back the lists array */
@@ -918,7 +916,7 @@ angular.module('angularPoint')
             serviceWrapper(query)
                 .then(function (response) {
                     //TODO Remove offline logic
-                    if (offline && !_.isNull(query.lastRun)) {
+                    if (apConfig.offline && !_.isNull(query.lastRun)) {
                         /** Entities have already been previously processed so just return the existing cache */
                         deferred.resolve(response);
                     } else {
@@ -1041,7 +1039,7 @@ angular.module('angularPoint')
                     }
                 }
             });
-            if (deleteCount > 0 && offline) {
+            if (deleteCount > 0 && apConfig.offline) {
                 console.log(deleteCount + ' item(s) removed from local cache to mirror changes on source list.');
             }
         }
@@ -1122,17 +1120,22 @@ angular.module('angularPoint')
                 };
                 query = payload;
             }
-            /** Overload the function the pass anything past the first parameter to the supporting methods */
+            /** Overload the function then pass anything past the first parameter to the supporting methods */
             serviceWrapper(payload, entity, model)
                 .then(function (response) {
-                    if (online) {
+                    if (apConfig.online) {
                         /** Online this should return an XML object */
-                        var responseArray = apDecodeService.processListItems(model, query, response, opts);
-                        deferred.resolve(responseArray[0]);
+                        var indexedCache = apDecodeService.processListItems(model, query, response, opts);
+                        /** Return reference to updated entity if updating, otherwise send reference to last entity
+                         * in cache because it will have the new highest id */
+                        var updatedEntity = (entity && entity.id) ? indexedCache[entity.id] : indexedCache.last();
+                        deferred.resolve(updatedEntity);
                     } else {
                         /** Offline response should be the updated entity as a JS Object */
                         deferred.resolve(response);
                     }
+                }, function(err) {
+                    deferred.reject(err);
                 });
             return deferred.promise;
         }
@@ -1168,7 +1171,7 @@ angular.module('angularPoint')
 
             var deferred = $q.defer();
 
-            if (online) {
+            if (apConfig.online) {
                 serviceWrapper(opts)
                     .then(function () {
                         /** Success */
@@ -1510,15 +1513,19 @@ angular.module('angularPoint')
         }
 
         function jsObject(s) {
-            /** Ensure JSON is valid and if not throw error with additional detail */
-            var json = null;
-            try {
-                json = JSON.parse(s);
+            if (!s) {
+                return s;
+            } else {
+                /** Ensure JSON is valid and if not throw error with additional detail */
+                var json = null;
+                try {
+                    json = JSON.parse(s);
+                }
+                catch (err) {
+                    console.error('Invalid JSON: ', s);
+                }
+                return json;
             }
-            catch (err) {
-                console.error('Invalid JSON: ', s);
-            }
-            return json;
         }
 
         function jsString(s) {
@@ -1547,7 +1554,7 @@ angular.module('angularPoint')
 
         function jsDate(s) {
             /** Replace dashes with slashes and the "T" deliminator with a space if found */
-            return new Date(s.replace(/-/g, '/').replace(/T/i, ' '));
+            return new Date(s.replace(/-/g, '/').replace(/Z/i, '').replace(/T/i, ' '));
         }
 
         function jsUser(s) {
@@ -1734,22 +1741,23 @@ angular.module('angularPoint')
          */
         function parseFieldVersions(responseXML, fieldDefinition) {
             var versions = [];
-            var versionCount = $(responseXML).find('Version').length;
-            $(responseXML).find('Version').each(function (index) {
-                var self = this;
+            var xmlVersions = $(responseXML).find('Version');
+            var versionCount = xmlVersions.length;
 
+
+            _.each(xmlVersions, function(xmlVersion, index) {
                 /** Parse the xml and create a representation of the version as a js object */
                 var version = {
-                    editor: attrToJson($(self).attr('Editor'), 'User'),
+                    editor: attrToJson($(xmlVersion).attr('Editor'), 'User'),
                     /** Turn the SharePoint formatted date into a valid date object */
-                    modified: attrToJson($(self).attr('Modified'), 'DateTime'),
+                    modified: attrToJson($(xmlVersion).attr('Modified'), 'DateTime'),
                     /** Returns records in desc order so compute the version number from index */
                     version: versionCount - index
                 };
 
                 /** Properly format field based on definition from model */
                 version[fieldDefinition.mappedName] =
-                    attrToJson($(self).attr(fieldDefinition.internalName), fieldDefinition.objectType);
+                    attrToJson($(xmlVersion).attr(fieldDefinition.internalName), fieldDefinition.objectType);
 
                 /** Push to beginning of array */
                 versions.unshift(version);
@@ -1769,12 +1777,17 @@ angular.module('angularPoint')
          * @returns {string|null} Returns an error string if present, otherwise returns null.
          */
         function checkResponseForErrors(responseXML) {
-            var errorString = null;
-            /** Responses with a <errorstring></errorstring> element with details on what happened */
-            $(responseXML).find("errorstring").each(function () {
-                errorString = $(this).text();
+            var error = null;
+            /** Look for <errorstring></errorstring> or <ErrorText></ErrorText> for details on any errors */
+            var errorElements = ['ErrorText', 'errorstring'];
+            _.each(errorElements, function(element) {
+                $(responseXML).find(element).each(function () {
+                    error = $(this).text();
+                    /** Break early if found */
+                    return false;
+                });
             });
-            return errorString;
+            return error;
         }
     }]);
 ;'use strict';
@@ -1870,9 +1883,8 @@ angular.module('angularPoint')
          * @returns {Array} [fieldName, fieldValue]
          */
         function createValuePair(fieldDefinition, value) {
-            var internalName = fieldDefinition.internalName;
-            var encodedValue = encodeValue(internalName, value);
-            return [internalName, encodedValue];
+            var encodedValue = encodeValue(fieldDefinition.objectType, value);
+            return [fieldDefinition.internalName, encodedValue];
 
             //if (value === '' || _.isUndefined(value) || _.isNull(value)) {
             //    /** Create empty value pair if blank or undefined but allow false */
@@ -1946,12 +1958,8 @@ angular.module('angularPoint')
                         str = value ? 1 : 0;
                         break;
                     case 'DateTime':
-                        if (_.isDate(value)) {
-                            //A string date in ISO8601 format, e.g., '2013-05-08T01:20:29Z-05:00'
-                            str = stringifySharePointDate(value);
-                        } else {
-                            throw new Error('Invalid Date Provided: ' + value.toString());
-                        }
+                        //A string date in ISO8601 format, e.g., '2013-05-08T01:20:29Z-05:00'
+                        str = stringifySharePointDate(value);
                         break;
                     case 'JSON':
                         str = JSON.stringify(value);
@@ -1991,9 +1999,14 @@ angular.module('angularPoint')
          * @returns {string} ISO8601 date string.
          */
         function stringifySharePointDate(date) {
-            if (!_.isDate(date)) {
-                return '';
+            if(!_.isDate(date) && _.isString(date) && date.split('-').length === 3) {
+                /** Date string formatted YYYY-MM-DD */
+                var dateComponents = date.split('-');
+                date = new Date(dateComponents[0], dateComponents[1] - 1, dateComponents[2], 0, 0, 0);
+            } else if(!_.isDate(date)) {
+                throw new Error('Invalid Date Provided: ' + value.toString());
             }
+
             var self = stringifySharePointDate;
             var dateString = '';
             dateString += date.getFullYear();
@@ -2951,344 +2964,93 @@ angular.module('angularPoint')
 
 /**
  * @ngdoc service
- * @name angularPoint.apModalService
- * @description
- * Extends a modal form to include many standard functions
- *
- */
-angular.module('angularPoint')
-  .service('apModalService', ["$modal", "_", "toastr", function ($modal, _, toastr) {
-
-    /**
-     * @ngdoc function
-     * @name angularPoint.apModalService:modalModelProvider
-     * @methodOf angularPoint.apModalService
-     * @description
-     * Extends a model to allow us to easily attach a modal form that accepts and injects a
-     * dynamic number of arguments.
-     * @param {object} options Configuration object.
-     * @param {string} options.templateUrl Reference to the modal view.
-     * @param {string} options.controller Name of the modal controller.
-     * @param {string[]} [options.expectedArguments] First argument name should be the item being edited.
-     * @returns {object} Function which returns openModal that in turn returns a promise.
-     *
-     * @example
-     * <pre>
-     *    model.openModal = apModalService.modalModelProvider({
-         *        templateUrl: 'modules/comp_request/views/comp_request_modal_view.html',
-         *        controller: 'compRequestModalCtrl',
-         *        expectedArguments: ['request']
-         *    });
-     * </pre>
-     */
-    function modalModelProvider(options) {
-      return function openModal() {
-        var self = openModal;
-        var defaults = {
-          templateUrl: options.templateUrl,
-          controller: options.controller,
-          resolve: {}
-        };
-        var modalConfig = _.extend({}, defaults, options);
-
-        /** Store a reference to any arguments that were passed in */
-        var args = arguments;
-
-        /**
-         * Create members to be resolved and passed to the controller as locals;
-         *  Equivalent of the resolve property for AngularJS routes
-         */
-        _.each(options.expectedArguments, function (argumentName, index) {
-          modalConfig.resolve[argumentName] = function () {
-            return args[index];
-          };
-        });
-
-        var modalInstance = $modal.open(modalConfig);
-
-        /** Assume that if there is a first argument, it is the item we're editing */
-        if (args[0]) {
-          /** Create a copy in case we need to revert back */
-          self.snapshot = angular.copy(args[0]);
-          modalInstance.result.then(function () {
-
-          }, function () {
-            /** Undo any changes if cancelled */
-            _.extend(args[0], self.snapshot);
-          });
-        }
-
-        return modalInstance.result;
-      };
-    }
-
-    /**
-     * @ngdoc function
-     * @name angularPoint.apModalService:getPermissions
-     * @methodOf angularPoint.apModalService
-     * @description
-     * Returns an object containing the permission levels for the current user
-     * @param {object} entity JavaScript object representing the SharePoint list item.
-     * @param {object} [model] Fallback so we can use the model to determine the user's
-     * list permissions instead of the list item.
-     * @returns {object} {userCanEdit: boolean, userCanDelete: boolean, userCanApprove: boolean, fullControl: boolean}
-     */
-    function getPermissions(entity, model) {
-      var userPermissions = {
-        /** Assume that if no item is passed in, the user can create one */
-        userCanApprove: false,
-        userCanDelete: false,
-        userCanEdit: false,
-        fullControl: false
-      };
-
-      function resolvePermissions(permObj) {
-        var userPermMask = permObj.resolvePermissions();
-        userPermissions.userCanEdit = userPermMask.EditListItems;
-        userPermissions.userCanDelete = userPermMask.DeleteListItems;
-        userPermissions.userCanApprove = userPermMask.ApproveItems;
-        userPermissions.fullControl = userPermMask.FullMask;
-      }
-
-      if (entity && entity.resolvePermissions) {
-        resolvePermissions(entity);
-      } else if (model && model.resolvePermissions) {
-        /** Fallback to retrieve permissions from the model when a list item isn't available */
-        resolvePermissions(model);
-      }
-
-      return userPermissions;
-    }
-
-    /**
-     * @ngdoc function
-     * @name angularPoint.apModalService:initializeState
-     * @methodOf angularPoint.apModalService
-     * @description
-     * Creates a state object, populates permissions for current user, and sets display mode
-     *
-     * @param {object} entity JavaScript object representing the SharePoint list item.
-     * @param {object} [options] Optional state params.
-     * @param {object} [model] Optional fallback to list permissions instead of using
-     * list item permissions.
-     * @returns {object} Returns the extended state.
-     *
-     * @example
-     * <pre>
-     * $scope.state = apModalService.initializeState(request, {
-         *     dateExceedsBoundary: false,
-         *     enableApproval: false
-         * });
-     * </pre>
-     * <pre>
-     * //Returns
-     * $scope.state = {
-         *    // Default "View" and once permissions are checked it
-         *    // can also be "New" || "Edit"
-         *    displayMode: "New",
-         *    // Below 2 options allow for locking with 3 way
-         *    // binding service like FireBase
-         *    locked: false,
-         *    lockedBy: '',
-         *    // Flag which can be used to disable form controls
-         *    negotiatingWithServer: false,
-         *    userCanApprove: false,
-         *    userCanDelete: false,
-         *    userCanEdit: false,
-         *    //User has admin rights
-         *    fullControl: false
-         * }
-     * </pre>
-     */
-    function initializeState(entity, options, model) {
-      var state = {
-        displayMode: 'View', // New || Edit || View
-        locked: false,
-        lockedBy: '',
-        negotiatingWithServer: false,
-        ready: false
-      };
-
-      var permissions = getPermissions(entity, model);
-
-      /** Check if it's a new form */
-      if (!entity || !entity.id) {
-        state.displayMode = 'New';
-      } else if (permissions.userCanEdit) {
-        state.displayMode = 'Edit';
-      }
-
-      return _.extend(state, permissions, options);
-    }
-
-    /**
-     * @ngdoc function
-     * @name angularPoint.apModalService:deleteEntity
-     * @methodOf angularPoint.apModalService
-     * @description
-     * Prompts for confirmation of deletion, then deletes and closes modal
-     * @param {object} entity JavaScript object representing the SharePoint list item.
-     * @param {object} state Controllers state object.
-     * @param {object} $modalInstance Reference to the modal instance for the modal dialog.
-     * @param {object} [options] Options to pass to ListItem.deleteItem().
-     * @example
-     *
-     * <pre>
-     *   $scope.deleteRequest = function () {
-     *     apModalService.deleteEntity($scope.request, $scope.state,
-     *        $modalInstance, {updateAllCaches: true});
-     * };
-     * </pre>
-     */
-    function deleteEntity(entity, state, $modalInstance, options) {
-      var confirmation = window.confirm('Are you sure you want to delete this record?');
-      if (confirmation) {
-        /** Disable form buttons */
-        state.negotiatingWithServer = true;
-        entity.deleteItem(options).then(function () {
-          toastr.success('Record deleted successfully');
-          $modalInstance.close();
-        }, function () {
-          toastr.error('Failed to delete record.  Please try again.');
-        });
-      }
-    }
-
-    /**
-     * @ngdoc function
-     * @name angularPoint.apModalService:saveEntity
-     * @methodOf angularPoint.apModalService
-     * @description
-     * Creates a new record if necessary, otherwise updates the existing record
-     * @param {object} entity List item.
-     * @param {object} model Reference to the model for the list item.
-     * @param {object} state Deprecated....
-     * @param {object} $modalInstance Reference to the modal instance for the modal dialog.
-     * @param {object} [options] Options to pass to ListItem.saveChanges().
-     * @example
-     * <pre>
-     *  $scope.saveRequest = function () {
-     *      apModalService.saveEntity($scope.request, compRequestsModel,
-     *          $scope.state, $modalInstance, {updateAllCaches: true});
-     *  };
-     *  </pre>
-     */
-    function saveEntity(entity, model, state, $modalInstance, options) {
-      if (entity.id) {
-        entity.saveChanges(options)
-          .then(function () {
-            toastr.success('Record updated');
-            $modalInstance.close();
-          }, function () {
-            toastr.error('There was a problem updating this record.  Please try again.');
-          });
-      } else {
-        /** Create new record */
-        model.addNewItem(entity, options)
-          .then(function () {
-            toastr.success('New record created');
-            $modalInstance.close();
-          }, function () {
-            toastr.error('There was a problem creating a new record.  Please try again.');
-          });
-      }
-    }
-
-    return {
-      deleteEntity: deleteEntity,
-      initializeState: initializeState,
-      modalModelProvider: modalModelProvider,
-      getPermissions: getPermissions,
-      saveEntity: saveEntity
-    };
-
-  }]);
-;'use strict';
-
-/**
- * @ngdoc service
  * @name angularPoint.apQueueService
  * @description
  * Simple service to monitor the number of active requests we have open with SharePoint
  * Typical use is to display a loading animation of some sort
  */
 angular.module('angularPoint')
-  .service('apQueueService', function () {
+    .service('apQueueService', function () {
 
-    var counter = 0;
+        var observerCallbacks = [],
+            apQueueService = {
+                count: 0,
+                decrease: decrease,
+                increase: increase,
+                notifyObservers: notifyObservers,
+                registerObserverCallback: registerObserverCallback,
+                reset: reset
+            };
 
-    /**
-     * @ngdoc function
-     * @name angularPoint.apQueueService:increase
-     * @methodOf angularPoint.apQueueService
-     * @description
-     * Increase the counter by 1.
-     */
-    var increase = function () {
-      counter++;
-      notifyObservers();
-      return counter;
-    };
+        return apQueueService;
 
-    /**
-     * @ngdoc function
-     * @name angularPoint.apQueueService:decrease
-     * @methodOf angularPoint.apQueueService
-     * @description
-     * Decrease the counter by 1.
-     * @returns {number} Current count after decrementing.
-     */
-    var decrease = function () {
-      if (counter > 0) {
-        counter--;
-        notifyObservers();
-        return counter;
-      }
-    };
 
-    /**
-     * @ngdoc function
-     * @name angularPoint.apQueueService:reset
-     * @methodOf angularPoint.apQueueService
-     * @description
-     * Reset counter to 0.
-     * @returns {number} Current count after incrementing.
-     */
-    var reset = function () {
-      counter = 0;
-      notifyObservers();
-      return counter;
-    };
+        /*********************** Private ****************************/
 
-    var observerCallbacks = [];
 
-    /**
-     * @ngdoc function
-     * @name angularPoint.apQueueService:registerObserverCallback
-     * @methodOf angularPoint.apQueueService
-     * @description
-     * Register an observer
-     * @param {function} callback Function to call when a change is made.
-     */
-    var registerObserverCallback = function (callback) {
-      observerCallbacks.push(callback);
-    };
+        /**
+         * @ngdoc function
+         * @name angularPoint.apQueueService:increase
+         * @methodOf angularPoint.apQueueService
+         * @description
+         * Increase the apQueueService.count by 1.
+         */
+        function increase() {
+            apQueueService.count++;
+            notifyObservers();
+            return apQueueService.count;
+        }
 
-    /** call this when queue changes */
-    var notifyObservers = function () {
-      angular.forEach(observerCallbacks, function (callback) {
-        callback(counter);
-      });
-    };
+        /**
+         * @ngdoc function
+         * @name angularPoint.apQueueService:decrease
+         * @methodOf angularPoint.apQueueService
+         * @description
+         * Decrease the apQueueService.count by 1.
+         * @returns {number} Current count after decrementing.
+         */
+        function decrease() {
+            if (apQueueService.count > 0) {
+                apQueueService.count--;
+                notifyObservers();
+                return apQueueService.count;
+            }
+        }
 
-    return {
-      count: counter,
-      decrease: decrease,
-      increase: increase,
-      registerObserverCallback: registerObserverCallback,
-      reset: reset
-    };
-  });;'use strict';
+        /**
+         * @ngdoc function
+         * @name angularPoint.apQueueService:reset
+         * @methodOf angularPoint.apQueueService
+         * @description
+         * Reset apQueueService.count to 0.
+         * @returns {number} Current count after incrementing.
+         */
+        function reset() {
+            apQueueService.count = 0;
+            notifyObservers();
+            return apQueueService.count;
+        }
+
+        /**
+         * @ngdoc function
+         * @name angularPoint.apQueueService:registerObserverCallback
+         * @methodOf angularPoint.apQueueService
+         * @description
+         * Register an observer
+         * @param {function} callback Function to call when a change is made.
+         */
+        function registerObserverCallback(callback) {
+            observerCallbacks.push(callback);
+        }
+
+        /** call this when queue changes */
+        function notifyObservers() {
+            _.each(observerCallbacks, function(callback) {
+                callback(apQueueService.count);
+            });
+        }
+
+    });;'use strict';
 
 /**
  * @ngdoc service
@@ -3299,97 +3061,97 @@ angular.module('angularPoint')
  * @requires angularPoint.apConfig
  */
 angular.module('angularPoint')
-  .service('apUtilityService', ["$q", "_", "apConfig", "$log", function ($q, _, apConfig, $log) {
-    // AngularJS will instantiate a singleton by calling "new" on this function
+    .service('apUtilityService', ["$q", "_", "apConfig", "$timeout", function ($q, _, apConfig, $timeout) {
+        // AngularJS will instantiate a singleton by calling "new" on this function
 
-    /** Extend underscore with a simple helper function */
-    _.mixin({
-      isDefined: function (value) {
-        return !_.isUndefined(value);
-      },
-      /** Based on functionality in Breeze.js */
-      isGuid: function (value) {
-        return (typeof value === "string") && /[a-fA-F\d]{8}-(?:[a-fA-F\d]{4}-){3}[a-fA-F\d]{12}/.test(value);
-      }
-    });
+        /** Extend underscore with a simple helper function */
+        _.mixin({
+            isDefined: function (value) {
+                return !_.isUndefined(value);
+            },
+            /** Based on functionality in Breeze.js */
+            isGuid: function (value) {
+                return (typeof value === "string") && /[a-fA-F\d]{8}-(?:[a-fA-F\d]{4}-){3}[a-fA-F\d]{12}/.test(value);
+            }
+        });
 
 
-    /**
-     * Add a leading zero if a number/string only contains a single character
-     * @param {number|string} val
-     * @returns {string} Two digit string.
-     */
-    function doubleDigit(val) {
-      if (typeof val === 'number') {
-        return val > 9 ? val.toString() : '0' + val;
-      } else {
-        return doubleDigit(parseInt(val));
-      }
-    }
+        /**
+         * Add a leading zero if a number/string only contains a single character
+         * @param {number|string} val
+         * @returns {string} Two digit string.
+         */
+        function doubleDigit(val) {
+            if (typeof val === 'number') {
+                return val > 9 ? val.toString() : '0' + val;
+            } else {
+                return doubleDigit(parseInt(val));
+            }
+        }
 
-    /**
-     * @ngdoc function
-     * @name angularPoint.apUtilityService:yyyymmdd
-     * @methodOf angularPoint.apUtilityService
-     * @description
-     * Convert date into a int formatted as yyyymmdd
-     * We don't need the time portion of comparison so an int makes this easier to evaluate
-     */
-    function yyyymmdd(date) {
-      var yyyy = date.getFullYear();
-      var mm = date.getMonth() + 1;
-      var dd = date.getDate();
-      /** Add leading 0's to month and day if necessary */
-      return parseInt(yyyy + doubleDigit(mm) + doubleDigit(dd));
-    }
+        /**
+         * @ngdoc function
+         * @name angularPoint.apUtilityService:yyyymmdd
+         * @methodOf angularPoint.apUtilityService
+         * @description
+         * Convert date into a int formatted as yyyymmdd
+         * We don't need the time portion of comparison so an int makes this easier to evaluate
+         */
+        function yyyymmdd(date) {
+            var yyyy = date.getFullYear();
+            var mm = date.getMonth() + 1;
+            var dd = date.getDate();
+            /** Add leading 0's to month and day if necessary */
+            return parseInt(yyyy + doubleDigit(mm) + doubleDigit(dd));
+        }
 
-    /**
-     * @ngdoc function
-     * @name angularPoint.apUtilityService:dateWithinRange
-     * @methodOf angularPoint.apUtilityService
-     * @description
-     * Converts dates into yyyymmdd formatted ints and evaluates to determine if the dateToCheck
-     * falls within the date range provided
-     * @param {Date} startDate Starting date.
-     * @param {Date} endDate Ending date.
-     * @param {Date} [dateToCheck=new Date()] Defaults to the current date.
-     * @returns {boolean} Does the date fall within the range?
-     */
-    function dateWithinRange(startDate, endDate, dateToCheck) {
-      /** Ensure both a start and end date are provided **/
-      if (!startDate || !endDate) {
-        return false;
-      }
+        /**
+         * @ngdoc function
+         * @name angularPoint.apUtilityService:dateWithinRange
+         * @methodOf angularPoint.apUtilityService
+         * @description
+         * Converts dates into yyyymmdd formatted ints and evaluates to determine if the dateToCheck
+         * falls within the date range provided
+         * @param {Date} startDate Starting date.
+         * @param {Date} endDate Ending date.
+         * @param {Date} [dateToCheck=new Date()] Defaults to the current date.
+         * @returns {boolean} Does the date fall within the range?
+         */
+        function dateWithinRange(startDate, endDate, dateToCheck) {
+            /** Ensure both a start and end date are provided **/
+            if (!startDate || !endDate) {
+                return false;
+            }
 
-      /** Use the current date as the default if one isn't provided */
-      dateToCheck = dateToCheck || new Date();
+            /** Use the current date as the default if one isn't provided */
+            dateToCheck = dateToCheck || new Date();
 
-      /** Create an int representation of each of the dates */
-      var startInt = yyyymmdd(startDate);
-      var endInt = yyyymmdd(endDate);
-      var dateToCheckInt = yyyymmdd(dateToCheck);
+            /** Create an int representation of each of the dates */
+            var startInt = yyyymmdd(startDate);
+            var endInt = yyyymmdd(endDate);
+            var dateToCheckInt = yyyymmdd(dateToCheck);
 
-      return startInt <= dateToCheckInt && dateToCheckInt <= endInt;
-    }
+            return startInt <= dateToCheckInt && dateToCheckInt <= endInt;
+        }
 
-    /**
-     * @ngdoc function
-     * @name angularPoint.apUtilityService:batchProcess
-     * @methodOf angularPoint.apUtilityService
-     * @description
-     * We REALLY don't want to lock the user's browser (blocking the UI thread) while iterating over an array of
-     * items and performing some process on them.  This function cuts the process into as many 50ms chunks as are
-     * necessary. Based on example found in the following article:
-     * [Timed array processing in JavaScript](http://www.nczonline.net/blog/2009/08/11/timed-array-processing-in-javascript/);
-     * @param {Object[]} items The entities that need to be processed.
-     * @param {Function} process Reference to the process to be executed for each of the entities.
-     * @param {Object} context this
-     * @param {Number} [delay=25] Number of milliseconds to delay between batches.
-     * @param {Number} [maxItems=items.length] Maximum number of items to process before pausing.
-     * @returns {Object} Promise
-     * @example
-     * <pre>
-     * function buildProjectSummary = function() {
+        /**
+         * @ngdoc function
+         * @name angularPoint.apUtilityService:batchProcess
+         * @methodOf angularPoint.apUtilityService
+         * @description
+         * We REALLY don't want to lock the user's browser (blocking the UI thread) while iterating over an array of
+         * entities and performing some process on them.  This function cuts the process into as many 50ms chunks as are
+         * necessary. Based on example found in the following article:
+         * [Timed array processing in JavaScript](http://www.nczonline.net/blog/2009/08/11/timed-array-processing-in-javascript/);
+         * @param {Object[]} entities The entities that need to be processed.
+         * @param {Function} process Reference to the process to be executed for each of the entities.
+         * @param {Object} context this
+         * @param {Number} [delay=25] Number of milliseconds to delay between batches.
+         * @param {Number} [maxItems=entities.length] Maximum number of entities to process before pausing.
+         * @returns {Object} Promise
+         * @example
+         * <pre>
+         * function buildProjectSummary = function() {
          *    var deferred = $q.defer();
          *
          *    // Taken from a fictitious projectsModel.js
@@ -3412,63 +3174,97 @@ angular.module('angularPoint')
          *
          *    return deferred.promise;
          * }
-     *
-     * </pre>
-     */
+         *
+         * </pre>
+         */
 
-    function batchProcess(items, process, context, delay, maxItems) {
-      var n = items.length,
-        delay = delay || 25,
-        maxItems = maxItems || n,
-        i = 0, deferred = $q.defer();
+        function batchProcess(entities, process, context, delay, maxItems) {
+            var itemCount = entities.length,
+                batchCount = 0,
+                chunkMax = maxItems || itemCount,
+                delay = delay || 25,
+                index = 0,
+                deferred = $q.defer();
 
+            function chunkTimer() {
+                batchCount++;
+                var start = +new Date(),
+                    chunkIndex = index;
 
-      function chunkTimer() {
-        var start = +new Date(),
-          j = i;
+                while (index < itemCount && (index - chunkIndex) < chunkMax && (new Date() - start < 100)) {
+                    process.call(context, entities[index], index, batchCount);
+                    index += 1;
+                }
 
-        while (i < n && (i - j) < maxItems && (new Date() - start < 100)) {
-          process.call(context, items[i]);
-          i += 1;
+                if (index < itemCount) {
+                    $timeout(chunkTimer, delay);
+                }
+                else {
+                    deferred.resolve(entities);
+                }
+            }
+
+            chunkTimer();
+
+            return deferred.promise;
         }
 
-        if (i < n) {
-          $log.info("Batch Delayed");
-          setTimeout(chunkTimer, delay);
-        }
-        else {
-          deferred.resolve(items);
-        }
-      }
 
-      chunkTimer();
-      return deferred.promise;
-    }
 
-    /**
-     * @ngdoc function
-     * @name angularPoint.apUtilityService:resolvePermissions
-     * @methodOf angularPoint.apUtilityService
-     * @param {string} permissionsMask The WSS Rights Mask is an 8-byte, unsigned integer that specifies
-     * the rights that can be assigned to a user or site group. This bit mask can have zero or more flags set.
-     * @description
-     * Converts permMask into something usable to determine permission level for current user.  Typically used
-     * directly from a list item.  See ListItem.resolvePermissions.
-     *
-     * <h3>Additional Info</h3>
-     *
-     * -   [PermMask in SharePoint DVWPs](http://sympmarc.com/2009/02/03/permmask-in-sharepoint-dvwps/)
-     * -   [$().SPServices.SPLookupAddNew and security trimming](http://spservices.codeplex.com/discussions/208708)
-     *
-     * @returns {object} Object with properties for each permission level identifying if current user has rights (true || false)
-     * @example
-     * <pre>
-     * var perm = apUtilityService.resolvePermissions('0x0000000000000010');
-     * </pre>
-     * Example of what the returned object would look like
-     * for a site admin.
-     * <pre>
-     * perm = {
+        //function batchProcess(items, process, context, delay, maxItems) {
+        //    var n = items.length,
+        //        delay = delay || 25,
+        //        maxItems = maxItems || n,
+        //        i = 0,
+        //        deferred = $q.defer();
+        //
+        //    chunkTimer(i, n, deferred, items, process, context, delay, maxItems);
+        //    return deferred.promise;
+        //}
+        //
+        //function chunkTimer(i, n, deferred, items, process, context, delay, maxItems) {
+        //    var start = +new Date(),
+        //        j = i;
+        //
+        //    while (i < n && (i - j) < maxItems && (new Date() - start < 100)) {
+        //        process.call(context, items[i]);
+        //        i += 1;
+        //    }
+        //
+        //    if (i < n) {
+        //        setTimeout(function () {
+        //            chunkTimer(j, n, deferred, items, process, context, delay, maxItems);
+        //        }, delay);
+        //    }
+        //    else {
+        //        deferred.resolve(items);
+        //    }
+        //}
+
+        /**
+         * @ngdoc function
+         * @name angularPoint.apUtilityService:resolvePermissions
+         * @methodOf angularPoint.apUtilityService
+         * @param {string} permissionsMask The WSS Rights Mask is an 8-byte, unsigned integer that specifies
+         * the rights that can be assigned to a user or site group. This bit mask can have zero or more flags set.
+         * @description
+         * Converts permMask into something usable to determine permission level for current user.  Typically used
+         * directly from a list item.  See ListItem.resolvePermissions.
+         *
+         * <h3>Additional Info</h3>
+         *
+         * -   [PermMask in SharePoint DVWPs](http://sympmarc.com/2009/02/03/permmask-in-sharepoint-dvwps/)
+         * -   [$().SPServices.SPLookupAddNew and security trimming](http://spservices.codeplex.com/discussions/208708)
+         *
+         * @returns {object} Object with properties for each permission level identifying if current user has rights (true || false)
+         * @example
+         * <pre>
+         * var perm = apUtilityService.resolvePermissions('0x0000000000000010');
+         * </pre>
+         * Example of what the returned object would look like
+         * for a site admin.
+         * <pre>
+         * perm = {
          *    "ViewListItems":true,
          *    "AddListItems":true,
          *    "EditListItems":true,
@@ -3503,118 +3299,118 @@ angular.module('angularPoint')
          *    "EnumeratePermissions":true,
          *    "FullMask":true
          * }
-     * </pre>
-     */
-    function resolvePermissions(permissionsMask) {
-      var permissionSet = {};
-      permissionSet.ViewListItems = (1 & permissionsMask) > 0;
-      permissionSet.AddListItems = (2 & permissionsMask) > 0;
-      permissionSet.EditListItems = (4 & permissionsMask) > 0;
-      permissionSet.DeleteListItems = (8 & permissionsMask) > 0;
-      permissionSet.ApproveItems = (16 & permissionsMask) > 0;
-      permissionSet.OpenItems = (32 & permissionsMask) > 0;
-      permissionSet.ViewVersions = (64 & permissionsMask) > 0;
-      permissionSet.DeleteVersions = (128 & permissionsMask) > 0;
-      permissionSet.CancelCheckout = (256 & permissionsMask) > 0;
-      permissionSet.PersonalViews = (512 & permissionsMask) > 0;
+         * </pre>
+         */
+        function resolvePermissions(permissionsMask) {
+            var permissionSet = {};
+            permissionSet.ViewListItems = (1 & permissionsMask) > 0;
+            permissionSet.AddListItems = (2 & permissionsMask) > 0;
+            permissionSet.EditListItems = (4 & permissionsMask) > 0;
+            permissionSet.DeleteListItems = (8 & permissionsMask) > 0;
+            permissionSet.ApproveItems = (16 & permissionsMask) > 0;
+            permissionSet.OpenItems = (32 & permissionsMask) > 0;
+            permissionSet.ViewVersions = (64 & permissionsMask) > 0;
+            permissionSet.DeleteVersions = (128 & permissionsMask) > 0;
+            permissionSet.CancelCheckout = (256 & permissionsMask) > 0;
+            permissionSet.PersonalViews = (512 & permissionsMask) > 0;
 
-      permissionSet.ManageLists = (2048 & permissionsMask) > 0;
-      permissionSet.ViewFormPages = (4096 & permissionsMask) > 0;
+            permissionSet.ManageLists = (2048 & permissionsMask) > 0;
+            permissionSet.ViewFormPages = (4096 & permissionsMask) > 0;
 
-      permissionSet.Open = (permissionsMask & 65536) > 0;
-      permissionSet.ViewPages = (permissionsMask & 131072) > 0;
-      permissionSet.AddAndCustomizePages = (permissionsMask & 262144) > 0;
-      permissionSet.ApplyThemeAndBorder = (permissionsMask & 524288) > 0;
-      permissionSet.ApplyStyleSheets = (1048576 & permissionsMask) > 0;
-      permissionSet.ViewUsageData = (permissionsMask & 2097152) > 0;
-      permissionSet.CreateSSCSite = (permissionsMask & 4194314) > 0;
-      permissionSet.ManageSubwebs = (permissionsMask & 8388608) > 0;
-      permissionSet.CreateGroups = (permissionsMask & 16777216) > 0;
-      permissionSet.ManagePermissions = (permissionsMask & 33554432) > 0;
-      permissionSet.BrowseDirectories = (permissionsMask & 67108864) > 0;
-      permissionSet.BrowseUserInfo = (permissionsMask & 134217728) > 0;
-      permissionSet.AddDelPrivateWebParts = (permissionsMask & 268435456) > 0;
-      permissionSet.UpdatePersonalWebParts = (permissionsMask & 536870912) > 0;
-      permissionSet.ManageWeb = (permissionsMask & 1073741824) > 0;
-      permissionSet.UseRemoteAPIs = (permissionsMask & 137438953472) > 0;
-      permissionSet.ManageAlerts = (permissionsMask & 274877906944) > 0;
-      permissionSet.CreateAlerts = (permissionsMask & 549755813888) > 0;
-      permissionSet.EditMyUserInfo = (permissionsMask & 1099511627776) > 0;
-      permissionSet.EnumeratePermissions = (permissionsMask & 4611686018427387904) > 0;
-      permissionSet.FullMask = (permissionsMask == 9223372036854775807);
+            permissionSet.Open = (permissionsMask & 65536) > 0;
+            permissionSet.ViewPages = (permissionsMask & 131072) > 0;
+            permissionSet.AddAndCustomizePages = (permissionsMask & 262144) > 0;
+            permissionSet.ApplyThemeAndBorder = (permissionsMask & 524288) > 0;
+            permissionSet.ApplyStyleSheets = (1048576 & permissionsMask) > 0;
+            permissionSet.ViewUsageData = (permissionsMask & 2097152) > 0;
+            permissionSet.CreateSSCSite = (permissionsMask & 4194314) > 0;
+            permissionSet.ManageSubwebs = (permissionsMask & 8388608) > 0;
+            permissionSet.CreateGroups = (permissionsMask & 16777216) > 0;
+            permissionSet.ManagePermissions = (permissionsMask & 33554432) > 0;
+            permissionSet.BrowseDirectories = (permissionsMask & 67108864) > 0;
+            permissionSet.BrowseUserInfo = (permissionsMask & 134217728) > 0;
+            permissionSet.AddDelPrivateWebParts = (permissionsMask & 268435456) > 0;
+            permissionSet.UpdatePersonalWebParts = (permissionsMask & 536870912) > 0;
+            permissionSet.ManageWeb = (permissionsMask & 1073741824) > 0;
+            permissionSet.UseRemoteAPIs = (permissionsMask & 137438953472) > 0;
+            permissionSet.ManageAlerts = (permissionsMask & 274877906944) > 0;
+            permissionSet.CreateAlerts = (permissionsMask & 549755813888) > 0;
+            permissionSet.EditMyUserInfo = (permissionsMask & 1099511627776) > 0;
+            permissionSet.EnumeratePermissions = (permissionsMask & 4611686018427387904) > 0;
+            permissionSet.FullMask = (permissionsMask == 9223372036854775807);
 
-      /**
-       * Full Mask only resolves correctly for the Full Mask level
-       * so in that case, set everything to true
-       */
-      if (permissionSet.FullMask) {
-        _.each(permissionSet, function (perm, key) {
-          permissionSet[key] = true;
-        });
-      }
+            /**
+             * Full Mask only resolves correctly for the Full Mask level
+             * so in that case, set everything to true
+             */
+            if (permissionSet.FullMask) {
+                _.each(permissionSet, function (perm, key) {
+                    permissionSet[key] = true;
+                });
+            }
 
-      return permissionSet;
-    }
+            return permissionSet;
+        }
 
-    function toCamelCase(s) {
-      return s.replace(/(?:^\w|[A-Z]|\b\w)/g, function (letter, index) {
-        return index == 0 ? letter.toLowerCase() : letter.toUpperCase();
-      }).replace(/\s+/g, '');
-    }
+        function toCamelCase(s) {
+            return s.replace(/(?:^\w|[A-Z]|\b\w)/g, function (letter, index) {
+                return index == 0 ? letter.toLowerCase() : letter.toUpperCase();
+            }).replace(/\s+/g, '');
+        }
 
-    /**
-     * @ngdoc function
-     * @name angularPoint.apUtilityService:fromCamelCase
-     * @methodOf angularPoint.apUtilityService
-     * @param {string} s String to convert.
-     * @description
-     * Converts a camel case string into a space delimited string with each word having a capitalized first letter.
-     * @returns {string} Humanized string.
-     */
-    function fromCamelCase(s) {
-      // insert a space before all caps
-      return s.replace(/([A-Z])/g, ' $1')
-        // uppercase the first character
-        .replace(/^./, function (str) {
-          return str.toUpperCase();
-        });
-    }
+        /**
+         * @ngdoc function
+         * @name angularPoint.apUtilityService:fromCamelCase
+         * @methodOf angularPoint.apUtilityService
+         * @param {string} s String to convert.
+         * @description
+         * Converts a camel case string into a space delimited string with each word having a capitalized first letter.
+         * @returns {string} Humanized string.
+         */
+        function fromCamelCase(s) {
+            // insert a space before all caps
+            return s.replace(/([A-Z])/g, ' $1')
+                // uppercase the first character
+                .replace(/^./, function (str) {
+                    return str.toUpperCase();
+                });
+        }
 
-    // Split values like 1;#value into id and value
-    function SplitIndex(s) {
-      var spl = s.split(';#');
-      this.id = parseInt(spl[0], 10);
-      this.value = spl[1];
-    }
+        // Split values like 1;#value into id and value
+        function SplitIndex(s) {
+            var spl = s.split(';#');
+            this.id = parseInt(spl[0], 10);
+            this.value = spl[1];
+        }
 
-    /**
-     * @ngdoc function
-     * @name angularPoint.apUtilityService:registerChange
-     * @methodOf angularPoint.apUtilityService
-     * @description
-     * If online and sync is being used, notify all online users that a change has been made.
-     * //Todo Break this functionality into FireBase module that can be used if desired.
-     * @param {object} model event
-     */
-    function registerChange(model) {
-      if (!apConfig.offline && model.sync && _.isFunction(model.sync.registerChange)) {
-        /** Register change after successful update */
-        model.sync.registerChange();
-      }
-    }
+        /**
+         * @ngdoc function
+         * @name angularPoint.apUtilityService:registerChange
+         * @methodOf angularPoint.apUtilityService
+         * @description
+         * If online and sync is being used, notify all online users that a change has been made.
+         * //Todo Break this functionality into FireBase module that can be used if desired.
+         * @param {object} model event
+         */
+        function registerChange(model) {
+            if (!apConfig.offline && model.sync && _.isFunction(model.sync.registerChange)) {
+                /** Register change after successful update */
+                model.sync.registerChange();
+            }
+        }
 
-    return {
-      batchProcess: batchProcess,
-      dateWithinRange: dateWithinRange,
-      doubleDigit: doubleDigit,
-      fromCamelCase: fromCamelCase,
-      registerChange: registerChange,
-      resolvePermissions: resolvePermissions,
-      SplitIndex: SplitIndex,
-      toCamelCase: toCamelCase,
-      yyyymmdd: yyyymmdd
-    };
-  }]);;'use strict';
+        return {
+            batchProcess: batchProcess,
+            dateWithinRange: dateWithinRange,
+            doubleDigit: doubleDigit,
+            fromCamelCase: fromCamelCase,
+            registerChange: registerChange,
+            resolvePermissions: resolvePermissions,
+            SplitIndex: SplitIndex,
+            toCamelCase: toCamelCase,
+            yyyymmdd: yyyymmdd
+        };
+    }]);;'use strict';
 
 /**
  * @ngdoc function
@@ -4205,7 +4001,6 @@ angular.module('angularPoint')
     .factory('apListItemFactory', ["$q", "_", "apCacheService", "apDataService", "apEncodeService", "apUtilityService", "apConfig", function ($q, _, apCacheService, apDataService, apEncodeService, apUtilityService,
                                             apConfig) {
 
-
         /**
          * @ngdoc object
          * @name ListItem
@@ -4661,9 +4456,9 @@ angular.module('angularPoint')
                 _.each(changes, function (fieldVersions) {
 
                     _.each(fieldVersions, function (fieldVersion) {
-                        if (!versionHistory[fieldVersion.modified.toJSON()]) {
-                            versionHistory[fieldVersion.modified.toJSON()] = {};
-                        }
+                        versionHistory[fieldVersion.modified.toJSON()] =
+                            versionHistory[fieldVersion.modified.toJSON()] || {};
+
                         /** Add field to the version history for this version */
                         _.extend(versionHistory[fieldVersion.modified.toJSON()], fieldVersion);
                     });
@@ -4871,7 +4666,7 @@ angular.module('angularPoint')
  * @requires angularPoint.apUtilityService
  */
 angular.module('angularPoint')
-    .factory('apModelFactory', ["_", "apModalService", "apCacheService", "apDataService", "apListFactory", "apListItemFactory", "apQueryFactory", "apUtilityService", "apFieldService", "apConfig", "apIndexedCacheFactory", "apDecodeService", "$q", "toastr", function (_, apModalService, apCacheService, apDataService, apListFactory,
+    .factory('apModelFactory', ["_", "apCacheService", "apDataService", "apListFactory", "apListItemFactory", "apQueryFactory", "apUtilityService", "apFieldService", "apConfig", "apIndexedCacheFactory", "apDecodeService", "$q", "toastr", function (_, apCacheService, apDataService, apListFactory,
                                          apListItemFactory, apQueryFactory, apUtilityService, apFieldService, apConfig,
                                          apIndexedCacheFactory, apDecodeService, $q, toastr) {
 
@@ -5029,7 +4824,7 @@ angular.module('angularPoint')
             getListItemById: getListItemById,
             //getLocalEntity: getLocalEntity,
             getQuery: getQuery,
-            initializeModalState: initializeModalState,
+            //initializeModalState: initializeModalState,
             isInitialised: isInitialised,
             //resolvePermissions: resolvePermissions,
             registerQuery: registerQuery,
@@ -5129,7 +4924,7 @@ angular.module('angularPoint')
                 _.each(value, function (key) {
                     searchResults.push(searchIndex[key]);
                 });
-            /** Primitive passed in */
+                /** Primitive passed in */
             } else {
                 searchResults = searchIndex[value];
             }
@@ -5235,8 +5030,7 @@ angular.module('angularPoint')
          * @description
          * Inherited from Model constructor
          * Attempts to retrieve the requested list item from the server.
-         * @returns {object} Promise that resolves with the requested list item if found.  Otherwise it returns null.
-         * When working offline it returns a mock entity and replaces the mock id with the id provided.
+         * @returns {object} Promise that resolves with the requested list item if found.  Otherwise it returns undefined.
          * @example
          * <pre>
          * //Taken from a fictitious projectsModel.js
@@ -5248,32 +5042,12 @@ angular.module('angularPoint')
          */
         function getListItemById(entityId, options) {
             var model = this,
-                deferred = $q.defer(),
-                /** Only required option for apDataService is listName which is avalable on model */
+                /** Only required option for apDataService is listName which is available on model */
                 defaults = {listName: model.list.guid},
                 opts = _.extend({}, defaults, options);
 
-            //TODO Remove Offline Logic and allow apDataService to handle
-            /** Working Online */
-            if (apConfig.online) {
-                /** Fetch from the server */
-                apDataService.getListItemById(entityId, opts)
-                    .then(function (entitiesArray) {
-                        /** Should be a single entity in the array if found */
-                        if (entitiesArray.length === 1) {
-                            deferred.resolve(entitiesArray[0]);
-                        } else {
-                            /** List item not found */
-                            deferred.resolve(null);
-                        }
-                    });
-            } else {
-                /** Working offline so generate a mock record using provided id */
-                var mock = model.generateMockData({quantity: 1});
-                mock.id = entityId;
-                deferred.resolve(mock);
-            }
-            return deferred.promise;
+            /** Fetch from the server */
+            return apDataService.getListItemById(entityId, model, opts);
         }
 
         /**
@@ -5613,10 +5387,10 @@ angular.module('angularPoint')
         function extendListMetadata(options) {
             var model = this,
                 deferred = $q.defer(),
-                defaults = { listName: model.list.guid};
+                defaults = {listName: model.list.guid};
 
             /** Only request information if the list hasn't already been extended and is not currently being requested */
-            if(!model.fieldDefinitionsExtended && !model.deferredListDefinition) {
+            if (!model.fieldDefinitionsExtended && !model.deferredListDefinition) {
                 model.deferredListDefinition = deferred.promise;
                 var opts = _.extend({}, defaults, options);
                 apDataService.getList(opts)
@@ -5789,129 +5563,6 @@ angular.module('angularPoint')
         }
 
 
-        /**
-         * @ngdoc function
-         * @name Model.initializeModalState
-         * @module Model
-         * @description
-         * Uses apModalService to return some general state information for a modal form using
-         * the current user's permissions if an entity is passed in.  Otherwise we attempt to
-         * return the user's permissions for the list.  We also include some additional flags
-         * and with the use of the options param extend any other custom attributes on the returned
-         * state object.
-         *
-         * @param {object} [entity] SharePoint list item.
-         * @param {object} [options] Object containing optional attributes that will be used
-         * to extend the returned state object.
-         * @returns {object} State object with flags.
-         *
-         * @example
-         * <pre>
-         * <file name="app/modules/project/project_modal_ctrl.js">
-         * //Controller
-         * 'use strict';
-         * angular.module('App')
-         *  .controller('projectModalCtrl', function (
-         *                                              $scope,
-         *                                              $modalInstance,
-         *                                              projectsModel,
-         *                                              apModalService,
-         *                                              project
-         *                                            ) {
-         *
-         *      $scope.state = projectsModel.initializeModalState(project, {
-         *           stateOption1: false,
-         *           stateOption2: true
-         *      });
-         *
-         *      $scope.cancel = function () {
-         *           $modalInstance.dismiss('cancel');
-         *      };
-         *
-         *      $scope.project = project;
-         *
-         *      $scope.saveRequest = function () {
-         *           apModalService.saveEntity(
-         *              $scope.request,
-         *              projectsModel,
-         *              $scope.state,
-         *              $modalInstance );
-         *      };
-         * });
-         * </file>
-
-         * <file name="app/modules/project/project_modal_view.html">
-         * //VIEW
-         * <div ng-form>
-         *     <div class="modal-header">
-         *         <button type="button" class="close"
-         *                ng-click="cancel()" aria-hidden="true">&times;</button>
-         *         <h4>Project Details</h4>
-         *     </div>
-         *     <div class="modal-body">
-         *         <div class="well">
-         *             <div ng-form>
-         *                 <div class="form-group">
-         *                     <label>Title</label>
-         *                     <input type="text"
-         *                        class="form-control" ng-model="project.title"/>
-         *                 </div>
-         *                 <div class="form-group">
-         *                     <label>Description</label>
-         *                     <textarea rows="6" cols="50" class="form-control"
-         *                               ng-model="project.description"></textarea>
-         *                 </div>
-         *             </div>
-         *         </div>
-         *     </div>
-         *     <div class="modal-footer">
-         *         <div class="pull-left">
-         *             <button class="btn btn-danger"
-         *                    ng-click="deleteRecord()"
-         *                   ng-show="project.id && state.canDelete"
-         *                   ng-disabled="state.negotiatingWithServer"
-         *                   title="Delete this task request">
-         *                 <i class="fa fa-trash-o"></i>
-         *             </button>
-         *         </div>
-         *         <button class="btn btn-primary"
-         *            ng-click="save()"
-         *            ng-disabled="project.title.length === 0 ||
-         *                state.negotiatingWithServer">OK</button>
-         *         <button class="btn btn-default"
-         *            ng-click="cancel()">Cancel</button>
-         *     </div>
-         * </div>
-         * </file>
-         * </pre>
-         *
-         * <pre>
-         * //Returns
-         * $scope.state = {
-         *    // Default "View" and once permissions are checked it
-         *    // can also be "New" || "Edit"
-         *    displayMode: "New",
-         *    // Below 2 options allow for locking with 3 way
-         *    // binding service like FireBase
-         *    locked: false,
-         *    lockedBy: '',
-         *    // Flag which can be used to disable form controls
-         *    negotiatingWithServer: false,
-         *    userCanApprove: false,
-         *    userCanDelete: false,
-         *    userCanEdit: false,
-         *    //User has admin rights
-         *    fullControl: false,
-         *    //Custom attributes passed in the options param
-         *    stateOption1: false,
-         *    stateOption2: true
-         * }
-         * </pre>
-         */
-        function initializeModalState(entity, options) {
-            return apModalService.initializeState(entity, options, this);
-        }
-
         ///**
         // * @ngdoc function
         // * @name Model.resolvePermissions
@@ -6020,13 +5671,12 @@ angular.module('angularPoint')
  * @description
  * Exposes the Query prototype and a constructor to instantiate a new Query.
  *
- * @requires angularPoint.apModalService
  * @requires angularPoint.apCacheService
  * @requires angularPoint.apDataService
  * @requires angularPoint.apConfig
  */
 angular.module('angularPoint')
-    .factory('apQueryFactory', ["_", "apModalService", "apCacheService", "apIndexedCacheFactory", "apDataService", "apConfig", "$q", function (_, apModalService, apCacheService, apIndexedCacheFactory, apDataService, apConfig, $q) {
+    .factory('apQueryFactory', ["_", "apCacheService", "apIndexedCacheFactory", "apDataService", "apConfig", "$q", function (_, apCacheService, apIndexedCacheFactory, apDataService, apConfig, $q) {
 
 
         /**
@@ -6095,7 +5745,7 @@ angular.module('angularPoint')
                     //todo moved to indexedCache instead for better performance
                 //cache: [],
                 /** Reference to the most recent query when performing GetListItemChangesSinceToken */
-                changeToken: null,
+                changeToken: undefined,
                 /** Promise resolved after first time query is executed */
                 initialized: $q.defer(),
                 /** Key value hash map with key being the id of the entity */
@@ -6210,10 +5860,10 @@ angular.module('angularPoint')
                     if (firstRunQuery) {
                         /** Promise resolved the first time query is completed */
                         query.initialized.resolve(queryOptions.target);
-
-                        /** Remove lock to allow for future requests */
-                        query.negotiatingWithServer = false;
                     }
+
+                    /** Remove lock to allow for future requests */
+                    query.negotiatingWithServer = false;
 
                     /** Store query completion date/time on model to allow us to identify age of data */
                     model.lastServerUpdate = new Date();

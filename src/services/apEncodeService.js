@@ -91,9 +91,8 @@ angular.module('angularPoint')
          * @returns {Array} [fieldName, fieldValue]
          */
         function createValuePair(fieldDefinition, value) {
-            var internalName = fieldDefinition.internalName;
-            var encodedValue = encodeValue(internalName, value);
-            return [internalName, encodedValue];
+            var encodedValue = encodeValue(fieldDefinition.objectType, value);
+            return [fieldDefinition.internalName, encodedValue];
 
             //if (value === '' || _.isUndefined(value) || _.isNull(value)) {
             //    /** Create empty value pair if blank or undefined but allow false */
@@ -167,12 +166,8 @@ angular.module('angularPoint')
                         str = value ? 1 : 0;
                         break;
                     case 'DateTime':
-                        if (_.isDate(value)) {
-                            //A string date in ISO8601 format, e.g., '2013-05-08T01:20:29Z-05:00'
-                            str = stringifySharePointDate(value);
-                        } else {
-                            throw new Error('Invalid Date Provided: ' + value.toString());
-                        }
+                        //A string date in ISO8601 format, e.g., '2013-05-08T01:20:29Z-05:00'
+                        str = stringifySharePointDate(value);
                         break;
                     case 'JSON':
                         str = JSON.stringify(value);
@@ -212,9 +207,14 @@ angular.module('angularPoint')
          * @returns {string} ISO8601 date string.
          */
         function stringifySharePointDate(date) {
-            if (!_.isDate(date)) {
-                return '';
+            if(!_.isDate(date) && _.isString(date) && date.split('-').length === 3) {
+                /** Date string formatted YYYY-MM-DD */
+                var dateComponents = date.split('-');
+                date = new Date(dateComponents[0], dateComponents[1] - 1, dateComponents[2], 0, 0, 0);
+            } else if(!_.isDate(date)) {
+                throw new Error('Invalid Date Provided: ' + value.toString());
             }
+
             var self = stringifySharePointDate;
             var dateString = '';
             dateString += date.getFullYear();

@@ -16,7 +16,6 @@ angular.module('angularPoint')
     .factory('apListItemFactory', function ($q, _, apCacheService, apDataService, apEncodeService, apUtilityService,
                                             apConfig) {
 
-
         /**
          * @ngdoc object
          * @name ListItem
@@ -472,9 +471,9 @@ angular.module('angularPoint')
                 _.each(changes, function (fieldVersions) {
 
                     _.each(fieldVersions, function (fieldVersion) {
-                        if (!versionHistory[fieldVersion.modified.toJSON()]) {
-                            versionHistory[fieldVersion.modified.toJSON()] = {};
-                        }
+                        versionHistory[fieldVersion.modified.toJSON()] =
+                            versionHistory[fieldVersion.modified.toJSON()] || {};
+
                         /** Add field to the version history for this version */
                         _.extend(versionHistory[fieldVersion.modified.toJSON()], fieldVersion);
                     });

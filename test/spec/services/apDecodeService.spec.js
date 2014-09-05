@@ -10,13 +10,12 @@ describe("Factory: apDecodeService", function () {
         mockModel,
         mockXMLService;
 
-    beforeEach(module("ui.bootstrap"));
     beforeEach(inject(function (_apDecodeService_, _mockXMLService_, _mockModel_) {
         apDecodeService = _apDecodeService_;
         mockXMLService = _mockXMLService_;
         mockModel = _mockModel_;
 
-        mockChangeTokenXML = mockXMLService.listItemsSinceChangeToken;
+        mockChangeTokenXML = mockXMLService.GetListItemChangesSinceToken;
     }));
 
 
@@ -59,6 +58,10 @@ describe("Factory: apDecodeService", function () {
             it('Should handle a date with a "T" delimiter instead of a space.', function () {
                 expect(apDecodeService.attrToJson('2009-08-25T14:24:48', 'DateTime'))
                     .toEqual(new Date(2009, 7, 25, 14, 24, 48));
+            });
+            it('Should handle a Z at the end.', function () {
+                expect(apDecodeService.attrToJson('2014-09-02T13:35:57Z', 'DateTime'))
+                    .toEqual(new Date(2014, 8, 2, 13, 35, 57));
             });
         });
 
@@ -170,8 +173,13 @@ describe("Factory: apDecodeService", function () {
         it('returns null when an error isn\'t found', function () {
             expect(apDecodeService.checkResponseForErrors(mockChangeTokenXML)).toBeNull();
         });
-        it('return the error string when an error is found', function () {
-            expect(apDecodeService.checkResponseForErrors(mockXMLService.xmlWithError)).toEqual('Root element is missing.');
+        it('to find an error in the <ErrorText> element', function () {
+            expect(_.isString(apDecodeService.checkResponseForErrors(mockXMLService.errorUpdatingListItem)))
+                .toBe(true);
+        });
+        it('to find an error in the <errorstring> element', function () {
+            expect(_.isString(apDecodeService.checkResponseForErrors(mockXMLService.errorContainingErrorString)))
+                .toBe(true);
         });
     });
 
@@ -217,25 +225,6 @@ describe("Factory: apDecodeService", function () {
                 target: mockEntityCache
             });
         });
-
-
-        //describe('Lookup', function () {
-        //
-        //    describe('Lookup.getEntity', function () {
-        //
-        //        it('gets the correct property', function () {
-        //            expect(_.isFunction(mockEntityCache[0].lookup.getProperty)).toBe(true);
-        //        });
-        //
-        //        it('reference to the field name of the lookup', function () {
-        //            expect(mockEntityCache[0].lookup.getProperty()).toEqual('lookup');
-        //        });
-        //
-        //    });
-        //
-        //
-        //});
-
 
         describe('processListItems', function () {
 

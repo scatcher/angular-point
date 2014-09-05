@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/"
+               xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+    <soap:Body>
+        <GetAttachmentCollectionResponse xmlns="http://schemas.microsoft.com/sharepoint/soap/">
+            <GetAttachmentCollectionResult>
+                <Attachments>
+                    <Attachment>
+                        http://sharepoint.company-server.com/OneAppData/Lists/MockList/Attachments/1/Preloader.gif
+                    </Attachment>
+                </Attachments>
+            </GetAttachmentCollectionResult>
+        </GetAttachmentCollectionResponse>
+    </soap:Body>
+</soap:Envelope>

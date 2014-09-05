@@ -7,6 +7,7 @@
 angular.module('angularPoint')
 /** lodash */
     .constant('_', _)
+    .constant('SPServices', $().SPServices)
 
 /**
  * @ngdoc object

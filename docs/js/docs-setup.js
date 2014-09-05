@@ -122,15 +122,6 @@ NG_DOCS={
     },
     {
       "section": "api",
-      "id": "angularPoint.apModalService",
-      "shortName": "angularPoint.apModalService",
-      "type": "service",
-      "moduleName": "angularPoint",
-      "shortDescription": "Extends a modal form to include many standard functions",
-      "keywords": "$modalinstance $scope accepts admin allow angularpoint api apmodalservice argument arguments attach binding boolean checked closes comprequestmodalctrl comprequestsmodel configuration confirmation controller controllers controls creates current dateexceedsboundary default deleteentity deleteitem deleterequest deletes deletion deprecated determine dialog disable display displaymode dynamic easily edit edited enableapproval entity existing expectedarguments extended extends fallback false firebase flag form fullcontrol function functions html include initializestate injects instance item javascript levels list listitem locked lockedby locking modal modalmodelprovider mode model modules negotiatingwithserver number object openmodal optional options params pass permission permissions populates promise prompts record reference representing request returns rights savechanges saveentity saverequest service sets sharepoint standard templateurl true turn updates user usercanapprove usercandelete usercanedit view"
-    },
-    {
-      "section": "api",
       "id": "angularPoint.apModelFactory",
       "shortName": "angularPoint.apModelFactory",
       "type": "object",
@@ -145,7 +136,7 @@ NG_DOCS={
       "type": "object",
       "moduleName": "angularPoint",
       "shortDescription": "Exposes the Query prototype and a constructor to instantiate a new Query.",
-      "keywords": "angularpoint apcacheservice apconfig apdataservice api apmodalservice apqueryfactory config exposes function instantiate instantiates model object options prototype query reference returns"
+      "keywords": "angularpoint apcacheservice apconfig apdataservice api apqueryfactory config exposes function instantiate instantiates model object options prototype query reference returns"
     },
     {
       "section": "api",
@@ -154,7 +145,7 @@ NG_DOCS={
       "type": "service",
       "moduleName": "angularPoint",
       "shortDescription": "Simple service to monitor the number of active requests we have open with SharePoint",
-      "keywords": "active angularpoint animation api apqueueservice call callback change count counter current decrease decrementing display function increase incrementing loading monitor number observer open register requests reset service sharepoint simple sort typical"
+      "keywords": "active angularpoint animation api apqueueservice call callback change count current decrease decrementing display function increase incrementing loading monitor number observer open register requests reset service sharepoint simple sort typical"
     },
     {
       "section": "api",
@@ -172,7 +163,7 @@ NG_DOCS={
       "type": "service",
       "moduleName": "angularPoint",
       "shortDescription": "Provides shared utility functionality across the application.",
-      "keywords": "$q addandcustomizepages adddelprivatewebparts addlistitems admin angularpoint apconfig api application applystylesheets applythemeandborder approveitems aputilityservice array article assigned based batches batchprocess bit break browsedirectories browser browseuserinfo buildprojectsummary camel cancelcheckout capitalized case change chunks codeplex comparison complete context convert converts create createalerts creategroups createsscsite current cuts dates datetocheck defaults defer deferred delay deletelistitems deleteversions delimited desired determine directly don dvwps easier easily editlistitems editmyuserinfo enddate entities enumeratepermissions evaluate evaluates event example executed extendprojectsummary fall falls false fictitious firebase flags formatted fullmask function functionality getalllistitems group hang humanized identifying info int integer intensive ints item items iterate iterating javascript js length letter level list listitem lock long managealerts managelists managepermissions managesubwebs manageweb mask maximum milliseconds model module nczonline net notify number object online open openitems pausing performing perm permission permissionsmask permmask personalviews portion problem process processed processing projectmodel projects projectsmodel promise properties provided range reference resolve resolvepermissions return returned rights running security service set shared sharepoint site space specifies splookupaddnew spservices startdate starting string stuff sufficient summary summaryobject sync thread time trimming typically ui unsigned updatepersonalwebparts usable user useremoteapis users utility var viewformpages viewlistitems viewpages viewusagedata viewversions word wss yyyymmdd"
+      "keywords": "$q addandcustomizepages adddelprivatewebparts addlistitems admin angularpoint apconfig api application applystylesheets applythemeandborder approveitems aputilityservice array article assigned based batches batchprocess bit break browsedirectories browser browseuserinfo buildprojectsummary camel cancelcheckout capitalized case change chunks codeplex comparison complete context convert converts create createalerts creategroups createsscsite current cuts dates datetocheck defaults defer deferred delay deletelistitems deleteversions delimited desired determine directly don dvwps easier easily editlistitems editmyuserinfo enddate entities enumeratepermissions evaluate evaluates event example executed extendprojectsummary fall falls false fictitious firebase flags formatted fullmask function functionality getalllistitems group hang humanized identifying info int integer intensive ints item iterate iterating javascript js length letter level list listitem lock long managealerts managelists managepermissions managesubwebs manageweb mask maximum milliseconds model module nczonline net notify number object online open openitems pausing performing perm permission permissionsmask permmask personalviews portion problem process processed processing projectmodel projects projectsmodel promise properties provided range reference resolve resolvepermissions return returned rights running security service set shared sharepoint site space specifies splookupaddnew spservices startdate starting string stuff sufficient summary summaryobject sync thread time trimming typically ui unsigned updatepersonalwebparts usable user useremoteapis users utility var viewformpages viewlistitems viewpages viewusagedata viewversions word wss yyyymmdd"
     },
     {
       "section": "api",
@@ -280,7 +271,7 @@ NG_DOCS={
       "type": "function",
       "moduleName": "apDataService",
       "shortDescription": "Returns a single list item with the provided id.",
-      "keywords": "apdataservice api configuration entity entityid function getlistitembyid guid item list listname options parameters promise provided requested resolves returns single"
+      "keywords": "apdataservice api belongs configuration entity entityid function getlistitembyid guid item list listname model options parameters promise provided requested resolves returns single"
     },
     {
       "section": "api",
@@ -290,15 +281,6 @@ NG_DOCS={
       "moduleName": "apDataService",
       "shortDescription": "Returns the schema of the specified view for the specified list.",
       "keywords": "apdataservice api aspx attachments baseviewid configuration created datetime default defaultview desired displayname enddate eventdate formatted frecurrence function getview guid html linktitle list listname lists location object options override paged parameters promise provided resolves returns rowlimit schema true type url view view_name viewfields viewname web weburl workspacelink xml"
-    },
-    {
-      "section": "api",
-      "id": "apDataService.logErrorsToConsole",
-      "shortName": "apDataService.logErrorsToConsole",
-      "type": "function",
-      "moduleName": "apDataService",
-      "shortDescription": "Helper function to look for errors in a response from the server and output them to console.",
-      "keywords": "apdataservice api attempted console errors function helper logerrorstoconsole operation output response responsexml server type xml"
     },
     {
       "section": "api",
@@ -586,7 +568,7 @@ NG_DOCS={
       "type": "function",
       "moduleName": "Model",
       "shortDescription": "Inherited from Model constructor",
-      "keywords": "$scope apdataservice api attempts defaults entity entityid fictitious function getlistitembyid inherited item js list located mock model null offline options override project projectmodel projectsmodel promise provided replaces requested resolves retrieve returns server working"
+      "keywords": "$scope apdataservice api attempts defaults entity entityid fictitious function getlistitembyid inherited item js list located model options override project projectmodel projectsmodel promise requested resolves retrieve returns server undefined"
     },
     {
       "section": "api",
@@ -596,15 +578,6 @@ NG_DOCS={
       "moduleName": "Model",
       "shortDescription": "Helper function that attempts to locate and return a reference to the requested or catchall query.",
       "keywords": "additional api attempts catchall customquery details function getquery helper identify key locate model namedquery primary primaryquery projectmodel prototype query reference requested return unique var"
-    },
-    {
-      "section": "api",
-      "id": "Model.initializeModalState",
-      "shortName": "Model.initializeModalState",
-      "type": "function",
-      "moduleName": "Model",
-      "shortDescription": "Uses apModalService to return some general state information for a modal form using",
-      "keywords": "$modalinstance $scope additional admin allow angular api apmodalservice app aria-hidden attempt attributes binding btn btn-danger btn-default btn-primary button cancel candelete checked class close cols controller controls current custom default delete deleterecord description details disable dismiss displaymode edit entity extend fa fa-trash-o false firebase flag flags form form-control form-group fullcontrol function general html include initializemodalstate item js length list locked lockedby locking modal modal-body modal-footer modal-header model module negotiatingwithserver ng-click ng-disabled ng-form ng-model ng-show object optional options param passed permissions project projectmodalctrl projectsmodel pull-left request return returned rights rows save saveentity saverequest service sharepoint stateoption1 stateoption2 strict task text title true type user usercanapprove usercandelete usercanedit view"
     },
     {
       "section": "api",

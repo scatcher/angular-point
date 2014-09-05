@@ -58,6 +58,7 @@ angular.module('angularPoint')
             getCachedEntities: getCachedEntities,
             getEntity: getEntity,
             getEntityContainer: getEntityContainer,
+            getEntityTypeByName: getEntityTypeByName,
             getEntityTypeKey: getEntityTypeKey,
             removeEntity: removeEntity,
             registerEntity: registerEntity,
@@ -96,11 +97,11 @@ angular.module('angularPoint')
          * @returns {string} GUID for the list.
          */
         function getEntityTypeByName(name) {
+            var guid;
             if (entityNameToType[name] && entityNameToType[name].entityType) {
-                return entityNameToType[name].entityType;
-            } else {
-                $log.error('The requested list name isn\'t valid: ', name);
+                guid = entityNameToType[name].entityType;
             }
+            return guid;
         }
 
         /**

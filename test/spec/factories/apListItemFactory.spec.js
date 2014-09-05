@@ -8,32 +8,33 @@ describe("Factory: apListItemFactory", function () {
         mockModel,
         mockLookupModel,
         mockListItem,
+        mockXMLService,
         $rootScope;
 
-
-    beforeEach(module("ui.bootstrap"));
-    beforeEach(inject(function(_apListItemFactory_, _mockModel_, _mockLookupModel_, _$rootScope_) {
+    beforeEach(inject(function (_apListItemFactory_, _mockModel_, _mockLookupModel_, _$rootScope_, _mockXMLService_) {
         apListItemFactory = _apListItemFactory_;
         mockModel = _mockModel_;
         mockLookupModel = _mockLookupModel_;
+        mockXMLService = _mockXMLService_;
         $rootScope = _$rootScope_;
         mockModel.importMocks();
         mockListItem = mockModel.getCache()[1];
     }));
 
-    describe('Function create', function() {
-        it("instantiates a new List item using constructor", function() {
+    describe('Function create', function () {
+        it("instantiates a new List item using constructor", function () {
             expect(apListItemFactory.create()).toEqual(new apListItemFactory.ListItem);
         })
     });
 
-    describe('Method: deleteItem', function() {
-        beforeEach(function () {
-            mockListItem.deleteItem();
+    describe('Method: deleteItem', function () {
+        it('removes entity with ID of 1 from the cache', function () {
+            mockXMLService.xhrStub('DeleteListItem');
+            mockListItem.deleteItem()
+                .then(function () {
+                    expect(mockModel.getCache('primary')[1]).toBeUndefined();
+                });
             $rootScope.$digest();
-        });
-        it('removes entity with ID of 0 from the cache', function () {
-            expect(mockModel.getCache('primary')[1]).toBeUndefined();
         });
     });
 
@@ -76,7 +77,9 @@ describe("Factory: apListItemFactory", function () {
         });
 
         it('should throw an error if a field name isn\'t provided', function () {
-            expect(function (){ mockListItem.getLookupReference();}).toThrow();
+            expect(function () {
+                mockListItem.getLookupReference();
+            }).toThrow();
         });
 
         it('returns an empty string if the lookup is empty', function () {
@@ -86,7 +89,9 @@ describe("Factory: apListItemFactory", function () {
 
         it('throws an error if the fieldDefinition.List isn\'t available', function () {
             delete mockListItem.getFieldDefinition('lookup').List;
-            expect(function (){ mockListItem.getLookupReference('lookup');}).toThrow();
+            expect(function () {
+                mockListItem.getLookupReference('lookup');
+            }).toThrow();
         });
 
     });
@@ -114,21 +119,39 @@ describe("Factory: apListItemFactory", function () {
 
     });
 
-    describe('Method: saveChanges', function() {
-        beforeEach(function () {
-            mockListItem.boolean = true;
-            mockListItem.saveChanges();
-            $rootScope.$digest();
+    describe('Method: saveChanges', function () {
+        describe('successful calls', function () {
+            beforeEach(function () {
+                mockXMLService.xhrStub('UpdateListItem');
+                mockListItem.saveChanges()
+                    .then(function (response) {
+                        expect(response.integer).toEqual(13);
+                    });
+                $rootScope.$digest();
+            });
+            it('has the updated value', function () {
+                expect(mockListItem.integer).toEqual(13);
+            });
+            it('is also updated in the other caches because they should be referencing the same object', function () {
+                expect(mockModel.getCache('secondary')[1].integer).toEqual(mockListItem.integer);
+            });
         });
-        it('has the updated value', function () {
-            expect(mockModel.getCache('primary')[1].boolean).toEqual(true);
-        });
-        it('the other caches also contain the same data because they should be referencing the same object', function () {
-            expect(mockModel.getCache('secondary')[1].boolean).toEqual(true);
+
+        describe('the ability to identity an error', function () {
+            it('rejects the promise with an error message', function () {
+                mockXMLService.xhrStub('errorUpdatingListItem');
+                mockListItem.saveChanges()
+                    .then(function (response) {
+
+                    }, function (err) {
+                        expect(_.isString(err)).toBeTrue();
+                    });
+                $rootScope.$digest();
+            });
         });
     });
 
-    describe('Method: saveFields', function() {
+    describe('Method: saveFields', function () {
         beforeEach(function () {
             mockListItem.currency = 1337;
             mockListItem.saveFields('currency');
@@ -140,11 +163,66 @@ describe("Factory: apListItemFactory", function () {
         it('the other caches also contain the same data because they should be referencing the same object', function () {
             expect(mockModel.getCache('secondary')[1].currency).toEqual(1337);
         });
+        it('resolves the promise with the updated entity', function () {
+            mockXMLService.xhrStub('UpdateListItem');
+            mockListItem.saveFields('integer')
+                .then(function (response) {
+                    expect(response.integer).toEqual(13);
+                });
+            $rootScope.$digest();
+        });
+        it('rejects the promise with an error message', function () {
+            mockXMLService.xhrStub('errorUpdatingListItem');
+            mockListItem.saveFields('integer')
+                .then(function (response) {
+
+                }, function (err) {
+                    expect(_.isString(err)).toBeTrue();
+                });
+            $rootScope.$digest();
+        });
+
     });
 
+    describe('Method: getAttachmentCollection', function () {
+        it('returns an array of attachments for the list item', function () {
+            mockXMLService.xhrStub('getAttachmentCollection');
+            mockListItem.getAttachmentCollection()
+                .then(function (response) {
+                    expect(response.length).toEqual(1);
+                });
+            $rootScope.$digest();
+        });
+    });
 
+    describe('Method: deleteAttachment', function () {
+        it('resolves the promise when deleted', function () {
+            mockXMLService.xhrStub('deleteAttachment');
+            mockListItem.deleteAttachment(mockListItem.attachments[0])
+                .then(function (response) {
+                    expect(response).toBeDefined();
+                });
+            $rootScope.$digest();
+        });
+    });
 
-    //TODO: Add tests for all of the other async methods for the ListItem prototype
-
+    describe('Method: getFieldVersionHistory', function () {
+        it('parses the version history for a field and returns all 3 versions', function () {
+            mockXMLService.xhrStub('GetVersionCollection');
+            mockListItem.getFieldVersionHistory('integer')
+                .then(function (response) {
+                    expect(response.length).toEqual(3);
+                });
+            $rootScope.$digest();
+        });
+        it('works without passing any any fields to dynamically build field array', function () {
+            mockXMLService.xhrStub('GetVersionCollection');
+            mockListItem.getFieldVersionHistory()
+                .then(function (response) {
+                    expect(response.length).toEqual(3);
+                });
+            $rootScope.$digest();
+        });
+    });
 
 });

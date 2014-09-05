@@ -8,7 +8,6 @@ describe("Factory: apIndexedCacheFactory", function () {
         entityOne = {id: 1, title: 'test'},
         entityTwo = {id: 2, title: 'test2'};
 
-    beforeEach(module("ui.bootstrap"));
     beforeEach(inject(function (_apIndexedCacheFactory_) {
         apIndexedCacheFactory = _apIndexedCacheFactory_;
         mockCache = apIndexedCacheFactory.create();

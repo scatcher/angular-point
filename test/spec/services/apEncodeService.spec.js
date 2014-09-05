@@ -10,7 +10,6 @@ describe("Factory: apEncodeService", function () {
         mockModel,
         mockXMLService;
 
-    beforeEach(module("ui.bootstrap"));
     beforeEach(inject(function (_apEncodeService_, _mockXMLService_, _mockModel_) {
         apEncodeService = _apEncodeService_;
         mockXMLService = _mockXMLService_;
@@ -29,7 +28,7 @@ describe("Factory: apEncodeService", function () {
 
     });
 
-    describe('Function: createValuePair', function () {
+    describe('Function: apEncodeService', function () {
         it('returns an empty value if an empty value is passed in', function () {
             expect(apEncodeService.createValuePair(mockDefinition('Lookup'), ''))
                 .toEqual(['Lookup', '']);
@@ -79,6 +78,11 @@ describe("Factory: apEncodeService", function () {
             var validDate = new Date(2014, 5, 10, 3, 25, 30);
             expect(apEncodeService.createValuePair(mockDefinition('DateTime'), validDate))
                 .toEqual([ 'DateTime', '2014-06-10T03:25:30Z-07:00' ]);
+        });
+
+        it('handles a DateTime value as a string', function () {
+            expect(apEncodeService.createValuePair(mockDefinition('DateTime'), '2014-05-06'))
+                .toEqual([ 'DateTime', '2014-05-06T00:00:00Z-07:00' ]);
         });
 
         it('doesn\'t save invalid DateTime field', function () {

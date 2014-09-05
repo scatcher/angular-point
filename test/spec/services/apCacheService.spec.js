@@ -24,12 +24,13 @@ describe('Service: apCacheService', function () {
             titleText: "New Mock"
         },
         emptyEntityCache,
-        resolvedEntityCache;
+        resolvedEntityCache,
+        $rootScope;
 
-    beforeEach(module("ui.bootstrap"));
-    beforeEach(inject(function (_apCacheService_, _mockXMLService_, _mockModel_) {
+    beforeEach(inject(function (_apCacheService_, _mockXMLService_, _mockModel_, _$rootScope_) {
         apCacheService = _apCacheService_;
         mockXMLService = _mockXMLService_;
+        $rootScope = _$rootScope_;
         mockModel = _mockModel_;
         mockEntityCache = mockModel.importMocks();
 
@@ -42,6 +43,12 @@ describe('Service: apCacheService', function () {
 
         it('returns the key the name of a model is used', function () {
             expect(apCacheService.getEntityTypeKey(mockModel.list.title)).toEqual(mockModel.list.guid.toLowerCase());
+        });
+    });
+
+    describe('getEntityTypeByName', function () {
+        it('returns undefined when requesting a model name that doesn\'t exist', function () {
+            expect(apCacheService.getEntityTypeByName('Invalid Model')).toBeUndefined();
         });
     });
 
@@ -77,8 +84,8 @@ describe('Service: apCacheService', function () {
 
     describe('getEntityContainer', function () {
         beforeEach(function () {
-            emptyEntityCache = apCacheService.getEntityContainer(mockModel.list.guid.toLowerCase(), 100);
-            resolvedEntityCache = apCacheService.getEntityContainer(mockModel.list.guid.toLowerCase(), 1);
+            emptyEntityCache = apCacheService.getEntityContainer(mockModel.list.guid, 100);
+            resolvedEntityCache = apCacheService.getEntityContainer(mockModel.list.guid, 1);
         });
         it('shouldn\'t have a valid entity for a new cache', function () {
             expect(emptyEntityCache.entity).toBeUndefined();
@@ -87,29 +94,52 @@ describe('Service: apCacheService', function () {
         it('should have a valid entity for an existing entity', function () {
             expect(resolvedEntityCache.entity).toBeDefined();
         });
+    });
 
+    describe('Method: EntityContainer.getEntity', function () {
+
+        it('should return a promise for the entity which on next tick if already present', function () {
+            apCacheService.getEntityContainer(mockModel.list.guid, 1).getEntity()
+                .then(function (entity) {
+                    expect(entity.id).toEqual(1);
+                });
+            $rootScope.$digest();
+        });
+
+        it('should return a promise for the entity which resolves with the entity once registered', function () {
+            //Remove entity 1 from the cache
+            var cache = apCacheService.getEntityContainer(mockModel.list.guid, 1);
+            cache.removeEntity();
+            //Create request for entity
+            apCacheService.getEntityContainer(mockModel.list.guid, 1).getEntity()
+                .then(function (entity) {
+                    expect(entity.id).toEqual(1);
+                });
+            //Add entity back in and resolve promise at next tick
+            mockModel.importMocks();
+            $rootScope.$digest();
+        });
+    });
+
+    describe('Function: getEntity', function () {
+        it('should return a promise which resolves with the requested entity', function () {
+            apCacheService.getEntity(mockModel.list.guid, 1)
+                .then(function (entity) {
+                    expect(entity.id).toEqual(1);
+                });
+            $rootScope.$digest();
+        });
     });
 
     describe('removeEntity', function () {
-        beforeEach(function () {
-            resolvedEntityCache = apCacheService.getEntityContainer(mockModel.list.guid.toLowerCase(), 1);
+        it('should remove 1 of the 2 cache\'s', function () {
+            resolvedEntityCache = apCacheService.getEntityContainer(mockModel.list.guid, 1);
             //Remove entity 1
             resolvedEntityCache.removeEntity();
             //Reinstantiate entity 1 without adding an entity
-            resolvedEntityCache = apCacheService.getEntityContainer(mockModel.list.guid.toLowerCase(), 1);
-
-        });
-        it('should remove 1 of the 2 cache\'s', function () {
+            resolvedEntityCache = apCacheService.getEntityContainer(mockModel.list.guid, 1);
             expect(resolvedEntityCache.entity).toBeUndefined();
         });
-
     });
 
-    /**
-     * @description
-     * Sample test case to check if the service is injected properly
-     * */
-    it('should be injected and defined', function () {
-        expect(apCacheService).toBeDefined();
-    });
 });

@@ -12,7 +12,6 @@ describe('Factory: apModelFactory', function () {
 
     var mockModel, apModelFactory, mockEntityCache, mockXMLService, $rootScope, $q, apDataService;
 
-    beforeEach(module("ui.bootstrap"));
     beforeEach(inject(function (_mockModel_, _apModelFactory_, _mockXMLService_, _$rootScope_, _$q_, _apDataService_) {
         mockModel = _mockModel_;
         apModelFactory = _apModelFactory_;
@@ -26,11 +25,15 @@ describe('Factory: apModelFactory', function () {
 
     describe('addNewItem', function () {
         it('adds the new entity to the cacheService', function () {
-            mockModel.addNewItem({titleText: 'I\'m a new item!'});
-            var newEntity = mockModel.getCachedEntity(3);
+            mockXMLService.xhrStub('CreateListItem');
+            /** No need to specify params here because it's just returning the canned XML entity */
+            mockModel.addNewItem()
+                .then(function () {
+                    var newEntity = mockModel.getCachedEntity(4);
+                    expect(newEntity).toBeDefined();
+                    expect(newEntity.titleText).toEqual('Mock 3');
+                });
             $rootScope.$digest();
-            expect(newEntity).toBeDefined();
-            expect(newEntity.titleText).toEqual('I\'m a new item!');
         });
     });
 
@@ -124,6 +127,36 @@ describe('Factory: apModelFactory', function () {
 
     });
 
+    describe('Method: getListItemById', function () {
+        it('returns a single list item', function () {
+            mockXMLService.xhrStub('getListItemById');
+            mockModel.getListItemById(1)
+                .then(function (response) {
+                    expect(response.id).toEqual(1);
+                });
+            $rootScope.$digest();
+        });
+        it('returns undefined if no matching record is found', function () {
+            mockXMLService.xhrStub('emptyResponse');
+            mockModel.getListItemById(5)
+                .then(function (response) {
+                    expect(response).toBeUndefined();
+                });
+            $rootScope.$digest();
+        });
+    });
+
+    describe('Method: getAllListItems', function () {
+        it('returns the 4 expected entities', function () {
+            mockXMLService.xhrStub('getListItems');
+            mockModel.getAllListItems(1)
+                .then(function (response) {
+                    expect(response.count()).toEqual(4);
+                });
+            $rootScope.$digest();
+        });
+    });
+
     describe('Method: getQuery', function () {
         it('returns the query by name', function () {
             expect(mockModel.getQuery('primary')).toBe(mockModel.queries.primary);
@@ -158,7 +191,6 @@ describe('Factory: apModelFactory', function () {
             $rootScope.$digest();
             expect(apDataService.getList.calls.count()).toEqual(1);
         });
-
     });
 
     describe('Method: isInitialized', function () {

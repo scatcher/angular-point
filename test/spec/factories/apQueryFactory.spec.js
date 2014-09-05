@@ -6,7 +6,6 @@ describe('Factory: apQueryFactory', function () {
 
     var mockModel, apQueryFactory, mockQuery, $rootScope, $q, apDataService;
 
-    beforeEach(module("ui.bootstrap"));
     beforeEach(inject(function (_mockModel_, _apQueryFactory_, _$rootScope_, _$q_, _apDataService_) {
 
         mockModel = _mockModel_;

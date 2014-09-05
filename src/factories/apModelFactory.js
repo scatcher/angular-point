@@ -15,7 +15,7 @@
  * @requires angularPoint.apUtilityService
  */
 angular.module('angularPoint')
-    .factory('apModelFactory', function (_, apModalService, apCacheService, apDataService, apListFactory,
+    .factory('apModelFactory', function (_, apCacheService, apDataService, apListFactory,
                                          apListItemFactory, apQueryFactory, apUtilityService, apFieldService, apConfig,
                                          apIndexedCacheFactory, apDecodeService, $q, toastr) {
 
@@ -173,7 +173,7 @@ angular.module('angularPoint')
             getListItemById: getListItemById,
             //getLocalEntity: getLocalEntity,
             getQuery: getQuery,
-            initializeModalState: initializeModalState,
+            //initializeModalState: initializeModalState,
             isInitialised: isInitialised,
             //resolvePermissions: resolvePermissions,
             registerQuery: registerQuery,
@@ -273,7 +273,7 @@ angular.module('angularPoint')
                 _.each(value, function (key) {
                     searchResults.push(searchIndex[key]);
                 });
-            /** Primitive passed in */
+                /** Primitive passed in */
             } else {
                 searchResults = searchIndex[value];
             }
@@ -379,8 +379,7 @@ angular.module('angularPoint')
          * @description
          * Inherited from Model constructor
          * Attempts to retrieve the requested list item from the server.
-         * @returns {object} Promise that resolves with the requested list item if found.  Otherwise it returns null.
-         * When working offline it returns a mock entity and replaces the mock id with the id provided.
+         * @returns {object} Promise that resolves with the requested list item if found.  Otherwise it returns undefined.
          * @example
          * <pre>
          * //Taken from a fictitious projectsModel.js
@@ -392,32 +391,12 @@ angular.module('angularPoint')
          */
         function getListItemById(entityId, options) {
             var model = this,
-                deferred = $q.defer(),
-                /** Only required option for apDataService is listName which is avalable on model */
+                /** Only required option for apDataService is listName which is available on model */
                 defaults = {listName: model.list.guid},
                 opts = _.extend({}, defaults, options);
 
-            //TODO Remove Offline Logic and allow apDataService to handle
-            /** Working Online */
-            if (apConfig.online) {
-                /** Fetch from the server */
-                apDataService.getListItemById(entityId, opts)
-                    .then(function (entitiesArray) {
-                        /** Should be a single entity in the array if found */
-                        if (entitiesArray.length === 1) {
-                            deferred.resolve(entitiesArray[0]);
-                        } else {
-                            /** List item not found */
-                            deferred.resolve(null);
-                        }
-                    });
-            } else {
-                /** Working offline so generate a mock record using provided id */
-                var mock = model.generateMockData({quantity: 1});
-                mock.id = entityId;
-                deferred.resolve(mock);
-            }
-            return deferred.promise;
+            /** Fetch from the server */
+            return apDataService.getListItemById(entityId, model, opts);
         }
 
         /**
@@ -757,10 +736,10 @@ angular.module('angularPoint')
         function extendListMetadata(options) {
             var model = this,
                 deferred = $q.defer(),
-                defaults = { listName: model.list.guid};
+                defaults = {listName: model.list.guid};
 
             /** Only request information if the list hasn't already been extended and is not currently being requested */
-            if(!model.fieldDefinitionsExtended && !model.deferredListDefinition) {
+            if (!model.fieldDefinitionsExtended && !model.deferredListDefinition) {
                 model.deferredListDefinition = deferred.promise;
                 var opts = _.extend({}, defaults, options);
                 apDataService.getList(opts)
@@ -932,129 +911,6 @@ angular.module('angularPoint')
             return valid;
         }
 
-
-        /**
-         * @ngdoc function
-         * @name Model.initializeModalState
-         * @module Model
-         * @description
-         * Uses apModalService to return some general state information for a modal form using
-         * the current user's permissions if an entity is passed in.  Otherwise we attempt to
-         * return the user's permissions for the list.  We also include some additional flags
-         * and with the use of the options param extend any other custom attributes on the returned
-         * state object.
-         *
-         * @param {object} [entity] SharePoint list item.
-         * @param {object} [options] Object containing optional attributes that will be used
-         * to extend the returned state object.
-         * @returns {object} State object with flags.
-         *
-         * @example
-         * <pre>
-         * <file name="app/modules/project/project_modal_ctrl.js">
-         * //Controller
-         * 'use strict';
-         * angular.module('App')
-         *  .controller('projectModalCtrl', function (
-         *                                              $scope,
-         *                                              $modalInstance,
-         *                                              projectsModel,
-         *                                              apModalService,
-         *                                              project
-         *                                            ) {
-         *
-         *      $scope.state = projectsModel.initializeModalState(project, {
-         *           stateOption1: false,
-         *           stateOption2: true
-         *      });
-         *
-         *      $scope.cancel = function () {
-         *           $modalInstance.dismiss('cancel');
-         *      };
-         *
-         *      $scope.project = project;
-         *
-         *      $scope.saveRequest = function () {
-         *           apModalService.saveEntity(
-         *              $scope.request,
-         *              projectsModel,
-         *              $scope.state,
-         *              $modalInstance );
-         *      };
-         * });
-         * </file>
-
-         * <file name="app/modules/project/project_modal_view.html">
-         * //VIEW
-         * <div ng-form>
-         *     <div class="modal-header">
-         *         <button type="button" class="close"
-         *                ng-click="cancel()" aria-hidden="true">&times;</button>
-         *         <h4>Project Details</h4>
-         *     </div>
-         *     <div class="modal-body">
-         *         <div class="well">
-         *             <div ng-form>
-         *                 <div class="form-group">
-         *                     <label>Title</label>
-         *                     <input type="text"
-         *                        class="form-control" ng-model="project.title"/>
-         *                 </div>
-         *                 <div class="form-group">
-         *                     <label>Description</label>
-         *                     <textarea rows="6" cols="50" class="form-control"
-         *                               ng-model="project.description"></textarea>
-         *                 </div>
-         *             </div>
-         *         </div>
-         *     </div>
-         *     <div class="modal-footer">
-         *         <div class="pull-left">
-         *             <button class="btn btn-danger"
-         *                    ng-click="deleteRecord()"
-         *                   ng-show="project.id && state.canDelete"
-         *                   ng-disabled="state.negotiatingWithServer"
-         *                   title="Delete this task request">
-         *                 <i class="fa fa-trash-o"></i>
-         *             </button>
-         *         </div>
-         *         <button class="btn btn-primary"
-         *            ng-click="save()"
-         *            ng-disabled="project.title.length === 0 ||
-         *                state.negotiatingWithServer">OK</button>
-         *         <button class="btn btn-default"
-         *            ng-click="cancel()">Cancel</button>
-         *     </div>
-         * </div>
-         * </file>
-         * </pre>
-         *
-         * <pre>
-         * //Returns
-         * $scope.state = {
-         *    // Default "View" and once permissions are checked it
-         *    // can also be "New" || "Edit"
-         *    displayMode: "New",
-         *    // Below 2 options allow for locking with 3 way
-         *    // binding service like FireBase
-         *    locked: false,
-         *    lockedBy: '',
-         *    // Flag which can be used to disable form controls
-         *    negotiatingWithServer: false,
-         *    userCanApprove: false,
-         *    userCanDelete: false,
-         *    userCanEdit: false,
-         *    //User has admin rights
-         *    fullControl: false,
-         *    //Custom attributes passed in the options param
-         *    stateOption1: false,
-         *    stateOption2: true
-         * }
-         * </pre>
-         */
-        function initializeModalState(entity, options) {
-            return apModalService.initializeState(entity, options, this);
-        }
 
         ///**
         // * @ngdoc function

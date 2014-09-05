@@ -292,15 +292,19 @@ angular.module('angularPoint')
         }
 
         function jsObject(s) {
-            /** Ensure JSON is valid and if not throw error with additional detail */
-            var json = null;
-            try {
-                json = JSON.parse(s);
+            if (!s) {
+                return s;
+            } else {
+                /** Ensure JSON is valid and if not throw error with additional detail */
+                var json = null;
+                try {
+                    json = JSON.parse(s);
+                }
+                catch (err) {
+                    console.error('Invalid JSON: ', s);
+                }
+                return json;
             }
-            catch (err) {
-                console.error('Invalid JSON: ', s);
-            }
-            return json;
         }
 
         function jsString(s) {
@@ -329,7 +333,7 @@ angular.module('angularPoint')
 
         function jsDate(s) {
             /** Replace dashes with slashes and the "T" deliminator with a space if found */
-            return new Date(s.replace(/-/g, '/').replace(/T/i, ' '));
+            return new Date(s.replace(/-/g, '/').replace(/Z/i, '').replace(/T/i, ' '));
         }
 
         function jsUser(s) {
@@ -516,22 +520,23 @@ angular.module('angularPoint')
          */
         function parseFieldVersions(responseXML, fieldDefinition) {
             var versions = [];
-            var versionCount = $(responseXML).find('Version').length;
-            $(responseXML).find('Version').each(function (index) {
-                var self = this;
+            var xmlVersions = $(responseXML).find('Version');
+            var versionCount = xmlVersions.length;
 
+
+            _.each(xmlVersions, function(xmlVersion, index) {
                 /** Parse the xml and create a representation of the version as a js object */
                 var version = {
-                    editor: attrToJson($(self).attr('Editor'), 'User'),
+                    editor: attrToJson($(xmlVersion).attr('Editor'), 'User'),
                     /** Turn the SharePoint formatted date into a valid date object */
-                    modified: attrToJson($(self).attr('Modified'), 'DateTime'),
+                    modified: attrToJson($(xmlVersion).attr('Modified'), 'DateTime'),
                     /** Returns records in desc order so compute the version number from index */
                     version: versionCount - index
                 };
 
                 /** Properly format field based on definition from model */
                 version[fieldDefinition.mappedName] =
-                    attrToJson($(self).attr(fieldDefinition.internalName), fieldDefinition.objectType);
+                    attrToJson($(xmlVersion).attr(fieldDefinition.internalName), fieldDefinition.objectType);
 
                 /** Push to beginning of array */
                 versions.unshift(version);
@@ -551,11 +556,16 @@ angular.module('angularPoint')
          * @returns {string|null} Returns an error string if present, otherwise returns null.
          */
         function checkResponseForErrors(responseXML) {
-            var errorString = null;
-            /** Responses with a <errorstring></errorstring> element with details on what happened */
-            $(responseXML).find("errorstring").each(function () {
-                errorString = $(this).text();
+            var error = null;
+            /** Look for <errorstring></errorstring> or <ErrorText></ErrorText> for details on any errors */
+            var errorElements = ['ErrorText', 'errorstring'];
+            _.each(errorElements, function(element) {
+                $(responseXML).find(element).each(function () {
+                    error = $(this).text();
+                    /** Break early if found */
+                    return false;
+                });
             });
-            return errorString;
+            return error;
         }
     });
