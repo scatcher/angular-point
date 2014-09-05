@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/"
+               xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+    <soap:Body>
+        <GetListCollectionResponse xmlns="http://schemas.microsoft.com/sharepoint/soap/">
+            <GetListCollectionResult>
+                <Lists>
+                    <List DocTemplateUrl="" DefaultViewUrl="/App/Lists/BannerText/AllItems.aspx"
+                          MobileDefaultViewUrl="" ID="{7F6C6FC6-530B-44C3-A9F6-632D89754037}" Title="BannerText"
+                          Description="Text that rotates through the banner on App Home."
+                          ImageUrl="/_layouts/images/itgen.png" Name="{7F6C6FC6-530B-44C3-A9F6-632D89754037}"
+                          BaseType="0" FeatureId="00bfea71-de22-43b2-a848-c05709900100" ServerTemplate="100"
+                          Created="20140322 01:04:08" Modified="20140619 07:54:11" LastDeleted="20140322 01:04:38"
+                          Version="15" Direction="none" ThumbnailSize="" WebImageWidth="" WebImageHeight=""
+                          Flags="545263752" ItemCount="3" AnonymousPermMask="0" RootFolder="" ReadSecurity="1"
+                          WriteSecurity="1" Author="338" EventSinkAssembly="" EventSinkClass="" EventSinkData=""
+                          EmailAlias="" WebFullUrl="/App" WebId="5f61f646-1cce-4e92-addc-1626ce9f11cf"
+                          SendToLocation="" ScopeId="4f66a976-ca18-459f-9d62-5f1432573f59" MajorVersionLimit="0"
+                          MajorWithMinorVersionsLimit="0" WorkFlowId="" HasUniqueScopes="False"
+                          NoThrottleListOperations="False" HasRelatedLists="" AllowDeletion="True"
+                          AllowMultiResponses="False" EnableAttachments="False" EnableModeration="False"
+                          EnableVersioning="True" HasExternalDataSource="False" Hidden="False" MultipleDataList="False"
+                          Ordered="False" ShowUser="True" EnablePeopleSelector="False" EnableResourceSelector="False"
+                          EnableMinorVersion="False" RequireCheckout="False" ThrottleListOperations="False"
+                          ExcludeFromOfflineClient="False" EnableFolderCreation="False" IrmEnabled="False"
+                          IsApplicationList="False" PreserveEmptyValues="False" StrictTypeCoercion="False"
+                          EnforceDataValidation="False" MaxItemsPerThrottledOperation="5000"/>
+                </Lists>
+            </GetListCollectionResult>
+        </GetListCollectionResponse>
+    </soap:Body>
+</soap:Envelope>

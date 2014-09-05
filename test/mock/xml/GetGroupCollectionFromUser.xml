@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/"
+               xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+    <soap:Body>
+        <GetGroupCollectionFromUserResponse xmlns="http://schemas.microsoft.com/sharepoint/soap/directory/">
+            <GetGroupCollectionFromUserResult>
+                <GetGroupCollectionFromUser>
+                    <Groups>
+                        <Group ID="385" Name="Super Duper Admins" Description="" OwnerID="338" OwnerIsUser="True"/>
+                        <Group ID="396" Name="Super Duper Contributors"
+                               Description="Members of this group are able to contribute to create and edit project records."
+                               OwnerID="385" OwnerIsUser="False"/>
+                        <Group ID="398" Name="Super Duper Viewers"
+                               Description="Members of this group are able to view project specific information."
+                               OwnerID="385" OwnerIsUser="False"/>
+                    </Groups>
+                </GetGroupCollectionFromUser>
+            </GetGroupCollectionFromUserResult>
+        </GetGroupCollectionFromUserResponse>
+    </soap:Body>
+</soap:Envelope>

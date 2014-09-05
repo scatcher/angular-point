@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/"
+               xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+    <soap:Body>
+        <GetVersionCollectionResponse xmlns="http://schemas.microsoft.com/sharepoint/soap/">
+            <GetVersionCollectionResult>
+                <Versions>
+                    <Version Integer="12" Modified="2014-09-03T15:00:56Z"
+                             Editor="338;#John Smith,#DEV\john.smith,#user@email.com,#,#John Smith"/>
+                    <Version Integer="12" Modified="2014-09-02T22:46:09Z"
+                             Editor="338;#John Smith,#DEV\john.smith,#user@email.com,#,#John Smith"/>
+                    <Version Integer="12" Modified="2014-09-02T13:35:57Z"
+                             Editor="338;#John Smith,#DEV\john.smith,#user@email.com,#,#John Smith"/>
+                </Versions>
+            </GetVersionCollectionResult>
+        </GetVersionCollectionResponse>
+    </soap:Body>
+</soap:Envelope>
