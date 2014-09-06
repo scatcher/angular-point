@@ -1,4 +1,4 @@
-angular-point [![Build Status](https://travis-ci.org/scatcher/angular-point.png?branch=master)](https://travis-ci.org/scatcher/angular-point)
+angular-point [![Build Status](https://travis-ci.org/scatcher/angular-point.png?branch=master)](https://travis-ci.org/scatcher/angular-point)  [![Coverage Status](https://coveralls.io/repos/scatcher/angular-point/badge.png)](https://coveralls.io/r/scatcher/angular-point)
 ============
 
 angular-point is an initial attempt at hosting a full AngularJS SPA directly within SharePoint.
