@@ -158,6 +158,15 @@ NG_DOCS={
     },
     {
       "section": "api",
+      "id": "angularPoint.apUserModel",
+      "shortName": "angularPoint.apUserModel",
+      "type": "service",
+      "moduleName": "angularPoint",
+      "shortDescription": "Simple service that allows us to request and cache both the current user and their group memberships.",
+      "keywords": "allows angularpoint apconfig apdataservice api apusermodel array belongs cache cached caches checks codeplex current force function group groupname groups http ignore info member memberships names object parse profile promise pull request requested resolves returns service simple user"
+    },
+    {
+      "section": "api",
       "id": "angularPoint.apUtilityService",
       "shortName": "angularPoint.apUtilityService",
       "type": "service",
