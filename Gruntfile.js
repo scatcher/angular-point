@@ -6,7 +6,7 @@
 // use this if you want to recursively match all subfolders:
 // 'test/spec/**/*.js'
 
-var Dgeni = require('dgeni');
+//var Dgeni = require('dgeni');
 
 module.exports = function (grunt) {
 
@@ -138,6 +138,7 @@ module.exports = function (grunt) {
                     '<%= config.src %>/constants.js',
                     '<%= config.services %>/*.js',
                     '<%= config.factories %>/*.js',
+                    '<%= config.src %>/models/*.js',
                     '<%= config.src %>/directives/**/*.js'
                 ],
                 title: 'API Documentation',

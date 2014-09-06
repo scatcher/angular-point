@@ -7,7 +7,7 @@
 angular.module('angularPoint')
 /** lodash */
     .constant('_', _)
-    .constant('SPServices', $().SPServices)
+    //.constant('SPServices', $().SPServices)
 
 /**
  * @ngdoc object
@@ -58,6 +58,7 @@ angular.module('angularPoint')
         appTitle: 'Angular-Point',
         debug: false,
         defaultQueryName: 'primary',
+        defaultUrl: '',
         firebaseURL: "The optional url of your firebase source",
         offline: window.location.href.indexOf('localhost') > -1 ||
         window.location.href.indexOf('http://0.') > -1 ||

@@ -16,9 +16,9 @@
  // *  @requires apFieldService
  */
 angular.module('angularPoint')
-    .service('apDataService', function ($q, $timeout, _, apQueueService, apConfig, apUtilityService, apDecodeService,
-                                        apEncodeService, apFieldService, apIndexedCacheFactory, apMocksService, toastr,
-                                        SPServices) {
+    .service('apDataService', function ($q, $timeout, $http, _, apQueueService, apConfig, apUtilityService,
+                                        apDecodeService, apEncodeService, apFieldService, apIndexedCacheFactory,
+                                        apMocksService, toastr, SPServices) {
 
         /** Exposed functionality */
         var apDataService = {
@@ -28,10 +28,13 @@ angular.module('angularPoint')
             deleteItemModel: deleteItemModel,
             executeQuery: executeQuery,
             getCollection: getCollection,
+            getCurrentSite: getCurrentSite,
             getFieldVersionHistory: getFieldVersionHistory,
+            getGroupCollectionFromUser: getGroupCollectionFromUser,
             getList: getList,
             getListFields: getListFields,
             getListItemById: getListItemById,
+            getUserProfileByName: getUserProfileByName,
             requestData: requestData,
             getView: getView,
             processChangeTokenXML: processChangeTokenXML,
@@ -229,7 +232,8 @@ angular.module('angularPoint')
             var defaults = {
                 /** You need to specify the offline xml file if you want to properly mock the request when offline */
                 offlineXML: apConfig.offlineXML + options.operation + '.xml',
-                postProcess: processXML
+                postProcess: processXML,
+                webURL: apConfig.defaultUrl
             };
             var opts = _.extend({}, defaults, options);
             var deferred = $q.defer();
@@ -274,22 +278,62 @@ angular.module('angularPoint')
 
             if (apConfig.online) {
                 //TODO Convert jQuery style promise into $q promise for consistency
-                var webServiceCall = SPServices(opts);
+                //var webServiceCall = SPServices(opts);
                 //$q.when($().SPServices(opts)).then(function (webServiceCall) {
-                webServiceCall.then(function () {
+                //webServiceCall.then(function () {
+
+                var soapData = SPServices(opts);
+
+                $http({
+                    method: 'POST',
+                    url: soapData.ajaxURL,
+                    data: soapData.msg,
+                    responseType: "document",
+                    headers: {
+                        "Content-Type": "text/xml;charset='utf-8'"
+                    },
+                    transformRequest: function (data, headersGetter) {
+                        if (soapData.SOAPAction) {
+                            var headers = headersGetter();
+                            headers["SOAPAction"] = soapData.SOAPAction;
+                        }
+                        return data;
+                    },
+                    transformResponse: function (data, headersGetter) {
+                        //if (data) {
+                        //    var ret = xmlToJSON(
+                        //        data,
+                        //        {
+                        //            regex: /ows_/,
+                        //            regexReplacement: ""
+                        //        }
+                        //    )["soap:Envelope"]["soap:Body"];
+                        //
+                        //    return _.reduce(
+                        //        AngularSPHelper.comb[opt.operation.toLowerCase()],
+                        //        function(memo, item) {
+                        //            return memo[item];
+                        //        },
+                        //        ret
+                        //    );
+                        //}
+                        return data;
+                    }
+                }).then(function (response) {
                     /** Success */
                     /** Errors can still be resolved without throwing an error so check the XML */
-                    var error = apDecodeService.checkResponseForErrors(webServiceCall.responseXML);
+                    var error = apDecodeService.checkResponseForErrors(response.data);
                     if (error) {
                         console.error(error, opts);
                         deferred.reject(error);
                     } else {
-                        deferred.resolve(webServiceCall.responseXML);
+                        deferred.resolve(response.data);
                     }
-                }, function (error) {
+                }, function (response) {
                     /** Failure */
-                    console.error(error, opts);
-                    deferred.reject(error);
+                    var error = apDecodeService.checkResponseForErrors(response.data);
+                    console.error(response.statusText, opts);
+                    deferred.reject(response.statusText + ': ' + error);
                 });
             } else {
                 apMocksService.mockRequest(opts, additionalArgs)
@@ -297,6 +341,130 @@ angular.module('angularPoint')
                         deferred.resolve(response);
                     });
             }
+            return deferred.promise;
+        }
+
+        function buildAjaxUrl(opts) {
+            var deferred = $q.defer();
+
+            // Build the URL for the Ajax call based on which operation we're calling
+            // If the webURL has been provided, then use it, else use the current site
+            var ajaxURL = "_vti_bin/" + SPServices.WSops[opt.operation][0] + ".asmx";
+
+            if (opt.webURL.charAt(opt.webURL.length - 1) === SPServices.SLASH) {
+                deferred.resolve(opt.webURL + ajaxURL);
+            } else if (opt.webURL.length > 0) {
+                deferred.resolve(opt.webURL + SPServices.SLASH + ajaxURL);
+            } else {
+                //getCurrentSite()
+                //    .then(function (response) {
+                //        var updatedURL =
+                //    });
+                //ajaxURL = thisSite + ((thisSite.charAt(thisSite.length - 1) === SPServices.SLASH) ?
+                //    ajaxURL : (SPServices.SLASH + ajaxURL));
+            }
+            return deferred.promise;
+        }
+
+        /**
+         * @ngdoc function
+         * @name apDataService.getUserProfile
+         * @description
+         * Returns the profile for an optional user, but defaults the the current user if one isn't provided.
+         * Pull user profile info and parse into a profile object
+         * http://spservices.codeplex.com/wikipage?title=GetUserProfileByName
+         * @param {string} [login=CurrentUser] Optional param of another user's login to return the profile for.
+         * @returns {object} Promise which resolves with the requested user profile.
+         */
+        function getUserProfileByName(login) {
+            var deferred = $q.defer();
+            var payload = {
+                operation: 'GetUserProfileByName'
+            };
+            if (login) {
+                payload.accountName = login;
+            }
+            serviceWrapper(payload)
+                .then(function (serverResponse) {
+                    var userProfile = {};
+                    //Not formatted like a normal SP response so need to manually parse
+                    $(serverResponse).SPFilterNode('PropertyData').each(function () {
+                        var nodeName = $(this).SPFilterNode('Name');
+                        var nodeValue = $(this).SPFilterNode('Value');
+                        if (nodeName.length > 0 && nodeValue.length > 0) {
+                            userProfile[nodeName.text().trim()] = nodeValue.text().trim();
+                        }
+                    });
+                    /** Optionally specify a necessary prefix that should appear before the user login */
+                    userProfile.userLoginName = apConfig.userLoginNamePrefix ?
+                        (apConfig.userLoginNamePrefix + userProfile.AccountName) : userProfile.AccountName;
+                    deferred.resolve(userProfile);
+                });
+            return deferred.promise;
+        }
+
+        /**
+         * @ngdoc function
+         * @name apDataService.getGroupCollectionFromUser
+         * @description
+         * Fetches an array of group names the user is a member of.  If no user is provided we use the current user.
+         * @param {string} [login=CurrentUser] Optional param of another user's login to return the profile for.
+         * @returns {string[]} Promise which resolves with the array of groups the user belongs to.
+         */
+        function getGroupCollectionFromUser(login) {
+            /** Create a new deferred object if not already defined */
+            var deferred = $q.defer();
+            if(!login) {
+                /** No login name provided so lookup profile for current user */
+                getUserProfileByName()
+                    .then(function (userProfile) {
+                        getGroupCollection(userProfile.userLoginName);
+                    });
+            } else {
+                getGroupCollection(login);
+            }
+            return deferred.promise;
+
+            function getGroupCollection(userLoginName) {
+                apDataService.serviceWrapper({
+                    operation: 'GetGroupCollectionFromUser',
+                    userLoginName: userLoginName,
+                    filterNode: 'Group'
+                }).then(function (groupCollection) {
+                    deferred.resolve(groupCollection);
+                });
+            }
+        }
+
+        function getCurrentSite() {
+            var deferred = $q.defer();
+            //if (apConfig.defaultUrl) {
+            //    deferred.resolve(apConfig.defaultUrl);
+            //} else {
+            var msg = SPServices.SOAPEnvelope.header +
+                "<WebUrlFromPageUrl xmlns='" + SPServices.SCHEMASharePoint + "/soap/' ><pageUrl>" +
+                ((location.href.indexOf("?") > 0) ? location.href.substr(0, location.href.indexOf("?")) : location.href) +
+                "</pageUrl></WebUrlFromPageUrl>" +
+                SPServices.SOAPEnvelope.footer;
+
+            $http({
+                method: 'POST',
+                url: '/_vti_bin/Webs.asmx',
+                data: msg,
+                responseType: "document",
+                headers: {
+                    "Content-Type": "text/xml;charset='utf-8'"
+                }
+            }).then(function (response) {
+                /** Success */
+                apConfig.defaultUrl = $(response.data).find("WebUrlFromPageUrlResult").text();
+                deferred.resolve(apConfig.defaultUrl)
+            }, function (response) {
+                /** Error */
+                var error = apDecodeService.checkResponseForErrors(response.data);
+                deferred.reject(error);
+            });
+            //}
             return deferred.promise;
         }
 
@@ -757,7 +925,7 @@ angular.module('angularPoint')
                         /** Offline response should be the updated entity as a JS Object */
                         deferred.resolve(response);
                     }
-                }, function(err) {
+                }, function (err) {
                     deferred.reject(err);
                 });
             return deferred.promise;

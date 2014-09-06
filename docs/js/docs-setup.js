@@ -158,6 +158,15 @@ NG_DOCS={
     },
     {
       "section": "api",
+      "id": "angularPoint.apUserModel",
+      "shortName": "angularPoint.apUserModel",
+      "type": "service",
+      "moduleName": "angularPoint",
+      "shortDescription": "Simple service that allows us to request and cache both the current user and their group memberships.",
+      "keywords": "allows angularpoint apconfig apdataservice api apusermodel array belongs cache cached caches checks codeplex current function group groupname groups http ignore info member memberships names object parse profile promise pull request requested resolves returns service simple user"
+    },
+    {
+      "section": "api",
       "id": "angularPoint.apUtilityService",
       "shortName": "angularPoint.apUtilityService",
       "type": "service",
@@ -191,6 +200,15 @@ NG_DOCS={
       "moduleName": "angularPoint",
       "shortDescription": "Cache constructor that is extended to make it easier to work with via prototype methods.  Located in",
       "keywords": "add adds angularpoint api apindexedcachefactory array based cache cached clears currently easier elements entities entity extended function indexedcache item key located methods number object prototype remove removes requested returns strings turns work"
+    },
+    {
+      "section": "api",
+      "id": "angularPoint.SPServices",
+      "shortName": "angularPoint.SPServices",
+      "type": "service",
+      "moduleName": "angularPoint",
+      "shortDescription": "This is just a trimmed down version of Marc Anderson&#39;s awesome SPServices library.  We&#39;re primarily looking for",
+      "keywords": "$http ability anderson angularjs angularpoint api awesome create envelope handle library marc negotiation server service soap spservices trimmed version"
     },
     {
       "section": "api",
@@ -248,6 +266,15 @@ NG_DOCS={
     },
     {
       "section": "api",
+      "id": "apDataService.getGroupCollectionFromUser",
+      "shortName": "apDataService.getGroupCollectionFromUser",
+      "type": "function",
+      "moduleName": "apDataService",
+      "shortDescription": "Fetches an array of group names the user is a member of.  If no user is provided we use the current user.",
+      "keywords": "apdataservice api array belongs current fetches function getgroupcollectionfromuser group groups login member names optional param profile promise provided resolves return user"
+    },
+    {
+      "section": "api",
       "id": "apDataService.getList",
       "shortName": "apDataService.getList",
       "type": "function",
@@ -272,6 +299,15 @@ NG_DOCS={
       "moduleName": "apDataService",
       "shortDescription": "Returns a single list item with the provided id.",
       "keywords": "apdataservice api belongs configuration entity entityid function getlistitembyid guid item list listname model options parameters promise provided requested resolves returns single"
+    },
+    {
+      "section": "api",
+      "id": "apDataService.getUserProfile",
+      "shortName": "apDataService.getUserProfile",
+      "type": "function",
+      "moduleName": "apDataService",
+      "shortDescription": "Returns the profile for an optional user, but defaults the the current user if one isn&#39;t provided.",
+      "keywords": "apdataservice api codeplex current defaults function getuserprofile http info isn login object optional param parse profile promise provided pull requested resolves return returns user"
     },
     {
       "section": "api",

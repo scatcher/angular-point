@@ -223,15 +223,12 @@ angular.module('angularPoint')
             } else if(_.isEmpty(listItem[fieldName])) {
                 return '';
             } else {
-
-                var targetId = lookupId || listItem[fieldName].lookupId;
-
                 var model = listItem.getModel();
                 var fieldDefinition = model.getFieldDefinition(fieldName);
                 /** Ensure the field definition has the List attribute which contains the GUID of the list
                  *  that a lookup is referencing. */
                 if (fieldDefinition && fieldDefinition.List) {
-
+                    var targetId = lookupId || listItem[fieldName].lookupId;
                     return apCacheService.getCachedEntity(fieldDefinition.List, targetId);
                 } else {
                     throw new Error('This isn\'t a valid Lookup field or the field definitions need to be extended ' +
