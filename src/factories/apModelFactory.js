@@ -15,8 +15,8 @@
  * @requires angularPoint.apUtilityService
  */
 angular.module('angularPoint')
-    .factory('apModelFactory', function (_, apCacheService, apDataService, apListFactory,
-                                         apListItemFactory, apQueryFactory, apUtilityService, apFieldService, apConfig,
+    .factory('apModelFactory', function (_, apCacheService, apDataService, apListFactory, apListItemFactory,
+                                         apQueryFactory, apUtilityService, apFieldService, apConfig,
                                          apIndexedCacheFactory, apDecodeService, $q, toastr) {
 
         var defaultQueryName = apConfig.defaultQueryName;

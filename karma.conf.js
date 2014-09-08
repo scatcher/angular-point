@@ -24,8 +24,9 @@ module.exports = function (config) {
             'bower_components/angular-toastr/dist/angular-toastr.js',
 
             // Angular Point
-            'src/app.js',
+            'test/mock/app.mock.js',
             'src/constants.js',
+            'src/config.js',
             'src/services/*.js',
             'src/factories/*.js',
             'src/models/*.js',

@@ -184,6 +184,7 @@ module.exports = function (grunt) {
             },
             debug: {
                 browsers: ['Chrome'],
+                singleRun: false,
                 autoWatch: true
             }
         }

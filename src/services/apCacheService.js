@@ -9,10 +9,69 @@
  */
 angular.module('angularPoint')
     .service('apCacheService', function ($q, $log, _, apIndexedCacheFactory) {
-        /** Stores list names when a new model is registered along with the GUID to allow us to retrieve the GUID in future */
-        var entityNameToType = {};
-        /** The Main cache object which stores ModelCache objects.  Keys being the model GUID and value being an a ModelCache object */
-        var entityCache = {};
+        /**
+         * @description Stores list names when a new model is registered along with the GUID to allow us to retrieve the
+         * GUID in future
+         * @example
+         * <pre>
+         *     entityNameToType = {
+         *          list1Name: {
+         *              model: list1Model,
+         *              entityType: list1GUID
+         *          },
+         *          list2Name: {
+         *              model: list2Model,
+         *              entityType: list2GUID
+         *          }
+         *          ...
+         *     }
+         * </pre>
+         */
+        var entityNameToType = {},
+
+        /**
+         * @description Stores list GUID when a new model is registered with a reference to the model for future reference.
+         * @example
+         * <pre>
+         *     entityTypeToName = {
+         *          list1GUID: {
+         *              model: list1Model
+         *          },
+         *          list2GUID: {
+         *              model: list2Model
+         *          }
+         *          ...
+         *     }
+         * </pre>
+         */
+            entityTypeToName = {},
+        /**
+         * @description The Main cache object which stores ModelCache objects.  Keys being the model GUID and value
+         * being an a ModelCache object
+         * @example
+         * <pre>
+         *     entityCache = {
+         *          list1GUID: {
+         *              item1ID: { //EnityCache for entity 1
+         *                  associationQueue: [],
+         *                  updateCount: 3,
+         *                  entityType: list1GUID,
+         *                  entityId: item1ID,
+         *                  entityLocations: [],
+         *                  entity: {} //This is where the actual entity is referenced
+         *              }
+         *              item2ID: { //EnityCache for entity 2
+         *                  ...
+         *              }
+         *          },
+         *          list2GUID: {
+         *              item1ID: ...
+         *          }
+         *          ...
+         *     }
+         * </pre>
+         */
+            entityCache = {};
 
         /**
          * @name ModelCache
@@ -22,6 +81,7 @@ angular.module('angularPoint')
          */
         function ModelCache() {
         }
+
         ModelCache.prototype = apIndexedCacheFactory.create();
 
         /** Make sure to properly set the appropriate constructor instead of using the one inherited from IndexedCache*/
@@ -47,7 +107,7 @@ angular.module('angularPoint')
         }
 
         EntityContainer.prototype = {
-            getEntity:  _getEntity,
+            getEntity: _getEntity,
             removeEntity: _removeEntity
         };
 
@@ -60,6 +120,7 @@ angular.module('angularPoint')
             getEntityContainer: getEntityContainer,
             getEntityTypeByName: getEntityTypeByName,
             getEntityTypeKey: getEntityTypeKey,
+            getModel: getModel,
             removeEntity: removeEntity,
             registerEntity: registerEntity,
             registerModel: registerModel
@@ -80,11 +141,36 @@ angular.module('angularPoint')
          */
         function registerModel(model) {
             if (model.list && model.list.guid && model.list.title) {
+                /** Store a reference to the model by list title */
                 entityNameToType[model.list.title] = {
                     model: model,
                     entityType: getEntityTypeKey(model.list.guid)
                 };
+
+                /** Store a reference to the model by list guid */
+                entityTypeToName[model.list.guid] = {
+                    model: model
+                };
             }
+        }
+
+        /**
+         * @ngdoc function
+         * @name angularPoint.apCacheService:getModel
+         * @methodOf angularPoint.apCacheService
+         * @description
+         * Allows us to retrieve a reference to a given model by either the list title or list GUID.
+         * @param {string} entityType List title or list GUID.
+         * @returns {object} A reference to the requested model.
+         */
+        function getModel(entityType) {
+            var model,
+                entityTypeKey = getEntityTypeKey(entityType);
+
+            if (entityTypeToName[entityTypeKey]) {
+                model = entityTypeToName[entityTypeKey].model;
+            }
+            return model;
         }
 
         /**
@@ -129,7 +215,7 @@ angular.module('angularPoint')
          * @description
          * Promise which returns the requested entity once it has been registered in the cache.
          */
-        function _getEntity () {
+        function _getEntity() {
             var entityContainer = this;
             var deferred = $q.defer();
             if (entityContainer.entity) {
@@ -167,9 +253,9 @@ angular.module('angularPoint')
         function getCachedEntities(entityType) {
             var modelCache = getModelCache(entityType),
                 allEntities = apIndexedCacheFactory.create();
-            if(modelCache) {
-                _.each(modelCache, function(entityContainer) {
-                    if(entityContainer.entity && entityContainer.entity.id) {
+            if (modelCache) {
+                _.each(modelCache, function (entityContainer) {
+                    if (entityContainer.entity && entityContainer.entity.id) {
                         allEntities.addEntity(entityContainer.entity);
                     }
                 });
@@ -250,7 +336,7 @@ angular.module('angularPoint')
          */
         function removeEntity(entityType, entityId) {
             var modelCache = getModelCache(entityType, entityId);
-            if(modelCache[entityId]) {
+            if (modelCache[entityId]) {
                 delete modelCache[entityId];
             }
         }

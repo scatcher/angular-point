@@ -19,7 +19,7 @@ NG_DOCS={
       "type": "service",
       "moduleName": "angularPoint",
       "shortDescription": "Stores a reference for all list items based on list GUID and list item id.  Allows us to then register promises that",
-      "keywords": "add allows angularpoint apcacheservice api assuming based belongs cache cached call create created creates deferred entities entity entitycontainer entityid entitytype equaling eventually existing exists extend fulfills function future guid indexed instance item items key keystring list local lookup lowercase model modelcache newly object optionally pass pending point promises provide reference register registered registers removes requested requests resolve resolves return returns secondary service single stored stores synchronise undefined updated withing"
+      "keywords": "add allows angularpoint apcacheservice api assuming based belongs cache cached call create created creates deferred entities entity entitycontainer entityid entitytype equaling eventually existing exists extend fulfills function future guid indexed instance item items key keystring list local lookup lowercase model modelcache newly object optionally pass pending point promises provide reference register registered registers removes requested requests resolve resolves retrieve return returns secondary service single stored stores synchronise title undefined updated withing"
     },
     {
       "section": "api",

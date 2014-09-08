@@ -1,6 +1,6 @@
 "use strict";
 
-describe("Service: apDataService", function () {
+ddescribe("Service: apDataService", function () {
 
     beforeEach(module("angularPoint"));
 
@@ -11,10 +11,11 @@ describe("Service: apDataService", function () {
         mockToUpdate,
         mockXML,
         mockXMLService,
-        $rootScope;
+        $rootScope,
+        $httpBackend;
 
 
-    beforeEach(inject(function (_apDataService_, _mockModel_, _mockXMLService_, _$rootScope_) {
+    beforeEach(inject(function (_apDataService_, _mockModel_, _mockXMLService_, _$rootScope_, $injector) {
         apDataService = _apDataService_;
         mockModel = _mockModel_;
         $rootScope = _$rootScope_;
@@ -23,6 +24,12 @@ describe("Service: apDataService", function () {
         mockModel.importMocks();
         primaryQueryCache = mockModel.getCache('primary');
         secondaryQueryCache = mockModel.getCache('secondary');
+
+        // Set up the mock http service responses
+        $httpBackend = $injector.get('$httpBackend');
+
+
+
 
     }));
 
@@ -107,14 +114,13 @@ describe("Service: apDataService", function () {
                     .then(function (response) {
                         expect(primaryQueryCache[1]).toBeDefined();
                         expect(secondaryQueryCache[1]).toBeDefined();
-                    }, function(err) {
+                    }, function (err) {
                         expect(err).toBeDefined();
                     });
                 $rootScope.$digest();
             });
         });
     });
-
 
 
     describe('Function: deleteAttachment', function () {
@@ -151,7 +157,7 @@ describe("Service: apDataService", function () {
     describe('Function: getCollection', function () {
         it('can process a GetListCollection call', function () {
             mockXMLService.xhrStub('getListCollection');
-            apDataService.getCollection({operation:'GetListCollection'})
+            apDataService.getCollection({operation: 'GetListCollection'})
                 .then(function (listCollection) {
                     expect(listCollection.length).toEqual(1);
                 });
@@ -170,10 +176,76 @@ describe("Service: apDataService", function () {
         });
     });
 
+    describe('Function: getUserProfileByName', function () {
+        it('returns a user profile object', function () {
+            mockXMLService.xhrStub('getUserProfileByName');
+            apDataService.getUserProfileByName()
+                .then(function (response) {
+                    expect(response).toEqual({
+                        UserProfile_GUID: 'e1234f12-6992-42eb-9bbc-b3a123b29295',
+                        AccountName: 'DOMAINJohn.Doe',
+                        PreferredName: 'DOMAINJohn.Doe',
+                        UserName: 'John.Doe',
+                        userLoginName: 'DOMAINJohn.Doe'
+                    });
+                });
+            $rootScope.$digest();
+        });
+    });
+
+    describe('Function: getGroupCollectionFromUser', function () {
+        it('returns an array of groups the user belongs to', function () {
+            mockXMLService.xhrStub('getGroupCollectionFromUser');
+            apDataService.getGroupCollectionFromUser()
+                .then(function (response) {
+                    expect(response).toEqual([{
+                        ID: '385',
+                        Name: 'Super Duper Admins',
+                        Description: '',
+                        OwnerID: '338',
+                        OwnerIsUser: 'True'
+                    }, {
+                        ID: '396',
+                        Name: 'Super Duper Contributors',
+                        Description: 'Members of this group are able to contribute to create and edit project records.',
+                        OwnerID: '385',
+                        OwnerIsUser: 'False'
+                    }, {
+                        ID: '398',
+                        Name: 'Super Duper Viewers',
+                        Description: 'Members of this group are able to view project specific information.',
+                        OwnerID: '385',
+                        OwnerIsUser: 'False'
+                    }]);
+                });
+            $rootScope.$digest();
+        });
+    });
+
+
+    //TODO Get $httpBackend working
+    //describe('Function: getCurrentSite', function () {
+    //    it('returns the site url', function () {
+    //
+    //        /** Mock response for apDataService.getCurrentSite */
+    //        $httpBackend.when('POST', '/_vti_bin/Webs.asmx')
+    //            .respond(function (method, url, data) {
+    //                return [200, mockXMLService.getWebUrlFromPageUrl];
+    //            });
+    //
+    //        apDataService.getCurrentSite()
+    //            .then(function (response) {
+    //                expect(response).toEqual('');
+    //            });
+    //
+    //        $httpBackend.flush();
+    //    });
+    //});
+
     describe('Function: getView', function () {
         it('can process a list definition', function () {
             mockXMLService.xhrStub('GetView');
-            apDataService.getView({ listName:mockModel.list.guid })
+            apDataService.getView({listName: mockModel.list.guid})
                 .then(function (response) {
                     expect(response.viewFields).toBeDefined();
                 });
@@ -184,7 +256,7 @@ describe("Service: apDataService", function () {
     describe('Function: getList', function () {
         it('can process a list definition', function () {
             mockXMLService.xhrStub('GetList');
-            apDataService.getList({ listName:mockModel.list.guid })
+            apDataService.getList({listName: mockModel.list.guid})
                 .then(function (response) {
                     expect(response).toEqual(mockXMLService.GetList);
                 });
@@ -195,7 +267,7 @@ describe("Service: apDataService", function () {
     describe('Function: getListFields', function () {
         it('can extend the list fields', function () {
             mockXMLService.xhrStub('GetList');
-            apDataService.getListFields({listName:mockModel.list.guid})
+            apDataService.getListFields({listName: mockModel.list.guid})
                 .then(function (response) {
                     expect(response.length).toEqual(98);
                 });

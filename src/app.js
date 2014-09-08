@@ -28,11 +28,4 @@ catch (e) {
  */
 angular.module('angularPoint', [
   'toastr'
-])
-
-  .run(function (apConfig) {
-
-        /** Add a convenience flag, inverse of offline */
-        apConfig.online = !apConfig.offline;
-  });
-
+]);

@@ -1,6 +1,6 @@
 {
     "name": "angular-point",
-    "version": "0.0.3",
+    "version": "1.0.1",
     "homepage": "https://github.com/scatcher/angular-point",
     "authors": [
         "Scott <github@scotthatcher.com>"
@@ -10,18 +10,16 @@
     "license": "MIT",
     "main": "./dist/angular-point.min.js",
     "dependencies": {
-        "angular": "~1.2",
+        "angular": "~1.2.23",
         "angular-toastr": "latest",
         "chance": "latest",
         "jquery": "~1.11",
         "lodash": "~2.4",
-        "lodash-deep": "^1.2.1",
-        "SPServices": "https://github.com/scatcher/SPServices.git#master"
+        "lodash-deep": "^1.2.1"
     },
     "devDependencies": {
-        "angular-sanitize": "~1.2",
-        "angular-mocks": "~1.2",
-        "angular-resource": "~1.2",
+        "angular-sanitize": "~1.2.23",
+        "angular-mocks": "~1.2.23",
         "angular-bootstrap": "^0.11"
     },
     "ignore": [
