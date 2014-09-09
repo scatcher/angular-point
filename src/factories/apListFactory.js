@@ -71,7 +71,8 @@ angular.module('angularPoint')
                 fields: [],
                 guid: '',
                 mapping: {},
-                title: ''
+                title: '',
+                webURL: apConfig.defaultUrl
             };
 
             _.extend(list, defaults, config);

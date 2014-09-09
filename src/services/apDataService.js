@@ -892,7 +892,6 @@ angular.module('angularPoint')
             }
             var payload = {
                 operation: 'UpdateListItems',
-                webURL: model.list.webURL,
                 listName: model.list.getListId(),
                 valuepairs: opts.valuePairs
             };
@@ -952,7 +951,6 @@ angular.module('angularPoint')
                 target: _.isFunction(entity.getCache) ? entity.getCache() : model.getCache(),
                 updateAllCaches: false,
                 operation: 'UpdateListItems',
-                webURL: model.list.webURL,
                 listName: model.list.getListId(),
                 batchCmd: 'Delete',
                 ID: entity.id
