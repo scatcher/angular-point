@@ -96,6 +96,7 @@ angular.module('angularPoint')
         debug: false,
         defaultQueryName: 'primary',
         defaultUrl: '',
+        environment: 'production',
         firebaseURL: "The optional url of your firebase source",
         offline: window.location.href.indexOf('localhost') > -1 ||
         window.location.href.indexOf('http://0.') > -1 ||
@@ -245,15 +246,15 @@ angular.module('angularPoint')
          * @param {object} model Model to create the cache for.
          */
         function registerModel(model) {
-            if (model.list && model.list.guid && model.list.title) {
+            if (model.list && model.list.getListId() && model.list.title) {
                 /** Store a reference to the model by list title */
                 entityNameToType[model.list.title] = {
                     model: model,
-                    entityType: getEntityTypeKey(model.list.guid)
+                    entityType: getEntityTypeKey(model.list.getListId())
                 };
 
                 /** Store a reference to the model by list guid */
-                entityTypeToName[model.list.guid] = {
+                entityTypeToName[model.list.getListId()] = {
                     model: model
                 };
             }
@@ -397,7 +398,7 @@ angular.module('angularPoint')
          */
         function registerEntity(entity, targetCache) {
             var model = entity.getModel();
-            var entityContainer = getEntityContainer(model.list.guid, entity.id);
+            var entityContainer = getEntityContainer(model.list.getListId(), entity.id);
             /** Maintain a single object in cache for this entity */
             if (!_.isObject(entityContainer.entity)) {
                 /** Entity isn't currently in the cache */
@@ -523,7 +524,7 @@ angular.module('angularPoint')
          * var options = {
          *        operation: 'GetVersionCollection',
          *        webURL: apConfig.defaultUrl,
-         *        strlistID: model.list.guid,
+         *        strlistID: model.list.getListId(),
          *        strlistItemID: listItem.id,
          *        strFieldName: fieldDefinition.internalName
          *    };
@@ -1044,7 +1045,7 @@ angular.module('angularPoint')
          *    return apDataService.deleteAttachment({
          *        listItemId: listItem.id,
          *        url: url,
-         *        listName: listItem.getModel().list.guid
+         *        listName: listItem.getModel().list.getListId()
          *    });
          * };
          * </pre>
@@ -1356,7 +1357,7 @@ angular.module('angularPoint')
             var payload = {
                 operation: 'UpdateListItems',
                 webURL: model.list.webURL,
-                listName: model.list.guid,
+                listName: model.list.getListId(),
                 valuepairs: opts.valuePairs
             };
 
@@ -1416,7 +1417,7 @@ angular.module('angularPoint')
                 updateAllCaches: false,
                 operation: 'UpdateListItems',
                 webURL: model.list.webURL,
-                listName: model.list.guid,
+                listName: model.list.getListId(),
                 batchCmd: 'Delete',
                 ID: entity.id
             };
@@ -6040,6 +6041,7 @@ angular.module('angularPoint')
          * @constructor
          */
         function List(config) {
+            var list = this;
             var defaults = {
                 viewFields: '',
                 customFields: [],
@@ -6050,21 +6052,31 @@ angular.module('angularPoint')
                 title: ''
             };
 
-            /** Manually set site url if defined, prevents SPServices from making a blocking call to fetch it. */
-            if (apConfig.defaultUrl) {
-                defaults.webURL = apConfig.defaultUrl;
-            }
+            _.extend(list, defaults, config);
 
-
-            var list = _.extend({}, defaults, config);
+            list.environments = list.environments || {production: list.guid};
 
             apFieldService.extendFieldDefinitions(list);
-
-            return list;
         }
 
+        List.prototype.getListId = getListId;
 
 
+
+        function getListId() {
+            var list = this;
+            if(_.isString(list.environments[apConfig.environment])) {
+                /**
+                 * For a multi-environment setup, we accept a list.environments object with a property for each named
+                 * environment with a corresponding value of the list guid.  The active environment can be selected
+                 * by setting apConfig.environment to the string name of the desired environment.
+                 */
+                return list.environments[apConfig.environment];
+            } else {
+                throw new Error('There isn\'t a valid environment definition for apConfig.environment=' + apConfig.environment + '  ' +
+                'Please confirm that the list "' + list.title + '" has the necessary environmental configuration.');
+            }
+        }
 
         /**
          * @ngdoc object
@@ -6535,7 +6547,7 @@ angular.module('angularPoint')
             var listItem = this;
             return apDataService.getCollection({
                 operation: 'GetAttachmentCollection',
-                listName: listItem.getModel().list.guid,
+                listName: listItem.getModel().list.getListId(),
                 webURL: listItem.getModel().list.webURL,
                 ID: listItem.id,
                 filterNode: 'Attachment'
@@ -6566,7 +6578,7 @@ angular.module('angularPoint')
             return apDataService.deleteAttachment({
                 listItemId: listItem.id,
                 url: url,
-                listName: listItem.getModel().list.guid
+                listName: listItem.getModel().list.getListId()
             });
         }
 
@@ -6665,7 +6677,7 @@ angular.module('angularPoint')
 
                 var payload = {
                     operation: 'GetVersionCollection',
-                    strlistID: model.list.guid,
+                    strlistID: model.list.getListId(),
                     strlistItemID: listItem.id,
                     strFieldName: fieldDefinition.internalName
                 };
@@ -6944,7 +6956,7 @@ angular.module('angularPoint')
          * be passed to the list constructor to extend further
          * @param {string} config.list.title - List name, no spaces.  Offline XML file will need to be
          * named the same (ex: CustomList so xml file would be apConfig.offlineXML + '/CustomList.xml')
-         * @param {string} config.list.guid - Unique SharePoint ID (ex: '{3DBEB25A-BEF0-4213-A634-00DAF46E3897}')
+         * @param {string} config.list.getListId() - Unique SharePoint ID (ex: '{3DBEB25A-BEF0-4213-A634-00DAF46E3897}')
          * @param {object[]} config.list.customFields - Maps SharePoint fields with names we'll use within the
          * application.  Identifies field types and formats accordingly.  Also denotes if a field is read only.
          * @constructor
@@ -7245,7 +7257,7 @@ angular.module('angularPoint')
         // */
         //function getLocalEntity(entityId) {
         //    var model = this;
-        //    return apCacheService.getEntity(model.list.guid, entityId);
+        //    return apCacheService.getEntity(model.list.getListId(), entityId);
         //}
 
         /**
@@ -7290,7 +7302,7 @@ angular.module('angularPoint')
         function getListItemById(entityId, options) {
             var model = this,
                 /** Only required option for apDataService is listName which is available on model */
-                defaults = {listName: model.list.guid},
+                defaults = {listName: model.list.getListId()},
                 opts = _.extend({}, defaults, options);
 
             /** Fetch from the server */
@@ -7588,7 +7600,7 @@ angular.module('angularPoint')
          */
         function getCachedEntity(entityId) {
             var model = this;
-            return apCacheService.getCachedEntity(model.list.guid, entityId);
+            return apCacheService.getCachedEntity(model.list.getListId(), entityId);
         }
 
         /**
@@ -7634,7 +7646,7 @@ angular.module('angularPoint')
         function extendListMetadata(options) {
             var model = this,
                 deferred = $q.defer(),
-                defaults = {listName: model.list.guid};
+                defaults = {listName: model.list.getListId()};
 
             /** Only request information if the list hasn't already been extended and is not currently being requested */
             if (!model.fieldDefinitionsExtended && !model.deferredListDefinition) {
@@ -7999,7 +8011,7 @@ angular.module('angularPoint')
                 indexedCache: apIndexedCacheFactory.create(),
                 /** Date/Time last run */
                 lastRun: null,
-                listName: model.list.guid,
+                listName: model.list.getListId(),
                 /** Flag to prevent us from makeing concurrent requests */
                 negotiatingWithServer: false,
                 /** Every time we run we want to check to update our cached data with
@@ -8398,7 +8410,7 @@ angular.module('angularPoint')
 
         var listItemModel = scope.listItem.getModel();
         var uploadUrl = listItemModel.list.webURL + '/_layouts/Attachfile.aspx?ListId=' +
-          listItemModel.list.guid + '&ItemId=' + scope.listItem.id + '&IsDlg=1';
+          listItemModel.list.getListId() + '&ItemId=' + scope.listItem.id + '&IsDlg=1';
 
         scope.trustedUrl = $sce.trustAsResourceUrl(uploadUrl);
 

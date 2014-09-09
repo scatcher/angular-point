@@ -1,6 +1,6 @@
 "use strict";
 
-ddescribe("Service: apDataService", function () {
+describe("Service: apDataService", function () {
 
     beforeEach(module("angularPoint"));
 

@@ -56,7 +56,7 @@ angular.module('angularPoint')
 
         var listItemModel = scope.listItem.getModel();
         var uploadUrl = listItemModel.list.webURL + '/_layouts/Attachfile.aspx?ListId=' +
-          listItemModel.list.guid + '&ItemId=' + scope.listItem.id + '&IsDlg=1';
+          listItemModel.list.getListId() + '&ItemId=' + scope.listItem.id + '&IsDlg=1';
 
         scope.trustedUrl = $sce.trustAsResourceUrl(uploadUrl);
 

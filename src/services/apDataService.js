@@ -60,7 +60,7 @@ angular.module('angularPoint')
          * var options = {
          *        operation: 'GetVersionCollection',
          *        webURL: apConfig.defaultUrl,
-         *        strlistID: model.list.guid,
+         *        strlistID: model.list.getListId(),
          *        strlistItemID: listItem.id,
          *        strFieldName: fieldDefinition.internalName
          *    };
@@ -581,7 +581,7 @@ angular.module('angularPoint')
          *    return apDataService.deleteAttachment({
          *        listItemId: listItem.id,
          *        url: url,
-         *        listName: listItem.getModel().list.guid
+         *        listName: listItem.getModel().list.getListId()
          *    });
          * };
          * </pre>
@@ -893,7 +893,7 @@ angular.module('angularPoint')
             var payload = {
                 operation: 'UpdateListItems',
                 webURL: model.list.webURL,
-                listName: model.list.guid,
+                listName: model.list.getListId(),
                 valuepairs: opts.valuePairs
             };
 
@@ -953,7 +953,7 @@ angular.module('angularPoint')
                 updateAllCaches: false,
                 operation: 'UpdateListItems',
                 webURL: model.list.webURL,
-                listName: model.list.guid,
+                listName: model.list.getListId(),
                 batchCmd: 'Delete',
                 ID: entity.id
             };

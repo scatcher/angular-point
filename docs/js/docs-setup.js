@@ -226,7 +226,7 @@ NG_DOCS={
       "type": "function",
       "moduleName": "apDataService",
       "shortDescription": "Deletes and attachment on a list item.  Most commonly used by ListItem.deleteAttachment which is shown",
-      "keywords": "apdataservice api attachment best collection commonly configuration delete deleteattachment deletes example function getmodel guid item list listitem listitemid listname option options parameters promise prototype requires resolves return updated url var"
+      "keywords": "apdataservice api attachment best collection commonly configuration delete deleteattachment deletes example function getlistid getmodel guid item list listitem listitemid listname option options parameters promise prototype requires resolves return updated url var"
     },
     {
       "section": "api",
@@ -262,7 +262,7 @@ NG_DOCS={
       "type": "function",
       "moduleName": "apDataService",
       "shortDescription": "Returns the version history for a field in a list item.",
-      "keywords": "apconfig apdataservice api array changes configuration defaulturl definition field fielddefinition function getfieldversionhistory getversioncollection guid history internalname item list listitem model object operation options passed promise resolves returns spservices strfieldname strlistid strlistitemid var version weburl"
+      "keywords": "apconfig apdataservice api array changes configuration defaulturl definition field fielddefinition function getfieldversionhistory getlistid getversioncollection history internalname item list listitem model object operation options passed promise resolves returns spservices strfieldname strlistid strlistitemid var version weburl"
     },
     {
       "section": "api",
@@ -505,7 +505,7 @@ NG_DOCS={
       "type": "function",
       "moduleName": "Model",
       "shortDescription": "Model Constructor",
-      "keywords": "active additional addnewitem adds apconfig api aplistitemfactory apmodelfactory application array attachments boolean builds choice complete config costestimate creategenericfactory currency customer customfields customlist data deferred defined definition definitions denotes description display don empty entities examples executed extend factory false fictitious field fielddefinitionsextended fields file flag formats full function getalllistitems getlistitemchangessincetoken group guid identifies individual internalname items js list ll lookup mappedname maps model named names obj object objecttype offline offlinexml operation optional options params passed process project projectdescription projectgroup projects projectsmodel provided queries query read readonly ready requested return server set sharepoint spaces status taskmanager text time title true types unique user var xml"
+      "keywords": "active additional addnewitem adds apconfig api aplistitemfactory apmodelfactory application array attachments boolean builds choice complete config costestimate creategenericfactory currency customer customfields customlist data deferred defined definition definitions denotes description display don empty entities examples executed extend factory false fictitious field fielddefinitionsextended fields file flag formats full function getalllistitems getlistid getlistitemchangessincetoken group guid identifies individual internalname items js list ll lookup mappedname maps model named names obj object objecttype offline offlinexml operation optional options params passed process project projectdescription projectgroup projects projectsmodel provided queries query read readonly ready requested return server set sharepoint spaces status taskmanager text time title true types unique user var xml"
     },
     {
       "section": "api",

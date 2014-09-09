@@ -46,7 +46,7 @@ angular.module('angularPoint')
          * be passed to the list constructor to extend further
          * @param {string} config.list.title - List name, no spaces.  Offline XML file will need to be
          * named the same (ex: CustomList so xml file would be apConfig.offlineXML + '/CustomList.xml')
-         * @param {string} config.list.guid - Unique SharePoint ID (ex: '{3DBEB25A-BEF0-4213-A634-00DAF46E3897}')
+         * @param {string} config.list.getListId() - Unique SharePoint ID (ex: '{3DBEB25A-BEF0-4213-A634-00DAF46E3897}')
          * @param {object[]} config.list.customFields - Maps SharePoint fields with names we'll use within the
          * application.  Identifies field types and formats accordingly.  Also denotes if a field is read only.
          * @constructor
@@ -347,7 +347,7 @@ angular.module('angularPoint')
         // */
         //function getLocalEntity(entityId) {
         //    var model = this;
-        //    return apCacheService.getEntity(model.list.guid, entityId);
+        //    return apCacheService.getEntity(model.list.getListId(), entityId);
         //}
 
         /**
@@ -392,7 +392,7 @@ angular.module('angularPoint')
         function getListItemById(entityId, options) {
             var model = this,
                 /** Only required option for apDataService is listName which is available on model */
-                defaults = {listName: model.list.guid},
+                defaults = {listName: model.list.getListId()},
                 opts = _.extend({}, defaults, options);
 
             /** Fetch from the server */
@@ -690,7 +690,7 @@ angular.module('angularPoint')
          */
         function getCachedEntity(entityId) {
             var model = this;
-            return apCacheService.getCachedEntity(model.list.guid, entityId);
+            return apCacheService.getCachedEntity(model.list.getListId(), entityId);
         }
 
         /**
@@ -736,7 +736,7 @@ angular.module('angularPoint')
         function extendListMetadata(options) {
             var model = this,
                 deferred = $q.defer(),
-                defaults = {listName: model.list.guid};
+                defaults = {listName: model.list.getListId()};
 
             /** Only request information if the list hasn't already been extended and is not currently being requested */
             if (!model.fieldDefinitionsExtended && !model.deferredListDefinition) {

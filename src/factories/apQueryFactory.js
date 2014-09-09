@@ -87,7 +87,7 @@ angular.module('angularPoint')
                 indexedCache: apIndexedCacheFactory.create(),
                 /** Date/Time last run */
                 lastRun: null,
-                listName: model.list.guid,
+                listName: model.list.getListId(),
                 /** Flag to prevent us from makeing concurrent requests */
                 negotiatingWithServer: false,
                 /** Every time we run we want to check to update our cached data with

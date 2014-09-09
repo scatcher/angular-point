@@ -63,6 +63,7 @@ angular.module('angularPoint')
          * @constructor
          */
         function List(config) {
+            var list = this;
             var defaults = {
                 viewFields: '',
                 customFields: [],
@@ -73,21 +74,31 @@ angular.module('angularPoint')
                 title: ''
             };
 
-            /** Manually set site url if defined, prevents SPServices from making a blocking call to fetch it. */
-            if (apConfig.defaultUrl) {
-                defaults.webURL = apConfig.defaultUrl;
-            }
+            _.extend(list, defaults, config);
 
-
-            var list = _.extend({}, defaults, config);
+            list.environments = list.environments || {production: list.guid};
 
             apFieldService.extendFieldDefinitions(list);
-
-            return list;
         }
 
+        List.prototype.getListId = getListId;
 
 
+
+        function getListId() {
+            var list = this;
+            if(_.isString(list.environments[apConfig.environment])) {
+                /**
+                 * For a multi-environment setup, we accept a list.environments object with a property for each named
+                 * environment with a corresponding value of the list guid.  The active environment can be selected
+                 * by setting apConfig.environment to the string name of the desired environment.
+                 */
+                return list.environments[apConfig.environment];
+            } else {
+                throw new Error('There isn\'t a valid environment definition for apConfig.environment=' + apConfig.environment + '  ' +
+                'Please confirm that the list "' + list.title + '" has the necessary environmental configuration.');
+            }
+        }
 
         /**
          * @ngdoc object

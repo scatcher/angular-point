@@ -300,7 +300,7 @@ angular.module('angularPoint')
             var listItem = this;
             return apDataService.getCollection({
                 operation: 'GetAttachmentCollection',
-                listName: listItem.getModel().list.guid,
+                listName: listItem.getModel().list.getListId(),
                 webURL: listItem.getModel().list.webURL,
                 ID: listItem.id,
                 filterNode: 'Attachment'
@@ -331,7 +331,7 @@ angular.module('angularPoint')
             return apDataService.deleteAttachment({
                 listItemId: listItem.id,
                 url: url,
-                listName: listItem.getModel().list.guid
+                listName: listItem.getModel().list.getListId()
             });
         }
 
@@ -430,7 +430,7 @@ angular.module('angularPoint')
 
                 var payload = {
                     operation: 'GetVersionCollection',
-                    strlistID: model.list.guid,
+                    strlistID: model.list.getListId(),
                     strlistItemID: listItem.id,
                     strFieldName: fieldDefinition.internalName
                 };

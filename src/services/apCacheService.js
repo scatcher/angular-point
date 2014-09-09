@@ -140,15 +140,15 @@ angular.module('angularPoint')
          * @param {object} model Model to create the cache for.
          */
         function registerModel(model) {
-            if (model.list && model.list.guid && model.list.title) {
+            if (model.list && model.list.getListId() && model.list.title) {
                 /** Store a reference to the model by list title */
                 entityNameToType[model.list.title] = {
                     model: model,
-                    entityType: getEntityTypeKey(model.list.guid)
+                    entityType: getEntityTypeKey(model.list.getListId())
                 };
 
                 /** Store a reference to the model by list guid */
-                entityTypeToName[model.list.guid] = {
+                entityTypeToName[model.list.getListId()] = {
                     model: model
                 };
             }
@@ -292,7 +292,7 @@ angular.module('angularPoint')
          */
         function registerEntity(entity, targetCache) {
             var model = entity.getModel();
-            var entityContainer = getEntityContainer(model.list.guid, entity.id);
+            var entityContainer = getEntityContainer(model.list.getListId(), entity.id);
             /** Maintain a single object in cache for this entity */
             if (!_.isObject(entityContainer.entity)) {
                 /** Entity isn't currently in the cache */
