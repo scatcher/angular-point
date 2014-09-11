@@ -39,7 +39,6 @@ angular.module('angularPoint')
         };
 
 
-
         /** Run all code as if we were in an online environment */
         apConfig.online = true;
         apConfig.offline = false;
@@ -47,10 +46,10 @@ angular.module('angularPoint')
         apConfig.defaultUrl = '/test';
 
         /** Replace the real apDataService.requestData method with this stub to prevent accidental calls out */
-        apDataService.requestData = function() {
-            var deferred = $q.defer();
-            return deferred.promise;
-        };
+        //apDataService.requestData = function() {
+        //    var deferred = $q.defer();
+        //    return deferred.promise;
+        //};
 
         return mockXMLService;
 
@@ -177,7 +176,8 @@ angular.module('angularPoint')
         }
 
         function getWebUrlFromPageUrl() {
-            return $.parseXML('<?xml version="1.0" encoding="utf-8"?><soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema"><soap:Body><WebUrlFromPageUrlResponse xmlns="http://schemas.microsoft.com/sharepoint/soap/"><WebUrlFromPageUrlResult>http://sharepoint.company-server.com/mysite</WebUrlFromPageUrlResult></WebUrlFromPageUrlResponse></soap:Body></soap:Envelope>');
+            return '<?xml version="1.0" encoding="utf-8"?><soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema"><soap:Body><WebUrlFromPageUrlResponse xmlns="http://schemas.microsoft.com/sharepoint/soap/"><WebUrlFromPageUrlResult>http://sharepoint.company-server.com/mysite</WebUrlFromPageUrlResult></WebUrlFromPageUrlResponse></soap:Body></soap:Envelope>';
+            //return $.parseXML('<?xml version="1.0" encoding="utf-8"?><soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema"><soap:Body><WebUrlFromPageUrlResponse xmlns="http://schemas.microsoft.com/sharepoint/soap/"><WebUrlFromPageUrlResult>http://sharepoint.company-server.com/mysite</WebUrlFromPageUrlResult></WebUrlFromPageUrlResponse></soap:Body></soap:Envelope>');
         }
 
         function deleteAttachment() {

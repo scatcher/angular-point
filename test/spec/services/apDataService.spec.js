@@ -1,6 +1,6 @@
 "use strict";
 
-describe("Service: apDataService", function () {
+ddescribe("Service: apDataService", function () {
 
     beforeEach(module("angularPoint"));
 
@@ -33,10 +33,21 @@ describe("Service: apDataService", function () {
 
     }));
 
+    //TODO Get $httpBackend working
+    describe('Function: getCurrentSite', function () {
+        it('returns the site url', function () {
+            apDataService.getCurrentSite()
+                .then(function (response) {
+                    expect(response).toEqual('http://sharepoint.company-server.com/mysite');
+                });
+            $httpBackend.flush();
+        });
+    });
+
     describe('Function: addUpdateItemModel', function () {
         describe('add item', function () {
             it('the cache to have the new item', function () {
-                mockXMLService.xhrStub('CreateListItem');
+                //mockXMLService.xhrStub('CreateListItem');
 
                 apDataService.addUpdateItemModel(mockModel, {text: 'New Entity'})
                     .then(function (response) {
@@ -44,7 +55,7 @@ describe("Service: apDataService", function () {
                         expect(primaryQueryCache[4]).toBeDefined();
                         expect(secondaryQueryCache[4]).toBeUndefined();
                     });
-                $rootScope.$digest();
+                $httpBackend.flush();
             });
         });
         describe('update item', function () {
@@ -222,25 +233,6 @@ describe("Service: apDataService", function () {
         });
     });
 
-
-    //TODO Get $httpBackend working
-    //describe('Function: getCurrentSite', function () {
-    //    it('returns the site url', function () {
-    //
-    //        /** Mock response for apDataService.getCurrentSite */
-    //        $httpBackend.when('POST', '/_vti_bin/Webs.asmx')
-    //            .respond(function (method, url, data) {
-    //                return [200, mockXMLService.getWebUrlFromPageUrl];
-    //            });
-    //
-    //        apDataService.getCurrentSite()
-    //            .then(function (response) {
-    //                expect(response).toEqual('');
-    //            });
-    //
-    //        $httpBackend.flush();
-    //    });
-    //});
 
     describe('Function: getView', function () {
         it('can process a list definition', function () {

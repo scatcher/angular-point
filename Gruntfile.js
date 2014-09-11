@@ -8,6 +8,8 @@
 
 //var Dgeni = require('dgeni');
 
+var xmlUtil = require('./test/mock/xmlConverter');
+
 module.exports = function (grunt) {
 
     // Load grunt tasks automatically
@@ -183,7 +185,7 @@ module.exports = function (grunt) {
                 }
             },
             debug: {
-                browsers: ['Chrome'],
+                browsers: ['IE'],
                 singleRun: false,
                 autoWatch: true
             }
@@ -196,6 +198,15 @@ module.exports = function (grunt) {
     //    var dgeni = new Dgeni([require('./dgeni/dgeni-config')]);
     //    dgeni.generate().then(done);
     //});
+
+    grunt.registerTask('parse-offline-data', function () {
+        var done = this.async();
+
+        xmlUtil.createJSON('./test/mock/xml').then(function (xml) {
+            /** Tell grunt we're done */
+            done(xml);
+        });
+    });
 
     grunt.registerTask('dgeni-docs', [
         'clean:build',

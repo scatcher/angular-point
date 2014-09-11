@@ -16,8 +16,6 @@ module.exports = function (config) {
             'bower_components/angular/angular.js',
             'bower_components/angular-mocks/angular-mocks.js',
             'bower_components/angular-sanitize/angular-sanitize.js',
-            'bower_components/angular-bootstrap/ui-bootstrap.js',
-            'bower_components/SPServices/jquery.SPServices.js',
             'bower_components/chance/chance.js',
             'bower_components/lodash/dist/lodash.js',
             'bower_components/lodash-deep/lodash-deep.js',
@@ -25,6 +23,8 @@ module.exports = function (config) {
 
             // Angular Point
             'test/mock/app.mock.js',
+            'test/mock/run.mock.js',
+            'test/mock/xml/offlineXML.js',
             'src/constants.js',
             'src/config.js',
             'src/services/*.js',
@@ -39,7 +39,7 @@ module.exports = function (config) {
         ],
 
         // list of files / patterns to exclude
-        exclude: [],
+        exclude: ['test/mock/xmlConverter.js'],
 
         // web server port
         port: 8080,
