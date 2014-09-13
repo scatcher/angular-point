@@ -41,6 +41,12 @@ point in the future assuming the entity is eventually registered.</p>
 </div></td></tr></tbody></table><h5 id="methods_getentitytypebyname_returns">Returns</h5><table class="variables-matrix"><tr><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="angularpoint-apcacheservice-page angularpoint-apcacheservice-getentitytypebyname-page"><p>Lowercase list GUID.</p>
 </div></td></tr></table></div>
 </li>
+<li><h3 id="methods_getmodel">getModel(entityType)</h3>
+<div class="getmodel"><div class="angularpoint-apcacheservice-page angularpoint-apcacheservice-getmodel-page"><p>Allows us to retrieve a reference to a given model by either the list title or list GUID.</p>
+</div><h5 id="methods_getmodel_parameters">Parameters</h5><table class="variables-matrix table table-bordered table-striped"><thead><tr><th>Param</th><th>Type</th><th>Details</th></tr></thead><tbody><tr><td>entityType</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="angularpoint-apcacheservice-page angularpoint-apcacheservice-getmodel-page"><p>List title or list GUID.</p>
+</div></td></tr></tbody></table><h5 id="methods_getmodel_returns">Returns</h5><table class="variables-matrix"><tr><td><a href="" class="label type-hint type-hint-object">object</a></td><td><div class="angularpoint-apcacheservice-page angularpoint-apcacheservice-getmodel-page"><p>A reference to the requested model.</p>
+</div></td></tr></table></div>
+</li>
 <li><h3 id="methods_registerentity">registerEntity(entity, [targetCache])</h3>
 <div class="registerentity"><div class="angularpoint-apcacheservice-page angularpoint-apcacheservice-registerentity-page"><p>Registers an entity in the cache and fulfills any pending deferred requests for the entity. If the
 entity already exists in the cache, we extend the existing object with the updated entity and return a

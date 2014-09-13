@@ -23,7 +23,7 @@ ListItem.prototype.deleteAttachment = function (url) {
    return apDataService.deleteAttachment({
        listItemId: listItem.id,
        url: url,
-       listName: listItem.getModel().list.guid
+       listName: listItem.getModel().list.getListId()
    });
 };
 </pre>

@@ -19,7 +19,7 @@ NG_DOCS={
       "type": "service",
       "moduleName": "angularPoint",
       "shortDescription": "Stores a reference for all list items based on list GUID and list item id.  Allows us to then register promises that",
-      "keywords": "add allows angularpoint apcacheservice api assuming based belongs cache cached call create created creates deferred entities entity entitycontainer entityid entitytype equaling eventually existing exists extend fulfills function future guid indexed instance item items key keystring list local lookup lowercase model modelcache newly object optionally pass pending point promises provide reference register registered registers removes requested requests resolve resolves return returns secondary service single stored stores synchronise undefined updated withing"
+      "keywords": "add allows angularpoint apcacheservice api assuming based belongs cache cached call create created creates deferred entities entity entitycontainer entityid entitytype equaling eventually existing exists extend fulfills function future guid indexed instance item items key keystring list local lookup lowercase model modelcache newly object optionally pass pending point promises provide reference register registered registers removes requested requests resolve resolves retrieve return returns secondary service single stored stores synchronise title undefined updated withing"
     },
     {
       "section": "api",
@@ -226,7 +226,7 @@ NG_DOCS={
       "type": "function",
       "moduleName": "apDataService",
       "shortDescription": "Deletes and attachment on a list item.  Most commonly used by ListItem.deleteAttachment which is shown",
-      "keywords": "apdataservice api attachment best collection commonly configuration delete deleteattachment deletes example function getmodel guid item list listitem listitemid listname option options parameters promise prototype requires resolves return updated url var"
+      "keywords": "apdataservice api attachment best collection commonly configuration delete deleteattachment deletes example function getlistid getmodel guid item list listitem listitemid listname option options parameters promise prototype requires resolves return updated url var"
     },
     {
       "section": "api",
@@ -262,7 +262,7 @@ NG_DOCS={
       "type": "function",
       "moduleName": "apDataService",
       "shortDescription": "Returns the version history for a field in a list item.",
-      "keywords": "apconfig apdataservice api array changes configuration defaulturl definition field fielddefinition function getfieldversionhistory getversioncollection guid history internalname item list listitem model object operation options passed promise resolves returns spservices strfieldname strlistid strlistitemid var version weburl"
+      "keywords": "apconfig apdataservice api array changes configuration defaulturl definition field fielddefinition function getfieldversionhistory getlistid getversioncollection history internalname item list listitem model object operation options passed promise resolves returns spservices strfieldname strlistid strlistitemid var version weburl"
     },
     {
       "section": "api",
@@ -505,7 +505,7 @@ NG_DOCS={
       "type": "function",
       "moduleName": "Model",
       "shortDescription": "Model Constructor",
-      "keywords": "active additional addnewitem adds apconfig api aplistitemfactory apmodelfactory application array attachments boolean builds choice complete config costestimate creategenericfactory currency customer customfields customlist data deferred defined definition definitions denotes description display don empty entities examples executed extend factory false fictitious field fielddefinitionsextended fields file flag formats full function getalllistitems getlistitemchangessincetoken group guid identifies individual internalname items js list ll lookup mappedname maps model named names obj object objecttype offline offlinexml operation optional options params passed process project projectdescription projectgroup projects projectsmodel provided queries query read readonly ready requested return server set sharepoint spaces status taskmanager text time title true types unique user var xml"
+      "keywords": "active additional addnewitem adds apconfig api aplistitemfactory apmodelfactory application array attachments boolean builds choice complete config costestimate creategenericfactory currency customer customfields customlist data deferred defined definition definitions denotes description display don empty entities examples executed extend factory false fictitious field fielddefinitionsextended fields file flag formats full function getalllistitems getlistid getlistitemchangessincetoken group guid identifies individual internalname items js list ll lookup mappedname maps model named names obj object objecttype offline offlinexml operation optional options params passed process project projectdescription projectgroup projects projectsmodel provided queries query read readonly ready requested return server set sharepoint spaces status taskmanager text time title true types unique user var xml"
     },
     {
       "section": "api",
@@ -578,6 +578,15 @@ NG_DOCS={
       "moduleName": "Model",
       "shortDescription": "Helper function that return the local cache for a named query if provided, otherwise",
       "keywords": "api cache changes check contents current customquery function getcache helper identify key local model named namedquerycache primary primaryquerycache projectmodel provided query resolved return returns sharepoint unique var"
+    },
+    {
+      "section": "api",
+      "id": "Model.getCachedEntities",
+      "shortName": "Model.getCachedEntities",
+      "type": "function",
+      "moduleName": "Model",
+      "shortDescription": "Returns all entities registered for this model regardless of which query it can be found in.",
+      "keywords": "api entities function getcachedentities model query registered returns"
     },
     {
       "section": "api",
