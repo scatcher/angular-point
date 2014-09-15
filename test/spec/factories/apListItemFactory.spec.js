@@ -8,15 +8,15 @@ describe("Factory: apListItemFactory", function () {
         mockModel,
         mockLookupModel,
         mockListItem,
-        offlineXML,
+        apCachedXML,
         $httpBackend;
 
-    beforeEach(inject(function (_apListItemFactory_, _mockModel_, _mockLookupModel_, _$httpBackend_, _offlineXML_) {
+    beforeEach(inject(function (_apListItemFactory_, _mockModel_, _mockLookupModel_, _$httpBackend_, _apCachedXML_) {
         apListItemFactory = _apListItemFactory_;
         mockModel = _mockModel_;
         mockLookupModel = _mockLookupModel_;
         $httpBackend = _$httpBackend_;
-        offlineXML = _offlineXML_;
+        apCachedXML = _apCachedXML_;
         mockModel.importMocks();
         mockListItem = mockModel.getCache()[1];
     }));
@@ -181,7 +181,7 @@ describe("Factory: apListItemFactory", function () {
         //it('rejects the promise with an error message', function () {
         //    $httpBackend.whenPOST('/test/_vti_bin/Lists.asmx')
         //        .respond(function (method, url, data) {
-        //            return [200, offlineXML.ErrorUpdatingListItem];
+        //            return [200, apCachedXML.ErrorUpdatingListItem];
         //        });
         //    mockListItem.saveFields('integer')
         //        .then(function (response) {

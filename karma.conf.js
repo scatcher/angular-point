@@ -24,7 +24,7 @@ module.exports = function (config) {
             // Angular Point
             'test/mock/app.mock.js',
             'test/mock/run.mock.js',
-            'test/mock/xml/offlineXML.js',
+            'test/mock/data/parsedXML.js',
             'src/constants.js',
             'src/config.js',
             'src/services/*.js',
@@ -46,7 +46,7 @@ module.exports = function (config) {
 
         // level of logging
         // possible values: LOG_DISABLE || LOG_ERROR || LOG_WARN || LOG_INFO || LOG_DEBUG
-        logLevel: config.LOG_WARN,
+        logLevel: config.LOG_INFO,
 
 
         // enable / disable watching file and executing tests whenever any file changes

@@ -3,8 +3,10 @@
   "version": "1.0.1",
   "dependencies": {},
   "devDependencies": {
+    "angular-point-xml-parser": "latest",
     "bower": "^1",
     "canonical-path": "0.0.2",
+    "coveralls": "^2.11.1",
     "grunt": "^0.4.4",
     "grunt-angular-templates": "^0.5.4",
     "grunt-autoprefixer": "^0.8.1",
@@ -42,9 +44,8 @@
     "karma-script-launcher": "^0.1",
     "load-grunt-tasks": "^0.6",
     "lodash": "^2.4.1",
-    "time-grunt": "^0.4",
-    "coveralls": "^2.11.1",
-    "q": "^1.0.1"
+    "q": "^1.0.1",
+    "time-grunt": "^0.4"
   },
   "engines": {
     "node": ">=0.10.0"

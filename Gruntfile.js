@@ -8,7 +8,7 @@
 
 //var Dgeni = require('dgeni');
 
-var xmlUtil = require('./test/mock/xmlConverter');
+var xmlUtil = require('./node_modules/angular-point-xml-parser/index.js');
 
 module.exports = function (grunt) {
 
@@ -199,10 +199,15 @@ module.exports = function (grunt) {
     //    dgeni.generate().then(done);
     //});
 
-    grunt.registerTask('parse-offline-data', function () {
+    grunt.registerTask('parse-xml', function () {
         var done = this.async();
 
-        xmlUtil.createJSON('./test/mock/xml').then(function (xml) {
+        xmlUtil.createJSON({
+            dest: './test/mock/data',
+            fileName: 'parsedXML.js',
+            constantName: 'apCachedXML',
+            src: ['./test/mock/xml']
+        }).then(function (xml) {
             /** Tell grunt we're done */
             done(xml);
         });
@@ -239,6 +244,14 @@ module.exports = function (grunt) {
 
     grunt.registerTask('build', [
         'coverage',
+        'clean:dist',
+        'ngtemplates',
+        'concat',
+        'ngAnnotate',
+        'uglify',
+        'doc'
+    ]);
+    grunt.registerTask('build-no-test', [
         'clean:dist',
         'ngtemplates',
         'concat',
