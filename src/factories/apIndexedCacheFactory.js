@@ -156,12 +156,15 @@ angular.module('angularPoint')
          * @methodOf angularPoint.IndexedCache
          * @description
          * Removes an entity from the cache.
-         * @param {object} entity Entity to remove.
+         * @param {object|number} entity Entity to remove or ID of entity to be removed.
          */
         function removeEntity(entity) {
             var cache = this;
             if(_.isObject && entity.id && cache[entity.id]) {
                 delete cache[entity.id];
+            } else if(_.isNumber(entity)) {
+                /** Allow entity ID to be used instead of then entity */
+                delete cache[entity];
             }
         }
 

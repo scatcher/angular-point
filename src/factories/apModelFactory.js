@@ -15,9 +15,7 @@
  * @requires angularPoint.apUtilityService
  */
 angular.module('angularPoint')
-    .factory('apModelFactory', function (_, apCacheService, apDataService, apListFactory, apListItemFactory,
-                                         apQueryFactory, apUtilityService, apFieldService, apConfig,
-                                         apIndexedCacheFactory, apDecodeService, $q, toastr) {
+    .factory('apModelFactory', function (_, apCacheService, apDataService, apListFactory, apListItemFactory, apQueryFactory, apUtilityService, apFieldService, apConfig, apIndexedCacheFactory, apDecodeService, $q, toastr) {
 
         var defaultQueryName = apConfig.defaultQueryName;
 
@@ -169,6 +167,7 @@ angular.module('angularPoint')
             getAllListItems: getAllListItems,
             getCache: getCache,
             getCachedEntity: getCachedEntity,
+            getCachedEntities: getCachedEntities,
             getFieldDefinition: getFieldDefinition,
             getListItemById: getListItemById,
             //getLocalEntity: getLocalEntity,
@@ -427,10 +426,11 @@ angular.module('angularPoint')
          */
         function addNewItem(entity, options) {
             var model = this;
-            return apDataService.addUpdateItemModel(model, entity, options).then(function (response) {
-                /** Optionally broadcast change event */
-                apUtilityService.registerChange(model);
-            });
+            return apDataService.createListItem(model, entity, options)
+                .then(function (response) {
+                    /** Optionally broadcast change event */
+                    apUtilityService.registerChange(model);
+                });
         }
 
         /**
@@ -691,6 +691,19 @@ angular.module('angularPoint')
         function getCachedEntity(entityId) {
             var model = this;
             return apCacheService.getCachedEntity(model.list.getListId(), entityId);
+        }
+
+        /**
+         * @ngdoc function
+         * @name Model.getCachedEntities
+         * @module Model
+         * @description
+         * Returns all entities registered for this model regardless of query.
+         * @returns {object[]} All registered entities for this model.
+         */
+        function getCachedEntities() {
+            var model = this;
+            return apCacheService.getCachedEntities(model.list.getListId());
         }
 
         /**

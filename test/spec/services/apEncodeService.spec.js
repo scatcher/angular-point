@@ -5,8 +5,6 @@ describe("Factory: apEncodeService", function () {
     beforeEach(module("angularPoint"));
 
     var apEncodeService,
-        mockChangeTokenXML,
-        mockEntityCache,
         mockModel,
         mockXMLService,
         apUtilityService;
@@ -17,7 +15,6 @@ describe("Factory: apEncodeService", function () {
         mockModel = _mockModel_;
         apUtilityService = _apUtilityService_;
 
-        mockChangeTokenXML = mockXMLService.listItemsSinceChangeToken;
     }));
 
     describe('Function: choiceMultiToString', function () {

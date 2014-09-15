@@ -14,7 +14,6 @@ describe('Service: apCacheService', function () {
     var apCacheService,
         mockEntityCache,
         mockModel,
-        mockXMLService,
         updatedMock = {
             "id": 1,
             "titleText": "Updated Mock"
@@ -27,13 +26,11 @@ describe('Service: apCacheService', function () {
         resolvedEntityCache,
         $rootScope;
 
-    beforeEach(inject(function (_apCacheService_, _mockXMLService_, _mockModel_, _$rootScope_) {
+    beforeEach(inject(function (_apCacheService_, _mockModel_, _$rootScope_) {
         apCacheService = _apCacheService_;
-        mockXMLService = _mockXMLService_;
         $rootScope = _$rootScope_;
         mockModel = _mockModel_;
-        mockEntityCache = mockModel.importMocks();
-
+        mockEntityCache = mockModel.getCache();
     }));
 
     describe('getEntityTypeKey', function () {
@@ -54,6 +51,8 @@ describe('Service: apCacheService', function () {
 
     describe('registerEntity', function () {
         beforeEach(function () {
+            mockModel.importMocks();
+
             apCacheService.registerEntity(new mockModel.factory(updatedMock), mockEntityCache);
             apCacheService.registerEntity(new mockModel.factory(newMock), mockEntityCache);
         });
@@ -69,6 +68,7 @@ describe('Service: apCacheService', function () {
 
     describe('Function: getCachedEntity', function () {
         it('finds the correct entity via the cache service istead of the model', function () {
+            mockModel.importMocks();
             var entity = apCacheService.getCachedEntity(mockModel.list.guid, 1);
             expect(entity.titleText).toEqual('Mock 1');
         });
@@ -76,6 +76,7 @@ describe('Service: apCacheService', function () {
 
     describe('Function: getCachedEntities', function () {
         it('returns all entities for a given model', function () {
+            mockModel.importMocks();
             var entity = apCacheService.getCachedEntities(mockModel.list.guid, 1);
             expect(entity.count()).toEqual(2);
         });
@@ -84,6 +85,7 @@ describe('Service: apCacheService', function () {
 
     describe('getEntityContainer', function () {
         beforeEach(function () {
+            mockModel.importMocks();
             emptyEntityCache = apCacheService.getEntityContainer(mockModel.list.guid, 100);
             resolvedEntityCache = apCacheService.getEntityContainer(mockModel.list.guid, 1);
         });
@@ -131,7 +133,7 @@ describe('Service: apCacheService', function () {
         });
     });
 
-    describe('removeEntity', function () {
+    describe('Function: removeEntity', function () {
         it('should remove 1 of the 2 cache\'s', function () {
             resolvedEntityCache = apCacheService.getEntityContainer(mockModel.list.guid, 1);
             //Remove entity 1
@@ -139,6 +141,18 @@ describe('Service: apCacheService', function () {
             //Reinstantiate entity 1 without adding an entity
             resolvedEntityCache = apCacheService.getEntityContainer(mockModel.list.guid, 1);
             expect(resolvedEntityCache.entity).toBeUndefined();
+        });
+    });
+
+    describe('Function: deleteEntity', function () {
+        it('should remove 2 of the 2 cache\'s', function () {
+            var primaryCache = mockModel.getCache('primary');
+            var secondaryCache = mockModel.getCache('secondary');
+
+            apCacheService.deleteEntity(mockModel.list.getListId(), 1);
+
+            expect(primaryCache[1]).toBeUndefined();
+            expect(secondaryCache[1]).toBeUndefined();
         });
     });
 

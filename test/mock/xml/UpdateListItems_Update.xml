@@ -9,7 +9,7 @@
                         <ErrorCode>0x00000000</ErrorCode>
                         <z:row ows_ContentTypeId="0x0100782C5A698D67FB4FAB0D0BACAD0F3516" ows_Title="Mock 1"
                                ows_Boolean="1" ows_Currency="20.0000000000000" ows_Date="2014-08-19 00:00:00"
-                               ows_DateTime="2014-08-13 06:30:00" ows_Integer="12.0000000000000"
+                               ows_DateTime="2014-08-13 06:30:00" ows_Integer="13.0000000000000"
                                ows_JSON="[{&quot;test&quot;:&quot;widget&quot;,&quot;test2&quot;:&quot;sprocket&quot;}]"
                                ows_Lookup="1;#Lookup 1" ows_LookupMulti="2;#Lookup 2;#3;#Lookup 3"
                                ows_User="338;#Bill Smith" ows_UserMulti="205;#Sam Johnson;#338;#Bill Smith"

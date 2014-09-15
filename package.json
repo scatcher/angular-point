@@ -43,7 +43,8 @@
     "load-grunt-tasks": "^0.6",
     "lodash": "^2.4.1",
     "time-grunt": "^0.4",
-    "coveralls": "^2.11.1"
+    "coveralls": "^2.11.1",
+    "q": "^1.0.1"
   },
   "engines": {
     "node": ">=0.10.0"

@@ -13,8 +13,7 @@
  * @requires angularPoint.apUtilityService
  */
 angular.module('angularPoint')
-    .factory('apListItemFactory', function ($q, _, apCacheService, apDataService, apEncodeService, apUtilityService,
-                                            apConfig) {
+    .factory('apListItemFactory', function ($q, _, apCacheService, apDataService, apEncodeService, apUtilityService, apConfig) {
 
         /**
          * @ngdoc object
@@ -43,17 +42,6 @@ angular.module('angularPoint')
             saveFields: saveFields,
             validateEntity: validateEntity
         };
-
-        ///**
-        // * @ngdoc function
-        // * @name ListItem.getDataService
-        // * @description
-        // * Allows us to reference when out of scope
-        // * @returns {object} Reference to the dataService in the event that it's out of scope.
-        // */
-        //ListItem.prototype.getDataService = function () {
-        //  return apDataService;
-        //};
 
         /**
          * @ngdoc function
@@ -86,11 +74,12 @@ angular.module('angularPoint')
             var model = listItem.getModel();
             var deferred = $q.defer();
 
-            apDataService.addUpdateItemModel(model, listItem, options).then(function (response) {
-                deferred.resolve(response);
-                /** Optionally broadcast change event */
-                apUtilityService.registerChange(model);
-            });
+            apDataService.updateListItem(model, listItem, options)
+                .then(function (response) {
+                    deferred.resolve(response);
+                    /** Optionally broadcast change event */
+                    apUtilityService.registerChange(model);
+                });
 
             return deferred.promise;
         }
@@ -147,7 +136,7 @@ angular.module('angularPoint')
             /** Extend defaults with any provided options */
             var opts = _.extend({}, defaults, options);
 
-            apDataService.addUpdateItemModel(model, listItem, opts)
+            apDataService.updateListItem(model, listItem, opts)
                 .then(function (response) {
                     deferred.resolve(response);
                     /** Optionally broadcast change event */
@@ -183,7 +172,7 @@ angular.module('angularPoint')
             var model = listItem.getModel();
             var deferred = $q.defer();
 
-            apDataService.deleteItemModel(model, listItem, options).then(function (response) {
+            apDataService.deleteListItem(model, listItem, options).then(function (response) {
                 deferred.resolve(response);
                 /** Optionally broadcast change event */
                 apUtilityService.registerChange(model);
@@ -218,9 +207,9 @@ angular.module('angularPoint')
          */
         function getLookupReference(fieldName, lookupId) {
             var listItem = this;
-            if(_.isUndefined(fieldName)) {
+            if (_.isUndefined(fieldName)) {
                 throw new Error('A field name is required.', fieldName);
-            } else if(_.isEmpty(listItem[fieldName])) {
+            } else if (_.isEmpty(listItem[fieldName])) {
                 return '';
             } else {
                 var model = listItem.getModel();

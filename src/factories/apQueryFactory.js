@@ -173,8 +173,9 @@ angular.module('angularPoint')
             var model = query.getModel();
             var deferred = $q.defer();
 
-            /** Return existing promise if request is already underway */
-            if (query.negotiatingWithServer) {
+            /** Return existing promise if request is already underway or has been previously executed in the past
+             * 1/10th of a second */
+            if (query.negotiatingWithServer || (_.isDate(query.lastRun) && query.lastRun.getTime() + 100 > new Date().getTime())) {
                 return query.promise;
             } else {
                 /** Set flag to prevent another call while this query is active */

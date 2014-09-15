@@ -4,7 +4,7 @@
  /*  State will persist throughout life of session
  */
 angular.module('angularPoint')
-    .service('mockModel', function (apModelFactory, apDecodeService, mockXMLService) {
+    .service('mockModel', function (apModelFactory, apDecodeService, mockXMLService, $httpBackend) {
 
         /**
          * Entity Constructor
@@ -80,6 +80,10 @@ angular.module('angularPoint')
                 '</Query>'
         });
 
+        //model.executeQuery('primary');
+        //model.executeQuery('secondary');
+        //$httpBackend.flush();
+
 
         /********************* Model Specific Shared Functions ***************************************/
 
@@ -104,19 +108,26 @@ angular.module('angularPoint')
             var secondaryCache = model.getCache('secondary');
             primaryCache.clear();
             secondaryCache.clear();
-            apDecodeService.processListItems(model, model.getQuery('primary'), mockXMLService.GetListItemChangesSinceToken, {
-                target: primaryCache
-            });
+            //apDecodeService.processListItems(model, primaryCache, mockXMLService.GetListItemChangesSinceToken, {
+            //    target: primaryCache
+            //});
+            //apDecodeService.processListItems(model, secondaryCache, mockXMLService.GetListItemChangesSinceToken, {
+            //    target: secondaryCache
+            //});
+
+            model.executeQuery('primary');
+            model.executeQuery('secondary');
+            $httpBackend.flush();
 
             /** Extend list and field definitions with mock XML */
-            apDecodeService.extendListDefinitionFromXML(model.list, mockXMLService.GetListItemChangesSinceToken);
-            apDecodeService.extendFieldDefinitionsFromXML(model.list.fields, mockXMLService.GetListItemChangesSinceToken);
-            model.fieldDefinitionsExtended = true;
+            //apDecodeService.extendListDefinitionFromXML(model.list, mockXMLService.GetListItemChangesSinceToken);
+            //apDecodeService.extendFieldDefinitionsFromXML(model.list.fields, mockXMLService.GetListItemChangesSinceToken);
+            //model.fieldDefinitionsExtended = true;
 
-            /** Populate secondary query cache with same objects */
-            _.extend(secondaryCache, primaryCache);
+            ///** Populate secondary query cache with same objects */
+            //_.extend(secondaryCache, primaryCache);
 
-            return primaryCache;
+            //return primaryCache;
         };
 
         return model;

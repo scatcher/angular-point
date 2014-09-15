@@ -185,7 +185,7 @@ module.exports = function (grunt) {
                 }
             },
             debug: {
-                browsers: ['IE'],
+                browsers: ['Chrome'],
                 singleRun: false,
                 autoWatch: true
             }

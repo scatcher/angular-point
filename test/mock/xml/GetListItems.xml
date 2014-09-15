@@ -46,7 +46,7 @@
                                ows_FileLeafRef='2;#2_.000' ows_PermMask='0x7fffffffffffffff'/>
                         <z:row ows_Attachments='0' ows_LinkTitle='&lt; and &amp;#39; but test&quot;' ows_Boolean='1'
                                ows_Currency='15.0000000000000' ows_Date='2014-09-02 00:00:00'
-                               ows_DateTime='2014-09-15 00:00:00' ows_Integer='10.0000000000000' ows_JSON='{test: 12}'
+                               ows_DateTime='2014-09-15 00:00:00' ows_Integer='10.0000000000000' ows_JSON='{&quot;test&quot;: 12}'
                                ows_Lookup='1;#Lookup 1' ows_LookupMulti='3;#Lookup 3' ows_User='205;#Sam Johnson'
                                ows_UserMulti='' ows_Calculated='string;#&lt; and &amp;#39; but test&quot;'
                                ows_Choice='Option 2' ows_MultiChoice=';#Defined Choice 3;#'

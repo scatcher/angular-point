@@ -12,7 +12,6 @@ describe('Factory: apQueryFactory', function () {
         apQueryFactory = _apQueryFactory_;
         $q = _$q_;
         apDataService = _apDataService_;
-        mockModel.importMocks();
         mockQuery = mockModel.getQuery();
         $rootScope = _$rootScope_;
     }));
@@ -50,7 +49,6 @@ describe('Factory: apQueryFactory', function () {
             expect(firstPromise).not.toBe(thirdPromise);
         });
         it('sets the negotiating with server flag prior to completion', function () {
-            //mockModel.executeQuery('primary');
             expect(mockQuery.negotiatingWithServer).toBe(true);
         });
         it('resets the negotiating with server flag once complete', function () {
@@ -65,13 +63,5 @@ describe('Factory: apQueryFactory', function () {
         deferred.resolve(mockModel.getCache());
         return deferred.promise;
     }
-
-
-    //describe('Constructor: Query', function () {
-    //    it('uses the override URL if specified', function () {
-    //        mockModel.executeQuery('primary');
-    //        expect(mockModel.webURL).toEqual('/test/url');
-    //    });
-    //});
 
 });

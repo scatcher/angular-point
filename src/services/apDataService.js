@@ -17,15 +17,14 @@
  */
 angular.module('angularPoint')
     .service('apDataService', function ($q, $timeout, $http, _, apQueueService, apConfig, apUtilityService,
-                                        apDecodeService, apEncodeService, apFieldService, apIndexedCacheFactory,
-                                        apMocksService, toastr, SPServices) {
+                                        apCacheService, apDecodeService, apEncodeService, apFieldService,
+                                        apIndexedCacheFactory, apMocksService, toastr, SPServices) {
 
         /** Exposed functionality */
         var apDataService = {
-            addUpdateItemModel: addUpdateItemModel,
-            cleanCache: cleanCache,
+            createListItem: createListItem,
             deleteAttachment: deleteAttachment,
-            deleteItemModel: deleteItemModel,
+            deleteListItem: deleteListItem,
             executeQuery: executeQuery,
             getCollection: getCollection,
             getCurrentSite: getCurrentSite,
@@ -40,15 +39,137 @@ angular.module('angularPoint')
             processChangeTokenXML: processChangeTokenXML,
             processDeletionsSinceToken: processDeletionsSinceToken,
             retrieveChangeToken: retrieveChangeToken,
-            removeEntityFromLocalCache: removeEntityFromLocalCache,
             retrievePermMask: retrievePermMask,
-            serviceWrapper: serviceWrapper
+            serviceWrapper: serviceWrapper,
+            updateListItem: updateListItem
         };
 
         return apDataService;
 
 
         /*********************** Private ****************************/
+
+            //TODO Rename Me
+        function requestData(opts, additionalArgs) {
+            var deferred = $q.defer();
+
+            if (apConfig.online) {
+                //TODO Convert jQuery style promise into $q promise for consistency
+                //var webServiceCall = SPServices(opts);
+                //$q.when($().SPServices(opts)).then(function (webServiceCall) {
+                //webServiceCall.then(function () {
+
+                var soapData = SPServices(opts);
+
+                $http({
+                    method: 'POST',
+                    url: soapData.ajaxURL,
+                    data: soapData.msg,
+                    responseType: "document",
+                    headers: {
+                        "Content-Type": "text/xml;charset='utf-8'"
+                    },
+                    transformRequest: function (data, headersGetter) {
+                        if (soapData.SOAPAction) {
+                            var headers = headersGetter();
+                            headers["SOAPAction"] = soapData.SOAPAction;
+                        }
+                        return data;
+                    },
+                    transformResponse: function (data, headersGetter) {
+                        if(_.isString(data)) {
+                            data = $.parseXML(data);
+                        }
+                        return data;
+                    }
+                }).then(function (response) {
+                    /** Success */
+                    /** Errors can still be resolved without throwing an error so check the XML */
+                    var error = apDecodeService.checkResponseForErrors(response.data);
+                    if (error) {
+                        console.error(error, opts);
+                        deferred.reject(error);
+                    } else {
+                        deferred.resolve(response.data);
+                    }
+                }, function (response) {
+                    /** Failure */
+                    var error = apDecodeService.checkResponseForErrors(response.data);
+                    console.error(response.statusText, opts);
+                    deferred.reject(response.statusText + ': ' + error);
+                });
+            } else {
+                apMocksService.mockRequest(opts, additionalArgs)
+                    .then(function (response) {
+                        deferred.resolve(response);
+                    });
+            }
+            return deferred.promise;
+        }
+
+        /**
+         * @ngdoc function
+         * @name apDataService.serviceWrapper
+         * @description
+         * Generic wrapper for any SPServices web service call.  The big benefit to this function is it allows us
+         * to continue to use the $q promise model throughout the application instead of using the promise
+         * implementation used in SPServices so we have a more consistent experience.
+         * Check http://spservices.codeplex.com/documentation for details on expected parameters for each operation.
+         *
+         * @param {object} options Payload params that is directly passed to SPServices.
+         * @param {string} [options.webURL] XML filter string used to find the elements to iterate over.
+         * @param {string} [options.filterNode] XML filter string used to find the elements to iterate over.
+         * This is typically 'z:row' for list items.
+         * @returns {object} Returns a promise which when resolved either returns clean objects parsed by the value
+         * in options.filterNode or the raw XML response if a options.filterNode
+         *
+         *      If options.filterNode is provided, returns XML parsed by node name
+         *      Otherwise returns the server response
+         */
+        function serviceWrapper(options) {
+            var defaults = {
+                /** You need to specify the offline xml file if you want to properly mock the request when offline */
+                offlineXML: apConfig.offlineXML + options.operation + '.xml',
+                postProcess: processXML,
+                webURL: apConfig.defaultUrl
+            };
+            var opts = _.extend({}, defaults, options);
+            var deferred = $q.defer();
+
+            /** Convert the xml returned from the server into an array of js objects */
+            function processXML(serverResponse) {
+                if (opts.filterNode) {
+                    return $(serverResponse).SPFilterNode(opts.filterNode).SPXmlToJson({
+                        includeAllAttrs: true,
+                        removeOws: false
+                    });
+                } else {
+                    return serverResponse;
+                }
+            }
+
+            /** Allow this method to be overloaded and pass any additional arguments to the mock service */
+            var additionalArgs = Array.prototype.slice.call(arguments, 1);
+
+            /** Display any async animations listening */
+            apQueueService.increase();
+
+            apDataService.requestData(opts, additionalArgs)
+                .then(function (response) {
+                    /** Failure */
+                    var data = opts.postProcess(response);
+                    apQueueService.decrease();
+                    deferred.resolve(data);
+                }, function (response) {
+                    /** Failure */
+                    toastr.error('Failed to complete the requested ' + opts.operation + ' operation.');
+                    apQueueService.decrease();
+                    deferred.reject(response);
+                });
+
+            return deferred.promise;
+        }
+
 
         /**
          * @ngdoc function
@@ -208,141 +329,6 @@ angular.module('angularPoint')
             return validPayload;
         }
 
-        /**
-         * @ngdoc function
-         * @name apDataService.serviceWrapper
-         * @description
-         * Generic wrapper for any SPServices web service call.  The big benefit to this function is it allows us
-         * to continue to use the $q promise model throughout the application instead of using the promise
-         * implementation used in SPServices so we have a more consistent experience.
-         * Check http://spservices.codeplex.com/documentation for details on expected parameters for each operation.
-         *
-         * @param {object} options Payload params that is directly passed to SPServices.
-         * @param {string} [options.webURL] XML filter string used to find the elements to iterate over.
-         * @param {string} [options.filterNode] XML filter string used to find the elements to iterate over.
-         * This is typically 'z:row' for list items.
-         * @returns {object} Returns a promise which when resolved either returns clean objects parsed by the value
-         * in options.filterNode or the raw XML response if a options.filterNode
-         *
-         *      If options.filterNode is provided, returns XML parsed by node name
-         *      Otherwise returns the server response
-         */
-            //TODO: Make this the primary function which interacts with SPServices and makes web service call.  No need having this logic duplicated.
-        function serviceWrapper(options) {
-            var defaults = {
-                /** You need to specify the offline xml file if you want to properly mock the request when offline */
-                offlineXML: apConfig.offlineXML + options.operation + '.xml',
-                postProcess: processXML,
-                webURL: apConfig.defaultUrl
-            };
-            var opts = _.extend({}, defaults, options);
-            var deferred = $q.defer();
-
-            /** Convert the xml returned from the server into an array of js objects */
-            function processXML(serverResponse) {
-                if (opts.filterNode) {
-                    return $(serverResponse).SPFilterNode(opts.filterNode).SPXmlToJson({
-                        includeAllAttrs: true,
-                        removeOws: false
-                    });
-                } else {
-                    return serverResponse;
-                }
-            }
-
-            /** Allow this method to be overloaded and pass any additional arguments to the mock service */
-            var additionalArgs = Array.prototype.slice.call(arguments, 1);
-
-            /** Display any async animations listening */
-            apQueueService.increase();
-
-            apDataService.requestData(opts, additionalArgs)
-                .then(function (response) {
-                    /** Failure */
-                    var data = opts.postProcess(response);
-                    apQueueService.decrease();
-                    deferred.resolve(data);
-                }, function (response) {
-                    /** Failure */
-                    toastr.error('Failed to complete the requested ' + opts.operation + ' operation.');
-                    apQueueService.decrease();
-                    deferred.reject(response);
-                });
-
-            return deferred.promise;
-        }
-
-        //TODO Rename Me
-        function requestData(opts, additionalArgs) {
-            var deferred = $q.defer();
-
-            if (apConfig.online) {
-                //TODO Convert jQuery style promise into $q promise for consistency
-                //var webServiceCall = SPServices(opts);
-                //$q.when($().SPServices(opts)).then(function (webServiceCall) {
-                //webServiceCall.then(function () {
-
-                var soapData = SPServices(opts);
-
-                $http({
-                    method: 'POST',
-                    url: soapData.ajaxURL,
-                    data: soapData.msg,
-                    responseType: "document",
-                    headers: {
-                        "Content-Type": "text/xml;charset='utf-8'"
-                    },
-                    transformRequest: function (data, headersGetter) {
-                        if (soapData.SOAPAction) {
-                            var headers = headersGetter();
-                            headers["SOAPAction"] = soapData.SOAPAction;
-                        }
-                        return data;
-                    },
-                    transformResponse: function (data, headersGetter) {
-                        //if (data) {
-                        //    var ret = xmlToJSON(
-                        //        data,
-                        //        {
-                        //            regex: /ows_/,
-                        //            regexReplacement: ""
-                        //        }
-                        //    )["soap:Envelope"]["soap:Body"];
-                        //
-                        //    return _.reduce(
-                        //        AngularSPHelper.comb[opt.operation.toLowerCase()],
-                        //        function(memo, item) {
-                        //            return memo[item];
-                        //        },
-                        //        ret
-                        //    );
-                        //}
-                        return data;
-                    }
-                }).then(function (response) {
-                    /** Success */
-                    /** Errors can still be resolved without throwing an error so check the XML */
-                    var error = apDecodeService.checkResponseForErrors(response.data);
-                    if (error) {
-                        console.error(error, opts);
-                        deferred.reject(error);
-                    } else {
-                        deferred.resolve(response.data);
-                    }
-                }, function (response) {
-                    /** Failure */
-                    var error = apDecodeService.checkResponseForErrors(response.data);
-                    console.error(response.statusText, opts);
-                    deferred.reject(response.statusText + ': ' + error);
-                });
-            } else {
-                apMocksService.mockRequest(opts, additionalArgs)
-                    .then(function (response) {
-                        deferred.resolve(response);
-                    });
-            }
-            return deferred.promise;
-        }
 
         function buildAjaxUrl(opts) {
             var deferred = $q.defer();
@@ -414,7 +400,7 @@ angular.module('angularPoint')
         function getGroupCollectionFromUser(login) {
             /** Create a new deferred object if not already defined */
             var deferred = $q.defer();
-            if(!login) {
+            if (!login) {
                 /** No login name provided so lookup profile for current user */
                 getUserProfileByName()
                     .then(function (userProfile) {
@@ -438,9 +424,7 @@ angular.module('angularPoint')
 
         function getCurrentSite() {
             var deferred = $q.defer();
-            //if (apConfig.defaultUrl) {
-            //    deferred.resolve(apConfig.defaultUrl);
-            //} else {
+
             var msg = SPServices.SOAPEnvelope.header +
                 "<WebUrlFromPageUrl xmlns='" + SPServices.SCHEMASharePoint + "/soap/' ><pageUrl>" +
                 ((location.href.indexOf("?") > 0) ? location.href.substr(0, location.href.indexOf("?")) : location.href) +
@@ -464,7 +448,6 @@ angular.module('angularPoint')
                 var error = apDecodeService.checkResponseForErrors(response.data);
                 deferred.reject(error);
             });
-            //}
             return deferred.promise;
         }
 
@@ -478,20 +461,12 @@ angular.module('angularPoint')
          * @returns {object} Promise which resolves with an array of field definitions for the list.
          */
         function getList(options) {
-            var deferred = $q.defer();
-
             var defaults = {
                 operation: 'GetList'
             };
 
             var opts = _.extend({}, defaults, options);
             return serviceWrapper(opts);
-            //    .then(function (responseXML) {
-            //        var listDefinition = apDecodeService
-            //            .extendListDefinitionFromXML({}, responseXML);
-            //        deferred.resolve(listDefinition);
-            //    });
-            //return deferred.promise;
         }
 
 
@@ -535,14 +510,14 @@ angular.module('angularPoint')
                 operation: 'GetListItems',
                 CAMLRowLimit: 1,
                 CAMLQuery: '' +
-                '<Query>' +
-                ' <Where>' +
-                '   <Eq>' +
-                '     <FieldRef Name="ID"/>' +
-                '     <Value Type="Number">' + entityId + '</Value>' +
-                '   </Eq>' +
-                ' </Where>' +
-                '</Query>',
+                    '<Query>' +
+                    ' <Where>' +
+                    '   <Eq>' +
+                    '     <FieldRef Name="ID"/>' +
+                    '     <Value Type="Number">' + entityId + '</Value>' +
+                    '   </Eq>' +
+                    ' </Where>' +
+                    '</Query>',
                 /** Create a temporary cache to store response */
                 target: apIndexedCacheFactory.create()
             };
@@ -762,26 +737,6 @@ angular.module('angularPoint')
 
         /**
          * @ngdoc function
-         * @name apDataService.removeEntityFromLocalCache
-         * @description
-         * Searches for an entity based on list item ID and removes it from the cached array if it exists.
-         * @param {Array} indexedCache Cached array of list items for a query.
-         * @param {Number} entityId The ID to evaluate against to determine if there is a match.
-         * @returns {boolean} Returns true if a list item was successfully found and removed.
-         */
-        function removeEntityFromLocalCache(indexedCache, entityId) {
-            var successfullyDeleted = false;
-
-            /** Remove from indexed cache if found */
-            if (indexedCache[entityId]) {
-                delete indexedCache[entityId];
-                successfullyDeleted = true;
-            }
-            return successfullyDeleted;
-        }
-
-        /**
-         * @ngdoc function
          * @name apDataService.retrieveChangeToken
          * @description
          * Returns the change token from the xml response of a GetListItemChangesSinceToken query
@@ -814,8 +769,6 @@ angular.module('angularPoint')
          * @param {Array} indexedCache Cached array of list items for a query.
          */
         function processDeletionsSinceToken(responseXML, indexedCache) {
-            var deleteCount = 0;
-
             /** Remove any locally cached entities that were deleted from the server */
             $(responseXML).SPFilterNode('Id').each(function () {
                 /** Check for the type of change */
@@ -824,102 +777,55 @@ angular.module('angularPoint')
                 if (changeType === 'Delete') {
                     var entityId = parseInt($(this).text(), 10);
                     /** Remove from local data array */
-                    var foundAndRemoved = removeEntityFromLocalCache(indexedCache, entityId);
-                    if (foundAndRemoved) {
-                        deleteCount++;
-                    }
+                    indexedCache.removeEntity(entityId);
                 }
             });
-            if (deleteCount > 0 && apConfig.offline) {
-                console.log(deleteCount + ' item(s) removed from local cache to mirror changes on source list.');
-            }
         }
-
-
-//        /**
-//         * @ngdoc function
-//         * @name apDataService.updateAllCaches
-//         * @description
-//         * Propagates a change to all duplicate entities in all cached queries within a given model.
-//         * @param {object} model Reference to the entities model.
-//         * @param {object} entity JavaScript object representing the SharePoint list item.
-//         * @param {object} [exemptQuery] - The query containing the updated item is automatically updated so we don't
-//         * need to process it.
-//         *
-//         * @returns {number} The number of queries where the entity was found and updated.
-//         */
-//        function updateAllCaches(model, entity, exemptQuery) {
-//            var queriesUpdated = 0;
-//            /** Search through each of the queries and update any occurrence of this entity */
-//            _.each(model.queries, function (query) {
-//                /** Process all query caches except the one originally used to retrieve entity because
-//                 * that is automatically updated by "apDecodeService.processListItems". */
-//                if (query != exemptQuery) {
-//                    apDecodeService.updateLocalCache(query.getCache(), [entity]);
-//                }
-//            });
-//            return queriesUpdated;
-//        }
 
         /**
          * @ngdoc function
-         * @name apDataService.addUpdateItemModel
+         * @name apDataService.createListItem
          * @description
-         * Adds or updates a list item based on if the item passed in contains an id attribute.
+         * Creates a new list item for the provided model.
          * @param {object} model Reference to the entities model.
          * @param {object} entity JavaScript object representing the SharePoint list item.
          * @param {object} [options] Optional configuration params.
          * @param {boolean} [options.buildValuePairs=true] Automatically generate pairs based on fields defined in model.
          * @param {Array[]} [options.valuePairs] Precomputed value pairs to use instead of generating them for each
          * field identified in the model.
-         * @returns {object} Promise which resolves with the newly updated item.
+         * @returns {object} Promise which resolves with the newly created item.
          */
-        function addUpdateItemModel(model, entity, options) {
+        function createListItem(model, entity, options) {
             var defaults = {
-                mode: 'update',  //Options for what to do with local list data array in store [replace, update, return]
-                buildValuePairs: true,
-                updateAllCaches: false,
-                valuePairs: []
-            };
-            /** Reference to the the query that needs to be updated if this is an existing entity */
-            var query;
-            var deferred = $q.defer();
+                    batchCmd: 'New',
+                    buildValuePairs: true,
+                    indexedCache: apIndexedCacheFactory.create({}),
+                    listName: model.list.getListId(),
+                    operation: 'UpdateListItems',
+                    valuePairs: []
+                },
+                deferred = $q.defer();
+
+            defaults.target = defaults.indexedCache;
             var opts = _.extend({}, defaults, options);
 
             if (opts.buildValuePairs === true) {
                 var editableFields = _.where(model.list.fields, {readOnly: false});
                 opts.valuePairs = apEncodeService.generateValuePairs(editableFields, entity);
             }
-            var payload = {
-                operation: 'UpdateListItems',
-                listName: model.list.getListId(),
-                valuepairs: opts.valuePairs
+
+            opts.getCache = function () {
+                return opts.indexedCache;
             };
 
-            if ((_.isObject(entity) && _.isNumber(entity.id))) {
-                /** Updating existing list item */
-                payload.batchCmd = 'Update';
-                payload.ID = entity.id;
-                query = entity.getQuery();
-            } else {
-                /** Creating new list item */
-                payload.batchCmd = 'New';
-                payload.indexedCache = apIndexedCacheFactory.create({});
-                payload.getCache = function () {
-                    return payload.indexedCache;
-                };
-                query = payload;
-            }
             /** Overload the function then pass anything past the first parameter to the supporting methods */
-            serviceWrapper(payload, entity, model)
+            serviceWrapper(opts, entity, model)
                 .then(function (response) {
                     if (apConfig.online) {
                         /** Online this should return an XML object */
-                        var indexedCache = apDecodeService.processListItems(model, query, response, opts);
-                        /** Return reference to updated entity if updating, otherwise send reference to last entity
-                         * in cache because it will have the new highest id */
-                        var updatedEntity = (entity && entity.id) ? indexedCache[entity.id] : indexedCache.last();
-                        deferred.resolve(updatedEntity);
+                        var indexedCache = apDecodeService.processListItems(model, opts, response, opts);
+                        /** Return reference to last entity in cache because it will have the new highest id */
+                        deferred.resolve(indexedCache.last());
                     } else {
                         /** Offline response should be the updated entity as a JS Object */
                         deferred.resolve(response);
@@ -932,7 +838,56 @@ angular.module('angularPoint')
 
         /**
          * @ngdoc function
-         * @name apDataService.deleteItemModel
+         * @name apDataService.updateListItem
+         * @description
+         * Updates an existing list item.
+         * @param {object} model Reference to the entities model.
+         * @param {object} entity JavaScript object representing the SharePoint list item.
+         * @param {object} [options] Optional configuration params.
+         * @param {boolean} [options.buildValuePairs=true] Automatically generate pairs based on fields defined in model.
+         * @param {Array[]} [options.valuePairs] Precomputed value pairs to use instead of generating them for each
+         * field identified in the model.
+         * @returns {object} Promise which resolves with the newly created item.
+         */
+        function updateListItem(model, entity, options) {
+            var defaults = {
+                    batchCmd: 'Update',
+                    buildValuePairs: true,
+                    ID: entity.id,
+                    listName: model.list.getListId(),
+                    operation: 'UpdateListItems',
+                    target: entity.getCache(),
+                    valuePairs: []
+                },
+                deferred = $q.defer(),
+                opts = _.extend({}, defaults, options);
+
+            if (opts.buildValuePairs === true) {
+                var editableFields = _.where(model.list.fields, {readOnly: false});
+                opts.valuePairs = apEncodeService.generateValuePairs(editableFields, entity);
+            }
+
+            /** Overload the function then pass anything past the first parameter to the supporting methods */
+            serviceWrapper(opts, entity, model)
+                .then(function (response) {
+                    if (apConfig.online) {
+                        /** Online this should return an XML object */
+                        var indexedCache = apDecodeService.processListItems(model, entity.getQuery(), response, opts);
+                        /** Return reference to updated entity  */
+                        deferred.resolve(indexedCache[entity.id]);
+                    } else {
+                        /** Offline response should be the updated entity as a JS Object */
+                        deferred.resolve(response);
+                    }
+                }, function (err) {
+                    deferred.reject(err);
+                });
+            return deferred.promise;
+        }
+
+        /**
+         * @ngdoc function
+         * @name apDataService.deleteListItem
          * @description
          * Typically called directly from a list item, removes the list item from SharePoint
          * and the local cache.
@@ -941,15 +896,11 @@ angular.module('angularPoint')
          * @param {object} [options] Optional configuration params.
          * @param {Array} [options.target=item.getCache()] Optional location to search through and remove the
          * local cached copy.
-         * @param {boolean} [options.updateAllCaches=false] Search through the cache for each query on the model
-         * to ensure entity is removed everywhere.  This is more process intensive so by default we only delete the
-         * cached entity in the cache where this entity is currently stored.
          * @returns {object} Promise which resolves when the operation is complete.  Nothing of importance is returned.
          */
-        function deleteItemModel(model, entity, options) {
+        function deleteListItem(model, entity, options) {
             var defaults = {
                 target: _.isFunction(entity.getCache) ? entity.getCache() : model.getCache(),
-                updateAllCaches: false,
                 operation: 'UpdateListItems',
                 listName: model.list.getListId(),
                 batchCmd: 'Delete',
@@ -960,52 +911,18 @@ angular.module('angularPoint')
 
             var deferred = $q.defer();
 
-            if (apConfig.online) {
-                serviceWrapper(opts)
-                    .then(function () {
-                        /** Success */
-                        cleanCache(entity, opts);
-                        deferred.resolve(opts.target);
-                    }, function (outcome) {
-                        //In the event of an error, display toast
-                        toastr.error('There was an error deleting a list item from ' + model.list.title);
-                        deferred.reject(outcome);
-                    });
-            } else {
-                /** Offline debug mode */
-                /** Simulate deletion and remove locally */
-                cleanCache(entity, opts);
-                deferred.resolve(opts.target);
-            }
+            serviceWrapper(opts)
+                .then(function () {
+                    /** Success */
+                    apCacheService.deleteEntity(opts.listName, entity.id);
+                    deferred.resolve();
+                }, function (outcome) {
+                    //In the event of an error, display toast
+                    toastr.error('There was an error deleting a list item from ' + model.list.title);
+                    deferred.reject(outcome);
+                });
 
             return deferred.promise;
         }
-
-        function cleanCache(entity, options) {
-            var model = entity.getModel();
-            var defaults = {
-                target: _.isFunction(entity.getCache) ? entity.getCache() : model.getCache(),
-                updateAllCaches: false
-            };
-
-            var opts = _.extend({}, defaults, options);
-            var deleteCount = 0;
-
-            if (opts.updateAllCaches) {
-                _.each(model.queries, function (query) {
-                    var entityRemoved = removeEntityFromLocalCache(query.getCache(), entity.id);
-                    if (entityRemoved) {
-                        deleteCount++;
-                    }
-                });
-            } else {
-                var entityRemoved = removeEntityFromLocalCache(opts.target, entity.id);
-                if (entityRemoved) {
-                    deleteCount++;
-                }
-            }
-            return deleteCount;
-        }
-
     }
 );

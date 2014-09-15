@@ -1,6 +1,6 @@
 "use strict";
 
-ddescribe("Service: apDataService", function () {
+describe("Service: apDataService", function () {
 
     beforeEach(module("angularPoint"));
 
@@ -11,29 +11,25 @@ ddescribe("Service: apDataService", function () {
         mockToUpdate,
         mockXML,
         mockXMLService,
-        $rootScope,
         $httpBackend;
 
 
-    beforeEach(inject(function (_apDataService_, _mockModel_, _mockXMLService_, _$rootScope_, $injector) {
+    beforeEach(inject(function (_apDataService_, _mockModel_, _mockXMLService_, $injector) {
         apDataService = _apDataService_;
         mockModel = _mockModel_;
-        $rootScope = _$rootScope_;
         mockXMLService = _mockXMLService_;
         mockXML = mockXMLService.GetListItemChangesSinceToken;
         mockModel.importMocks();
         primaryQueryCache = mockModel.getCache('primary');
         secondaryQueryCache = mockModel.getCache('secondary');
+        mockToUpdate = mockModel.getCache('primary')[1];
 
         // Set up the mock http service responses
         $httpBackend = $injector.get('$httpBackend');
 
 
-
-
     }));
 
-    //TODO Get $httpBackend working
     describe('Function: getCurrentSite', function () {
         it('returns the site url', function () {
             apDataService.getCurrentSite()
@@ -44,101 +40,61 @@ ddescribe("Service: apDataService", function () {
         });
     });
 
-    describe('Function: addUpdateItemModel', function () {
-        describe('add item', function () {
-            it('the cache to have the new item', function () {
-                //mockXMLService.xhrStub('CreateListItem');
-
-                apDataService.addUpdateItemModel(mockModel, {text: 'New Entity'})
-                    .then(function (response) {
-                        expect(response.id).toEqual(4);
-                        expect(primaryQueryCache[4]).toBeDefined();
-                        expect(secondaryQueryCache[4]).toBeUndefined();
-                    });
-                $httpBackend.flush();
-            });
+    describe('Function: updateListItem', function () {
+        it('updates the list item', function () {
+            apDataService.updateListItem(mockModel, mockToUpdate)
+                .then(function (response) {
+                    expect(mockToUpdate.integer).toEqual(13);
+                    expect(response.integer).toEqual(13);
+                });
+            $httpBackend.flush();
         });
-        describe('update item', function () {
-            beforeEach(function () {
-                mockXMLService.xhrStub('UpdateListItem');
-                mockToUpdate = mockModel.getCache('primary')[1];
-            });
-            it('has the updated value', function () {
-                apDataService.addUpdateItemModel(mockModel, mockToUpdate)
-                    .then(function (response) {
-                        expect(mockToUpdate.integer).toEqual(13);
-                        expect(response.integer).toEqual(13);
-                    });
-                $rootScope.$digest();
-            });
-            it('the other caches also contain the same data because they should be referencing the same object', function () {
-                apDataService.addUpdateItemModel(mockModel, mockToUpdate)
-                    .then(function (response) {
-                        expect(secondaryQueryCache[1].integer).toEqual(response.integer);
-                    });
-                $rootScope.$digest();
-
-            });
+        it('updates all cache\'s because they are be referencing the same object', function () {
+            apDataService.updateListItem(mockModel, primaryQueryCache[1])
+                .then(function (response) {
+                    expect(primaryQueryCache[1]).toEqual(secondaryQueryCache[1]);
+                    expect(secondaryQueryCache[1].integer).toEqual(response.integer);
+                });
+            $httpBackend.flush();
         });
     });
 
-    describe('Function: cleanCache', function () {
-        beforeEach(function () {
-            apDataService.cleanCache(primaryQueryCache[1]);
+    describe('Function: createListItem', function () {
+        it('creates a new list item', function () {
+            apDataService.createListItem(mockModel, {integer: 11})
+                .then(function (response) {
+                    expect(response.integer).toEqual(11);
+                    expect(response.id).toEqual(4);
+                });
+            $httpBackend.flush();
         });
-        it('removes 1 of the entities from the cache', function () {
-            expect(primaryQueryCache.count()).toEqual(1);
+        it('doesn\'t add it to existing caches', function () {
+            apDataService.createListItem(mockModel, {integer: 11})
+                .then(function (response) {
+                    expect(response.id).toEqual(4);
+                    expect(secondaryQueryCache[4]).toBeUndefined()
+                });
+            $httpBackend.flush();
         });
-        it('leaves a reference in the secondary cache', function () {
-            expect(secondaryQueryCache.count()).toEqual(2);
-        });
-
     });
 
-    describe('Function: deleteItemModel', function () {
-        describe('delete from single cache', function () {
-            it('removes entity with ID of 1 from the primary cache', function () {
-                mockXMLService.xhrStub('DeleteListItem');
-                apDataService.deleteItemModel(mockModel, primaryQueryCache[1])
-                    .then(function (response) {
-                        expect(primaryQueryCache[1]).toBeUndefined();
-                        expect(secondaryQueryCache[1]).toBeDefined();
-                    });
-                $rootScope.$digest();
-            });
-        });
-        describe('delete from all query caches', function () {
-            it('removes entity with ID of 1 from all cache objects', function () {
-                mockXMLService.xhrStub('DeleteListItem');
-                apDataService.deleteItemModel(mockModel, primaryQueryCache[1], {updateAllCaches: true})
-                    .then(function (response) {
-                        expect(primaryQueryCache[1]).toBeUndefined();
-                        expect(secondaryQueryCache[1]).toBeUndefined();
-                    });
-                $rootScope.$digest();
-            });
-        });
-        describe('rejects promise if there\'s an error deleting', function () {
-            it('removes entity with ID of 1 from all cache objects', function () {
-                mockXMLService.xhrStub('errorUpdatingListItem');
-                apDataService.deleteItemModel(mockModel, primaryQueryCache[1])
-                    .then(function (response) {
-                        expect(primaryQueryCache[1]).toBeDefined();
-                        expect(secondaryQueryCache[1]).toBeDefined();
-                    }, function (err) {
-                        expect(err).toBeDefined();
-                    });
-                $rootScope.$digest();
-            });
+    describe('Function: deleteListItem', function () {
+        it('removes entity with ID of 1 from all cache objects', function () {
+            apDataService.deleteListItem(mockModel, primaryQueryCache[1], {updateAllCaches: true})
+                .then(function () {
+                    expect(primaryQueryCache[1]).toBeUndefined();
+                    expect(secondaryQueryCache[1]).toBeUndefined();
+                });
+            $httpBackend.flush();
         });
     });
 
 
     describe('Function: deleteAttachment', function () {
         it('resolves the deleteAttachment request', function () {
-            mockXMLService.xhrStub('deleteAttachment');
             apDataService.deleteAttachment({})
                 .then(function (response) {
+                    /** If an error isn't returned, the operation was successful */
                     expect(response).toBeDefined();
                 });
         })
@@ -146,7 +102,8 @@ ddescribe("Service: apDataService", function () {
 
     describe('Function: retrieveChangeToken', function () {
         it('returns the change token from the XML', function () {
-            expect(apDataService.retrieveChangeToken(mockXML)).toEqual('1;3;f5345fe7-2f7c-49f7-87d0-dbfebdd0ce61;635452551037430000;387547');
+            expect(apDataService.retrieveChangeToken(mockXML))
+                .toEqual('1;3;f5345fe7-2f7c-49f7-87d0-dbfebdd0ce61;635452551037430000;387547');
         })
     });
 
@@ -156,57 +113,44 @@ ddescribe("Service: apDataService", function () {
         })
     });
 
-    describe('Function: removeEntityFromLocalCache', function () {
-        beforeEach(function () {
-            apDataService.removeEntityFromLocalCache(primaryQueryCache, 1);
-        });
-        it('removes 1 of the entities from the cache', function () {
-            expect(primaryQueryCache.count()).toEqual(1);
-        });
-    });
-
     describe('Function: getCollection', function () {
         it('can process a GetListCollection call', function () {
-            mockXMLService.xhrStub('getListCollection');
             apDataService.getCollection({operation: 'GetListCollection'})
                 .then(function (listCollection) {
                     expect(listCollection.length).toEqual(1);
                 });
-            $rootScope.$digest();
+            $httpBackend.flush();
         });
     });
 
     describe('Function: getListItemById', function () {
         it('returns a single list item', function () {
-            mockXMLService.xhrStub('getListItemById');
             apDataService.getListItemById(1, mockModel)
                 .then(function (response) {
                     expect(response.id).toEqual(1);
                 });
-            $rootScope.$digest();
+            $httpBackend.flush();
         });
     });
 
     describe('Function: getUserProfileByName', function () {
         it('returns a user profile object', function () {
-            mockXMLService.xhrStub('getUserProfileByName');
             apDataService.getUserProfileByName()
                 .then(function (response) {
                     expect(response).toEqual({
                         UserProfile_GUID: 'e1234f12-6992-42eb-9bbc-b3a123b29295',
-                        AccountName: 'DOMAINJohn.Doe',
-                        PreferredName: 'DOMAINJohn.Doe',
+                        AccountName: 'DOMAIN\\John.Doe',
+                        PreferredName: 'DOMAIN\\John.Doe',
                         UserName: 'John.Doe',
-                        userLoginName: 'DOMAINJohn.Doe'
+                        userLoginName: 'DOMAIN\\John.Doe'
                     });
                 });
-            $rootScope.$digest();
+            $httpBackend.flush();
         });
     });
 
     describe('Function: getGroupCollectionFromUser', function () {
         it('returns an array of groups the user belongs to', function () {
-            mockXMLService.xhrStub('getGroupCollectionFromUser');
             apDataService.getGroupCollectionFromUser()
                 .then(function (response) {
                     expect(response).toEqual([{
@@ -229,60 +173,54 @@ ddescribe("Service: apDataService", function () {
                         OwnerIsUser: 'False'
                     }]);
                 });
-            $rootScope.$digest();
+            $httpBackend.flush();
         });
     });
 
 
     describe('Function: getView', function () {
         it('can process a list definition', function () {
-            mockXMLService.xhrStub('GetView');
             apDataService.getView({listName: mockModel.list.guid})
                 .then(function (response) {
                     expect(response.viewFields).toBeDefined();
                 });
-            $rootScope.$digest();
+            $httpBackend.flush();
         });
     });
 
     describe('Function: getList', function () {
         it('can process a list definition', function () {
-            mockXMLService.xhrStub('GetList');
             apDataService.getList({listName: mockModel.list.guid})
                 .then(function (response) {
-                    expect(response).toEqual(mockXMLService.GetList);
+                    expect(response).toBeDefined();
                 });
-            $rootScope.$digest();
+            $httpBackend.flush();
         });
     });
 
     describe('Function: getListFields', function () {
-        it('can extend the list fields', function () {
-            mockXMLService.xhrStub('GetList');
+        it('returns an array of field definition objects', function () {
             apDataService.getListFields({listName: mockModel.list.guid})
                 .then(function (response) {
                     expect(response.length).toEqual(98);
                 });
-            $rootScope.$digest();
+            $httpBackend.flush();
         });
     });
 
     describe('Function: getFieldVersionHistory', function () {
         it('returns an array containing 3 versions of the mock.integer field', function () {
-            mockXMLService.xhrStub('GetVersionCollection');
             var fieldDefinition = mockModel.getField('integer');
-
             apDataService.getFieldVersionHistory({}, fieldDefinition)
                 .then(function (response) {
                     expect(response.length).toEqual(3);
                 });
-            $rootScope.$digest();
+            $httpBackend.flush();
         });
     });
 
     describe('Function: executeQuery', function () {
         it('can complete a query form a known model', function () {
-            mockXMLService.xhrStub('GetListItemChangesSinceToken');
             primaryQueryCache.clear();
             //Ensure there's nothing left in the cache
             expect(primaryQueryCache.count()).toEqual(0);
@@ -290,7 +228,7 @@ ddescribe("Service: apDataService", function () {
                 .then(function (response) {
                     expect(response.count()).toEqual(2);
                 });
-            $rootScope.$digest();
+            $httpBackend.flush();
         });
     });
 

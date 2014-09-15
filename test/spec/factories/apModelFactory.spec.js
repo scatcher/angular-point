@@ -10,13 +10,14 @@ describe('Factory: apModelFactory', function () {
 
 
 
-    var mockModel, apModelFactory, mockEntityCache, mockXMLService, $rootScope, $q, apDataService;
+    var mockModel, apModelFactory, mockEntityCache, mockXMLService, $rootScope, $q, apDataService, $httpBackend;
 
-    beforeEach(inject(function (_mockModel_, _apModelFactory_, _mockXMLService_, _$rootScope_, _$q_, _apDataService_) {
+    beforeEach(inject(function (_mockModel_, _apModelFactory_, _mockXMLService_, _$rootScope_, _$q_, _apDataService_, _$httpBackend_) {
         mockModel = _mockModel_;
         apModelFactory = _apModelFactory_;
         mockXMLService = _mockXMLService_;
         apDataService = _apDataService_;
+        $httpBackend = _$httpBackend_;
         $rootScope = _$rootScope_;
         $q = _$q_;
         mockModel.importMocks();
@@ -25,7 +26,6 @@ describe('Factory: apModelFactory', function () {
 
     describe('addNewItem', function () {
         it('adds the new entity to the cacheService', function () {
-            mockXMLService.xhrStub('CreateListItem');
             /** No need to specify params here because it's just returning the canned XML entity */
             mockModel.addNewItem()
                 .then(function () {
@@ -33,7 +33,7 @@ describe('Factory: apModelFactory', function () {
                     expect(newEntity).toBeDefined();
                     expect(newEntity.titleText).toEqual('Mock 3');
                 });
-            $rootScope.$digest();
+            $httpBackend.flush();
         });
     });
 
@@ -129,12 +129,11 @@ describe('Factory: apModelFactory', function () {
 
     describe('Method: getListItemById', function () {
         it('returns a single list item', function () {
-            mockXMLService.xhrStub('getListItemById');
             mockModel.getListItemById(1)
                 .then(function (response) {
                     expect(response.id).toEqual(1);
                 });
-            $rootScope.$digest();
+            $httpBackend.flush();
         });
         it('returns undefined if no matching record is found', function () {
             mockXMLService.xhrStub('emptyResponse');
@@ -148,12 +147,11 @@ describe('Factory: apModelFactory', function () {
 
     describe('Method: getAllListItems', function () {
         it('returns the 4 expected entities', function () {
-            mockXMLService.xhrStub('getListItems');
             mockModel.getAllListItems(1)
                 .then(function (response) {
                     expect(response.count()).toEqual(4);
                 });
-            $rootScope.$digest();
+            $httpBackend.flush();
         });
     });
 

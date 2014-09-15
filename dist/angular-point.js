@@ -120,26 +120,26 @@ angular.module('angularPoint')
          * GUID in future
          * @example
          * <pre>
-         *     entityNameToType = {
+         *     listNameToIdMap = {
          *          list1Name: {
          *              model: list1Model,
-         *              entityType: list1GUID
+         *              listId: list1GUID
          *          },
          *          list2Name: {
          *              model: list2Model,
-         *              entityType: list2GUID
+         *              listId: list2GUID
          *          }
          *          ...
          *     }
          * </pre>
          */
-        var entityNameToType = {},
+        var listNameToIdMap = {},
 
-        /**
-         * @description Stores list GUID when a new model is registered with a reference to the model for future reference.
-         * @example
-         * <pre>
-         *     entityTypeToName = {
+            /**
+             * @description Stores list GUID when a new model is registered with a reference to the model for future reference.
+             * @example
+             * <pre>
+             *     listsMappedByListId = {
          *          list1GUID: {
          *              model: list1Model
          *          },
@@ -148,20 +148,20 @@ angular.module('angularPoint')
          *          }
          *          ...
          *     }
-         * </pre>
-         */
-            entityTypeToName = {},
-        /**
-         * @description The Main cache object which stores ModelCache objects.  Keys being the model GUID and value
-         * being an a ModelCache object
-         * @example
-         * <pre>
-         *     entityCache = {
+             * </pre>
+             */
+            listsMappedByListId = {},
+            /**
+             * @description The Main cache object which stores ModelCache objects.  Keys being the model GUID and value
+             * being an a ModelCache object
+             * @example
+             * <pre>
+             *     entityCache = {
          *          list1GUID: {
          *              item1ID: { //EnityCache for entity 1
          *                  associationQueue: [],
          *                  updateCount: 3,
-         *                  entityType: list1GUID,
+         *                  listId: list1GUID,
          *                  entityId: item1ID,
          *                  entityLocations: [],
          *                  entity: {} //This is where the actual entity is referenced
@@ -175,8 +175,8 @@ angular.module('angularPoint')
          *          }
          *          ...
          *     }
-         * </pre>
-         */
+             * </pre>
+             */
             entityCache = {};
 
         /**
@@ -200,14 +200,14 @@ angular.module('angularPoint')
          * Cache constructor that maintains a queue of all requests for a list item, counter for the number of times
          * the cache has been updated, timestamp of last update, and add/update/remove functionality.
          * @constructor apCacheService
-         * @param {string} entityType GUID for list the list item belongs to.
+         * @param {string} listId GUID for list the list item belongs to.
          * @param {number} entityId The entity.id.
          */
-        function EntityContainer(entityType, entityId) {
+        function EntityContainer(listId, entityId) {
             var self = this;
             self.associationQueue = [];
             self.updateCount = 0;
-            self.entityType = getEntityTypeKey(entityType);
+            self.listId = getListId(listId);
             self.entityId = entityId;
             self.entityLocations = [];
         }
@@ -219,13 +219,14 @@ angular.module('angularPoint')
 
 
         return {
+            deleteEntity: deleteEntity,
             entityCache: entityCache,
             getCachedEntity: getCachedEntity,
             getCachedEntities: getCachedEntities,
             getEntity: getEntity,
             getEntityContainer: getEntityContainer,
-            getEntityTypeByName: getEntityTypeByName,
-            getEntityTypeKey: getEntityTypeKey,
+            getEntityTypeByName: getListIdFromListName,
+            getEntityTypeKey: getListId,
             getModel: getModel,
             removeEntity: removeEntity,
             registerEntity: registerEntity,
@@ -247,14 +248,15 @@ angular.module('angularPoint')
          */
         function registerModel(model) {
             if (model.list && model.list.getListId() && model.list.title) {
+                var listId = model.list.getListId().toLowerCase();
                 /** Store a reference to the model by list title */
-                entityNameToType[model.list.title] = {
+                listNameToIdMap[model.list.title] = {
                     model: model,
-                    entityType: getEntityTypeKey(model.list.getListId())
+                    listId: listId
                 };
 
                 /** Store a reference to the model by list guid */
-                entityTypeToName[model.list.getListId()] = {
+                listsMappedByListId[listId] = {
                     model: model
                 };
             }
@@ -266,52 +268,52 @@ angular.module('angularPoint')
          * @methodOf angularPoint.apCacheService
          * @description
          * Allows us to retrieve a reference to a given model by either the list title or list GUID.
-         * @param {string} entityType List title or list GUID.
+         * @param {string} listId List title or list GUID.
          * @returns {object} A reference to the requested model.
          */
-        function getModel(entityType) {
+        function getModel(listId) {
             var model,
-                entityTypeKey = getEntityTypeKey(entityType);
+                entityTypeKey = getListId(listId);
 
-            if (entityTypeToName[entityTypeKey]) {
-                model = entityTypeToName[entityTypeKey].model;
+            if (listsMappedByListId[entityTypeKey]) {
+                model = listsMappedByListId[entityTypeKey].model;
             }
             return model;
         }
 
         /**
          * @ngdoc function
-         * @name angularPoint.apCacheService:getEntityTypeByName
+         * @name angularPoint.apCacheService:getListIdFromListName
          * @methodOf angularPoint.apCacheService
          * @description
          * Allows us to lookup an entity cache using the name of the list instead of the GUID.
          * @param {string} name The name of the list.
          * @returns {string} GUID for the list.
          */
-        function getEntityTypeByName(name) {
+        function getListIdFromListName(name) {
             var guid;
-            if (entityNameToType[name] && entityNameToType[name].entityType) {
-                guid = entityNameToType[name].entityType;
+            if (listNameToIdMap[name] && listNameToIdMap[name].listId) {
+                guid = listNameToIdMap[name].listId;
             }
             return guid;
         }
 
         /**
          * @ngdoc function
-         * @name angularPoint.apCacheService:getEntityTypeByName
+         * @name angularPoint.apCacheService:getListId
          * @methodOf angularPoint.apCacheService
          * @description
          * Allows us to use either the List Name or the list GUID and returns the lowercase GUID
          * @param {string} keyString List GUID or name.
          * @returns {string} Lowercase list GUID.
          */
-        function getEntityTypeKey(keyString) {
+        function getListId(keyString) {
             if (_.isGuid(keyString)) {
                 /** GUID */
                 return keyString.toLowerCase();
             } else {
                 /** List Title */
-                return getEntityTypeByName(keyString);
+                return getListIdFromListName(keyString);
             }
         }
 
@@ -339,12 +341,12 @@ angular.module('angularPoint')
          * @methodOf angularPoint.apCacheService
          * @description
          * Synchronise call to return a cached entity;
-         * @param {string} entityType GUID for list the list item belongs to.
+         * @param {string} listId GUID for list the list item belongs to.
          * @param {number} entityId The entity.id.
          * @returns {object} entity || undefined
          */
-        function getCachedEntity(entityType, entityId) {
-            return getEntityContainer(entityType, entityId).entity;
+        function getCachedEntity(listId, entityId) {
+            return getEntityContainer(listId, entityId).entity;
         }
 
         /**
@@ -353,19 +355,17 @@ angular.module('angularPoint')
          * @methodOf angularPoint.apCacheService
          * @description
          * Returns all entities for a given model as an indexed cache with keys being the entity id's.
-         * @param {string} entityType GUID for list the list item belongs to.
+         * @param {string} listId GUID for list the list item belongs to.
          * @returns {object} Indexed cache containing all entities for a model.
          */
-        function getCachedEntities(entityType) {
-            var modelCache = getModelCache(entityType),
+        function getCachedEntities(listId) {
+            var modelCache = getModelCache(listId),
                 allEntities = apIndexedCacheFactory.create();
-            if (modelCache) {
-                _.each(modelCache, function (entityContainer) {
-                    if (entityContainer.entity && entityContainer.entity.id) {
-                        allEntities.addEntity(entityContainer.entity);
-                    }
-                });
-            }
+            _.each(modelCache, function (entityContainer) {
+                if (entityContainer.entity && entityContainer.entity.id) {
+                    allEntities.addEntity(entityContainer.entity);
+                }
+            });
             return allEntities;
         }
 
@@ -376,12 +376,12 @@ angular.module('angularPoint')
          * @description
          * Returns a deferred object that resolves with the requested entity immediately if already present or at some
          * point in the future assuming the entity is eventually registered.
-         * @param {string} entityType GUID for list the list item belongs to.
+         * @param {string} listId GUID for list the list item belongs to.
          * @param {number} entityId The entity.id.
          * @returns {promise} entity
          */
-        function getEntity(entityType, entityId) {
-            var entityContainer = getEntityContainer(entityType, entityId);
+        function getEntity(listId, entityId) {
+            var entityContainer = getEntityContainer(listId, entityId);
             return entityContainer.getEntity();
         }
 
@@ -405,6 +405,7 @@ angular.module('angularPoint')
                 entityContainer.entity = entity;
             } else {
                 /** Already exists so update to maintain any other references being used for this entity. */
+                    //TODO Look at performance hit from extending and see if it would be acceptable just to replace
                 _.extend(entityContainer.entity, entity);
             }
 
@@ -428,7 +429,7 @@ angular.module('angularPoint')
 
         function _removeEntity() {
             var entityContainer = this;
-            removeEntity(entityContainer.entityType, entityContainer.entityId);
+            removeEntity(entityContainer.listId, entityContainer.entityId);
         }
 
         /**
@@ -437,25 +438,44 @@ angular.module('angularPoint')
          * @methodOf angularPoint.apCacheService
          * @description
          * Removes the entity from the local entity cache.
-         * @param {string} entityType GUID for list the list item belongs to.
+         * @param {string} listId GUID for list the list item belongs to.
          * @param {number} entityId The entity.id.
          */
-        function removeEntity(entityType, entityId) {
-            var modelCache = getModelCache(entityType, entityId);
+        function removeEntity(listId, entityId) {
+            var modelCache = getModelCache(listId, entityId);
             if (modelCache[entityId]) {
                 delete modelCache[entityId];
             }
         }
 
+        /**
+         * @ngdoc function
+         * @name angularPoint.apCacheService:deleteEntity
+         * @methodOf angularPoint.apCacheService
+         * @description
+         * Deletes all references to an entity.
+         * @param {string} listId GUID for list the list item belongs to.
+         * @param {number} entityId The entity.id.
+         */
+        function deleteEntity(listId, entityId) {
+            var entityTypeKey = getListId(listId);
+            removeEntity(entityTypeKey, entityId);
+            var model = getModel(entityTypeKey);
+            _.each(model.queries, function(query) {
+                var cache = query.getCache();
+                cache.removeEntity(entityId);
+            });
+        }
+
         /** Locates the stored cache for a model */
-        function getModelCache(entityType) {
-            var entityTypeKey = getEntityTypeKey(entityType);
+        function getModelCache(listId) {
+            var entityTypeKey = getListId(listId);
             entityCache[entityTypeKey] = entityCache[entityTypeKey] || new ModelCache();
             return entityCache[entityTypeKey];
         }
 
-        function getEntityContainer(entityType, entityId) {
-            var entityTypeKey = getEntityTypeKey(entityType);
+        function getEntityContainer(listId, entityId) {
+            var entityTypeKey = getListId(listId);
             var modelCache = getModelCache(entityTypeKey);
             /** Create the object structure if it doesn't already exist */
             modelCache[entityId] = modelCache[entityId] || new EntityContainer(entityTypeKey, entityId);
@@ -480,16 +500,15 @@ angular.module('angularPoint')
  // *  @requires apFieldService
  */
 angular.module('angularPoint')
-    .service('apDataService', ["$q", "$timeout", "$http", "_", "apQueueService", "apConfig", "apUtilityService", "apDecodeService", "apEncodeService", "apFieldService", "apIndexedCacheFactory", "apMocksService", "toastr", "SPServices", function ($q, $timeout, $http, _, apQueueService, apConfig, apUtilityService,
-                                        apDecodeService, apEncodeService, apFieldService, apIndexedCacheFactory,
-                                        apMocksService, toastr, SPServices) {
+    .service('apDataService', ["$q", "$timeout", "$http", "_", "apQueueService", "apConfig", "apUtilityService", "apCacheService", "apDecodeService", "apEncodeService", "apFieldService", "apIndexedCacheFactory", "apMocksService", "toastr", "SPServices", function ($q, $timeout, $http, _, apQueueService, apConfig, apUtilityService,
+                                        apCacheService, apDecodeService, apEncodeService, apFieldService,
+                                        apIndexedCacheFactory, apMocksService, toastr, SPServices) {
 
         /** Exposed functionality */
         var apDataService = {
-            addUpdateItemModel: addUpdateItemModel,
-            cleanCache: cleanCache,
+            createListItem: createListItem,
             deleteAttachment: deleteAttachment,
-            deleteItemModel: deleteItemModel,
+            deleteListItem: deleteListItem,
             executeQuery: executeQuery,
             getCollection: getCollection,
             getCurrentSite: getCurrentSite,
@@ -504,15 +523,137 @@ angular.module('angularPoint')
             processChangeTokenXML: processChangeTokenXML,
             processDeletionsSinceToken: processDeletionsSinceToken,
             retrieveChangeToken: retrieveChangeToken,
-            removeEntityFromLocalCache: removeEntityFromLocalCache,
             retrievePermMask: retrievePermMask,
-            serviceWrapper: serviceWrapper
+            serviceWrapper: serviceWrapper,
+            updateListItem: updateListItem
         };
 
         return apDataService;
 
 
         /*********************** Private ****************************/
+
+            //TODO Rename Me
+        function requestData(opts, additionalArgs) {
+            var deferred = $q.defer();
+
+            if (apConfig.online) {
+                //TODO Convert jQuery style promise into $q promise for consistency
+                //var webServiceCall = SPServices(opts);
+                //$q.when($().SPServices(opts)).then(function (webServiceCall) {
+                //webServiceCall.then(function () {
+
+                var soapData = SPServices(opts);
+
+                $http({
+                    method: 'POST',
+                    url: soapData.ajaxURL,
+                    data: soapData.msg,
+                    responseType: "document",
+                    headers: {
+                        "Content-Type": "text/xml;charset='utf-8'"
+                    },
+                    transformRequest: function (data, headersGetter) {
+                        if (soapData.SOAPAction) {
+                            var headers = headersGetter();
+                            headers["SOAPAction"] = soapData.SOAPAction;
+                        }
+                        return data;
+                    },
+                    transformResponse: function (data, headersGetter) {
+                        if(_.isString(data)) {
+                            data = $.parseXML(data);
+                        }
+                        return data;
+                    }
+                }).then(function (response) {
+                    /** Success */
+                    /** Errors can still be resolved without throwing an error so check the XML */
+                    var error = apDecodeService.checkResponseForErrors(response.data);
+                    if (error) {
+                        console.error(error, opts);
+                        deferred.reject(error);
+                    } else {
+                        deferred.resolve(response.data);
+                    }
+                }, function (response) {
+                    /** Failure */
+                    var error = apDecodeService.checkResponseForErrors(response.data);
+                    console.error(response.statusText, opts);
+                    deferred.reject(response.statusText + ': ' + error);
+                });
+            } else {
+                apMocksService.mockRequest(opts, additionalArgs)
+                    .then(function (response) {
+                        deferred.resolve(response);
+                    });
+            }
+            return deferred.promise;
+        }
+
+        /**
+         * @ngdoc function
+         * @name apDataService.serviceWrapper
+         * @description
+         * Generic wrapper for any SPServices web service call.  The big benefit to this function is it allows us
+         * to continue to use the $q promise model throughout the application instead of using the promise
+         * implementation used in SPServices so we have a more consistent experience.
+         * Check http://spservices.codeplex.com/documentation for details on expected parameters for each operation.
+         *
+         * @param {object} options Payload params that is directly passed to SPServices.
+         * @param {string} [options.webURL] XML filter string used to find the elements to iterate over.
+         * @param {string} [options.filterNode] XML filter string used to find the elements to iterate over.
+         * This is typically 'z:row' for list items.
+         * @returns {object} Returns a promise which when resolved either returns clean objects parsed by the value
+         * in options.filterNode or the raw XML response if a options.filterNode
+         *
+         *      If options.filterNode is provided, returns XML parsed by node name
+         *      Otherwise returns the server response
+         */
+        function serviceWrapper(options) {
+            var defaults = {
+                /** You need to specify the offline xml file if you want to properly mock the request when offline */
+                offlineXML: apConfig.offlineXML + options.operation + '.xml',
+                postProcess: processXML,
+                webURL: apConfig.defaultUrl
+            };
+            var opts = _.extend({}, defaults, options);
+            var deferred = $q.defer();
+
+            /** Convert the xml returned from the server into an array of js objects */
+            function processXML(serverResponse) {
+                if (opts.filterNode) {
+                    return $(serverResponse).SPFilterNode(opts.filterNode).SPXmlToJson({
+                        includeAllAttrs: true,
+                        removeOws: false
+                    });
+                } else {
+                    return serverResponse;
+                }
+            }
+
+            /** Allow this method to be overloaded and pass any additional arguments to the mock service */
+            var additionalArgs = Array.prototype.slice.call(arguments, 1);
+
+            /** Display any async animations listening */
+            apQueueService.increase();
+
+            apDataService.requestData(opts, additionalArgs)
+                .then(function (response) {
+                    /** Failure */
+                    var data = opts.postProcess(response);
+                    apQueueService.decrease();
+                    deferred.resolve(data);
+                }, function (response) {
+                    /** Failure */
+                    toastr.error('Failed to complete the requested ' + opts.operation + ' operation.');
+                    apQueueService.decrease();
+                    deferred.reject(response);
+                });
+
+            return deferred.promise;
+        }
+
 
         /**
          * @ngdoc function
@@ -672,141 +813,6 @@ angular.module('angularPoint')
             return validPayload;
         }
 
-        /**
-         * @ngdoc function
-         * @name apDataService.serviceWrapper
-         * @description
-         * Generic wrapper for any SPServices web service call.  The big benefit to this function is it allows us
-         * to continue to use the $q promise model throughout the application instead of using the promise
-         * implementation used in SPServices so we have a more consistent experience.
-         * Check http://spservices.codeplex.com/documentation for details on expected parameters for each operation.
-         *
-         * @param {object} options Payload params that is directly passed to SPServices.
-         * @param {string} [options.webURL] XML filter string used to find the elements to iterate over.
-         * @param {string} [options.filterNode] XML filter string used to find the elements to iterate over.
-         * This is typically 'z:row' for list items.
-         * @returns {object} Returns a promise which when resolved either returns clean objects parsed by the value
-         * in options.filterNode or the raw XML response if a options.filterNode
-         *
-         *      If options.filterNode is provided, returns XML parsed by node name
-         *      Otherwise returns the server response
-         */
-            //TODO: Make this the primary function which interacts with SPServices and makes web service call.  No need having this logic duplicated.
-        function serviceWrapper(options) {
-            var defaults = {
-                /** You need to specify the offline xml file if you want to properly mock the request when offline */
-                offlineXML: apConfig.offlineXML + options.operation + '.xml',
-                postProcess: processXML,
-                webURL: apConfig.defaultUrl
-            };
-            var opts = _.extend({}, defaults, options);
-            var deferred = $q.defer();
-
-            /** Convert the xml returned from the server into an array of js objects */
-            function processXML(serverResponse) {
-                if (opts.filterNode) {
-                    return $(serverResponse).SPFilterNode(opts.filterNode).SPXmlToJson({
-                        includeAllAttrs: true,
-                        removeOws: false
-                    });
-                } else {
-                    return serverResponse;
-                }
-            }
-
-            /** Allow this method to be overloaded and pass any additional arguments to the mock service */
-            var additionalArgs = Array.prototype.slice.call(arguments, 1);
-
-            /** Display any async animations listening */
-            apQueueService.increase();
-
-            apDataService.requestData(opts, additionalArgs)
-                .then(function (response) {
-                    /** Failure */
-                    var data = opts.postProcess(response);
-                    apQueueService.decrease();
-                    deferred.resolve(data);
-                }, function (response) {
-                    /** Failure */
-                    toastr.error('Failed to complete the requested ' + opts.operation + ' operation.');
-                    apQueueService.decrease();
-                    deferred.reject(response);
-                });
-
-            return deferred.promise;
-        }
-
-        //TODO Rename Me
-        function requestData(opts, additionalArgs) {
-            var deferred = $q.defer();
-
-            if (apConfig.online) {
-                //TODO Convert jQuery style promise into $q promise for consistency
-                //var webServiceCall = SPServices(opts);
-                //$q.when($().SPServices(opts)).then(function (webServiceCall) {
-                //webServiceCall.then(function () {
-
-                var soapData = SPServices(opts);
-
-                $http({
-                    method: 'POST',
-                    url: soapData.ajaxURL,
-                    data: soapData.msg,
-                    responseType: "document",
-                    headers: {
-                        "Content-Type": "text/xml;charset='utf-8'"
-                    },
-                    transformRequest: function (data, headersGetter) {
-                        if (soapData.SOAPAction) {
-                            var headers = headersGetter();
-                            headers["SOAPAction"] = soapData.SOAPAction;
-                        }
-                        return data;
-                    },
-                    transformResponse: function (data, headersGetter) {
-                        //if (data) {
-                        //    var ret = xmlToJSON(
-                        //        data,
-                        //        {
-                        //            regex: /ows_/,
-                        //            regexReplacement: ""
-                        //        }
-                        //    )["soap:Envelope"]["soap:Body"];
-                        //
-                        //    return _.reduce(
-                        //        AngularSPHelper.comb[opt.operation.toLowerCase()],
-                        //        function(memo, item) {
-                        //            return memo[item];
-                        //        },
-                        //        ret
-                        //    );
-                        //}
-                        return data;
-                    }
-                }).then(function (response) {
-                    /** Success */
-                    /** Errors can still be resolved without throwing an error so check the XML */
-                    var error = apDecodeService.checkResponseForErrors(response.data);
-                    if (error) {
-                        console.error(error, opts);
-                        deferred.reject(error);
-                    } else {
-                        deferred.resolve(response.data);
-                    }
-                }, function (response) {
-                    /** Failure */
-                    var error = apDecodeService.checkResponseForErrors(response.data);
-                    console.error(response.statusText, opts);
-                    deferred.reject(response.statusText + ': ' + error);
-                });
-            } else {
-                apMocksService.mockRequest(opts, additionalArgs)
-                    .then(function (response) {
-                        deferred.resolve(response);
-                    });
-            }
-            return deferred.promise;
-        }
 
         function buildAjaxUrl(opts) {
             var deferred = $q.defer();
@@ -878,7 +884,7 @@ angular.module('angularPoint')
         function getGroupCollectionFromUser(login) {
             /** Create a new deferred object if not already defined */
             var deferred = $q.defer();
-            if(!login) {
+            if (!login) {
                 /** No login name provided so lookup profile for current user */
                 getUserProfileByName()
                     .then(function (userProfile) {
@@ -902,9 +908,7 @@ angular.module('angularPoint')
 
         function getCurrentSite() {
             var deferred = $q.defer();
-            //if (apConfig.defaultUrl) {
-            //    deferred.resolve(apConfig.defaultUrl);
-            //} else {
+
             var msg = SPServices.SOAPEnvelope.header +
                 "<WebUrlFromPageUrl xmlns='" + SPServices.SCHEMASharePoint + "/soap/' ><pageUrl>" +
                 ((location.href.indexOf("?") > 0) ? location.href.substr(0, location.href.indexOf("?")) : location.href) +
@@ -928,7 +932,6 @@ angular.module('angularPoint')
                 var error = apDecodeService.checkResponseForErrors(response.data);
                 deferred.reject(error);
             });
-            //}
             return deferred.promise;
         }
 
@@ -942,20 +945,12 @@ angular.module('angularPoint')
          * @returns {object} Promise which resolves with an array of field definitions for the list.
          */
         function getList(options) {
-            var deferred = $q.defer();
-
             var defaults = {
                 operation: 'GetList'
             };
 
             var opts = _.extend({}, defaults, options);
             return serviceWrapper(opts);
-            //    .then(function (responseXML) {
-            //        var listDefinition = apDecodeService
-            //            .extendListDefinitionFromXML({}, responseXML);
-            //        deferred.resolve(listDefinition);
-            //    });
-            //return deferred.promise;
         }
 
 
@@ -999,14 +994,14 @@ angular.module('angularPoint')
                 operation: 'GetListItems',
                 CAMLRowLimit: 1,
                 CAMLQuery: '' +
-                '<Query>' +
-                ' <Where>' +
-                '   <Eq>' +
-                '     <FieldRef Name="ID"/>' +
-                '     <Value Type="Number">' + entityId + '</Value>' +
-                '   </Eq>' +
-                ' </Where>' +
-                '</Query>',
+                    '<Query>' +
+                    ' <Where>' +
+                    '   <Eq>' +
+                    '     <FieldRef Name="ID"/>' +
+                    '     <Value Type="Number">' + entityId + '</Value>' +
+                    '   </Eq>' +
+                    ' </Where>' +
+                    '</Query>',
                 /** Create a temporary cache to store response */
                 target: apIndexedCacheFactory.create()
             };
@@ -1226,26 +1221,6 @@ angular.module('angularPoint')
 
         /**
          * @ngdoc function
-         * @name apDataService.removeEntityFromLocalCache
-         * @description
-         * Searches for an entity based on list item ID and removes it from the cached array if it exists.
-         * @param {Array} indexedCache Cached array of list items for a query.
-         * @param {Number} entityId The ID to evaluate against to determine if there is a match.
-         * @returns {boolean} Returns true if a list item was successfully found and removed.
-         */
-        function removeEntityFromLocalCache(indexedCache, entityId) {
-            var successfullyDeleted = false;
-
-            /** Remove from indexed cache if found */
-            if (indexedCache[entityId]) {
-                delete indexedCache[entityId];
-                successfullyDeleted = true;
-            }
-            return successfullyDeleted;
-        }
-
-        /**
-         * @ngdoc function
          * @name apDataService.retrieveChangeToken
          * @description
          * Returns the change token from the xml response of a GetListItemChangesSinceToken query
@@ -1278,8 +1253,6 @@ angular.module('angularPoint')
          * @param {Array} indexedCache Cached array of list items for a query.
          */
         function processDeletionsSinceToken(responseXML, indexedCache) {
-            var deleteCount = 0;
-
             /** Remove any locally cached entities that were deleted from the server */
             $(responseXML).SPFilterNode('Id').each(function () {
                 /** Check for the type of change */
@@ -1288,102 +1261,55 @@ angular.module('angularPoint')
                 if (changeType === 'Delete') {
                     var entityId = parseInt($(this).text(), 10);
                     /** Remove from local data array */
-                    var foundAndRemoved = removeEntityFromLocalCache(indexedCache, entityId);
-                    if (foundAndRemoved) {
-                        deleteCount++;
-                    }
+                    indexedCache.removeEntity(entityId);
                 }
             });
-            if (deleteCount > 0 && apConfig.offline) {
-                console.log(deleteCount + ' item(s) removed from local cache to mirror changes on source list.');
-            }
         }
-
-
-//        /**
-//         * @ngdoc function
-//         * @name apDataService.updateAllCaches
-//         * @description
-//         * Propagates a change to all duplicate entities in all cached queries within a given model.
-//         * @param {object} model Reference to the entities model.
-//         * @param {object} entity JavaScript object representing the SharePoint list item.
-//         * @param {object} [exemptQuery] - The query containing the updated item is automatically updated so we don't
-//         * need to process it.
-//         *
-//         * @returns {number} The number of queries where the entity was found and updated.
-//         */
-//        function updateAllCaches(model, entity, exemptQuery) {
-//            var queriesUpdated = 0;
-//            /** Search through each of the queries and update any occurrence of this entity */
-//            _.each(model.queries, function (query) {
-//                /** Process all query caches except the one originally used to retrieve entity because
-//                 * that is automatically updated by "apDecodeService.processListItems". */
-//                if (query != exemptQuery) {
-//                    apDecodeService.updateLocalCache(query.getCache(), [entity]);
-//                }
-//            });
-//            return queriesUpdated;
-//        }
 
         /**
          * @ngdoc function
-         * @name apDataService.addUpdateItemModel
+         * @name apDataService.createListItem
          * @description
-         * Adds or updates a list item based on if the item passed in contains an id attribute.
+         * Creates a new list item for the provided model.
          * @param {object} model Reference to the entities model.
          * @param {object} entity JavaScript object representing the SharePoint list item.
          * @param {object} [options] Optional configuration params.
          * @param {boolean} [options.buildValuePairs=true] Automatically generate pairs based on fields defined in model.
          * @param {Array[]} [options.valuePairs] Precomputed value pairs to use instead of generating them for each
          * field identified in the model.
-         * @returns {object} Promise which resolves with the newly updated item.
+         * @returns {object} Promise which resolves with the newly created item.
          */
-        function addUpdateItemModel(model, entity, options) {
+        function createListItem(model, entity, options) {
             var defaults = {
-                mode: 'update',  //Options for what to do with local list data array in store [replace, update, return]
-                buildValuePairs: true,
-                updateAllCaches: false,
-                valuePairs: []
-            };
-            /** Reference to the the query that needs to be updated if this is an existing entity */
-            var query;
-            var deferred = $q.defer();
+                    batchCmd: 'New',
+                    buildValuePairs: true,
+                    indexedCache: apIndexedCacheFactory.create({}),
+                    listName: model.list.getListId(),
+                    operation: 'UpdateListItems',
+                    valuePairs: []
+                },
+                deferred = $q.defer();
+
+            defaults.target = defaults.indexedCache;
             var opts = _.extend({}, defaults, options);
 
             if (opts.buildValuePairs === true) {
                 var editableFields = _.where(model.list.fields, {readOnly: false});
                 opts.valuePairs = apEncodeService.generateValuePairs(editableFields, entity);
             }
-            var payload = {
-                operation: 'UpdateListItems',
-                listName: model.list.getListId(),
-                valuepairs: opts.valuePairs
+
+            opts.getCache = function () {
+                return opts.indexedCache;
             };
 
-            if ((_.isObject(entity) && _.isNumber(entity.id))) {
-                /** Updating existing list item */
-                payload.batchCmd = 'Update';
-                payload.ID = entity.id;
-                query = entity.getQuery();
-            } else {
-                /** Creating new list item */
-                payload.batchCmd = 'New';
-                payload.indexedCache = apIndexedCacheFactory.create({});
-                payload.getCache = function () {
-                    return payload.indexedCache;
-                };
-                query = payload;
-            }
             /** Overload the function then pass anything past the first parameter to the supporting methods */
-            serviceWrapper(payload, entity, model)
+            serviceWrapper(opts, entity, model)
                 .then(function (response) {
                     if (apConfig.online) {
                         /** Online this should return an XML object */
-                        var indexedCache = apDecodeService.processListItems(model, query, response, opts);
-                        /** Return reference to updated entity if updating, otherwise send reference to last entity
-                         * in cache because it will have the new highest id */
-                        var updatedEntity = (entity && entity.id) ? indexedCache[entity.id] : indexedCache.last();
-                        deferred.resolve(updatedEntity);
+                        var indexedCache = apDecodeService.processListItems(model, opts, response, opts);
+                        /** Return reference to last entity in cache because it will have the new highest id */
+                        deferred.resolve(indexedCache.last());
                     } else {
                         /** Offline response should be the updated entity as a JS Object */
                         deferred.resolve(response);
@@ -1396,7 +1322,56 @@ angular.module('angularPoint')
 
         /**
          * @ngdoc function
-         * @name apDataService.deleteItemModel
+         * @name apDataService.updateListItem
+         * @description
+         * Updates an existing list item.
+         * @param {object} model Reference to the entities model.
+         * @param {object} entity JavaScript object representing the SharePoint list item.
+         * @param {object} [options] Optional configuration params.
+         * @param {boolean} [options.buildValuePairs=true] Automatically generate pairs based on fields defined in model.
+         * @param {Array[]} [options.valuePairs] Precomputed value pairs to use instead of generating them for each
+         * field identified in the model.
+         * @returns {object} Promise which resolves with the newly created item.
+         */
+        function updateListItem(model, entity, options) {
+            var defaults = {
+                    batchCmd: 'Update',
+                    buildValuePairs: true,
+                    ID: entity.id,
+                    listName: model.list.getListId(),
+                    operation: 'UpdateListItems',
+                    target: entity.getCache(),
+                    valuePairs: []
+                },
+                deferred = $q.defer(),
+                opts = _.extend({}, defaults, options);
+
+            if (opts.buildValuePairs === true) {
+                var editableFields = _.where(model.list.fields, {readOnly: false});
+                opts.valuePairs = apEncodeService.generateValuePairs(editableFields, entity);
+            }
+
+            /** Overload the function then pass anything past the first parameter to the supporting methods */
+            serviceWrapper(opts, entity, model)
+                .then(function (response) {
+                    if (apConfig.online) {
+                        /** Online this should return an XML object */
+                        var indexedCache = apDecodeService.processListItems(model, entity.getQuery(), response, opts);
+                        /** Return reference to updated entity  */
+                        deferred.resolve(indexedCache[entity.id]);
+                    } else {
+                        /** Offline response should be the updated entity as a JS Object */
+                        deferred.resolve(response);
+                    }
+                }, function (err) {
+                    deferred.reject(err);
+                });
+            return deferred.promise;
+        }
+
+        /**
+         * @ngdoc function
+         * @name apDataService.deleteListItem
          * @description
          * Typically called directly from a list item, removes the list item from SharePoint
          * and the local cache.
@@ -1405,15 +1380,11 @@ angular.module('angularPoint')
          * @param {object} [options] Optional configuration params.
          * @param {Array} [options.target=item.getCache()] Optional location to search through and remove the
          * local cached copy.
-         * @param {boolean} [options.updateAllCaches=false] Search through the cache for each query on the model
-         * to ensure entity is removed everywhere.  This is more process intensive so by default we only delete the
-         * cached entity in the cache where this entity is currently stored.
          * @returns {object} Promise which resolves when the operation is complete.  Nothing of importance is returned.
          */
-        function deleteItemModel(model, entity, options) {
+        function deleteListItem(model, entity, options) {
             var defaults = {
                 target: _.isFunction(entity.getCache) ? entity.getCache() : model.getCache(),
-                updateAllCaches: false,
                 operation: 'UpdateListItems',
                 listName: model.list.getListId(),
                 batchCmd: 'Delete',
@@ -1424,53 +1395,19 @@ angular.module('angularPoint')
 
             var deferred = $q.defer();
 
-            if (apConfig.online) {
-                serviceWrapper(opts)
-                    .then(function () {
-                        /** Success */
-                        cleanCache(entity, opts);
-                        deferred.resolve(opts.target);
-                    }, function (outcome) {
-                        //In the event of an error, display toast
-                        toastr.error('There was an error deleting a list item from ' + model.list.title);
-                        deferred.reject(outcome);
-                    });
-            } else {
-                /** Offline debug mode */
-                /** Simulate deletion and remove locally */
-                cleanCache(entity, opts);
-                deferred.resolve(opts.target);
-            }
+            serviceWrapper(opts)
+                .then(function () {
+                    /** Success */
+                    apCacheService.deleteEntity(opts.listName, entity.id);
+                    deferred.resolve();
+                }, function (outcome) {
+                    //In the event of an error, display toast
+                    toastr.error('There was an error deleting a list item from ' + model.list.title);
+                    deferred.reject(outcome);
+                });
 
             return deferred.promise;
         }
-
-        function cleanCache(entity, options) {
-            var model = entity.getModel();
-            var defaults = {
-                target: _.isFunction(entity.getCache) ? entity.getCache() : model.getCache(),
-                updateAllCaches: false
-            };
-
-            var opts = _.extend({}, defaults, options);
-            var deleteCount = 0;
-
-            if (opts.updateAllCaches) {
-                _.each(model.queries, function (query) {
-                    var entityRemoved = removeEntityFromLocalCache(query.getCache(), entity.id);
-                    if (entityRemoved) {
-                        deleteCount++;
-                    }
-                });
-            } else {
-                var entityRemoved = removeEntityFromLocalCache(opts.target, entity.id);
-                if (entityRemoved) {
-                    deleteCount++;
-                }
-            }
-            return deleteCount;
-        }
-
     }]
 );;'use strict';
 
@@ -5941,12 +5878,15 @@ angular.module('angularPoint')
          * @methodOf angularPoint.IndexedCache
          * @description
          * Removes an entity from the cache.
-         * @param {object} entity Entity to remove.
+         * @param {object|number} entity Entity to remove or ID of entity to be removed.
          */
         function removeEntity(entity) {
             var cache = this;
             if(_.isObject && entity.id && cache[entity.id]) {
                 delete cache[entity.id];
+            } else if(_.isNumber(entity)) {
+                /** Allow entity ID to be used instead of then entity */
+                delete cache[entity];
             }
         }
 
@@ -6259,8 +6199,7 @@ angular.module('angularPoint')
  * @requires angularPoint.apUtilityService
  */
 angular.module('angularPoint')
-    .factory('apListItemFactory', ["$q", "_", "apCacheService", "apDataService", "apEncodeService", "apUtilityService", "apConfig", function ($q, _, apCacheService, apDataService, apEncodeService, apUtilityService,
-                                            apConfig) {
+    .factory('apListItemFactory', ["$q", "_", "apCacheService", "apDataService", "apEncodeService", "apUtilityService", "apConfig", function ($q, _, apCacheService, apDataService, apEncodeService, apUtilityService, apConfig) {
 
         /**
          * @ngdoc object
@@ -6289,17 +6228,6 @@ angular.module('angularPoint')
             saveFields: saveFields,
             validateEntity: validateEntity
         };
-
-        ///**
-        // * @ngdoc function
-        // * @name ListItem.getDataService
-        // * @description
-        // * Allows us to reference when out of scope
-        // * @returns {object} Reference to the dataService in the event that it's out of scope.
-        // */
-        //ListItem.prototype.getDataService = function () {
-        //  return apDataService;
-        //};
 
         /**
          * @ngdoc function
@@ -6332,11 +6260,12 @@ angular.module('angularPoint')
             var model = listItem.getModel();
             var deferred = $q.defer();
 
-            apDataService.addUpdateItemModel(model, listItem, options).then(function (response) {
-                deferred.resolve(response);
-                /** Optionally broadcast change event */
-                apUtilityService.registerChange(model);
-            });
+            apDataService.updateListItem(model, listItem, options)
+                .then(function (response) {
+                    deferred.resolve(response);
+                    /** Optionally broadcast change event */
+                    apUtilityService.registerChange(model);
+                });
 
             return deferred.promise;
         }
@@ -6393,7 +6322,7 @@ angular.module('angularPoint')
             /** Extend defaults with any provided options */
             var opts = _.extend({}, defaults, options);
 
-            apDataService.addUpdateItemModel(model, listItem, opts)
+            apDataService.updateListItem(model, listItem, opts)
                 .then(function (response) {
                     deferred.resolve(response);
                     /** Optionally broadcast change event */
@@ -6429,7 +6358,7 @@ angular.module('angularPoint')
             var model = listItem.getModel();
             var deferred = $q.defer();
 
-            apDataService.deleteItemModel(model, listItem, options).then(function (response) {
+            apDataService.deleteListItem(model, listItem, options).then(function (response) {
                 deferred.resolve(response);
                 /** Optionally broadcast change event */
                 apUtilityService.registerChange(model);
@@ -6464,9 +6393,9 @@ angular.module('angularPoint')
          */
         function getLookupReference(fieldName, lookupId) {
             var listItem = this;
-            if(_.isUndefined(fieldName)) {
+            if (_.isUndefined(fieldName)) {
                 throw new Error('A field name is required.', fieldName);
-            } else if(_.isEmpty(listItem[fieldName])) {
+            } else if (_.isEmpty(listItem[fieldName])) {
                 return '';
             } else {
                 var model = listItem.getModel();
@@ -6924,9 +6853,7 @@ angular.module('angularPoint')
  * @requires angularPoint.apUtilityService
  */
 angular.module('angularPoint')
-    .factory('apModelFactory', ["_", "apCacheService", "apDataService", "apListFactory", "apListItemFactory", "apQueryFactory", "apUtilityService", "apFieldService", "apConfig", "apIndexedCacheFactory", "apDecodeService", "$q", "toastr", function (_, apCacheService, apDataService, apListFactory, apListItemFactory,
-                                         apQueryFactory, apUtilityService, apFieldService, apConfig,
-                                         apIndexedCacheFactory, apDecodeService, $q, toastr) {
+    .factory('apModelFactory', ["_", "apCacheService", "apDataService", "apListFactory", "apListItemFactory", "apQueryFactory", "apUtilityService", "apFieldService", "apConfig", "apIndexedCacheFactory", "apDecodeService", "$q", "toastr", function (_, apCacheService, apDataService, apListFactory, apListItemFactory, apQueryFactory, apUtilityService, apFieldService, apConfig, apIndexedCacheFactory, apDecodeService, $q, toastr) {
 
         var defaultQueryName = apConfig.defaultQueryName;
 
@@ -7078,6 +7005,7 @@ angular.module('angularPoint')
             getAllListItems: getAllListItems,
             getCache: getCache,
             getCachedEntity: getCachedEntity,
+            getCachedEntities: getCachedEntities,
             getFieldDefinition: getFieldDefinition,
             getListItemById: getListItemById,
             //getLocalEntity: getLocalEntity,
@@ -7336,10 +7264,11 @@ angular.module('angularPoint')
          */
         function addNewItem(entity, options) {
             var model = this;
-            return apDataService.addUpdateItemModel(model, entity, options).then(function (response) {
-                /** Optionally broadcast change event */
-                apUtilityService.registerChange(model);
-            });
+            return apDataService.createListItem(model, entity, options)
+                .then(function (response) {
+                    /** Optionally broadcast change event */
+                    apUtilityService.registerChange(model);
+                });
         }
 
         /**
@@ -7600,6 +7529,19 @@ angular.module('angularPoint')
         function getCachedEntity(entityId) {
             var model = this;
             return apCacheService.getCachedEntity(model.list.getListId(), entityId);
+        }
+
+        /**
+         * @ngdoc function
+         * @name Model.getCachedEntities
+         * @module Model
+         * @description
+         * Returns all entities registered for this model regardless of query.
+         * @returns {object[]} All registered entities for this model.
+         */
+        function getCachedEntities() {
+            var model = this;
+            return apCacheService.getCachedEntities(model.list.getListId());
         }
 
         /**
@@ -8096,8 +8038,9 @@ angular.module('angularPoint')
             var model = query.getModel();
             var deferred = $q.defer();
 
-            /** Return existing promise if request is already underway */
-            if (query.negotiatingWithServer) {
+            /** Return existing promise if request is already underway or has been previously executed in the past
+             * 1/10th of a second */
+            if (query.negotiatingWithServer || (_.isDate(query.lastRun) && query.lastRun.getTime() + 100 > new Date().getTime())) {
                 return query.promise;
             } else {
                 /** Set flag to prevent another call while this query is active */
