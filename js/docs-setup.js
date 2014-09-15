@@ -19,7 +19,7 @@ NG_DOCS={
       "type": "service",
       "moduleName": "angularPoint",
       "shortDescription": "Stores a reference for all list items based on list GUID and list item id.  Allows us to then register promises that",
-      "keywords": "add allows angularpoint apcacheservice api assuming based belongs cache cached call create created creates deferred entities entity entitycontainer entityid entitytype equaling eventually existing exists extend fulfills function future guid indexed instance item items key keystring list local lookup lowercase model modelcache newly object optionally pass pending point promises provide reference register registered registers removes requested requests resolve resolves retrieve return returns secondary service single stored stores synchronise title undefined updated withing"
+      "keywords": "add allows angularpoint apcacheservice api assuming based belongs cache cached call create created creates deferred deletes entities entity entitycontainer entityid equaling eventually existing exists extend fulfills function future guid indexed instance item items key keystring list listid local lookup lowercase model modelcache newly object optionally pass pending point promises provide reference references register registered registers removes requested requests resolve resolves retrieve return returns secondary service single stored stores synchronise title undefined updated withing"
     },
     {
       "section": "api",
@@ -199,7 +199,7 @@ NG_DOCS={
       "type": "object",
       "moduleName": "angularPoint",
       "shortDescription": "Cache constructor that is extended to make it easier to work with via prototype methods.  Located in",
-      "keywords": "add adds angularpoint api apindexedcachefactory array based cache cached clears currently easier elements entities entity extended function indexedcache item key located methods number object prototype remove removes requested returns strings turns work"
+      "keywords": "add adds angularpoint api apindexedcachefactory array based cache cached clears currently easier elements entities entity extended function indexedcache item key located methods number object prototype remove removed removes requested returns strings turns work"
     },
     {
       "section": "api",
@@ -212,12 +212,12 @@ NG_DOCS={
     },
     {
       "section": "api",
-      "id": "apDataService.addUpdateItemModel",
-      "shortName": "apDataService.addUpdateItemModel",
+      "id": "apDataService.createListItem",
+      "shortName": "apDataService.createListItem",
       "type": "function",
       "moduleName": "apDataService",
-      "shortDescription": "Adds or updates a list item based on if the item passed in contains an id attribute.",
-      "keywords": "adds addupdateitemmodel apdataservice api attribute automatically based buildvaluepairs configuration defined entities entity field fields function generate generating identified item javascript list model newly object optional pairs params passed precomputed promise reference representing resolves sharepoint updated updates valuepairs"
+      "shortDescription": "Creates a new list item for the provided model.",
+      "keywords": "apdataservice api automatically based buildvaluepairs configuration created createlistitem creates defined entities entity field fields function generate generating identified item javascript list model newly object optional pairs params precomputed promise provided reference representing resolves sharepoint valuepairs"
     },
     {
       "section": "api",
@@ -230,12 +230,12 @@ NG_DOCS={
     },
     {
       "section": "api",
-      "id": "apDataService.deleteItemModel",
-      "shortName": "apDataService.deleteItemModel",
+      "id": "apDataService.deleteListItem",
+      "shortName": "apDataService.deleteListItem",
       "type": "function",
       "moduleName": "apDataService",
       "shortDescription": "Typically called directly from a list item, removes the list item from SharePoint",
-      "keywords": "apdataservice api cache cached called complete configuration copy currently default delete deleteitemmodel directly ensure entities entity function getcache intensive item javascript list local location model object operation optional params process promise query reference remove removed removes representing resolves returned search sharepoint stored target typically updateallcaches"
+      "keywords": "apdataservice api cache cached called complete configuration copy deletelistitem directly entities entity function getcache item javascript list local location model object operation optional params promise reference remove removes representing resolves returned search sharepoint target typically"
     },
     {
       "section": "api",
@@ -338,15 +338,6 @@ NG_DOCS={
     },
     {
       "section": "api",
-      "id": "apDataService.removeEntityFromLocalCache",
-      "shortName": "apDataService.removeEntityFromLocalCache",
-      "type": "function",
-      "moduleName": "apDataService",
-      "shortDescription": "Searches for an entity based on list item ID and removes it from the cached array if it exists.",
-      "keywords": "apdataservice api array based cached determine entity entityid evaluate exists function indexedcache item items list match query removed removeentityfromlocalcache removes returns searches true"
-    },
-    {
-      "section": "api",
       "id": "apDataService.retrieveChangeToken",
       "shortName": "apDataService.retrieveChangeToken",
       "type": "function",
@@ -371,6 +362,15 @@ NG_DOCS={
       "moduleName": "apDataService",
       "shortDescription": "Generic wrapper for any SPServices web service call.  The big benefit to this function is it allows us",
       "keywords": "$q allows apdataservice api application benefit big call check clean codeplex consistent continue details directly elements expected experience filter filternode find function generic http implementation items iterate list model node objects operation options parameters params parsed passed payload promise provided raw resolved response returns server service servicewrapper spservices string typically web weburl wrapper xml"
+    },
+    {
+      "section": "api",
+      "id": "apDataService.updateListItem",
+      "shortName": "apDataService.updateListItem",
+      "type": "function",
+      "moduleName": "apDataService",
+      "shortDescription": "Updates an existing list item.",
+      "keywords": "apdataservice api automatically based buildvaluepairs configuration created defined entities entity existing field fields function generate generating identified item javascript list model newly object optional pairs params precomputed promise reference representing resolves sharepoint updatelistitem updates valuepairs"
     },
     {
       "section": "api",
@@ -585,7 +585,7 @@ NG_DOCS={
       "shortName": "Model.getCachedEntities",
       "type": "function",
       "moduleName": "Model",
-      "shortDescription": "Returns all entities registered for this model regardless of which query it can be found in.",
+      "shortDescription": "Returns all entities registered for this model regardless of query.",
       "keywords": "api entities function getcachedentities model query registered returns"
     },
     {
