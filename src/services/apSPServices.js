@@ -625,8 +625,8 @@ angular.module('angularPoint')
                         addToPayload(opt, ["updates"]);
                     } else {
                         SOAPEnvelope.payload += "<updates><Batch OnError='Continue'><Method ID='1' Cmd='" + opt.batchCmd + "'>";
-                        for (i = 0; i < opt.valuepairs.length; i++) {
-                            SOAPEnvelope.payload += "<Field Name='" + opt.valuepairs[i][0] + "'>" + escapeColumnValue(opt.valuepairs[i][1]) + "</Field>";
+                        for (i = 0; i < opt.valuePairs.length; i++) {
+                            SOAPEnvelope.payload += "<Field Name='" + opt.valuePairs[i][0] + "'>" + escapeColumnValue(opt.valuePairs[i][1]) + "</Field>";
                         }
                         if (opt.batchCmd !== "New") {
                             SOAPEnvelope.payload += "<Field Name='ID'>" + opt.ID + "</Field>";
@@ -1293,7 +1293,7 @@ angular.module('angularPoint')
 
             // Abstractions for CAML syntax
             batchCmd: "Update", // Method Cmd for UpdateListItems
-            valuepairs: [], // Fieldname / Fieldvalue pairs for UpdateListItems
+            valuePairs: [], // Fieldname / Fieldvalue pairs for UpdateListItems
 
             // As of v0.7.1, removed all options which were assigned an empty string ("")
             DestinationUrls: [], // Array of destination URLs for copy operations
@@ -1359,7 +1359,7 @@ angular.module('angularPoint')
                 listName: "", // The list to operate on.
                 CAMLQuery: "", // A CAML fragment specifying which items in the list will be selected and updated
                 batchCmd: "Update", // The operation to perform. By default, Update.
-                valuepairs: [], // Valuepairs for the update in the form [[fieldname1, fieldvalue1], [fieldname2, fieldvalue2]...]
+                valuePairs: [], // valuePairs for the update in the form [[fieldname1, fieldvalue1], [fieldname2, fieldvalue2]...]
                 completefunc: null, // Function to call on completion of rendering the change.
                 debug: false // If true, show error messages;if false, run silent
             }, options);
@@ -1390,8 +1390,8 @@ angular.module('angularPoint')
             var batch = "<Batch OnError='Continue'>";
             for (i = 0; i < itemsToUpdate.length; i++) {
                 batch += "<Method ID='" + i + "' Cmd='" + opt.batchCmd + "'>";
-                for (fieldNum = 0; fieldNum < opt.valuepairs.length; fieldNum++) {
-                    batch += "<Field Name='" + opt.valuepairs[fieldNum][0] + "'>" + escapeColumnValue(opt.valuepairs[fieldNum][1]) + "</Field>";
+                for (fieldNum = 0; fieldNum < opt.valuePairs.length; fieldNum++) {
+                    batch += "<Field Name='" + opt.valuePairs[fieldNum][0] + "'>" + escapeColumnValue(opt.valuePairs[fieldNum][1]) + "</Field>";
                 }
                 batch += "<Field Name='ID'>" + itemsToUpdate[i] + "</Field>";
                 if (documentsToUpdate[i].length > 0) {
