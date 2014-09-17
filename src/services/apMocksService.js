@@ -2,7 +2,7 @@
 
 
 angular.module('angularPoint')
-    .service('apMocksService', function ($q, apCacheService, toastr) {
+    .service('apMocksService', function ($q, apCacheService, apIndexedCacheFactory, toastr) {
         return {
             mockRequest: mockRequest
         };
@@ -59,6 +59,9 @@ angular.module('angularPoint')
                 editor: {
                     lookupId: 23,
                     lookupValue: 'Generic User'
+                },
+                getCache: function() {
+                    return apIndexedCacheFactory.create();
                 }
             };
 

@@ -243,7 +243,7 @@ module.exports = function (grunt) {
     //]);
 
     grunt.registerTask('build', [
-        'coverage',
+        'test',
         'clean:dist',
         'ngtemplates',
         'concat',

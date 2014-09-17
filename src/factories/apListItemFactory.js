@@ -318,7 +318,7 @@ angular.module('angularPoint')
         function deleteAttachment(url) {
             var listItem = this;
             return apDataService.deleteAttachment({
-                listItemId: listItem.id,
+                listItemID: listItem.id,
                 url: url,
                 listName: listItem.getModel().list.getListId()
             });

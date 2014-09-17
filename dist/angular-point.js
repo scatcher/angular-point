@@ -3049,7 +3049,7 @@ angular.module('angularPoint')
 
 
 angular.module('angularPoint')
-    .service('apMocksService', ["$q", "apCacheService", "toastr", function ($q, apCacheService, toastr) {
+    .service('apMocksService', ["$q", "apCacheService", "apIndexedCacheFactory", "toastr", function ($q, apCacheService, apIndexedCacheFactory, toastr) {
         return {
             mockRequest: mockRequest
         };
@@ -3106,6 +3106,9 @@ angular.module('angularPoint')
                 editor: {
                     lookupId: 23,
                     lookupValue: 'Generic User'
+                },
+                getCache: function() {
+                    return apIndexedCacheFactory.create();
                 }
             };
 
@@ -6504,7 +6507,7 @@ angular.module('angularPoint')
         function deleteAttachment(url) {
             var listItem = this;
             return apDataService.deleteAttachment({
-                listItemId: listItem.id,
+                listItemID: listItem.id,
                 url: url,
                 listName: listItem.getModel().list.getListId()
             });
