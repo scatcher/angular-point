@@ -21,7 +21,7 @@ describe('Service: apFieldService', function () {
 
         it('should return a undefined parameter as an empty string', function () {
             var defaultValue = apFieldService.getDefaultValueForType();
-            expect(defaultValue).toBeUndefined();
+            expect(defaultValue).toBe('');
         });
 
         it('should return a text as an empty string', function () {

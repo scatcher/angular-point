@@ -2898,7 +2898,6 @@ angular.module('angularPoint')
       TextLong: {defaultValue: '', staticMock: 'This is a sentence.', dynamicMock: randomParagraph},
       Boolean: { defaultValue: null, staticMock: true, dynamicMock: randomBoolean },
       Choice: { defaultValue: '', staticMock: 'My Choice', dynamicMock: randomString },
-      ChoiceMulti: { defaultValue: [], staticMock: ['A Good Choice', 'A Bad Choice'], dynamicMock: randomStringArray },
       Counter: { defaultValue: null, staticMock: getUniqueCounter(), dynamicMock: getUniqueCounter },
       Currency: { defaultValue: null, staticMock: 120.50, dynamicMock: randomCurrency },
       DateTime: { defaultValue: null, staticMock: new Date(2014, 5, 4, 11, 33, 25), dynamicMock: randomDate },
@@ -2913,6 +2912,7 @@ angular.module('angularPoint')
         {lookupId: 51, lookupValue: 'Static Multi 2'}
       ], dynamicMock: randomLookupMulti },
       Mask: { defaultValue: mockPermMask(), staticMock: mockPermMask(), dynamicMock: mockPermMask },
+      MultiChoice: { defaultValue: [], staticMock: ['A Good Choice', 'A Bad Choice'], dynamicMock: randomStringArray },
       User: { defaultValue: '', staticMock: {lookupId: 52, lookupValue: 'Static User'}, dynamicMock: randomUser },
       UserMulti: { defaultValue: [], staticMock: [
         {lookupId: 53, lookupValue: 'Static User 1'},
@@ -2926,7 +2926,7 @@ angular.module('angularPoint')
      * @returns {object} fieldTypeDefinition
      */
     function getDefinition(fieldType) {
-      return fieldTypes[fieldType];
+      return fieldTypes[fieldType] ? fieldTypes[fieldType] : fieldTypes['Text'];
     }
 
     /**
