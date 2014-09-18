@@ -13,7 +13,7 @@
  */
 angular.module('angularPoint')
     .service('apDecodeService', function ($q, _, apUtilityService, apQueueService, apConfig, apCacheService,
-                                          apLookupFactory, apUserFactory) {
+                                          apLookupFactory, apUserFactory, apFieldService) {
 
 
         return {
@@ -200,8 +200,9 @@ angular.module('angularPoint')
             var rowAttrs = xmlEntity.attributes;
 
             /** Bring back all mapped columns, even those with no value */
-            _.each(opts.mapping, function (prop) {
-                entity[prop.mappedName] = '';
+            _.each(opts.mapping, function (fieldDefinition) {
+                entity[fieldDefinition.mappedName] = apFieldService.getDefaultValueForType(fieldDefinition.objectType);
+                //entity[fieldDefinition.mappedName] = '';
             });
 
             /** Parse through the element's attributes */

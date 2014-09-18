@@ -1423,8 +1423,8 @@ angular.module('angularPoint')
  * @requires angularPoint.apCacheService
  */
 angular.module('angularPoint')
-    .service('apDecodeService', ["$q", "_", "apUtilityService", "apQueueService", "apConfig", "apCacheService", "apLookupFactory", "apUserFactory", function ($q, _, apUtilityService, apQueueService, apConfig, apCacheService,
-                                          apLookupFactory, apUserFactory) {
+    .service('apDecodeService', ["$q", "_", "apUtilityService", "apQueueService", "apConfig", "apCacheService", "apLookupFactory", "apUserFactory", "apFieldService", function ($q, _, apUtilityService, apQueueService, apConfig, apCacheService,
+                                          apLookupFactory, apUserFactory, apFieldService) {
 
 
         return {
@@ -1611,8 +1611,9 @@ angular.module('angularPoint')
             var rowAttrs = xmlEntity.attributes;
 
             /** Bring back all mapped columns, even those with no value */
-            _.each(opts.mapping, function (prop) {
-                entity[prop.mappedName] = '';
+            _.each(opts.mapping, function (fieldDefinition) {
+                entity[fieldDefinition.mappedName] = apFieldService.getDefaultValueForType(fieldDefinition.objectType);
+                //entity[fieldDefinition.mappedName] = '';
             });
 
             /** Parse through the element's attributes */
