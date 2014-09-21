@@ -35,6 +35,239 @@ angular.module('angularPoint', [
         /** Add a convenience flag, inverse of offline */
         apConfig.online = !apConfig.offline;
     }]);
+;//  apWebServiceOperationConstants.OpName = [WebService, needs_SOAPAction];
+//      OpName              The name of the Web Service operation -> These names are unique
+//      WebService          The name of the WebService this operation belongs to
+//      needs_SOAPAction    Boolean indicating whether the operation needs to have the SOAPAction passed in the setRequestHeaderfunction.
+//                          true if the operation does a write, else false
+angular.module('angularPoint')
+    .constant('apWebServiceOperationConstants', {
+        "GetAlerts": ["Alerts", false],
+        "DeleteAlerts": ["Alerts", true],
+        "Mode": ["Authentication", false],
+        "Login": ["Authentication", false],
+        "CopyIntoItems": ["Copy", true],
+        "CopyIntoItemsLocal": ["Copy", true],
+        "GetItem": ["Copy", false],
+        "GetForm": ["Forms", false],
+        "GetFormCollection": ["Forms", false],
+        "AddAttachment": ["Lists", true],
+        "AddDiscussionBoardItem": ["Lists", true],
+        "AddList": ["Lists", true],
+        "AddListFromFeature": ["Lists", true],
+        "ApplyContentTypeToList": ["Lists", true],
+        "CheckInFile": ["Lists", true],
+        "CheckOutFile": ["Lists", true],
+        "CreateContentType": ["Webs", true],
+        "DeleteAttachment": ["Lists", true],
+        "DeleteContentType": ["Lists", true],
+        "DeleteContentTypeXmlDocument": ["Lists", true],
+        "DeleteList": ["Lists", true],
+        "GetAttachmentCollection": ["Lists", false],
+        "GetList": ["Lists", false],
+        "GetListAndView": ["Lists", false],
+        "GetListCollection": ["Lists", false],
+        "GetListContentType": ["Lists", false],
+        "GetListContentTypes": ["Lists", false],
+        "GetListItemChanges": ["Lists", false],
+        "GetListItemChangesSinceToken": ["Lists", false],
+        "GetListItems": ["Lists", false],
+        "GetVersionCollection": ["Lists", false],
+        "UndoCheckOut": ["Lists", true],
+        "UpdateContentType": ["Webs", true],
+        "UpdateContentTypesXmlDocument": ["Lists", true],
+        "UpdateContentTypeXmlDocument": ["Lists", true],
+        "UpdateList": ["Lists", true],
+        "UpdateListItems": ["Lists", true],
+        "AddMeeting": ["Meetings", true],
+        "CreateWorkspace": ["Meetings", true],
+        "RemoveMeeting": ["Meetings", true],
+        "SetWorkSpaceTitle": ["Meetings", true],
+        "ResolvePrincipals": ["People", false],
+        "SearchPrincipals": ["People", false],
+        "AddPermission": ["Permissions", true],
+        "AddPermissionCollection": ["Permissions", true],
+        "GetPermissionCollection": ["Permissions", true],
+        "RemovePermission": ["Permissions", true],
+        "RemovePermissionCollection": ["Permissions", true],
+        "UpdatePermission": ["Permissions", true],
+        "GetLinks": ["PublishedLinksService", true],
+        "GetPortalSearchInfo": ["Search", false],
+        "GetQuerySuggestions": ["Search", false],
+        "GetSearchMetadata": ["Search", false],
+        "Query": ["Search", false],
+        "QueryEx": ["Search", false],
+        "Registration": ["Search", false],
+        "Status": ["Search", false],
+        "SendClientScriptErrorReport": ["SharePointDiagnostics", true],
+        "GetAttachments": ["SiteData", false],
+        "EnumerateFolder": ["SiteData", false],
+        "SiteDataGetList": ["SiteData", false],
+        "SiteDataGetListCollection": ["SiteData", false],
+        "SiteDataGetSite": ["SiteData", false],
+        "SiteDataGetSiteUrl": ["SiteData", false],
+        "SiteDataGetWeb": ["SiteData", false],
+        "CreateWeb": ["Sites", true],
+        "DeleteWeb": ["Sites", true],
+        "GetSite": ["Sites", false],
+        "GetSiteTemplates": ["Sites", false],
+        "AddComment": ["SocialDataService", true],
+        "AddTag": ["SocialDataService", true],
+        "AddTagByKeyword": ["SocialDataService", true],
+        "CountCommentsOfUser": ["SocialDataService", false],
+        "CountCommentsOfUserOnUrl": ["SocialDataService", false],
+        "CountCommentsOnUrl": ["SocialDataService", false],
+        "CountRatingsOnUrl": ["SocialDataService", false],
+        "CountTagsOfUser": ["SocialDataService", false],
+        "DeleteComment": ["SocialDataService", true],
+        "DeleteRating": ["SocialDataService", true],
+        "DeleteTag": ["SocialDataService", true],
+        "DeleteTagByKeyword": ["SocialDataService", true],
+        "DeleteTags": ["SocialDataService", true],
+        "GetAllTagTerms": ["SocialDataService", false],
+        "GetAllTagTermsForUrlFolder": ["SocialDataService", false],
+        "GetAllTagUrls": ["SocialDataService", false],
+        "GetAllTagUrlsByKeyword": ["SocialDataService", false],
+        "GetCommentsOfUser": ["SocialDataService", false],
+        "GetCommentsOfUserOnUrl": ["SocialDataService", false],
+        "GetCommentsOnUrl": ["SocialDataService", false],
+        "GetRatingAverageOnUrl": ["SocialDataService", false],
+        "GetRatingOfUserOnUrl": ["SocialDataService", false],
+        "GetRatingOnUrl": ["SocialDataService", false],
+        "GetRatingsOfUser": ["SocialDataService", false],
+        "GetRatingsOnUrl": ["SocialDataService", false],
+        "GetSocialDataForFullReplication": ["SocialDataService", false],
+        "GetTags": ["SocialDataService", true],
+        "GetTagsOfUser": ["SocialDataService", true],
+        "GetTagTerms": ["SocialDataService", true],
+        "GetTagTermsOfUser": ["SocialDataService", true],
+        "GetTagTermsOnUrl": ["SocialDataService", true],
+        "GetTagUrlsOfUser": ["SocialDataService", true],
+        "GetTagUrlsOfUserByKeyword": ["SocialDataService", true],
+        "GetTagUrls": ["SocialDataService", true],
+        "GetTagUrlsByKeyword": ["SocialDataService", true],
+        "SetRating": ["SocialDataService", true],
+        "UpdateComment": ["SocialDataService", true],
+        "SpellCheck": ["SpellCheck", false],
+        "AddTerms": ["TaxonomyClientService", true],
+        "GetChildTermsInTerm": ["TaxonomyClientService", false],
+        "GetChildTermsInTermSet": ["TaxonomyClientService", false],
+        "GetKeywordTermsByGuids": ["TaxonomyClientService", false],
+        "GetTermsByLabel": ["TaxonomyClientService", false],
+        "GetTermSets": ["TaxonomyClientService", false],
+        "AddGroup": ["usergroup", true],
+        "AddGroupToRole": ["usergroup", true],
+        "AddRole": ["usergroup", true],
+        "AddRoleDef": ["usergroup", true],
+        "AddUserCollectionToGroup": ["usergroup", true],
+        "AddUserCollectionToRole": ["usergroup", true],
+        "AddUserToGroup": ["usergroup", true],
+        "AddUserToRole": ["usergroup", true],
+        "GetAllUserCollectionFromWeb": ["usergroup", false],
+        "GetGroupCollection": ["usergroup", false],
+        "GetGroupCollectionFromRole": ["usergroup", false],
+        "GetGroupCollectionFromSite": ["usergroup", false],
+        "GetGroupCollectionFromUser": ["usergroup", false],
+        "GetGroupCollectionFromWeb": ["usergroup", false],
+        "GetGroupInfo": ["usergroup", false],
+        "GetRoleCollection": ["usergroup", false],
+        "GetRoleCollectionFromGroup": ["usergroup", false],
+        "GetRoleCollectionFromUser": ["usergroup", false],
+        "GetRoleCollectionFromWeb": ["usergroup", false],
+        "GetRoleInfo": ["usergroup", false],
+        "GetRolesAndPermissionsForCurrentUser": ["usergroup", false],
+        "GetRolesAndPermissionsForSite": ["usergroup", false],
+        "GetUserCollection": ["usergroup", false],
+        "GetUserCollectionFromGroup": ["usergroup", false],
+        "GetUserCollectionFromRole": ["usergroup", false],
+        "GetUserCollectionFromSite": ["usergroup", false],
+        "GetUserCollectionFromWeb": ["usergroup", false],
+        "GetUserInfo": ["usergroup", false],
+        "GetUserLoginFromEmail": ["usergroup", false],
+        "RemoveGroup": ["usergroup", true],
+        "RemoveGroupFromRole": ["usergroup", true],
+        "RemoveRole": ["usergroup", true],
+        "RemoveUserCollectionFromGroup": ["usergroup", true],
+        "RemoveUserCollectionFromRole": ["usergroup", true],
+        "RemoveUserCollectionFromSite": ["usergroup", true],
+        "RemoveUserFromGroup": ["usergroup", true],
+        "RemoveUserFromRole": ["usergroup", true],
+        "RemoveUserFromSite": ["usergroup", true],
+        "RemoveUserFromWeb": ["usergroup", true],
+        "UpdateGroupInfo": ["usergroup", true],
+        "UpdateRoleDefInfo": ["usergroup", true],
+        "UpdateRoleInfo": ["usergroup", true],
+        "UpdateUserInfo": ["usergroup", true],
+        "AddColleague": ["UserProfileService", true],
+        "AddLink": ["UserProfileService", true],
+        "AddMembership": ["UserProfileService", true],
+        "AddPinnedLink": ["UserProfileService", true],
+        "CreateMemberGroup": ["UserProfileService", true],
+        "CreateUserProfileByAccountName": ["UserProfileService", true],
+        "GetCommonColleagues": ["UserProfileService", false],
+        "GetCommonManager": ["UserProfileService", false],
+        "GetCommonMemberships": ["UserProfileService", false],
+        "GetInCommon": ["UserProfileService", false],
+        "GetPropertyChoiceList": ["UserProfileService", false],
+        "GetUserColleagues": ["UserProfileService", false],
+        "GetUserLinks": ["UserProfileService", false],
+        "GetUserMemberships": ["UserProfileService", false],
+        "GetUserPinnedLinks": ["UserProfileService", false],
+        "GetUserProfileByGuid": ["UserProfileService", false],
+        "GetUserProfileByIndex": ["UserProfileService", false],
+        "GetUserProfileByName": ["UserProfileService", false],
+        "GetUserProfileCount": ["UserProfileService", false],
+        "GetUserProfileSchema": ["UserProfileService", false],
+        "GetUserPropertyByAccountName": ["UserProfileService", false],
+        "ModifyUserPropertyByAccountName": ["UserProfileService", true],
+        "RemoveAllColleagues": ["UserProfileService", true],
+        "RemoveAllLinks": ["UserProfileService", true],
+        "RemoveAllMemberships": ["UserProfileService", true],
+        "RemoveAllPinnedLinks": ["UserProfileService", true],
+        "RemoveColleague": ["UserProfileService", true],
+        "RemoveLink": ["UserProfileService", true],
+        "RemoveMembership": ["UserProfileService", true],
+        "RemovePinnedLink": ["UserProfileService", true],
+        "UpdateColleaguePrivacy": ["UserProfileService", true],
+        "UpdateLink": ["UserProfileService", true],
+        "UpdateMembershipPrivacy": ["UserProfileService", true],
+        "UpdatePinnedLink": ["UserProfileService", true],
+        "DeleteAllVersions": ["Versions", true],
+        "DeleteVersion": ["Versions", true],
+        "GetVersions": ["Versions", false],
+        "RestoreVersion": ["Versions", true],
+        "AddView": ["Views", true],
+        "DeleteView": ["Views", true],
+        "GetView": ["Views", false],
+        "GetViewHtml": ["Views", false],
+        "GetViewCollection": ["Views", false],
+        "UpdateView": ["Views", true],
+        "UpdateViewHtml": ["Views", true],
+        "AddWebPart": ["WebPartPages", true],
+        "AddWebPartToZone": ["WebPartPages", true],
+        "GetWebPart2": ["WebPartPages", false],
+        "GetWebPartPage": ["WebPartPages", false],
+        "GetWebPartProperties": ["WebPartPages", false],
+        "GetWebPartProperties2": ["WebPartPages", false],
+        "GetColumns": ["Webs", false],
+        "GetContentType": ["Webs", false],
+        "GetContentTypes": ["Webs", false],
+        "GetCustomizedPageStatus": ["Webs", false],
+        "GetListTemplates": ["Webs", false],
+        "GetObjectIdFromUrl": ["Webs", false],
+        "GetWeb": ["Webs", false],
+        "GetWebCollection": ["Webs", false],
+        "GetAllSubWebCollection": ["Webs", false],
+        "UpdateColumns": ["Webs", true],
+        "WebUrlFromPageUrl": ["Webs", false],
+        "AlterToDo": ["Workflow", true],
+        "ClaimReleaseTask": ["Workflow", true],
+        "GetTemplatesForItem": ["Workflow", false],
+        "GetToDosForItem": ["Workflow", false],
+        "GetWorkflowDataForItem": ["Workflow", false],
+        "GetWorkflowTaskData": ["Workflow", false],
+        "StartWorkflow": ["Workflow", true]
+    });
 ;/**
  * Provides a way to inject vendor libraries that otherwise are globals.
  * This improves code testability by allowing you to more easily know what
@@ -103,111 +336,6 @@ angular.module('angularPoint')
         window.location.href.indexOf('http://10.') > -1 ||
         window.location.href.indexOf('http://192.') > -1,
         offlineXML: 'dev/'
-    });
-;'use strict';
-
-//  apWebServiceOperationConstants.OpName = [WebService, needs_SOAPAction];
-//      OpName              The name of the Web Service operation -> These names are unique
-//      WebService          The name of the WebService this operation belongs to
-//      needs_SOAPAction    Boolean indicating whether the operation needs to have the SOAPAction passed in the setRequestHeaderfunction.
-//                          true if the operation does a write, else false
-angular.module('angularPoint')
-    .service('apWebServiceProvider', function() {
-        var SCHEMASharePoint = "http://schemas.microsoft.com/sharepoint";
-        var serviceDefinitions = {
-            Alerts: {
-                action: SCHEMASharePoint + '/soap/2002/1/alerts/',
-                xmlns: SCHEMASharePoint + '/soap/2002/1/alerts/'
-            },
-            Meetings: {
-                action: SCHEMASharePoint + '/soap/meetings/',
-                xmlns: SCHEMASharePoint + '/soap/meetings/'
-            },
-            Permissions: {
-                action: SCHEMASharePoint + '/soap/directory/',
-                xmlns: SCHEMASharePoint + '/soap/directory/'
-            },
-            PublishedLinksService: {
-                action: 'http://microsoft.com/webservices/SharePointPortalServer/PublishedLinksService/',
-                xmlns: 'http://microsoft.com/webservices/SharePointPortalServer/PublishedLinksService/'
-            },
-            Search: {
-                action: 'urn:Microsoft.Search/',
-                xmlns: 'urn:Microsoft.Search'
-            },
-            SharePointDiagnostics: {
-                action: 'http://schemas.microsoft.com/sharepoint/diagnostics/',
-                xmlns: SCHEMASharePoint + '/diagnostics/'
-            },
-            SocialDataService: {
-                action: 'http://microsoft.com/webservices/SharePointPortalServer/SocialDataService/',
-                xmlns: 'http://microsoft.com/webservices/SharePointPortalServer/SocialDataService'
-            },
-            SpellCheck: {
-                action: 'http://schemas.microsoft.com/sharepoint/publishing/spelling/SpellCheck',
-                xmlns: 'http://schemas.microsoft.com/sharepoint/publishing/spelling/'
-            },
-            TaxonomyClientService: {
-                action: SCHEMASharePoint + '/taxonomy/soap/',
-                xmlns: SCHEMASharePoint + '/taxonomy/soap/'
-            },
-            usergroup: {
-                action: SCHEMASharePoint + '/soap/directory/',
-                xmlns: SCHEMASharePoint + '/soap/directory/'
-            },
-            UserProfileService: {
-                action: 'http://microsoft.com/webservices/SharePointPortalServer/UserProfileService/',
-                xmlns: 'http://microsoft.com/webservices/SharePointPortalServer/UserProfileService'
-            },
-            WebPartPages: {
-                action: 'http://microsoft.com/sharepoint/webpartpages/',
-                xmlns: 'http://microsoft.com/sharepoint/webpartpages'
-            },
-            Workflow: {
-                action: SCHEMASharePoint + '/soap/workflow/',
-                xmlns: SCHEMASharePoint + '/soap/workflow/'
-            }
-        };
-
-        var webServices = [
-            'Alerts',
-            'Authentication',
-            'Copy',
-            'Forms',
-            'Lists',
-            'Meetings',
-            'People',
-            'Permissions',
-            'PublishedLinksService',
-            'Search',
-            'SharePointDiagnostics',
-            'SiteData',
-            'Sites',
-            'SocialDataService',
-            'SpellCheck',
-            'TaxonomyClientService',
-            'usergroup',
-            'UserProfileService',
-            'Versions',
-            'Views',
-            'WebPartPages',
-            'Webs',
-            'Workflow'
-        ];
-
-        return {
-            action: action,
-            webServices: webServices,
-            xmlns: xmlns
-        };
-
-        function action(service) {
-            return serviceDefinitions[service] ? serviceDefinitions[service].action : SCHEMASharePoint + '/soap/';
-        }
-        function xmlns(service) {
-            return serviceDefinitions[service] ? serviceDefinitions[service].xmlns : SCHEMASharePoint + '/soap/';
-        }
-
     });
 ;'use strict';
 
@@ -3327,7 +3455,7 @@ angular.module('angularPoint')
  *
  * */
 angular.module('angularPoint')
-    .service('SPServices', ["apWebServiceOperationConstants", "apWebServiceProvider", function (apWebServiceOperationConstants, apWebServiceProvider) {
+    .service('SPServices', ["apWebServiceOperationConstants", "apWebServiceService", function (apWebServiceOperationConstants, apWebServiceService) {
 
         /*
          * SPServices - Work with SharePoint's Web Services using jQuery
@@ -3439,8 +3567,8 @@ angular.module('angularPoint')
             var service = apWebServiceOperationConstants[opt.operation][0];
 
             // Put together operation header and SOAPAction for the SOAP call based on which Web Service we're calling
-            soapEnvelope.opheader = "<" + opt.operation + " xmlns='" + apWebServiceProvider.xmlns(service) + "' >";
-            SOAPAction = apWebServiceProvider.action(service);
+            soapEnvelope.opheader = "<" + opt.operation + " xmlns='" + apWebServiceService.xmlns(service) + "' >";
+            SOAPAction = apWebServiceService.action(service);
 
             // Add the operation to the SOAPAction and opfooter
             SOAPAction += opt.operation;
@@ -5051,7 +5179,8 @@ angular.module('angularPoint')
             },
             /** Based on functionality in Breeze.js */
             isGuid: function (value) {
-                return (typeof value === "string") && /[a-fA-F\d]{8}-(?:[a-fA-F\d]{4}-){3}[a-fA-F\d]{12}/.test(value);
+                return (typeof value === "string") && /[a-fA-F\d]{8}-(?:[a-fA-F\d]{4}-){3}[a-fA-F\d]{12}/
+                    .test(value);
             }
         });
 
@@ -5390,238 +5519,111 @@ angular.module('angularPoint')
             toCamelCase: toCamelCase,
             yyyymmdd: yyyymmdd
         };
-    }]);;//  apWebServiceOperationConstants.OpName = [WebService, needs_SOAPAction];
+    }]);
+;'use strict';
+
+//  apWebServiceOperationConstants.OpName = [WebService, needs_SOAPAction];
 //      OpName              The name of the Web Service operation -> These names are unique
 //      WebService          The name of the WebService this operation belongs to
 //      needs_SOAPAction    Boolean indicating whether the operation needs to have the SOAPAction passed in the setRequestHeaderfunction.
 //                          true if the operation does a write, else false
 angular.module('angularPoint')
-    .constant('apWebServiceOperationConstants', {
-        "GetAlerts": ["Alerts", false],
-        "DeleteAlerts": ["Alerts", true],
-        "Mode": ["Authentication", false],
-        "Login": ["Authentication", false],
-        "CopyIntoItems": ["Copy", true],
-        "CopyIntoItemsLocal": ["Copy", true],
-        "GetItem": ["Copy", false],
-        "GetForm": ["Forms", false],
-        "GetFormCollection": ["Forms", false],
-        "AddAttachment": ["Lists", true],
-        "AddDiscussionBoardItem": ["Lists", true],
-        "AddList": ["Lists", true],
-        "AddListFromFeature": ["Lists", true],
-        "ApplyContentTypeToList": ["Lists", true],
-        "CheckInFile": ["Lists", true],
-        "CheckOutFile": ["Lists", true],
-        "CreateContentType": ["Webs", true],
-        "DeleteAttachment": ["Lists", true],
-        "DeleteContentType": ["Lists", true],
-        "DeleteContentTypeXmlDocument": ["Lists", true],
-        "DeleteList": ["Lists", true],
-        "GetAttachmentCollection": ["Lists", false],
-        "GetList": ["Lists", false],
-        "GetListAndView": ["Lists", false],
-        "GetListCollection": ["Lists", false],
-        "GetListContentType": ["Lists", false],
-        "GetListContentTypes": ["Lists", false],
-        "GetListItemChanges": ["Lists", false],
-        "GetListItemChangesSinceToken": ["Lists", false],
-        "GetListItems": ["Lists", false],
-        "GetVersionCollection": ["Lists", false],
-        "UndoCheckOut": ["Lists", true],
-        "UpdateContentType": ["Webs", true],
-        "UpdateContentTypesXmlDocument": ["Lists", true],
-        "UpdateContentTypeXmlDocument": ["Lists", true],
-        "UpdateList": ["Lists", true],
-        "UpdateListItems": ["Lists", true],
-        "AddMeeting": ["Meetings", true],
-        "CreateWorkspace": ["Meetings", true],
-        "RemoveMeeting": ["Meetings", true],
-        "SetWorkSpaceTitle": ["Meetings", true],
-        "ResolvePrincipals": ["People", false],
-        "SearchPrincipals": ["People", false],
-        "AddPermission": ["Permissions", true],
-        "AddPermissionCollection": ["Permissions", true],
-        "GetPermissionCollection": ["Permissions", true],
-        "RemovePermission": ["Permissions", true],
-        "RemovePermissionCollection": ["Permissions", true],
-        "UpdatePermission": ["Permissions", true],
-        "GetLinks": ["PublishedLinksService", true],
-        "GetPortalSearchInfo": ["Search", false],
-        "GetQuerySuggestions": ["Search", false],
-        "GetSearchMetadata": ["Search", false],
-        "Query": ["Search", false],
-        "QueryEx": ["Search", false],
-        "Registration": ["Search", false],
-        "Status": ["Search", false],
-        "SendClientScriptErrorReport": ["SharePointDiagnostics", true],
-        "GetAttachments": ["SiteData", false],
-        "EnumerateFolder": ["SiteData", false],
-        "SiteDataGetList": ["SiteData", false],
-        "SiteDataGetListCollection": ["SiteData", false],
-        "SiteDataGetSite": ["SiteData", false],
-        "SiteDataGetSiteUrl": ["SiteData", false],
-        "SiteDataGetWeb": ["SiteData", false],
-        "CreateWeb": ["Sites", true],
-        "DeleteWeb": ["Sites", true],
-        "GetSite": ["Sites", false],
-        "GetSiteTemplates": ["Sites", false],
-        "AddComment": ["SocialDataService", true],
-        "AddTag": ["SocialDataService", true],
-        "AddTagByKeyword": ["SocialDataService", true],
-        "CountCommentsOfUser": ["SocialDataService", false],
-        "CountCommentsOfUserOnUrl": ["SocialDataService", false],
-        "CountCommentsOnUrl": ["SocialDataService", false],
-        "CountRatingsOnUrl": ["SocialDataService", false],
-        "CountTagsOfUser": ["SocialDataService", false],
-        "DeleteComment": ["SocialDataService", true],
-        "DeleteRating": ["SocialDataService", true],
-        "DeleteTag": ["SocialDataService", true],
-        "DeleteTagByKeyword": ["SocialDataService", true],
-        "DeleteTags": ["SocialDataService", true],
-        "GetAllTagTerms": ["SocialDataService", false],
-        "GetAllTagTermsForUrlFolder": ["SocialDataService", false],
-        "GetAllTagUrls": ["SocialDataService", false],
-        "GetAllTagUrlsByKeyword": ["SocialDataService", false],
-        "GetCommentsOfUser": ["SocialDataService", false],
-        "GetCommentsOfUserOnUrl": ["SocialDataService", false],
-        "GetCommentsOnUrl": ["SocialDataService", false],
-        "GetRatingAverageOnUrl": ["SocialDataService", false],
-        "GetRatingOfUserOnUrl": ["SocialDataService", false],
-        "GetRatingOnUrl": ["SocialDataService", false],
-        "GetRatingsOfUser": ["SocialDataService", false],
-        "GetRatingsOnUrl": ["SocialDataService", false],
-        "GetSocialDataForFullReplication": ["SocialDataService", false],
-        "GetTags": ["SocialDataService", true],
-        "GetTagsOfUser": ["SocialDataService", true],
-        "GetTagTerms": ["SocialDataService", true],
-        "GetTagTermsOfUser": ["SocialDataService", true],
-        "GetTagTermsOnUrl": ["SocialDataService", true],
-        "GetTagUrlsOfUser": ["SocialDataService", true],
-        "GetTagUrlsOfUserByKeyword": ["SocialDataService", true],
-        "GetTagUrls": ["SocialDataService", true],
-        "GetTagUrlsByKeyword": ["SocialDataService", true],
-        "SetRating": ["SocialDataService", true],
-        "UpdateComment": ["SocialDataService", true],
-        "SpellCheck": ["SpellCheck", false],
-        "AddTerms": ["TaxonomyClientService", true],
-        "GetChildTermsInTerm": ["TaxonomyClientService", false],
-        "GetChildTermsInTermSet": ["TaxonomyClientService", false],
-        "GetKeywordTermsByGuids": ["TaxonomyClientService", false],
-        "GetTermsByLabel": ["TaxonomyClientService", false],
-        "GetTermSets": ["TaxonomyClientService", false],
-        "AddGroup": ["usergroup", true],
-        "AddGroupToRole": ["usergroup", true],
-        "AddRole": ["usergroup", true],
-        "AddRoleDef": ["usergroup", true],
-        "AddUserCollectionToGroup": ["usergroup", true],
-        "AddUserCollectionToRole": ["usergroup", true],
-        "AddUserToGroup": ["usergroup", true],
-        "AddUserToRole": ["usergroup", true],
-        "GetAllUserCollectionFromWeb": ["usergroup", false],
-        "GetGroupCollection": ["usergroup", false],
-        "GetGroupCollectionFromRole": ["usergroup", false],
-        "GetGroupCollectionFromSite": ["usergroup", false],
-        "GetGroupCollectionFromUser": ["usergroup", false],
-        "GetGroupCollectionFromWeb": ["usergroup", false],
-        "GetGroupInfo": ["usergroup", false],
-        "GetRoleCollection": ["usergroup", false],
-        "GetRoleCollectionFromGroup": ["usergroup", false],
-        "GetRoleCollectionFromUser": ["usergroup", false],
-        "GetRoleCollectionFromWeb": ["usergroup", false],
-        "GetRoleInfo": ["usergroup", false],
-        "GetRolesAndPermissionsForCurrentUser": ["usergroup", false],
-        "GetRolesAndPermissionsForSite": ["usergroup", false],
-        "GetUserCollection": ["usergroup", false],
-        "GetUserCollectionFromGroup": ["usergroup", false],
-        "GetUserCollectionFromRole": ["usergroup", false],
-        "GetUserCollectionFromSite": ["usergroup", false],
-        "GetUserCollectionFromWeb": ["usergroup", false],
-        "GetUserInfo": ["usergroup", false],
-        "GetUserLoginFromEmail": ["usergroup", false],
-        "RemoveGroup": ["usergroup", true],
-        "RemoveGroupFromRole": ["usergroup", true],
-        "RemoveRole": ["usergroup", true],
-        "RemoveUserCollectionFromGroup": ["usergroup", true],
-        "RemoveUserCollectionFromRole": ["usergroup", true],
-        "RemoveUserCollectionFromSite": ["usergroup", true],
-        "RemoveUserFromGroup": ["usergroup", true],
-        "RemoveUserFromRole": ["usergroup", true],
-        "RemoveUserFromSite": ["usergroup", true],
-        "RemoveUserFromWeb": ["usergroup", true],
-        "UpdateGroupInfo": ["usergroup", true],
-        "UpdateRoleDefInfo": ["usergroup", true],
-        "UpdateRoleInfo": ["usergroup", true],
-        "UpdateUserInfo": ["usergroup", true],
-        "AddColleague": ["UserProfileService", true],
-        "AddLink": ["UserProfileService", true],
-        "AddMembership": ["UserProfileService", true],
-        "AddPinnedLink": ["UserProfileService", true],
-        "CreateMemberGroup": ["UserProfileService", true],
-        "CreateUserProfileByAccountName": ["UserProfileService", true],
-        "GetCommonColleagues": ["UserProfileService", false],
-        "GetCommonManager": ["UserProfileService", false],
-        "GetCommonMemberships": ["UserProfileService", false],
-        "GetInCommon": ["UserProfileService", false],
-        "GetPropertyChoiceList": ["UserProfileService", false],
-        "GetUserColleagues": ["UserProfileService", false],
-        "GetUserLinks": ["UserProfileService", false],
-        "GetUserMemberships": ["UserProfileService", false],
-        "GetUserPinnedLinks": ["UserProfileService", false],
-        "GetUserProfileByGuid": ["UserProfileService", false],
-        "GetUserProfileByIndex": ["UserProfileService", false],
-        "GetUserProfileByName": ["UserProfileService", false],
-        "GetUserProfileCount": ["UserProfileService", false],
-        "GetUserProfileSchema": ["UserProfileService", false],
-        "GetUserPropertyByAccountName": ["UserProfileService", false],
-        "ModifyUserPropertyByAccountName": ["UserProfileService", true],
-        "RemoveAllColleagues": ["UserProfileService", true],
-        "RemoveAllLinks": ["UserProfileService", true],
-        "RemoveAllMemberships": ["UserProfileService", true],
-        "RemoveAllPinnedLinks": ["UserProfileService", true],
-        "RemoveColleague": ["UserProfileService", true],
-        "RemoveLink": ["UserProfileService", true],
-        "RemoveMembership": ["UserProfileService", true],
-        "RemovePinnedLink": ["UserProfileService", true],
-        "UpdateColleaguePrivacy": ["UserProfileService", true],
-        "UpdateLink": ["UserProfileService", true],
-        "UpdateMembershipPrivacy": ["UserProfileService", true],
-        "UpdatePinnedLink": ["UserProfileService", true],
-        "DeleteAllVersions": ["Versions", true],
-        "DeleteVersion": ["Versions", true],
-        "GetVersions": ["Versions", false],
-        "RestoreVersion": ["Versions", true],
-        "AddView": ["Views", true],
-        "DeleteView": ["Views", true],
-        "GetView": ["Views", false],
-        "GetViewHtml": ["Views", false],
-        "GetViewCollection": ["Views", false],
-        "UpdateView": ["Views", true],
-        "UpdateViewHtml": ["Views", true],
-        "AddWebPart": ["WebPartPages", true],
-        "AddWebPartToZone": ["WebPartPages", true],
-        "GetWebPart2": ["WebPartPages", false],
-        "GetWebPartPage": ["WebPartPages", false],
-        "GetWebPartProperties": ["WebPartPages", false],
-        "GetWebPartProperties2": ["WebPartPages", false],
-        "GetColumns": ["Webs", false],
-        "GetContentType": ["Webs", false],
-        "GetContentTypes": ["Webs", false],
-        "GetCustomizedPageStatus": ["Webs", false],
-        "GetListTemplates": ["Webs", false],
-        "GetObjectIdFromUrl": ["Webs", false],
-        "GetWeb": ["Webs", false],
-        "GetWebCollection": ["Webs", false],
-        "GetAllSubWebCollection": ["Webs", false],
-        "UpdateColumns": ["Webs", true],
-        "WebUrlFromPageUrl": ["Webs", false],
-        "AlterToDo": ["Workflow", true],
-        "ClaimReleaseTask": ["Workflow", true],
-        "GetTemplatesForItem": ["Workflow", false],
-        "GetToDosForItem": ["Workflow", false],
-        "GetWorkflowDataForItem": ["Workflow", false],
-        "GetWorkflowTaskData": ["Workflow", false],
-        "StartWorkflow": ["Workflow", true]
+    .service('apWebServiceService', function() {
+        var SCHEMASharePoint = "http://schemas.microsoft.com/sharepoint";
+        var serviceDefinitions = {
+            Alerts: {
+                action: SCHEMASharePoint + '/soap/2002/1/alerts/',
+                xmlns: SCHEMASharePoint + '/soap/2002/1/alerts/'
+            },
+            Meetings: {
+                action: SCHEMASharePoint + '/soap/meetings/',
+                xmlns: SCHEMASharePoint + '/soap/meetings/'
+            },
+            Permissions: {
+                action: SCHEMASharePoint + '/soap/directory/',
+                xmlns: SCHEMASharePoint + '/soap/directory/'
+            },
+            PublishedLinksService: {
+                action: 'http://microsoft.com/webservices/SharePointPortalServer/PublishedLinksService/',
+                xmlns: 'http://microsoft.com/webservices/SharePointPortalServer/PublishedLinksService/'
+            },
+            Search: {
+                action: 'urn:Microsoft.Search/',
+                xmlns: 'urn:Microsoft.Search'
+            },
+            SharePointDiagnostics: {
+                action: 'http://schemas.microsoft.com/sharepoint/diagnostics/',
+                xmlns: SCHEMASharePoint + '/diagnostics/'
+            },
+            SocialDataService: {
+                action: 'http://microsoft.com/webservices/SharePointPortalServer/SocialDataService/',
+                xmlns: 'http://microsoft.com/webservices/SharePointPortalServer/SocialDataService'
+            },
+            SpellCheck: {
+                action: 'http://schemas.microsoft.com/sharepoint/publishing/spelling/SpellCheck',
+                xmlns: 'http://schemas.microsoft.com/sharepoint/publishing/spelling/'
+            },
+            TaxonomyClientService: {
+                action: SCHEMASharePoint + '/taxonomy/soap/',
+                xmlns: SCHEMASharePoint + '/taxonomy/soap/'
+            },
+            usergroup: {
+                action: SCHEMASharePoint + '/soap/directory/',
+                xmlns: SCHEMASharePoint + '/soap/directory/'
+            },
+            UserProfileService: {
+                action: 'http://microsoft.com/webservices/SharePointPortalServer/UserProfileService/',
+                xmlns: 'http://microsoft.com/webservices/SharePointPortalServer/UserProfileService'
+            },
+            WebPartPages: {
+                action: 'http://microsoft.com/sharepoint/webpartpages/',
+                xmlns: 'http://microsoft.com/sharepoint/webpartpages'
+            },
+            Workflow: {
+                action: SCHEMASharePoint + '/soap/workflow/',
+                xmlns: SCHEMASharePoint + '/soap/workflow/'
+            }
+        };
+
+        var webServices = [
+            'Alerts',
+            'Authentication',
+            'Copy',
+            'Forms',
+            'Lists',
+            'Meetings',
+            'People',
+            'Permissions',
+            'PublishedLinksService',
+            'Search',
+            'SharePointDiagnostics',
+            'SiteData',
+            'Sites',
+            'SocialDataService',
+            'SpellCheck',
+            'TaxonomyClientService',
+            'usergroup',
+            'UserProfileService',
+            'Versions',
+            'Views',
+            'WebPartPages',
+            'Webs',
+            'Workflow'
+        ];
+
+        return {
+            action: action,
+            webServices: webServices,
+            xmlns: xmlns
+        };
+
+        function action(service) {
+            return serviceDefinitions[service] ? serviceDefinitions[service].action : SCHEMASharePoint + '/soap/';
+        }
+        function xmlns(service) {
+            return serviceDefinitions[service] ? serviceDefinitions[service].xmlns : SCHEMASharePoint + '/soap/';
+        }
+
     });
 ;'use strict';
 

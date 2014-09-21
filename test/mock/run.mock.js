@@ -1,11 +1,11 @@
 'use strict';
 
 angular.module('angularPoint')
-    .run(function (_, $httpBackend, apCachedXML, apCacheService, apWebServiceProvider) {
+    .run(function (_, $httpBackend, apCachedXML, apCacheService, apWebServiceService) {
 
         /** Listen for each of the standard services being called and try to return a cached XML response for the
          * operation */
-        _.each(apWebServiceProvider.webServices, function (service) {
+        _.each(apWebServiceService.webServices, function (service) {
             /** Lists has many special cases so don't create generic backend for it */
             if(service !== 'Lists') {
                 /** Simple regex to check if the requested endpoint matches the one for this service */
@@ -14,7 +14,7 @@ angular.module('angularPoint')
                     .respond(function (method, url, data) {
                         var requestXML = $.parseXML(data);
                         /** Get the xml namespace for the current service */
-                        var soapAction = apWebServiceProvider.xmlns(service);
+                        var soapAction = apWebServiceService.xmlns(service);
                         var request = $(requestXML).find('[xmlns^="' + soapAction + '"]');
                         var operation = request[0].nodeName;
                         var responseXML = getCachedResponse(operation);
