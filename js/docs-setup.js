@@ -55,7 +55,7 @@ NG_DOCS={
       "type": "service",
       "moduleName": "angularPoint",
       "shortDescription": "Processes the XML received from SharePoint and converts it into JavaScript objects based on predefined field types.",
-      "keywords": "additional allow allows angularpoint apcacheservice apconfig apdecodeservice api apqueueservice aputilityservice array attributes based batch build cached call camlcase capital change checks child coming configuration constructors container conversions convert converts copies correctly corresponding customfields data define defined definition definitions don element elements empty entities entity error errors errorstring exists extend extended extends factory fetch field fielddefinition fielddefinitions fields filter find formatted function future getcache getlistitems includeallattrs indexedcache info initial instantiated item items iterate javascript js keeping large leading letter list listitemprovider lists ll location mappedname mapping metadata model modified newly node note null object objects objecttype optional optionally options opts ows_ parent parsed pass post predefined prevent processed processes processing promise properties property propertyname provided push pushing query received reference references registers removeows representation representing requesting resolved resolves response responsexml responsible retrieve return returned returning returns rows scope server service set sharepoint slowdowns spservices spxmltojson start stored str string stripped takes target text throw true type types typically ui update updating values version versions web webservice xhr xml xmlentities xmlentity xmlobject"
+      "keywords": "additional allow allows anderson angularpoint apcacheservice apconfig apdecodeservice api apqueueservice aputilityservice array attributes based batch build cached call camlcase capital change checks child code codeplex coming configuration constructors container conversions convert converts copies correctly corresponding customfields data define defined definition definitions directly don element elements empty entities entity error errors errorstring exists extend extended extends factory fetch field fielddefinition fielddefinitions fields filter find formatted function future getcache getlistitems includeallattrs incredible indexedcache info initial instantiated item items iterate javascript js keeping large leading letter list listitemprovider lists ll location majority mappedname mapping marc metadata minor model modified needed newly node note null object objects objecttype optional optionally options opts ows_ parent parsed pass post predefined prevent processed processes processing project promise properties property propertyname provided push pushing query received reference references registers removeows representation representing requesting resolved resolves response responsexml responsible retrieve return returned returning returns rows scope server service set sharepoint slowdowns spservices spxmltojson start stored str string stripped takes target text throw true tweaking type types typically ui update updating values version versions web webservice work xhr xml xmlentities xmlentity xmlobject"
     },
     {
       "section": "api",
@@ -176,6 +176,15 @@ NG_DOCS={
     },
     {
       "section": "api",
+      "id": "angularPoint.apXMLToJSONService",
+      "shortName": "angularPoint.apXMLToJSONService",
+      "type": "service",
+      "moduleName": "angularPoint",
+      "shortDescription": "This function converts an XML node set into an array of JS objects.",
+      "keywords": "allow anderson angular angularpoint api apxmltojsonservice array codeplex converts essentially function js marc modular node objects service set spxmltojson testing wrapped xml"
+    },
+    {
+      "section": "api",
       "id": "angularPoint.directive:apAttachments",
       "shortName": "apAttachments",
       "type": "directive",
@@ -199,7 +208,7 @@ NG_DOCS={
       "type": "object",
       "moduleName": "angularPoint",
       "shortDescription": "Cache constructor that is extended to make it easier to work with via prototype methods.  Located in",
-      "keywords": "add adds angularpoint api apindexedcachefactory array based cache cached clears currently easier elements entities entity extended function indexedcache item key located methods number object prototype remove removed removes requested returns strings turns work"
+      "keywords": "add adds angularpoint api apindexedcachefactory array based cache cached clears currently easier elements entities entity extend extended function indexedcache item key located methods number object optionally prototype provided remove removed removes requested returns strings turns work"
     },
     {
       "section": "api",
@@ -207,8 +216,8 @@ NG_DOCS={
       "shortName": "angularPoint.SPServices",
       "type": "service",
       "moduleName": "angularPoint",
-      "shortDescription": "This is just a trimmed down version of Marc Anderson&#39;s awesome SPServices library.  We&#39;re primarily looking for",
-      "keywords": "$http ability anderson angularjs angularpoint api awesome create envelope handle library marc negotiation server service soap spservices trimmed version"
+      "shortDescription": "This is just a trimmed down version of Marc Anderson&#39;s awesome SPServices library.",
+      "keywords": "$http ability anderson angularjs angularpoint api awesome codeplex communication create envelope handle library marc server service soap spservices trimmed version"
     },
     {
       "section": "api",
@@ -248,12 +257,30 @@ NG_DOCS={
     },
     {
       "section": "api",
+      "id": "apDataService.generateWebServiceUrl",
+      "shortName": "apDataService.generateWebServiceUrl",
+      "type": "function",
+      "moduleName": "apDataService",
+      "shortDescription": "Builds the appropriate SharePoint resource URL.  If a URL isn&#39;t provided and it hasn&#39;t already been cached",
+      "keywords": "apdataservice api appropriate builds cached call don find function future generatewebserviceurl hasn isn operation optionally provide provided requests resolves resource root server service sharepoint soap url"
+    },
+    {
+      "section": "api",
       "id": "apDataService.getCollection",
       "shortName": "apDataService.getCollection",
       "type": "function",
       "moduleName": "apDataService",
       "shortDescription": "Used to handle any of the Get[filterNode]Collection calls to SharePoint",
       "keywords": "$scope apdataservice api array attributes calls collection extend extracted filternode function getattachmentcollection getcollection getgroupcollectionfromsite getgroupcollectionfromuser getlistcollection getusercollectionfromgroup getusercollectionfromsite getviewcollection groupname handle include iterate listname loginname object objects operation options payload postprocessfunction promise provided representing requested required resolved returned selecteduser sharepoint spservices user userloginname xml"
+    },
+    {
+      "section": "api",
+      "id": "apDataService.getCurrentSite",
+      "shortName": "apDataService.getCurrentSite",
+      "type": "function",
+      "moduleName": "apDataService",
+      "shortDescription": "Requests and caches the root url for the current site.  It caches the response so any future calls receive",
+      "keywords": "apdataservice api cached caches calls current function future getcurrentsite promise receive requests resolves response root site url"
     },
     {
       "section": "api",
@@ -335,6 +362,15 @@ NG_DOCS={
       "moduleName": "apDataService",
       "shortDescription": "GetListItemChangesSinceToken returns items that have been added as well as deleted so we need",
       "keywords": "apdataservice api array cache cached deleted function getlistitemchangessincetoken indexedcache items list local processdeletionssincetoken query remove response responsexml returns server xml"
+    },
+    {
+      "section": "api",
+      "id": "apDataService.requestData",
+      "shortName": "apDataService.requestData",
+      "type": "function",
+      "moduleName": "apDataService",
+      "shortDescription": "The primary function that handles all communication with the server.  This is very low level and isn&#39;t",
+      "keywords": "additionalargs apdataservice api called communication details directly function handles intended isn level low mock object offline optional opts parameters pass payload primary promise request requestdata resolves response server service working"
     },
     {
       "section": "api",
@@ -687,5 +723,6 @@ NG_DOCS={
   "scripts": [
     "angular.js",
     "angular-animate.min.js"
-  ]
+  ],
+  "editExample": true
 };

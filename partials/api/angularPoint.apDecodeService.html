@@ -19,7 +19,8 @@
 <div class="member method"><h2 id="methods">Methods</h2>
 <ul class="methods"><li><h3 id="methods_attrtojson">attrToJson(str, objectType, [options])</h3>
 <div class="attrtojson"><div class="angularpoint-apdecodeservice-page angularpoint-apdecodeservice-attrtojson-page"><p>Converts a SharePoint string representation of a field into the correctly formatted JavaScript version
-based on object type.</p>
+based on object type.  A majority of this code is directly taken from Marc Anderson&#39;s incredible
+<a href="http://spservices.codeplex.com/">SPServices</a> project but it needed some minor tweaking to work here.</p>
 </div><h5 id="methods_attrtojson_parameters">Parameters</h5><table class="variables-matrix table table-bordered table-striped"><thead><tr><th>Param</th><th>Type</th><th>Details</th></tr></thead><tbody><tr><td>str</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="angularpoint-apdecodeservice-page angularpoint-apdecodeservice-attrtojson-page"><p>SharePoint string representing the value.</p>
 </div></td></tr><tr><td>objectType</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="angularpoint-apdecodeservice-page angularpoint-apdecodeservice-attrtojson-page"><p>The type based on field definition.  See
 See <a href="#/api/List.FieldDefinition">List.customFields</a> for additional info on how to define a field type.</p>
