@@ -46,6 +46,7 @@ module.exports = function (grunt) {
                 ]
             },
             docs: 'docs',
+            server: '.tmp',
             build: 'build'
         },
 
@@ -76,6 +77,7 @@ module.exports = function (grunt) {
             dist: {
                 src: [
                     '<%= config.src %>/*.js',
+                    '<%= config.src %>/constants/*.js',
                     '<%= config.services %>/*.js',
                     '<%= config.factories %>/*.js',
                     '<%= config.src %>/models/*.js',
@@ -137,7 +139,7 @@ module.exports = function (grunt) {
             api: {
                 src: [
                     '<%= config.src %>/app.js',
-                    '<%= config.src %>/constants.js',
+                    '<%= config.src %>/constants/*.js',
                     '<%= config.services %>/*.js',
                     '<%= config.factories %>/*.js',
                     '<%= config.src %>/models/*.js',
@@ -200,16 +202,11 @@ module.exports = function (grunt) {
     //});
 
     grunt.registerTask('parse-xml', function () {
-        var done = this.async();
-
         xmlUtil.createJSON({
             dest: './test/mock/data',
             fileName: 'parsedXML.js',
             constantName: 'apCachedXML',
             src: ['./test/mock/xml']
-        }).then(function (xml) {
-            /** Tell grunt we're done */
-            done(xml);
         });
     });
 
@@ -219,7 +216,7 @@ module.exports = function (grunt) {
     ]);
 
     grunt.registerTask('test', [
-        //'clean:server',
+        'clean:server',
         //'concurrent:test',
         //'autoprefixer',
         //'connect:test',

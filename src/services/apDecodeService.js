@@ -228,7 +228,8 @@ angular.module('angularPoint')
          * @methodOf angularPoint.apDecodeService
          * @description
          * Converts a SharePoint string representation of a field into the correctly formatted JavaScript version
-         * based on object type.
+         * based on object type.  A majority of this code is directly taken from Marc Anderson's incredible
+         * [SPServices](http://spservices.codeplex.com/) project but it needed some minor tweaking to work here.
          * @param {string} str SharePoint string representing the value.
          * @param {string} [objectType='Text'] The type based on field definition.  See
          * See [List.customFields](#/api/List.FieldDefinition) for additional info on how to define a field type.

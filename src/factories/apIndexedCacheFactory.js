@@ -20,9 +20,14 @@ angular.module('angularPoint')
          * @description
          * Cache constructor that is extended to make it easier to work with via prototype methods.  Located in
          * apIndexedCacheFactory.
+         * @param {object} [object] Optionally extend new cache with provided object.
          * @constructor
          */
-        function IndexedCache() {
+        function IndexedCache(object) {
+            var self = this;
+            if(object) {
+                _.extend(self, object);
+            }
         }
 
         IndexedCache.prototype = {

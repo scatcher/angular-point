@@ -4,14 +4,13 @@
  * @ngdoc service
  * @name angularPoint.SPServices
  * @description
- * This is just a trimmed down version of Marc Anderson's awesome SPServices library.  We're primarily looking for
- * the ability to create the SOAP envelope and let AngularJS's $http service handle all negotiation with the server.
+ * This is just a trimmed down version of Marc Anderson's awesome [SPServices](http://spservices.codeplex.com/) library.
+ * We're primarily looking for the ability to create the SOAP envelope and let AngularJS's $http service handle all
+ * communication with the server.
  *
  * */
-
-
 angular.module('angularPoint')
-    .service('SPServices', function () {
+    .service('SPServices', function (apWebServiceOperationConstants, apWebServiceService) {
 
         /*
          * SPServices - Work with SharePoint's Web Services using jQuery
@@ -34,457 +33,113 @@ angular.module('angularPoint')
         /* jshint undef: true */
         /* global L_Menu_BaseUrl, _spUserId, _spPageContextInfo, GipAddSelectedItems, GipRemoveSelectedItems, GipGetGroupData */
 
-
-        var VERSION = "2014.02a";
-
-        // String constants
-        //   General
-        var SLASH = "/";
-        var TXTColumnNotFound = "Column not found on page";
-        var SCHEMASharePoint = "http://schemas.microsoft.com/sharepoint";
-
-        // Dropdown Types
-        var dropdownType = {
-            simple: "S",
-            complex: "C",
-            multiSelect: "M"
-        };
-
-        // Known list field types
-        var spListFieldTypes = [
-            "Text",
-            "DateTime",
-            "datetime",
-            "User",
-            "UserMulti",
-            "Lookup",
-            "LookupMulti",
-            "Boolean",
-            "Integer",
-            "Counter",
-            "MultiChoice",
-            "Currency",
-            "float",
-            "Calc",
-            "Attachments",
-            "Calculated",
-            "ContentTypeId",
-            "Note",
-            //          "Computed",
-            "URL",
-            "Number",
-            "Choice",
-            "ModStat",
-            "Guid",
-            "File"
-        ];
-
-        // Caching
-        var promisesCache = {};
-
-        //   Web Service names
-        var ALERTS = "Alerts";
-        var AUTHENTICATION = "Authentication";
-        var COPY = "Copy";
-        var FORMS = "Forms";
-        var LISTS = "Lists";
-        var MEETINGS = "Meetings";
-        var PEOPLE = "People";
-        var PERMISSIONS = "Permissions";
-        var PUBLISHEDLINKSSERVICE = "PublishedLinksService";
-        var SEARCH = "Search";
-        var SHAREPOINTDIAGNOSTICS = "SharePointDiagnostics";
-        var SITEDATA = "SiteData";
-        var SITES = "Sites";
-        var SOCIALDATASERVICE = "SocialDataService";
-        var SPELLCHECK = "SpellCheck";
-        var TAXONOMYSERVICE = "TaxonomyClientService";
-        var USERGROUP = "usergroup";
-        var USERPROFILESERVICE = "UserProfileService";
-        var VERSIONS = "Versions";
-        var VIEWS = "Views";
-        var WEBPARTPAGES = "WebPartPages";
-        var WEBS = "Webs";
-        var WORKFLOW = "Workflow";
-
         // Global variables
-        var currentContext = new SPServicesContext(); // Variable to hold the current context as we figure it out
+        var SCHEMASharePoint = "http://schemas.microsoft.com/sharepoint";
         var i = 0; // Generic loop counter
         var encodeOptionList = ["listName", "description"]; // Used to encode options which may contain special characters
 
+        // Defaults added as a function in our library means that the caller can override the defaults
+        // for their session by calling this function.  Each operation requires a different set of options;
+        // we allow for all in a standardized way.
+        var defaults = {
 
-        // Array to store Web Service information
-        //  WSops.OpName = [WebService, needs_SOAPAction];
-        //      OpName              The name of the Web Service operation -> These names are unique
-        //      WebService          The name of the WebService this operation belongs to
-        //      needs_SOAPAction    Boolean indicating whether the operatio needs to have the SOAPAction passed in the setRequestHeaderfunction.
-        //                          true if the operation does a write, else false
+            operation: "", // The Web Service operation
+            webURL: "", // URL of the target Web
+            makeViewDefault: false, // true to make the view the default view for the list
 
-        var WSops = [];
+            // For operations requiring CAML, these options will override any abstractions
+            CAMLViewName: "", // View name in CAML format.
+            CAMLQuery: "", // Query in CAML format
+            CAMLViewFields: "", // View fields in CAML format
+            CAMLRowLimit: 0, // Row limit as a string representation of an integer
+            CAMLQueryOptions: "<QueryOptions></QueryOptions>", // Query options in CAML format
 
-        WSops.GetAlerts = [ALERTS, false];
-        WSops.DeleteAlerts = [ALERTS, true];
+            // Abstractions for CAML syntax
+            batchCmd: "Update", // Method Cmd for UpdateListItems
+            valuePairs: [], // Fieldname / Fieldvalue pairs for UpdateListItems
 
-        WSops.Mode = [AUTHENTICATION, false];
-        WSops.Login = [AUTHENTICATION, false];
+            // As of v0.7.1, removed all options which were assigned an empty string ("")
+            DestinationUrls: [], // Array of destination URLs for copy operations
+            behavior: "Version3", // An SPWebServiceBehavior indicating whether the client supports Windows SharePoint Services 2.0 or Windows SharePoint Services 3.0: {Version2 | Version3 }
+            storage: "Shared", // A Storage value indicating how the Web Part is stored: {None | Personal | Shared}
+            objectType: "List", // objectType for operations which require it
+            cancelMeeting: true, // true to delete a meeting;false to remove its association with a Meeting Workspace site
+            nonGregorian: false, // true if the calendar is set to a format other than Gregorian;otherwise, false.
+            fClaim: false, // Specifies if the action is a claim or a release. Specifies true for a claim and false for a release.
+            recurrenceId: 0, // The recurrence ID for the meeting that needs its association removed. This parameter can be set to 0 for single-instance meetings.
+            sequence: 0, // An integer that is used to determine the ordering of updates in case they arrive out of sequence. Updates with a lower-than-current sequence are discarded. If the sequence is equal to the current sequence, the latest update are applied.
+            maximumItemsToReturn: 0, // SocialDataService maximumItemsToReturn
+            startIndex: 0, // SocialDataService startIndex
+            isHighPriority: false, // SocialDataService isHighPriority
+            isPrivate: false, // SocialDataService isPrivate
+            rating: 1, // SocialDataService rating
+            maxResults: 10, // Unless otherwise specified, the maximum number of principals that can be returned from a provider is 10.
+            principalType: "User", // Specifies user scope and other information: [None | User | DistributionList | SecurityGroup | SharePointGroup | All]
 
-        WSops.CopyIntoItems = [COPY, true];
-        WSops.CopyIntoItemsLocal = [COPY, true];
-        WSops.GetItem = [COPY, false];
+            async: true, // Allow the user to force async
+            completefunc: null // Function to call on completion
 
-        WSops.GetForm = [FORMS, false];
-        WSops.GetFormCollection = [FORMS, false];
+        }; // End SPServices.defaults
 
-        WSops.AddAttachment = [LISTS, true];
-        WSops.AddDiscussionBoardItem = [LISTS, true];
-        WSops.AddList = [LISTS, true];
-        WSops.AddListFromFeature = [LISTS, true];
-        WSops.ApplyContentTypeToList = [LISTS, true];
-        WSops.CheckInFile = [LISTS, true];
-        WSops.CheckOutFile = [LISTS, true];
-        WSops.CreateContentType = [LISTS, true];
-        WSops.DeleteAttachment = [LISTS, true];
-        WSops.DeleteContentType = [LISTS, true];
-        WSops.DeleteContentTypeXmlDocument = [LISTS, true];
-        WSops.DeleteList = [LISTS, true];
-        WSops.GetAttachmentCollection = [LISTS, false];
-        WSops.GetList = [LISTS, false];
-        WSops.GetListAndView = [LISTS, false];
-        WSops.GetListCollection = [LISTS, false];
-        WSops.GetListContentType = [LISTS, false];
-        WSops.GetListContentTypes = [LISTS, false];
-        WSops.GetListItemChanges = [LISTS, false];
-        WSops.GetListItemChangesSinceToken = [LISTS, false];
-        WSops.GetListItems = [LISTS, false];
-        WSops.GetVersionCollection = [LISTS, false];
-        WSops.UndoCheckOut = [LISTS, true];
-        WSops.UpdateContentType = [LISTS, true];
-        WSops.UpdateContentTypesXmlDocument = [LISTS, true];
-        WSops.UpdateContentTypeXmlDocument = [LISTS, true];
-        WSops.UpdateList = [LISTS, true];
-        WSops.UpdateListItems = [LISTS, true];
 
-        WSops.AddMeeting = [MEETINGS, true];
-        WSops.CreateWorkspace = [MEETINGS, true];
-        WSops.RemoveMeeting = [MEETINGS, true];
-        WSops.SetWorkSpaceTitle = [MEETINGS, true];
-
-        WSops.ResolvePrincipals = [PEOPLE, false];
-        WSops.SearchPrincipals = [PEOPLE, false];
-
-        WSops.AddPermission = [PERMISSIONS, true];
-        WSops.AddPermissionCollection = [PERMISSIONS, true];
-        WSops.GetPermissionCollection = [PERMISSIONS, true];
-        WSops.RemovePermission = [PERMISSIONS, true];
-        WSops.RemovePermissionCollection = [PERMISSIONS, true];
-        WSops.UpdatePermission = [PERMISSIONS, true];
-
-        WSops.GetLinks = [PUBLISHEDLINKSSERVICE, true];
-
-        WSops.GetPortalSearchInfo = [SEARCH, false];
-        WSops.GetQuerySuggestions = [SEARCH, false];
-        WSops.GetSearchMetadata = [SEARCH, false];
-        WSops.Query = [SEARCH, false];
-        WSops.QueryEx = [SEARCH, false];
-        WSops.Registration = [SEARCH, false];
-        WSops.Status = [SEARCH, false];
-
-        WSops.SendClientScriptErrorReport = [SHAREPOINTDIAGNOSTICS, true];
-
-        WSops.GetAttachments = [SITEDATA, false];
-        WSops.EnumerateFolder = [SITEDATA, false];
-        WSops.SiteDataGetList = [SITEDATA, false];
-        WSops.SiteDataGetListCollection = [SITEDATA, false];
-        WSops.SiteDataGetSite = [SITEDATA, false];
-        WSops.SiteDataGetSiteUrl = [SITEDATA, false];
-        WSops.SiteDataGetWeb = [SITEDATA, false];
-
-        WSops.CreateWeb = [SITES, true];
-        WSops.DeleteWeb = [SITES, true];
-        WSops.GetSite = [SITES, false];
-        WSops.GetSiteTemplates = [SITES, false];
-
-        WSops.AddComment = [SOCIALDATASERVICE, true];
-        WSops.AddTag = [SOCIALDATASERVICE, true];
-        WSops.AddTagByKeyword = [SOCIALDATASERVICE, true];
-        WSops.CountCommentsOfUser = [SOCIALDATASERVICE, false];
-        WSops.CountCommentsOfUserOnUrl = [SOCIALDATASERVICE, false];
-        WSops.CountCommentsOnUrl = [SOCIALDATASERVICE, false];
-        WSops.CountRatingsOnUrl = [SOCIALDATASERVICE, false];
-        WSops.CountTagsOfUser = [SOCIALDATASERVICE, false];
-        WSops.DeleteComment = [SOCIALDATASERVICE, true];
-        WSops.DeleteRating = [SOCIALDATASERVICE, true];
-        WSops.DeleteTag = [SOCIALDATASERVICE, true];
-        WSops.DeleteTagByKeyword = [SOCIALDATASERVICE, true];
-        WSops.DeleteTags = [SOCIALDATASERVICE, true];
-        WSops.GetAllTagTerms = [SOCIALDATASERVICE, false];
-        WSops.GetAllTagTermsForUrlFolder = [SOCIALDATASERVICE, false];
-        WSops.GetAllTagUrls = [SOCIALDATASERVICE, false];
-        WSops.GetAllTagUrlsByKeyword = [SOCIALDATASERVICE, false];
-        WSops.GetCommentsOfUser = [SOCIALDATASERVICE, false];
-        WSops.GetCommentsOfUserOnUrl = [SOCIALDATASERVICE, false];
-        WSops.GetCommentsOnUrl = [SOCIALDATASERVICE, false];
-        WSops.GetRatingAverageOnUrl = [SOCIALDATASERVICE, false];
-        WSops.GetRatingOfUserOnUrl = [SOCIALDATASERVICE, false];
-        WSops.GetRatingOnUrl = [SOCIALDATASERVICE, false];
-        WSops.GetRatingsOfUser = [SOCIALDATASERVICE, false];
-        WSops.GetRatingsOnUrl = [SOCIALDATASERVICE, false];
-        WSops.GetSocialDataForFullReplication = [SOCIALDATASERVICE, false];
-        WSops.GetTags = [SOCIALDATASERVICE, true];
-        WSops.GetTagsOfUser = [SOCIALDATASERVICE, true];
-        WSops.GetTagTerms = [SOCIALDATASERVICE, true];
-        WSops.GetTagTermsOfUser = [SOCIALDATASERVICE, true];
-        WSops.GetTagTermsOnUrl = [SOCIALDATASERVICE, true];
-        WSops.GetTagUrlsOfUser = [SOCIALDATASERVICE, true];
-        WSops.GetTagUrlsOfUserByKeyword = [SOCIALDATASERVICE, true];
-        WSops.GetTagUrls = [SOCIALDATASERVICE, true];
-        WSops.GetTagUrlsByKeyword = [SOCIALDATASERVICE, true];
-        WSops.SetRating = [SOCIALDATASERVICE, true];
-        WSops.UpdateComment = [SOCIALDATASERVICE, true];
-
-        WSops.SpellCheck = [SPELLCHECK, false];
-
-        // Taxonomy Service Calls
-        // Updated 2011.01.27 by Thomas McMillan
-        WSops.AddTerms = [TAXONOMYSERVICE, true];
-        WSops.GetChildTermsInTerm = [TAXONOMYSERVICE, false];
-        WSops.GetChildTermsInTermSet = [TAXONOMYSERVICE, false];
-        WSops.GetKeywordTermsByGuids = [TAXONOMYSERVICE, false];
-        WSops.GetTermsByLabel = [TAXONOMYSERVICE, false];
-        WSops.GetTermSets = [TAXONOMYSERVICE, false];
-
-        WSops.AddGroup = [USERGROUP, true];
-        WSops.AddGroupToRole = [USERGROUP, true];
-        WSops.AddRole = [USERGROUP, true];
-        WSops.AddRoleDef = [USERGROUP, true];
-        WSops.AddUserCollectionToGroup = [USERGROUP, true];
-        WSops.AddUserCollectionToRole = [USERGROUP, true];
-        WSops.AddUserToGroup = [USERGROUP, true];
-        WSops.AddUserToRole = [USERGROUP, true];
-        WSops.GetAllUserCollectionFromWeb = [USERGROUP, false];
-        WSops.GetGroupCollection = [USERGROUP, false];
-        WSops.GetGroupCollectionFromRole = [USERGROUP, false];
-        WSops.GetGroupCollectionFromSite = [USERGROUP, false];
-        WSops.GetGroupCollectionFromUser = [USERGROUP, false];
-        WSops.GetGroupCollectionFromWeb = [USERGROUP, false];
-        WSops.GetGroupInfo = [USERGROUP, false];
-        WSops.GetRoleCollection = [USERGROUP, false];
-        WSops.GetRoleCollectionFromGroup = [USERGROUP, false];
-        WSops.GetRoleCollectionFromUser = [USERGROUP, false];
-        WSops.GetRoleCollectionFromWeb = [USERGROUP, false];
-        WSops.GetRoleInfo = [USERGROUP, false];
-        WSops.GetRolesAndPermissionsForCurrentUser = [USERGROUP, false];
-        WSops.GetRolesAndPermissionsForSite = [USERGROUP, false];
-        WSops.GetUserCollection = [USERGROUP, false];
-        WSops.GetUserCollectionFromGroup = [USERGROUP, false];
-        WSops.GetUserCollectionFromRole = [USERGROUP, false];
-        WSops.GetUserCollectionFromSite = [USERGROUP, false];
-        WSops.GetUserCollectionFromWeb = [USERGROUP, false];
-        WSops.GetUserInfo = [USERGROUP, false];
-        WSops.GetUserLoginFromEmail = [USERGROUP, false];
-        WSops.RemoveGroup = [USERGROUP, true];
-        WSops.RemoveGroupFromRole = [USERGROUP, true];
-        WSops.RemoveRole = [USERGROUP, true];
-        WSops.RemoveUserCollectionFromGroup = [USERGROUP, true];
-        WSops.RemoveUserCollectionFromRole = [USERGROUP, true];
-        WSops.RemoveUserCollectionFromSite = [USERGROUP, true];
-        WSops.RemoveUserFromGroup = [USERGROUP, true];
-        WSops.RemoveUserFromRole = [USERGROUP, true];
-        WSops.RemoveUserFromSite = [USERGROUP, true];
-        WSops.RemoveUserFromWeb = [USERGROUP, true];
-        WSops.UpdateGroupInfo = [USERGROUP, true];
-        WSops.UpdateRoleDefInfo = [USERGROUP, true];
-        WSops.UpdateRoleInfo = [USERGROUP, true];
-        WSops.UpdateUserInfo = [USERGROUP, true];
-
-        WSops.AddColleague = [USERPROFILESERVICE, true];
-        WSops.AddLink = [USERPROFILESERVICE, true];
-        WSops.AddMembership = [USERPROFILESERVICE, true];
-        WSops.AddPinnedLink = [USERPROFILESERVICE, true];
-        WSops.CreateMemberGroup = [USERPROFILESERVICE, true];
-        WSops.CreateUserProfileByAccountName = [USERPROFILESERVICE, true];
-        WSops.GetCommonColleagues = [USERPROFILESERVICE, false];
-        WSops.GetCommonManager = [USERPROFILESERVICE, false];
-        WSops.GetCommonMemberships = [USERPROFILESERVICE, false];
-        WSops.GetInCommon = [USERPROFILESERVICE, false];
-        WSops.GetPropertyChoiceList = [USERPROFILESERVICE, false];
-        WSops.GetUserColleagues = [USERPROFILESERVICE, false];
-        WSops.GetUserLinks = [USERPROFILESERVICE, false];
-        WSops.GetUserMemberships = [USERPROFILESERVICE, false];
-        WSops.GetUserPinnedLinks = [USERPROFILESERVICE, false];
-        WSops.GetUserProfileByGuid = [USERPROFILESERVICE, false];
-        WSops.GetUserProfileByIndex = [USERPROFILESERVICE, false];
-        WSops.GetUserProfileByName = [USERPROFILESERVICE, false];
-        WSops.GetUserProfileCount = [USERPROFILESERVICE, false];
-        WSops.GetUserProfileSchema = [USERPROFILESERVICE, false];
-        WSops.GetUserPropertyByAccountName = [USERPROFILESERVICE, false];
-        WSops.ModifyUserPropertyByAccountName = [USERPROFILESERVICE, true];
-        WSops.RemoveAllColleagues = [USERPROFILESERVICE, true];
-        WSops.RemoveAllLinks = [USERPROFILESERVICE, true];
-        WSops.RemoveAllMemberships = [USERPROFILESERVICE, true];
-        WSops.RemoveAllPinnedLinks = [USERPROFILESERVICE, true];
-        WSops.RemoveColleague = [USERPROFILESERVICE, true];
-        WSops.RemoveLink = [USERPROFILESERVICE, true];
-        WSops.RemoveMembership = [USERPROFILESERVICE, true];
-        WSops.RemovePinnedLink = [USERPROFILESERVICE, true];
-        WSops.UpdateColleaguePrivacy = [USERPROFILESERVICE, true];
-        WSops.UpdateLink = [USERPROFILESERVICE, true];
-        WSops.UpdateMembershipPrivacy = [USERPROFILESERVICE, true];
-        WSops.UpdatePinnedLink = [USERPROFILESERVICE, true];
-
-        WSops.DeleteAllVersions = [VERSIONS, true];
-        WSops.DeleteVersion = [VERSIONS, true];
-        WSops.GetVersions = [VERSIONS, false];
-        WSops.RestoreVersion = [VERSIONS, true];
-
-        WSops.AddView = [VIEWS, true];
-        WSops.DeleteView = [VIEWS, true];
-        WSops.GetView = [VIEWS, false];
-        WSops.GetViewHtml = [VIEWS, false];
-        WSops.GetViewCollection = [VIEWS, false];
-        WSops.UpdateView = [VIEWS, true];
-        WSops.UpdateViewHtml = [VIEWS, true];
-
-        WSops.AddWebPart = [WEBPARTPAGES, true];
-        WSops.AddWebPartToZone = [WEBPARTPAGES, true];
-        WSops.GetWebPart2 = [WEBPARTPAGES, false];
-        WSops.GetWebPartPage = [WEBPARTPAGES, false];
-        WSops.GetWebPartProperties = [WEBPARTPAGES, false];
-        WSops.GetWebPartProperties2 = [WEBPARTPAGES, false];
-
-        WSops.CreateContentType = [WEBS, true];
-        WSops.GetColumns = [WEBS, false];
-        WSops.GetContentType = [WEBS, false];
-        WSops.GetContentTypes = [WEBS, false];
-        WSops.GetCustomizedPageStatus = [WEBS, false];
-        WSops.GetListTemplates = [WEBS, false];
-        WSops.GetObjectIdFromUrl = [WEBS, false]; // 2010
-        WSops.GetWeb = [WEBS, false];
-        WSops.GetWebCollection = [WEBS, false];
-        WSops.GetAllSubWebCollection = [WEBS, false];
-        WSops.UpdateColumns = [WEBS, true];
-        WSops.UpdateContentType = [WEBS, true];
-        WSops.WebUrlFromPageUrl = [WEBS, false];
-
-        WSops.AlterToDo = [WORKFLOW, true];
-        WSops.ClaimReleaseTask = [WORKFLOW, true];
-        WSops.GetTemplatesForItem = [WORKFLOW, false];
-        WSops.GetToDosForItem = [WORKFLOW, false];
-        WSops.GetWorkflowDataForItem = [WORKFLOW, false];
-        WSops.GetWorkflowTaskData = [WORKFLOW, false];
-        WSops.StartWorkflow = [WORKFLOW, true];
 
         // Set up SOAP envelope
-        var SOAPEnvelope = {};
-        SOAPEnvelope.header = "<soap:Envelope xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance' xmlns:xsd='http://www.w3.org/2001/XMLSchema' xmlns:soap='http://schemas.xmlsoap.org/soap/envelope/'><soap:Body>";
-        SOAPEnvelope.footer = "</soap:Body></soap:Envelope>";
-        SOAPEnvelope.payload = "";
-        var SOAPAction;
+        function SOAPEnvelope() {
+            return {
+                header: "<soap:Envelope xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance' " +
+                "xmlns:xsd='http://www.w3.org/2001/XMLSchema' " +
+                "xmlns:soap='http://schemas.xmlsoap.org/soap/envelope/'><soap:Body>",
+                footer: "</soap:Body></soap:Envelope>",
+                payload: ""
+            }
+        }
+
 
         // Main function, which calls SharePoint's Web Services directly.
-        var SPServices = function (options) {
+        var SPServices = {
+            defaults: defaults,
+            encodeXml: encodeXml,
+            generateXMLComponents: generateXMLComponents,
+            SCHEMASharePoint: SCHEMASharePoint,
+            SOAPEnvelope: new SOAPEnvelope()
+        };
+
+        function generateXMLComponents(options) {
+
+            var soapEnvelope = new SOAPEnvelope();
+            var SOAPAction;
 
             // If there are no options passed in, use the defaults.  Extend replaces each default with the passed option.
-            var opt = _.extend({}, SPServices.defaults, options);
+            var opt = _.extend({}, defaults, options);
 
             // Encode options which may contain special character, esp. ampersand
-            _.each(encodeOptionList, function(optionName) {
-                if(_.isString(opt[optionName])) {
+            _.each(encodeOptionList, function (optionName) {
+                if (_.isString(opt[optionName])) {
                     opt[optionName] = encodeXml(opt[optionName]);
                 }
             });
 
+            var service = apWebServiceOperationConstants[opt.operation][0];
+
             // Put together operation header and SOAPAction for the SOAP call based on which Web Service we're calling
-            SOAPEnvelope.opheader = "<" + opt.operation + " ";
-            switch (WSops[opt.operation][0]) {
-                case ALERTS:
-                    SOAPEnvelope.opheader += "xmlns='" + SCHEMASharePoint + "/soap/2002/1/alerts/' >";
-                    SOAPAction = SCHEMASharePoint + "/soap/2002/1/alerts/";
-                    break;
-                case MEETINGS:
-                    SOAPEnvelope.opheader += "xmlns='" + SCHEMASharePoint + "/soap/meetings/' >";
-                    SOAPAction = SCHEMASharePoint + "/soap/meetings/";
-                    break;
-                case PERMISSIONS:
-                    SOAPEnvelope.opheader += "xmlns='" + SCHEMASharePoint + "/soap/directory/' >";
-                    SOAPAction = SCHEMASharePoint + "/soap/directory/";
-                    break;
-                case PUBLISHEDLINKSSERVICE:
-                    SOAPEnvelope.opheader += "xmlns='http://microsoft.com/webservices/SharePointPortalServer/PublishedLinksService/' >";
-                    SOAPAction = "http://microsoft.com/webservices/SharePointPortalServer/PublishedLinksService/";
-                    break;
-                case SEARCH:
-                    SOAPEnvelope.opheader += "xmlns='urn:Microsoft.Search' >";
-                    SOAPAction = "urn:Microsoft.Search/";
-                    break;
-                case SHAREPOINTDIAGNOSTICS:
-                    SOAPEnvelope.opheader += "xmlns='" + SCHEMASharePoint + "/diagnostics/' >";
-                    SOAPAction = "http://schemas.microsoft.com/sharepoint/diagnostics/";
-                    break;
-                case SOCIALDATASERVICE:
-                    SOAPEnvelope.opheader += "xmlns='http://microsoft.com/webservices/SharePointPortalServer/SocialDataService' >";
-                    SOAPAction = "http://microsoft.com/webservices/SharePointPortalServer/SocialDataService/";
-                    break;
-                case SPELLCHECK:
-                    SOAPEnvelope.opheader += "xmlns='http://schemas.microsoft.com/sharepoint/publishing/spelling/' >";
-                    SOAPAction = "http://schemas.microsoft.com/sharepoint/publishing/spelling/SpellCheck";
-                    break;
-                case TAXONOMYSERVICE:
-                    SOAPEnvelope.opheader += "xmlns='" + SCHEMASharePoint + "/taxonomy/soap/' >";
-                    SOAPAction = SCHEMASharePoint + "/taxonomy/soap/";
-                    break;
-                case USERGROUP:
-                    SOAPEnvelope.opheader += "xmlns='" + SCHEMASharePoint + "/soap/directory/' >";
-                    SOAPAction = SCHEMASharePoint + "/soap/directory/";
-                    break;
-                case USERPROFILESERVICE:
-                    SOAPEnvelope.opheader += "xmlns='http://microsoft.com/webservices/SharePointPortalServer/UserProfileService' >";
-                    SOAPAction = "http://microsoft.com/webservices/SharePointPortalServer/UserProfileService/";
-                    break;
-                case WEBPARTPAGES:
-                    SOAPEnvelope.opheader += "xmlns='http://microsoft.com/sharepoint/webpartpages' >";
-                    SOAPAction = "http://microsoft.com/sharepoint/webpartpages/";
-                    break;
-                case WORKFLOW:
-                    SOAPEnvelope.opheader += "xmlns='" + SCHEMASharePoint + "/soap/workflow/' >";
-                    SOAPAction = SCHEMASharePoint + "/soap/workflow/";
-                    break;
-                default:
-                    SOAPEnvelope.opheader += "xmlns='" + SCHEMASharePoint + "/soap/'>";
-                    SOAPAction = SCHEMASharePoint + "/soap/";
-                    break;
-            }
+            soapEnvelope.opheader = "<" + opt.operation + " xmlns='" + apWebServiceService.xmlns(service) + "' >";
+            SOAPAction = apWebServiceService.action(service);
 
             // Add the operation to the SOAPAction and opfooter
             SOAPAction += opt.operation;
-            SOAPEnvelope.opfooter = "</" + opt.operation + ">";
+            soapEnvelope.opfooter = "</" + opt.operation + ">";
 
-
-            //function buildAjaxUrl(opts) {
-                // Build the URL for the Ajax call based on which operation we're calling
-                // If the webURL has been provided, then use it, else use the current site
-            var ajaxURL = "_vti_bin/" + WSops[opt.operation][0] + ".asmx";
-            if (opt.webURL) {
-                ajaxURL = opt.webURL.charAt(opt.webURL.length - 1) === SLASH ?
-                    opt.webURL + ajaxURL : opt.webURL + SLASH + ajaxURL;
-            } else {
-                var thisSite = SPServices.SPGetCurrentSite();
-                ajaxURL = thisSite + ((thisSite.charAt(thisSite.length - 1) === SLASH) ? ajaxURL : (SLASH + ajaxURL));
-            }
-            //}
-
-            SOAPEnvelope.payload = "";
-            // Each operation requires a different set of values.  This switch statement sets them up in the SOAPEnvelope.payload.
+            // Each operation requires a different set of values.  This switch statement sets them up in the soapEnvelope.payload.
             switch (opt.operation) {
                 // ALERT OPERATIONS
                 case "GetAlerts":
                     break;
                 case "DeleteAlerts":
-                    SOAPEnvelope.payload += "<IDs>";
+                    soapEnvelope.payload += "<IDs>";
                     for (i = 0; i < opt.IDs.length; i++) {
-                        SOAPEnvelope.payload += wrapNode("string", opt.IDs[i]);
+                        soapEnvelope.payload += wrapNode("string", opt.IDs[i]);
                     }
-                    SOAPEnvelope.payload += "</IDs>";
+                    soapEnvelope.payload += "</IDs>";
                     break;
 
                 // AUTHENTICATION OPERATIONS
@@ -497,20 +152,20 @@ angular.module('angularPoint')
                 // COPY OPERATIONS
                 case "CopyIntoItems":
                     addToPayload(opt, ["SourceUrl"]);
-                    SOAPEnvelope.payload += "<DestinationUrls>";
+                    soapEnvelope.payload += "<DestinationUrls>";
                     for (i = 0; i < opt.DestinationUrls.length; i++) {
-                        SOAPEnvelope.payload += wrapNode("string", opt.DestinationUrls[i]);
+                        soapEnvelope.payload += wrapNode("string", opt.DestinationUrls[i]);
                     }
-                    SOAPEnvelope.payload += "</DestinationUrls>";
+                    soapEnvelope.payload += "</DestinationUrls>";
                     addToPayload(opt, ["Fields", "Stream", "Results"]);
                     break;
                 case "CopyIntoItemsLocal":
                     addToPayload(opt, ["SourceUrl"]);
-                    SOAPEnvelope.payload += "<DestinationUrls>";
+                    soapEnvelope.payload += "<DestinationUrls>";
                     for (i = 0; i < opt.DestinationUrls.length; i++) {
-                        SOAPEnvelope.payload += wrapNode("string", opt.DestinationUrls[i]);
+                        soapEnvelope.payload += wrapNode("string", opt.DestinationUrls[i]);
                     }
-                    SOAPEnvelope.payload += "</DestinationUrls>";
+                    soapEnvelope.payload += "</DestinationUrls>";
                     break;
                 case "GetItem":
                     addToPayload(opt, ["Url", "Fields", "Stream"]);
@@ -624,14 +279,14 @@ angular.module('angularPoint')
                     if (typeof opt.updates !== "undefined" && opt.updates.length > 0) {
                         addToPayload(opt, ["updates"]);
                     } else {
-                        SOAPEnvelope.payload += "<updates><Batch OnError='Continue'><Method ID='1' Cmd='" + opt.batchCmd + "'>";
+                        soapEnvelope.payload += "<updates><Batch OnError='Continue'><Method ID='1' Cmd='" + opt.batchCmd + "'>";
                         for (i = 0; i < opt.valuePairs.length; i++) {
-                            SOAPEnvelope.payload += "<Field Name='" + opt.valuePairs[i][0] + "'>" + escapeColumnValue(opt.valuePairs[i][1]) + "</Field>";
+                            soapEnvelope.payload += "<Field Name='" + opt.valuePairs[i][0] + "'>" + escapeColumnValue(opt.valuePairs[i][1]) + "</Field>";
                         }
                         if (opt.batchCmd !== "New") {
-                            SOAPEnvelope.payload += "<Field Name='ID'>" + opt.ID + "</Field>";
+                            soapEnvelope.payload += "<Field Name='ID'>" + opt.ID + "</Field>";
                         }
-                        SOAPEnvelope.payload += "</Method></Batch></updates>";
+                        soapEnvelope.payload += "</Method></Batch></updates>";
                     }
                     break;
 
@@ -683,28 +338,28 @@ angular.module('angularPoint')
 
                 // SEARCH OPERATIONS
                 case "GetPortalSearchInfo":
-                    SOAPEnvelope.opheader = "<" + opt.operation + " xmlns='http://microsoft.com/webservices/OfficeServer/QueryService'>";
+                    soapEnvelope.opheader = "<" + opt.operation + " xmlns='http://microsoft.com/webservices/OfficeServer/QueryService'>";
                     SOAPAction = "http://microsoft.com/webservices/OfficeServer/QueryService/" + opt.operation;
                     break;
                 case "GetQuerySuggestions":
-                    SOAPEnvelope.opheader = "<" + opt.operation + " xmlns='http://microsoft.com/webservices/OfficeServer/QueryService'>";
+                    soapEnvelope.opheader = "<" + opt.operation + " xmlns='http://microsoft.com/webservices/OfficeServer/QueryService'>";
                     SOAPAction = "http://microsoft.com/webservices/OfficeServer/QueryService/" + opt.operation;
-                    SOAPEnvelope.payload += wrapNode("queryXml", encodeXml(opt.queryXml));
+                    soapEnvelope.payload += wrapNode("queryXml", encodeXml(opt.queryXml));
                     break;
                 case "GetSearchMetadata":
-                    SOAPEnvelope.opheader = "<" + opt.operation + " xmlns='http://microsoft.com/webservices/OfficeServer/QueryService'>";
+                    soapEnvelope.opheader = "<" + opt.operation + " xmlns='http://microsoft.com/webservices/OfficeServer/QueryService'>";
                     SOAPAction = "http://microsoft.com/webservices/OfficeServer/QueryService/" + opt.operation;
                     break;
                 case "Query":
-                    SOAPEnvelope.payload += wrapNode("queryXml", encodeXml(opt.queryXml));
+                    soapEnvelope.payload += wrapNode("queryXml", encodeXml(opt.queryXml));
                     break;
                 case "QueryEx":
-                    SOAPEnvelope.opheader = "<" + opt.operation + " xmlns='http://microsoft.com/webservices/OfficeServer/QueryService'>";
+                    soapEnvelope.opheader = "<" + opt.operation + " xmlns='http://microsoft.com/webservices/OfficeServer/QueryService'>";
                     SOAPAction = "http://microsoft.com/webservices/OfficeServer/QueryService/" + opt.operation;
-                    SOAPEnvelope.payload += wrapNode("queryXml", encodeXml(opt.queryXml));
+                    soapEnvelope.payload += wrapNode("queryXml", encodeXml(opt.queryXml));
                     break;
                 case "Registration":
-                    SOAPEnvelope.payload += wrapNode("registrationXml", encodeXml(opt.registrationXml));
+                    soapEnvelope.payload += wrapNode("registrationXml", encodeXml(opt.registrationXml));
                     break;
                 case "Status":
                     break;
@@ -724,24 +379,24 @@ angular.module('angularPoint')
                 case "SiteDataGetList":
                     addToPayload(opt, ["strListName"]);
                     // Because this operation has a name which duplicates the Lists WS, need to handle
-                    SOAPEnvelope = siteDataFixSOAPEnvelope(SOAPEnvelope, opt.operation);
+                    soapEnvelope = siteDataFixSOAPEnvelope(soapEnvelope, opt.operation);
                     break;
                 case "SiteDataGetListCollection":
                     // Because this operation has a name which duplicates the Lists WS, need to handle
-                    SOAPEnvelope = siteDataFixSOAPEnvelope(SOAPEnvelope, opt.operation);
+                    soapEnvelope = siteDataFixSOAPEnvelope(soapEnvelope, opt.operation);
                     break;
                 case "SiteDataGetSite":
                     // Because this operation has a name which duplicates the Lists WS, need to handle
-                    SOAPEnvelope = siteDataFixSOAPEnvelope(SOAPEnvelope, opt.operation);
+                    soapEnvelope = siteDataFixSOAPEnvelope(soapEnvelope, opt.operation);
                     break;
                 case "SiteDataGetSiteUrl":
                     addToPayload(opt, ["Url"]);
                     // Because this operation has a name which duplicates the Lists WS, need to handle
-                    SOAPEnvelope = siteDataFixSOAPEnvelope(SOAPEnvelope, opt.operation);
+                    soapEnvelope = siteDataFixSOAPEnvelope(soapEnvelope, opt.operation);
                     break;
                 case "SiteDataGetWeb":
                     // Because this operation has a name which duplicates the Lists WS, need to handle
-                    SOAPEnvelope = siteDataFixSOAPEnvelope(SOAPEnvelope, opt.operation);
+                    soapEnvelope = siteDataFixSOAPEnvelope(soapEnvelope, opt.operation);
                     break;
 
                 // SITES OPERATIONS
@@ -822,7 +477,7 @@ angular.module('angularPoint')
                 case "GetCommentsOnUrl":
                     addToPayload(opt, ["url", "maximumItemsToReturn", "startIndex"]);
                     if (typeof opt.excludeItemsTime !== "undefined" && opt.excludeItemsTime.length > 0) {
-                        SOAPEnvelope.payload += wrapNode("excludeItemsTime", opt.excludeItemsTime);
+                        soapEnvelope.payload += wrapNode("excludeItemsTime", opt.excludeItemsTime);
                     }
                     break;
                 case "GetRatingAverageOnUrl":
@@ -877,12 +532,12 @@ angular.module('angularPoint')
                     addToPayload(opt, ["url", "lastModifiedTime", "comment", "isHighPriority"]);
                     break;
 
-                // SPELLCHECK OPERATIONS 
+                // SPELLCHECK OPERATIONS
                 case "SpellCheck":
                     addToPayload(opt, ["chunksToSpell", "declaredLanguage", "useLad"]);
                     break;
 
-                // TAXONOMY OPERATIONS 
+                // TAXONOMY OPERATIONS
                 case "AddTerms":
                     addToPayload(opt, ["sharedServiceId", "termSetId", "lcid", "newTerms"]);
                     break;
@@ -1262,184 +917,57 @@ angular.module('angularPoint')
             }
 
             // Glue together the pieces of the SOAP message
-            var msg = SOAPEnvelope.header + SOAPEnvelope.opheader + SOAPEnvelope.payload + SOAPEnvelope.opfooter + SOAPEnvelope.footer;
-            var soapAction = WSops[opt.operation][1] ? SOAPAction : false;
+            var msg = soapEnvelope.header + soapEnvelope.opheader + soapEnvelope.payload + soapEnvelope.opfooter + soapEnvelope.footer;
+            var soapAction = apWebServiceOperationConstants[opt.operation][1] ? SOAPAction : false;
 
             return {
                 msg: msg,
-                SOAPEnvelope: SOAPEnvelope,
-                SOAPAction: soapAction,
-                ajaxURL: ajaxURL
+                SOAPEnvelope: soapEnvelope,
+                SOAPAction: soapAction
             };
 
-        }; // End SPServices
+            // Add the option values to the soapEnvelope.payload for the operation
+            //  opt = options for the call
+            //  paramArray = an array of option names to add to the payload
+            //      "paramName" if the parameter name and the option name match
+            //      ["paramName", "optionName"] if the parameter name and the option name are different (this handles early "wrappings" with inconsistent naming)
+            //      {name: "paramName", sendNull: false} indicates the element is marked as "add to payload only if non-null"
+            function addToPayload(opt, paramArray) {
 
-        // Defaults added as a function in our library means that the caller can override the defaults
-        // for their session by calling this function.  Each operation requires a different set of options;
-        // we allow for all in a standardized way.
-        SPServices.defaults = {
+                var i;
 
-            cacheXML: false, // If true, we'll cache the XML results with jQuery's .data() function
-            operation: "", // The Web Service operation
-            webURL: "", // URL of the target Web
-            makeViewDefault: false, // true to make the view the default view for the list
-
-            // For operations requiring CAML, these options will override any abstractions
-            CAMLViewName: "", // View name in CAML format.
-            CAMLQuery: "", // Query in CAML format
-            CAMLViewFields: "", // View fields in CAML format
-            CAMLRowLimit: 0, // Row limit as a string representation of an integer
-            CAMLQueryOptions: "<QueryOptions></QueryOptions>", // Query options in CAML format
-
-            // Abstractions for CAML syntax
-            batchCmd: "Update", // Method Cmd for UpdateListItems
-            valuePairs: [], // Fieldname / Fieldvalue pairs for UpdateListItems
-
-            // As of v0.7.1, removed all options which were assigned an empty string ("")
-            DestinationUrls: [], // Array of destination URLs for copy operations
-            behavior: "Version3", // An SPWebServiceBehavior indicating whether the client supports Windows SharePoint Services 2.0 or Windows SharePoint Services 3.0: {Version2 | Version3 }
-            storage: "Shared", // A Storage value indicating how the Web Part is stored: {None | Personal | Shared}
-            objectType: "List", // objectType for operations which require it
-            cancelMeeting: true, // true to delete a meeting;false to remove its association with a Meeting Workspace site
-            nonGregorian: false, // true if the calendar is set to a format other than Gregorian;otherwise, false.
-            fClaim: false, // Specifies if the action is a claim or a release. Specifies true for a claim and false for a release.
-            recurrenceId: 0, // The recurrence ID for the meeting that needs its association removed. This parameter can be set to 0 for single-instance meetings.
-            sequence: 0, // An integer that is used to determine the ordering of updates in case they arrive out of sequence. Updates with a lower-than-current sequence are discarded. If the sequence is equal to the current sequence, the latest update are applied.
-            maximumItemsToReturn: 0, // SocialDataService maximumItemsToReturn
-            startIndex: 0, // SocialDataService startIndex
-            isHighPriority: false, // SocialDataService isHighPriority
-            isPrivate: false, // SocialDataService isPrivate
-            rating: 1, // SocialDataService rating
-            maxResults: 10, // Unless otherwise specified, the maximum number of principals that can be returned from a provider is 10.
-            principalType: "User", // Specifies user scope and other information: [None | User | DistributionList | SecurityGroup | SharePointGroup | All]
-
-            async: true, // Allow the user to force async
-            completefunc: null // Function to call on completion
-
-        }; // End SPServices.defaults
-
-        // Function to determine the current Web's URL.  We need this for successful Ajax calls.
-        // The function is also available as a public function.
-        SPServices.SPGetCurrentSite = function () {
-
-            // We've already determined the current site...
-            if (currentContext.thisSite.length > 0) {
-                return currentContext.thisSite;
-            }
-
-            // If we still don't know the current site, we call WebUrlFromPageUrlResult.
-            var msg = SOAPEnvelope.header +
-                "<WebUrlFromPageUrl xmlns='" + SCHEMASharePoint + "/soap/' ><pageUrl>" +
-                ((location.href.indexOf("?") > 0) ? location.href.substr(0, location.href.indexOf("?")) : location.href) +
-                "</pageUrl></WebUrlFromPageUrl>" +
-                SOAPEnvelope.footer;
-            $.ajax({
-                async: false, // Need this to be synchronous so we're assured of a valid value
-                url: "/_vti_bin/Webs.asmx",
-                type: "POST",
-                data: msg,
-                dataType: "xml",
-                contentType: "text/xml;charset=\"utf-8\"",
-                complete: function (xData) {
-                    currentContext.thisSite = $(xData.responseXML).find("WebUrlFromPageUrlResult").text();
-                }
-            });
-
-            return currentContext.thisSite; // Return the URL
-
-        }; // End SPServices.SPGetCurrentSite
-
-
-
-        // SPUpdateMultipleListItems allows you to update multiple items in a list based upon some common characteristic or metadata criteria.
-        SPServices.SPUpdateMultipleListItems = function (options) {
-
-            var opt = $.extend({}, {
-                webURL: "", // [Optional] URL of the target Web.  If not specified, the current Web is used.
-                listName: "", // The list to operate on.
-                CAMLQuery: "", // A CAML fragment specifying which items in the list will be selected and updated
-                batchCmd: "Update", // The operation to perform. By default, Update.
-                valuePairs: [], // valuePairs for the update in the form [[fieldname1, fieldvalue1], [fieldname2, fieldvalue2]...]
-                completefunc: null, // Function to call on completion of rendering the change.
-                debug: false // If true, show error messages;if false, run silent
-            }, options);
-
-            var i;
-            var itemsToUpdate = [];
-            var documentsToUpdate = [];
-
-            // Call GetListItems to find all of the items matching the CAMLQuery
-            SPServices({
-                operation: "GetListItems",
-                async: false,
-                webURL: opt.webURL,
-                listName: opt.listName,
-                CAMLQuery: opt.CAMLQuery,
-                CAMLQueryOptions: "<QueryOptions><ViewAttributes Scope='Recursive' /></QueryOptions>",
-                completefunc: function (xData) {
-                    $(xData.responseXML).SPFilterNode("z:row").each(function () {
-                        itemsToUpdate.push($(this).attr("ows_ID"));
-                        var fileRef = $(this).attr("ows_FileRef");
-                        fileRef = "/" + fileRef.substring(fileRef.indexOf(";#") + 2);
-                        documentsToUpdate.push(fileRef);
-                    });
-                }
-            });
-
-            var fieldNum;
-            var batch = "<Batch OnError='Continue'>";
-            for (i = 0; i < itemsToUpdate.length; i++) {
-                batch += "<Method ID='" + i + "' Cmd='" + opt.batchCmd + "'>";
-                for (fieldNum = 0; fieldNum < opt.valuePairs.length; fieldNum++) {
-                    batch += "<Field Name='" + opt.valuePairs[fieldNum][0] + "'>" + escapeColumnValue(opt.valuePairs[fieldNum][1]) + "</Field>";
-                }
-                batch += "<Field Name='ID'>" + itemsToUpdate[i] + "</Field>";
-                if (documentsToUpdate[i].length > 0) {
-                    batch += "<Field Name='FileRef'>" + documentsToUpdate[i] + "</Field>";
-                }
-                batch += "</Method>";
-            }
-            batch += "</Batch>";
-
-            // Call UpdateListItems to update all of the items matching the CAMLQuery
-            SPServices({
-                operation: "UpdateListItems",
-                async: false,
-                webURL: opt.webURL,
-                listName: opt.listName,
-                updates: batch,
-                completefunc: function (xData) {
-                    // If present, call completefunc when all else is done
-                    if (opt.completefunc !== null) {
-                        opt.completefunc(xData);
+                for (i = 0; i < paramArray.length; i++) {
+                    // the parameter name and the option name match
+                    if (typeof paramArray[i] === "string") {
+                        soapEnvelope.payload += wrapNode(paramArray[i], opt[paramArray[i]]);
+                        // the parameter name and the option name are different
+                    } else if (_.isArray(paramArray[i]) && paramArray[i].length === 2) {
+                        soapEnvelope.payload += wrapNode(paramArray[i][0], opt[paramArray[i][1]]);
+                        // the element not a string or an array and is marked as "add to payload only if non-null"
+                    } else if ((typeof paramArray[i] === "object") && (paramArray[i].sendNull !== undefined)) {
+                        soapEnvelope.payload += ((opt[paramArray[i].name] === undefined) || (opt[paramArray[i].name].length === 0)) ? "" : wrapNode(paramArray[i].name, opt[paramArray[i].name]);
+                        // something isn't right, so report it
+                    } else {
+                        errBox(opt.operation, "paramArray[" + i + "]: " + paramArray[i], "Invalid paramArray element passed to addToPayload()");
                     }
                 }
-            });
+            } // End of function addToPayload
 
-        }; // End SPServices.SPUpdateMultipleListItems
+            // The SiteData operations have the same names as other Web Service operations. To make them easy to call and unique, I'm using
+            // the SiteData prefix on their names. This function replaces that name with the right name in the soapEnvelope.
+            function siteDataFixSOAPEnvelope(SOAPEnvelope, siteDataOperation) {
+                var siteDataOp = siteDataOperation.substring(8);
+                SOAPEnvelope.opheader = SOAPEnvelope.opheader.replace(siteDataOperation, siteDataOp);
+                SOAPEnvelope.opfooter = SOAPEnvelope.opfooter.replace(siteDataOperation, siteDataOp);
+                return SOAPEnvelope;
+            } // End of function siteDataFixSOAPEnvelope
 
-        // Convert a JavaScript date to the ISO 8601 format required by SharePoint to update list items
-        SPServices.SPConvertDateToISO = function (options) {
 
-            var opt = $.extend({}, {
-                dateToConvert: new Date(), // The JavaScript date we'd like to convert. If no date is passed, the function returns the current date/time
-                dateOffset: "-05:00" // The time zone offset requested. Default is EST
-            }, options);
+        }; // End SPServices.generateXMLComponents
 
-            //Generate ISO 8601 date/time formatted string
-            var s = "";
-            var d = opt.dateToConvert;
-            s += d.getFullYear() + "-";
-            s += pad(d.getMonth() + 1) + "-";
-            s += pad(d.getDate());
-            s += "T" + pad(d.getHours()) + ":";
-            s += pad(d.getMinutes()) + ":";
-            s += pad(d.getSeconds()) + "Z" + opt.dateOffset;
-            //Return the ISO8601 date string
-            return s;
 
-        }; // End SPServices.SPConvertDateToISO
 
+        //TODO Move this somewhere else, it's too buried down here
         // This method for finding specific nodes in the returned XML was developed by Steve Workman. See his blog post
         // http://www.steveworkman.com/html5-2/javascript/2011/improving-javascript-xml-node-finding-performance-by-2000/
         // for performance details.
@@ -1449,316 +977,16 @@ angular.module('angularPoint')
             });
         }; // End $.fn.SPFilterNode
 
-        // This function converts an XML node set to JSON
-        // Initial implementation focuses only on GetListItems
-        $.fn.SPXmlToJson = function (options) {
-
-            var opt = $.extend({}, {
-                mapping: {}, // columnName: mappedName: "mappedName", objectType: "objectType"
-                includeAllAttrs: false, // If true, return all attributes, regardless whether they are in the mapping
-                removeOws: true, // Specifically for GetListItems, if true, the leading ows_ will be stripped off the field name
-                sparse: false // If true, empty ("") values will not be returned
-            }, options);
-
-            var attrNum;
-            var jsonObject = [];
-
-            this.each(function () {
-                var row = {};
-                var rowAttrs = this.attributes;
-
-                if (!opt.sparse) {
-                    // Bring back all mapped columns, even those with no value
-                    $.each(opt.mapping, function () {
-                        row[this.mappedName] = "";
-                    });
-                }
-
-                // Parse through the element's attributes
-                for (attrNum = 0; attrNum < rowAttrs.length; attrNum++) {
-                    var thisAttrName = rowAttrs[attrNum].name;
-                    var thisMapping = opt.mapping[thisAttrName];
-                    var thisObjectName = typeof thisMapping !== "undefined" ? thisMapping.mappedName : opt.removeOws ? thisAttrName.split("ows_")[1] : thisAttrName;
-                    var thisObjectType = typeof thisMapping !== "undefined" ? thisMapping.objectType : undefined;
-                    if (opt.includeAllAttrs || thisMapping !== undefined) {
-                        row[thisObjectName] = attrToJson(rowAttrs[attrNum].value, thisObjectType);
-                    }
-                }
-                // Push this item into the JSON Object          
-                jsonObject.push(row);
-
-            });
-
-            // Return the JSON object
-            return jsonObject;
-
-        }; // End SPServices.SPXmlToJson
-
-
-        function attrToJson(v, objectType) {
-
-            var colValue;
-
-            switch (objectType) {
-                case "Text":
-                    colValue = stringToJsonObject(v);
-                    break;
-                case "DateTime":
-                case "datetime": // For calculated columns, stored as datetime;#value
-                    // Dates have dashes instead of slashes: ows_Created="2009-08-25 14:24:48"
-                    colValue = dateToJsonObject(v);
-                    break;
-                case "User":
-                    colValue = userToJsonObject(v);
-                    break;
-                case "UserMulti":
-                    colValue = userMultiToJsonObject(v);
-                    break;
-                case "Lookup":
-                    colValue = lookupToJsonObject(v);
-                    break;
-                case "LookupMulti":
-                    colValue = lookupMultiToJsonObject(v);
-                    break;
-                case "Boolean":
-                    colValue = booleanToJsonObject(v);
-                    break;
-                case "Integer":
-                    colValue = intToJsonObject(v);
-                    break;
-                case "Counter":
-                    colValue = intToJsonObject(v);
-                    break;
-                case "MultiChoice":
-                    colValue = choiceMultiToJsonObject(v);
-                    break;
-                case "Number":
-                case "Currency":
-                case "float": // For calculated columns, stored as float;#value
-                    colValue = floatToJsonObject(v);
-                    break;
-                case "Calculated":
-                    colValue = calcToJsonObject(v);
-                    break;
-                case "Attachments":
-                    colValue = lookupToJsonObject(v);
-                    break;
-                case "JSON":
-                    colValue = jsonToJsonObject(v); // Special case for text JSON stored in text columns
-                    break;
-                default:
-                    // All other objectTypes will be simple strings
-                    colValue = stringToJsonObject(v);
-                    break;
-            }
-            return colValue;
-        }
-
-        function stringToJsonObject(s) {
-            return s;
-        }
-
-        function intToJsonObject(s) {
-            return parseInt(s, 10);
-        }
-
-        function floatToJsonObject(s) {
-            return parseFloat(s);
-        }
-
-        function booleanToJsonObject(s) {
-            var out = s === "0" ? false : true;
-            return out;
-        }
-
-        function dateToJsonObject(s) {
-
-            var dt = s.split("T")[0] !== s ? s.split("T") : s.split(" ");
-            var d = dt[0].split("-");
-            var t = dt[1].split(":");
-            var t3 = t[2].split("Z");
-            var date = new Date(d[0], (d[1] - 1), d[2], t[0], t[1], t3[0]);
-            return date;
-        }
-
-        function userToJsonObject(s) {
-            if (s.length === 0) {
-                return null;
-            } else {
-                var thisUser = new SplitIndex(s);
-                var thisUserExpanded = thisUser.value.split(",#");
-                if (thisUserExpanded.length === 1) {
-                    return {
-                        userId: thisUser.id,
-                        userName: thisUser.value
-                    };
-                } else {
-                    return {
-                        userId: thisUser.id,
-                        userName: thisUserExpanded[0].replace(/(,,)/g, ","),
-                        loginName: thisUserExpanded[1].replace(/(,,)/g, ","),
-                        email: thisUserExpanded[2].replace(/(,,)/g, ","),
-                        sipAddress: thisUserExpanded[3].replace(/(,,)/g, ","),
-                        title: thisUserExpanded[4].replace(/(,,)/g, ",")
-                    };
-                }
-            }
-        }
-
-        function userMultiToJsonObject(s) {
-            if (s.length === 0) {
-                return null;
-            } else {
-                var thisUserMultiObject = [];
-                var thisUserMulti = s.split(";#");
-                for (i = 0; i < thisUserMulti.length; i = i + 2) {
-                    var thisUser = userToJsonObject(thisUserMulti[i] + ";#" + thisUserMulti[i + 1]);
-                    thisUserMultiObject.push(thisUser);
-                }
-                return thisUserMultiObject;
-            }
-        }
-
-        function lookupToJsonObject(s) {
-            if (s.length === 0) {
-                return null;
-            } else {
-                var thisLookup = new SplitIndex(s);
-                return {
-                    lookupId: thisLookup.id,
-                    lookupValue: thisLookup.value
-                };
-            }
-        }
-
-        function lookupMultiToJsonObject(s) {
-            if (s.length === 0) {
-                return null;
-            } else {
-                var thisLookupMultiObject = [];
-                var thisLookupMulti = s.split(";#");
-                for (i = 0; i < thisLookupMulti.length; i = i + 2) {
-                    var thisLookup = lookupToJsonObject(thisLookupMulti[i] + ";#" + thisLookupMulti[i + 1]);
-                    thisLookupMultiObject.push(thisLookup);
-                }
-                return thisLookupMultiObject;
-            }
-        }
-
-        function choiceMultiToJsonObject(s) {
-            if (s.length === 0) {
-                return null;
-            } else {
-                var thisChoiceMultiObject = [];
-                var thisChoiceMulti = s.split(";#");
-                for (i = 0; i < thisChoiceMulti.length; i++) {
-                    if (thisChoiceMulti[i].length !== 0) {
-                        thisChoiceMultiObject.push(thisChoiceMulti[i]);
-                    }
-                }
-                return thisChoiceMultiObject;
-            }
-        }
-
-        function calcToJsonObject(s) {
-            if (s.length === 0) {
-                return null;
-            } else {
-                var thisCalc = s.split(";#");
-                // The first value will be the calculated column value type, the second will be the value
-                return attrToJson(thisCalc[1], thisCalc[0]);
-            }
-        }
-
-        function jsonToJsonObject(s) {
-            if (s.length === 0) {
-                return null;
-            } else {
-                return $.parseJSON(s);
-            }
-        }
-
-        // Return the current version of SPServices as a string
-        SPServices.Version = function () {
-
-            return VERSION;
-
-        }; // End SPServices.Version
-
-
-
         ////// PRIVATE FUNCTIONS ////////
-
-        // Get the current context (as much as we can) on startup
-        // See: http://johnliu.net/blog/2012/2/3/sharepoint-javascript-current-page-context-info.html
-        function SPServicesContext() {
-
-            // SharePoint 2010 gives us a context variable
-            if (typeof _spPageContextInfo !== "undefined") {
-                this.thisSite = _spPageContextInfo.webServerRelativeUrl;
-                this.thisList = _spPageContextInfo.pageListId;
-                this.thisUserId = _spPageContextInfo.userId;
-                // In SharePoint 2007, we know the UserID only
-            } else {
-                this.thisSite = (typeof L_Menu_BaseUrl !== "undefined") ? L_Menu_BaseUrl : "";
-                this.thisList = "";
-                this.thisUserId = (typeof _spUserId !== "undefined") ? _spUserId : undefined;
-            }
-
-        } // End of function SPServicesContext
-
-
-
-        // Add the option values to the SOAPEnvelope.payload for the operation
-        //  opt = options for the call
-        //  paramArray = an array of option names to add to the payload
-        //      "paramName" if the parameter name and the option name match
-        //      ["paramName", "optionName"] if the parameter name and the option name are different (this handles early "wrappings" with inconsistent naming)
-        //      {name: "paramName", sendNull: false} indicates the element is marked as "add to payload only if non-null"
-        function addToPayload(opt, paramArray) {
-
-            var i;
-
-            for (i = 0; i < paramArray.length; i++) {
-                // the parameter name and the option name match
-                if (typeof paramArray[i] === "string") {
-                    SOAPEnvelope.payload += wrapNode(paramArray[i], opt[paramArray[i]]);
-                    // the parameter name and the option name are different 
-                } else if ($.isArray(paramArray[i]) && paramArray[i].length === 2) {
-                    SOAPEnvelope.payload += wrapNode(paramArray[i][0], opt[paramArray[i][1]]);
-                    // the element not a string or an array and is marked as "add to payload only if non-null"
-                } else if ((typeof paramArray[i] === "object") && (paramArray[i].sendNull !== undefined)) {
-                    SOAPEnvelope.payload += ((opt[paramArray[i].name] === undefined) || (opt[paramArray[i].name].length === 0)) ? "" : wrapNode(paramArray[i].name, opt[paramArray[i].name]);
-                    // something isn't right, so report it
-                } else {
-                    errBox(opt.operation, "paramArray[" + i + "]: " + paramArray[i], "Invalid paramArray element passed to addToPayload()");
-                }
-            }
-        } // End of function addToPayload
-
-        // The SiteData operations have the same names as other Web Service operations. To make them easy to call and unique, I'm using
-        // the SiteData prefix on their names. This function replaces that name with the right name in the SOAPEnvelope.
-        function siteDataFixSOAPEnvelope(SOAPEnvelope, siteDataOperation) {
-            var siteDataOp = siteDataOperation.substring(8);
-            SOAPEnvelope.opheader = SOAPEnvelope.opheader.replace(siteDataOperation, siteDataOp);
-            SOAPEnvelope.opfooter = SOAPEnvelope.opfooter.replace(siteDataOperation, siteDataOp);
-            return SOAPEnvelope;
-        } // End of function siteDataFixSOAPEnvelope
-
         // Wrap an XML node (n) around a value (v)
         function wrapNode(n, v) {
             var thisValue = typeof v !== "undefined" ? v : "";
             return "<" + n + ">" + thisValue + "</" + n + ">";
         }
 
-        // If a string is a URL, format it as a link, else return the string as-is
-        function checkLink(s) {
-            return ((s.indexOf("http") === 0) || (s.indexOf(SLASH) === 0)) ? "<a href='" + s + "'>" + s + "</a>" : s;
-        }
-
         // Get the filename from the full URL
         function fileName(s) {
-            return s.substring(s.lastIndexOf(SLASH) + 1, s.length);
+            return s.substring(s.lastIndexOf("/") + 1, s.length);
         }
 
         /* Taken from http://dracoblue.net/dev/encodedecode-special-xml-characters-in-javascript/155/ */
@@ -1768,12 +996,6 @@ angular.module('angularPoint')
             '<': '&lt;',
             '>': '&gt;'
         };
-        var escaped_one_to_xml_special_map = {
-            '&amp;': '&',
-            '&quot;': '"',
-            '&lt;': '<',
-            '&gt;': '>'
-        };
 
         function encodeXml(string) {
             return string.replace(/([\&"<>])/g, function (str, item) {
@@ -1781,15 +1003,7 @@ angular.module('angularPoint')
             });
         }
 
-        function decodeXml(string) {
-            return string.replace(/(&quot;|&lt;|&gt;|&amp;)/g,
-                function (str, item) {
-                    return escaped_one_to_xml_special_map[item];
-                });
-        }
-
         /* Taken from http://dracoblue.net/dev/encodedecode-special-xml-characters-in-javascript/155/ */
-
         // Escape column values
         function escapeColumnValue(s) {
             if (typeof s === "string") {
@@ -1797,22 +1011,6 @@ angular.module('angularPoint')
             } else {
                 return s;
             }
-        }
-
-        // Escape Url
-        function escapeUrl(u) {
-            return u.replace(/&/g, '%26');
-        }
-
-        // Split values like 1;#value into id and value                             
-        function SplitIndex(s) {
-            var spl = s.split(";#");
-            this.id = spl[0];
-            this.value = spl[1];
-        }
-
-        function pad(n) {
-            return n < 10 ? "0" + n : n;
         }
 
         function errBox(msg) {
@@ -1833,12 +1031,469 @@ angular.module('angularPoint')
             return regex.test(jQuery(elem)[attr.method](attr.property));
         };
 
-        SPServices.WSops = WSops;
-        SPServices.SCHEMASharePoint = SCHEMASharePoint;
-        SPServices.SLASH = SLASH;
-        SPServices.SOAPEnvelope = SOAPEnvelope;
-
         return SPServices;
+
+
+        //// Known list field types
+        //var spListFieldTypes = [
+        //    "Text",
+        //    "DateTime",
+        //    "datetime",
+        //    "User",
+        //    "UserMulti",
+        //    "Lookup",
+        //    "LookupMulti",
+        //    "Boolean",
+        //    "Integer",
+        //    "Counter",
+        //    "MultiChoice",
+        //    "Currency",
+        //    "float",
+        //    "Calc",
+        //    "Attachments",
+        //    "Calculated",
+        //    "ContentTypeId",
+        //    "Note",
+        //    //          "Computed",
+        //    "URL",
+        //    "Number",
+        //    "Choice",
+        //    "ModStat",
+        //    "Guid",
+        //    "File"
+        //];
+
+
+        // Convert a JavaScript date to the ISO 8601 format required by SharePoint to update list items
+        //function SPConvertDateToISO(options) {
+        //
+        //    var opt = $.extend({}, {
+        //        dateToConvert: new Date(), // The JavaScript date we'd like to convert. If no date is passed, the function returns the current date/time
+        //        dateOffset: "-05:00" // The time zone offset requested. Default is EST
+        //    }, options);
+        //
+        //    //Generate ISO 8601 date/time formatted string
+        //    var s = "";
+        //    var d = opt.dateToConvert;
+        //    s += d.getFullYear() + "-";
+        //    s += pad(d.getMonth() + 1) + "-";
+        //    s += pad(d.getDate());
+        //    s += "T" + pad(d.getHours()) + ":";
+        //    s += pad(d.getMinutes()) + ":";
+        //    s += pad(d.getSeconds()) + "Z" + opt.dateOffset;
+        //    //Return the ISO8601 date string
+        //    return s;
+        //
+        //} // End SPServices.SPConvertDateToISO
+
+        // Split values like 1;#value into id and value
+        //function SplitIndex(s) {
+        //    var spl = s.split(";#");
+        //    this.id = spl[0];
+        //    this.value = spl[1];
+        //}
+
+        //function pad(n) {
+        //    return n < 10 ? "0" + n : n;
+        //}
+
+        //var escaped_one_to_xml_special_map = {
+        //    '&amp;': '&',
+        //    '&quot;': '"',
+        //    '&lt;': '<',
+        //    '&gt;': '>'
+        //};
+
+        //
+        //function decodeXml(string) {
+        //    return string.replace(/(&quot;|&lt;|&gt;|&amp;)/g,
+        //        function (str, item) {
+        //            return escaped_one_to_xml_special_map[item];
+        //        });
+        //}
+
+        // Escape Url
+        //function escapeUrl(u) {
+        //    return u.replace(/&/g, '%26');
+        //}
+
+        // Return the current version of SPServices as a string
+        //SPServices.Version = function () {
+        //
+        //    return VERSION;
+        //
+        //}; // End SPServices.Version
+
+
+        //// This function converts an XML node set to JSON
+        //// Initial implementation focuses only on GetListItems
+        //$.fn.SPXmlToJson = function (options) {
+        //
+        //    var opt = $.extend({}, {
+        //        mapping: {}, // columnName: mappedName: "mappedName", objectType: "objectType"
+        //        includeAllAttrs: false, // If true, return all attributes, regardless whether they are in the mapping
+        //        removeOws: true, // Specifically for GetListItems, if true, the leading ows_ will be stripped off the field name
+        //        sparse: false // If true, empty ("") values will not be returned
+        //    }, options);
+        //
+        //    var attrNum;
+        //    var jsonObject = [];
+        //
+        //    this.each(function () {
+        //        var row = {};
+        //        var rowAttrs = this.attributes;
+        //
+        //        if (!opt.sparse) {
+        //            // Bring back all mapped columns, even those with no value
+        //            $.each(opt.mapping, function () {
+        //                row[this.mappedName] = "";
+        //            });
+        //        }
+        //
+        //        // Parse through the element's attributes
+        //        for (attrNum = 0; attrNum < rowAttrs.length; attrNum++) {
+        //            var thisAttrName = rowAttrs[attrNum].name;
+        //            var thisMapping = opt.mapping[thisAttrName];
+        //            var thisObjectName = typeof thisMapping !== "undefined" ? thisMapping.mappedName : opt.removeOws ? thisAttrName.split("ows_")[1] : thisAttrName;
+        //            var thisObjectType = typeof thisMapping !== "undefined" ? thisMapping.objectType : undefined;
+        //            if (opt.includeAllAttrs || thisMapping !== undefined) {
+        //                row[thisObjectName] = apDecodeService.attrToJson(rowAttrs[attrNum].value, thisObjectType);
+        //            }
+        //        }
+        //        // Push this item into the JSON Object
+        //        jsonObject.push(row);
+        //
+        //    });
+        //
+        //    // Return the JSON object
+        //    return jsonObject;
+        //
+        //}; // End SPServices.SPXmlToJson
+
+
+        //function attrToJson(v, objectType) {
+        //
+        //    var colValue;
+        //
+        //    switch (objectType) {
+        //        case "Text":
+        //            colValue = stringToJsonObject(v);
+        //            break;
+        //        case "DateTime":
+        //        case "datetime": // For calculated columns, stored as datetime;#value
+        //            // Dates have dashes instead of slashes: ows_Created="2009-08-25 14:24:48"
+        //            colValue = dateToJsonObject(v);
+        //            break;
+        //        case "User":
+        //            colValue = userToJsonObject(v);
+        //            break;
+        //        case "UserMulti":
+        //            colValue = userMultiToJsonObject(v);
+        //            break;
+        //        case "Lookup":
+        //            colValue = lookupToJsonObject(v);
+        //            break;
+        //        case "LookupMulti":
+        //            colValue = lookupMultiToJsonObject(v);
+        //            break;
+        //        case "Boolean":
+        //            colValue = booleanToJsonObject(v);
+        //            break;
+        //        case "Integer":
+        //            colValue = intToJsonObject(v);
+        //            break;
+        //        case "Counter":
+        //            colValue = intToJsonObject(v);
+        //            break;
+        //        case "MultiChoice":
+        //            colValue = choiceMultiToJsonObject(v);
+        //            break;
+        //        case "Number":
+        //        case "Currency":
+        //        case "float": // For calculated columns, stored as float;#value
+        //            colValue = floatToJsonObject(v);
+        //            break;
+        //        case "Calculated":
+        //            colValue = calcToJsonObject(v);
+        //            break;
+        //        case "Attachments":
+        //            colValue = lookupToJsonObject(v);
+        //            break;
+        //        case "JSON":
+        //            colValue = jsonToJsonObject(v); // Special case for text JSON stored in text columns
+        //            break;
+        //        default:
+        //            // All other objectTypes will be simple strings
+        //            colValue = stringToJsonObject(v);
+        //            break;
+        //    }
+        //    return colValue;
+        //}
+        //
+        //function stringToJsonObject(s) {
+        //    return s;
+        //}
+        //
+        //function intToJsonObject(s) {
+        //    return parseInt(s, 10);
+        //}
+        //
+        //function floatToJsonObject(s) {
+        //    return parseFloat(s);
+        //}
+        //
+        //function booleanToJsonObject(s) {
+        //    var out = s === "0" ? false : true;
+        //    return out;
+        //}
+        //
+        //function dateToJsonObject(s) {
+        //
+        //    var dt = s.split("T")[0] !== s ? s.split("T") : s.split(" ");
+        //    var d = dt[0].split("-");
+        //    var t = dt[1].split(":");
+        //    var t3 = t[2].split("Z");
+        //    var date = new Date(d[0], (d[1] - 1), d[2], t[0], t[1], t3[0]);
+        //    return date;
+        //}
+        //
+        //function userToJsonObject(s) {
+        //    if (s.length === 0) {
+        //        return null;
+        //    } else {
+        //        var thisUser = new SplitIndex(s);
+        //        var thisUserExpanded = thisUser.value.split(",#");
+        //        if (thisUserExpanded.length === 1) {
+        //            return {
+        //                userId: thisUser.id,
+        //                userName: thisUser.value
+        //            };
+        //        } else {
+        //            return {
+        //                userId: thisUser.id,
+        //                userName: thisUserExpanded[0].replace(/(,,)/g, ","),
+        //                loginName: thisUserExpanded[1].replace(/(,,)/g, ","),
+        //                email: thisUserExpanded[2].replace(/(,,)/g, ","),
+        //                sipAddress: thisUserExpanded[3].replace(/(,,)/g, ","),
+        //                title: thisUserExpanded[4].replace(/(,,)/g, ",")
+        //            };
+        //        }
+        //    }
+        //}
+
+        //// Get the current context (as much as we can) on startup
+        //// See: http://johnliu.net/blog/2012/2/3/sharepoint-javascript-current-page-context-info.html
+        //function SPServicesContext() {
+        //
+        //    // SharePoint 2010 gives us a context variable
+        //    if (typeof _spPageContextInfo !== "undefined") {
+        //        this.thisSite = _spPageContextInfo.webServerRelativeUrl;
+        //        this.thisList = _spPageContextInfo.pageListId;
+        //        this.thisUserId = _spPageContextInfo.userId;
+        //        // In SharePoint 2007, we know the UserID only
+        //    } else {
+        //        this.thisSite = (typeof L_Menu_BaseUrl !== "undefined") ? L_Menu_BaseUrl : "";
+        //        this.thisList = "";
+        //        this.thisUserId = (typeof _spUserId !== "undefined") ? _spUserId : undefined;
+        //    }
+        //
+        //} // End of function SPServicesContext
+
+        //
+        //function userMultiToJsonObject(s) {
+        //    if (s.length === 0) {
+        //        return null;
+        //    } else {
+        //        var thisUserMultiObject = [];
+        //        var thisUserMulti = s.split(";#");
+        //        for (i = 0; i < thisUserMulti.length; i = i + 2) {
+        //            var thisUser = userToJsonObject(thisUserMulti[i] + ";#" + thisUserMulti[i + 1]);
+        //            thisUserMultiObject.push(thisUser);
+        //        }
+        //        return thisUserMultiObject;
+        //    }
+        //}
+        //
+        //function lookupToJsonObject(s) {
+        //    if (s.length === 0) {
+        //        return null;
+        //    } else {
+        //        var thisLookup = new SplitIndex(s);
+        //        return {
+        //            lookupId: thisLookup.id,
+        //            lookupValue: thisLookup.value
+        //        };
+        //    }
+        //}
+        //
+        //function lookupMultiToJsonObject(s) {
+        //    if (s.length === 0) {
+        //        return null;
+        //    } else {
+        //        var thisLookupMultiObject = [];
+        //        var thisLookupMulti = s.split(";#");
+        //        for (i = 0; i < thisLookupMulti.length; i = i + 2) {
+        //            var thisLookup = lookupToJsonObject(thisLookupMulti[i] + ";#" + thisLookupMulti[i + 1]);
+        //            thisLookupMultiObject.push(thisLookup);
+        //        }
+        //        return thisLookupMultiObject;
+        //    }
+        //}
+        //
+        //function choiceMultiToJsonObject(s) {
+        //    if (s.length === 0) {
+        //        return null;
+        //    } else {
+        //        var thisChoiceMultiObject = [];
+        //        var thisChoiceMulti = s.split(";#");
+        //        for (i = 0; i < thisChoiceMulti.length; i++) {
+        //            if (thisChoiceMulti[i].length !== 0) {
+        //                thisChoiceMultiObject.push(thisChoiceMulti[i]);
+        //            }
+        //        }
+        //        return thisChoiceMultiObject;
+        //    }
+        //}
+        //
+        //function calcToJsonObject(s) {
+        //    if (s.length === 0) {
+        //        return null;
+        //    } else {
+        //        var thisCalc = s.split(";#");
+        //        // The first value will be the calculated column value type, the second will be the value
+        //        return attrToJson(thisCalc[1], thisCalc[0]);
+        //    }
+        //}
+        //
+        //function jsonToJsonObject(s) {
+        //    if (s.length === 0) {
+        //        return null;
+        //    } else {
+        //        return $.parseJSON(s);
+        //    }
+        //}
+
+        // Build the URL for the Ajax call based on which operation we're calling
+        // If the webURL has been provided, then use it, else use the current site
+        //var ajaxURL = generateWebServiceUrl(service, opt.webURL);
+        //var ajaxURL = "_vti_bin/" + service + ".asmx";
+        //if (opt.webURL) {
+        //    ajaxURL = opt.webURL.charAt(opt.webURL.length - 1) === SLASH ?
+        //    opt.webURL + ajaxURL : opt.webURL + SLASH + ajaxURL;
+        //} else {
+        //    var thisSite = SPServices.SPGetCurrentSite();
+        //    ajaxURL = thisSite + ((thisSite.charAt(thisSite.length - 1) === SLASH) ? ajaxURL : (SLASH + ajaxURL));
+        //}
+
+        // If a string is a URL, format it as a link, else return the string as-is
+        //function checkLink(s) {
+        //    return ((s.indexOf("http") === 0) || (s.indexOf(SLASH) === 0)) ? "<a href='" + s + "'>" + s + "</a>" : s;
+        //}
+
+        //SPServices.generateWebServiceUrl = generateWebServiceUrl;
+
+        // Function to determine the current Web's URL.  We need this for successful Ajax calls.
+        // The function is also available as a public function.
+        //function SPGetCurrentSite() {
+        //
+        //    // We've already determined the current site...
+        //    if (currentContext.thisSite.length > 0) {
+        //        return currentContext.thisSite;
+        //    }
+        //
+        //    // If we still don't know the current site, we call WebUrlFromPageUrlResult.
+        //    var msg = SOAPEnvelope.header +
+        //        "<WebUrlFromPageUrl xmlns='" + SCHEMASharePoint + "/soap/' ><pageUrl>" +
+        //        ((location.href.indexOf("?") > 0) ? location.href.substr(0, location.href.indexOf("?")) : location.href) +
+        //        "</pageUrl></WebUrlFromPageUrl>" +
+        //        SOAPEnvelope.footer;
+        //    $.ajax({
+        //        async: false, // Need this to be synchronous so we're assured of a valid value
+        //        url: "/_vti_bin/Webs.asmx",
+        //        type: "POST",
+        //        data: msg,
+        //        dataType: "xml",
+        //        contentType: "text/xml;charset=\"utf-8\"",
+        //        complete: function (xData) {
+        //            currentContext.thisSite = $(xData.responseXML).find("WebUrlFromPageUrlResult").text();
+        //        }
+        //    });
+        //
+        //    return currentContext.thisSite; // Return the URL
+        //
+        //} // End SPServices.SPGetCurrentSite
+
+        //function generateWebServiceUrl(service, webURL) {
+        //    var ajaxURL = "_vti_bin/" + service + ".asmx";
+        //    if (webURL) {
+        //        ajaxURL = webURL.charAt(webURL.length - 1) === SLASH ?
+        //        webURL + ajaxURL : webURL + SLASH + ajaxURL;
+        //    } else {
+        //        var thisSite = SPServices.SPGetCurrentSite();
+        //        ajaxURL = thisSite + ((thisSite.charAt(thisSite.length - 1) === SLASH) ? ajaxURL : (SLASH + ajaxURL));
+        //    }
+        //    return ajaxURL;
+        //}
+
+        //switch (apWebServiceOperationConstants[opt.operation][0]) {
+        //    case "Alerts":
+        //        SOAPEnvelope.opheader += "xmlns='" + SCHEMASharePoint + "/soap/2002/1/alerts/' >";
+        //        SOAPAction = SCHEMASharePoint + "/soap/2002/1/alerts/";
+        //        break;
+        //    case "Meetings":
+        //        SOAPEnvelope.opheader += "xmlns='" + SCHEMASharePoint + "/soap/meetings/' >";
+        //        SOAPAction = SCHEMASharePoint + "/soap/meetings/";
+        //        break;
+        //    case "Permissions":
+        //        SOAPEnvelope.opheader += "xmlns='" + SCHEMASharePoint + "/soap/directory/' >";
+        //        SOAPAction = SCHEMASharePoint + "/soap/directory/";
+        //        break;
+        //    case "PublishedLinksService":
+        //        SOAPEnvelope.opheader += "xmlns='http://microsoft.com/webservices/SharePointPortalServer/PublishedLinksService/' >";
+        //        SOAPAction = "http://microsoft.com/webservices/SharePointPortalServer/PublishedLinksService/";
+        //        break;
+        //    case "Search":
+        //        SOAPEnvelope.opheader += "xmlns='urn:Microsoft.Search' >";
+        //        SOAPAction = "urn:Microsoft.Search/";
+        //        break;
+        //    case "SharePointDiagnostics":
+        //        SOAPEnvelope.opheader += "xmlns='" + SCHEMASharePoint + "/diagnostics/' >";
+        //        SOAPAction = "http://schemas.microsoft.com/sharepoint/diagnostics/";
+        //        break;
+        //    case "SocialDataService":
+        //        SOAPEnvelope.opheader += "xmlns='http://microsoft.com/webservices/SharePointPortalServer/SocialDataService' >";
+        //        SOAPAction = "http://microsoft.com/webservices/SharePointPortalServer/SocialDataService/";
+        //        break;
+        //    case "SpellCheck":
+        //        SOAPEnvelope.opheader += "xmlns='http://schemas.microsoft.com/sharepoint/publishing/spelling/' >";
+        //        SOAPAction = "http://schemas.microsoft.com/sharepoint/publishing/spelling/SpellCheck";
+        //        break;
+        //    case "TaxonomyClientService":
+        //        SOAPEnvelope.opheader += "xmlns='" + SCHEMASharePoint + "/taxonomy/soap/' >";
+        //        SOAPAction = SCHEMASharePoint + "/taxonomy/soap/";
+        //        break;
+        //    case "usergroup":
+        //        SOAPEnvelope.opheader += "xmlns='" + SCHEMASharePoint + "/soap/directory/' >";
+        //        SOAPAction = SCHEMASharePoint + "/soap/directory/";
+        //        break;
+        //    case "UserProfileService":
+        //        SOAPEnvelope.opheader += "xmlns='http://microsoft.com/webservices/SharePointPortalServer/UserProfileService' >";
+        //        SOAPAction = "http://microsoft.com/webservices/SharePointPortalServer/UserProfileService/";
+        //        break;
+        //    case "WebPartPages":
+        //        SOAPEnvelope.opheader += "xmlns='http://microsoft.com/sharepoint/webpartpages' >";
+        //        SOAPAction = "http://microsoft.com/sharepoint/webpartpages/";
+        //        break;
+        //    case "Workflow":
+        //        SOAPEnvelope.opheader += "xmlns='" + SCHEMASharePoint + "/soap/workflow/' >";
+        //        SOAPAction = SCHEMASharePoint + "/soap/workflow/";
+        //        break;
+        //    default:
+        //        SOAPEnvelope.opheader += "xmlns='" + SCHEMASharePoint + "/soap/'>";
+        //        SOAPAction = SCHEMASharePoint + "/soap/";
+        //        break;
+        //}
+
 
         // Utility function to show the results of a Web Service call formatted well in the browser.
         //SPServices.SPDebugXMLHttpResult = function (options) {
@@ -1989,6 +1644,72 @@ angular.module('angularPoint')
         //
         //}; // End SPServices.SPGetCurrentUser
 
+        // SPUpdateMultipleListItems allows you to update multiple items in a list based upon some common characteristic or metadata criteria.
+        //function SPUpdateMultipleListItems (options) {
+        //
+        //    var opt = $.extend({}, {
+        //        webURL: "", // [Optional] URL of the target Web.  If not specified, the current Web is used.
+        //        listName: "", // The list to operate on.
+        //        CAMLQuery: "", // A CAML fragment specifying which items in the list will be selected and updated
+        //        batchCmd: "Update", // The operation to perform. By default, Update.
+        //        valuePairs: [], // valuePairs for the update in the form [[fieldname1, fieldvalue1], [fieldname2, fieldvalue2]...]
+        //        completefunc: null, // Function to call on completion of rendering the change.
+        //        debug: false // If true, show error messages;if false, run silent
+        //    }, options);
+        //
+        //    var i;
+        //    var itemsToUpdate = [];
+        //    var documentsToUpdate = [];
+        //
+        //    // Call GetListItems to find all of the items matching the CAMLQuery
+        //    SPServices({
+        //        operation: "GetListItems",
+        //        async: false,
+        //        webURL: opt.webURL,
+        //        listName: opt.listName,
+        //        CAMLQuery: opt.CAMLQuery,
+        //        CAMLQueryOptions: "<QueryOptions><ViewAttributes Scope='Recursive' /></QueryOptions>",
+        //        completefunc: function (xData) {
+        //            $(xData.responseXML).SPFilterNode("z:row").each(function () {
+        //                itemsToUpdate.push($(this).attr("ows_ID"));
+        //                var fileRef = $(this).attr("ows_FileRef");
+        //                fileRef = "/" + fileRef.substring(fileRef.indexOf(";#") + 2);
+        //                documentsToUpdate.push(fileRef);
+        //            });
+        //        }
+        //    });
+        //
+        //    var fieldNum;
+        //    var batch = "<Batch OnError='Continue'>";
+        //    for (i = 0; i < itemsToUpdate.length; i++) {
+        //        batch += "<Method ID='" + i + "' Cmd='" + opt.batchCmd + "'>";
+        //        for (fieldNum = 0; fieldNum < opt.valuePairs.length; fieldNum++) {
+        //            batch += "<Field Name='" + opt.valuePairs[fieldNum][0] + "'>" + escapeColumnValue(opt.valuePairs[fieldNum][1]) + "</Field>";
+        //        }
+        //        batch += "<Field Name='ID'>" + itemsToUpdate[i] + "</Field>";
+        //        if (documentsToUpdate[i].length > 0) {
+        //            batch += "<Field Name='FileRef'>" + documentsToUpdate[i] + "</Field>";
+        //        }
+        //        batch += "</Method>";
+        //    }
+        //    batch += "</Batch>";
+        //
+        //    // Call UpdateListItems to update all of the items matching the CAMLQuery
+        //    SPServices({
+        //        operation: "UpdateListItems",
+        //        async: false,
+        //        webURL: opt.webURL,
+        //        listName: opt.listName,
+        //        updates: batch,
+        //        completefunc: function (xData) {
+        //            // If present, call completefunc when all else is done
+        //            if (opt.completefunc !== null) {
+        //                opt.completefunc(xData);
+        //            }
+        //        }
+        //    });
+        //
+        //} // End SPServices.SPUpdateMultipleListItems
 
 
     });

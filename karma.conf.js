@@ -25,7 +25,7 @@ module.exports = function (config) {
             'test/mock/app.mock.js',
             'test/mock/run.mock.js',
             'test/mock/data/parsedXML.js',
-            'src/constants.js',
+            'src/constants/*.js',
             'src/config.js',
             'src/services/*.js',
             'src/factories/*.js',
@@ -64,12 +64,9 @@ module.exports = function (config) {
         //browsers: ['Chrome'],
         browsers: ['PhantomJS'],
 
-        //preprocessors: {
-            //'src/services/*.js': ['coverage'],
-            //'src/factories/*.js': ['coverage']
-            //'src/models/*.js': ['coverage'],
-            //'src/directives/**/*.js': ['coverage']
-        //},
+        preprocessors: {
+            'scripts{services, factories, models, directives}/**/*.js': ['coverage']
+        },
 
         proxies: {
             '/dev/': 'dev/'

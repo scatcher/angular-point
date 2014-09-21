@@ -35,17 +35,17 @@ describe('Service: apCacheService', function () {
 
     describe('getEntityTypeKey', function () {
         it('returns the key when passed a guid', function () {
-            expect(apCacheService.getEntityTypeKey(mockModel.list.guid)).toEqual(mockModel.list.guid.toLowerCase());
+            expect(apCacheService.getListId(mockModel.list.guid)).toEqual(mockModel.list.guid.toLowerCase());
         });
 
         it('returns the key the name of a model is used', function () {
-            expect(apCacheService.getEntityTypeKey(mockModel.list.title)).toEqual(mockModel.list.guid.toLowerCase());
+            expect(apCacheService.getListId(mockModel.list.title)).toEqual(mockModel.list.guid.toLowerCase());
         });
     });
 
     describe('getEntityTypeByName', function () {
         it('returns undefined when requesting a model name that doesn\'t exist', function () {
-            expect(apCacheService.getEntityTypeByName('Invalid Model')).toBeUndefined();
+            expect(apCacheService.getListIdFromListName('Invalid Model')).toBeUndefined();
         });
     });
 

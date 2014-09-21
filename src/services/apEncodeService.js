@@ -10,7 +10,7 @@
  * @requires angularPoint.apUtilityService
  */
 angular.module('angularPoint')
-    .service('apEncodeService', function (_, apConfig, apUtilityService) {
+    .service('apEncodeService', function (_, apConfig, apUtilityService, SPServices) {
 
         /** Flag to use cached XML files from the src/dev folder */
         var offline = apConfig.offline;
@@ -93,55 +93,6 @@ angular.module('angularPoint')
         function createValuePair(fieldDefinition, value) {
             var encodedValue = encodeValue(fieldDefinition.objectType, value);
             return [fieldDefinition.internalName, encodedValue];
-
-            //if (value === '' || _.isUndefined(value) || _.isNull(value)) {
-            //    /** Create empty value pair if blank or undefined but allow false */
-            //    valuePair = [internalName, ''];
-            //} else {
-            //    switch (fieldDefinition.objectType) {
-            //        case 'Lookup':
-            //        case 'User':
-            //            if (!value.lookupId) {
-            //                valuePair = [internalName, ''];
-            //            } else {
-            //                valuePair = [internalName, value.lookupId];
-            //            }
-            //            break;
-            //        case 'LookupMulti':
-            //        case 'UserMulti':
-            //            var stringifiedArray = stringifySharePointMultiSelect(value, 'lookupId');
-            //            valuePair = [fieldDefinition.internalName, stringifiedArray];
-            //            break;
-            //        case 'MultiChoice':
-            //            valuePair = [fieldDefinition.internalName, choiceMultiToString(value)];
-            //            break;
-            //        case 'Boolean':
-            //            valuePair = [internalName, value ? 1 : 0];
-            //            break;
-            //        case 'DateTime':
-            //            if (_.isDate(value)) {
-            //                //A string date in ISO8601 format, e.g., '2013-05-08T01:20:29Z-05:00'
-            //                valuePair = [internalName, stringifySharePointDate(value)];
-            //            } else {
-            //                valuePair = [internalName, ''];
-            //                console.error('Invalid Date Provided: ', value);
-            //            }
-            //            break;
-            //        case 'HTML':
-            //        case 'Note':
-            //            valuePair = [internalName, _.escape(value)];
-            //            break;
-            //        case 'JSON':
-            //            valuePair = [internalName, JSON.stringify(value)];
-            //            break;
-            //        default:
-            //            valuePair = [internalName, value];
-            //    }
-            //    if (offline) {
-            //        console.log('{' + fieldDefinition.objectType + '} ' + valuePair);
-            //    }
-            //}
-            //return valuePair;
         }
 
         function encodeValue(fieldType, value) {
@@ -177,18 +128,10 @@ angular.module('angularPoint')
                     default:
                         str = value;
                 }
-                //if (offline) {
-                //    console.log('{' + fieldType + '} ' + str);
-                //}
             }
             if (_.isString(str)) {
-                /** Ensure we encode before sending to server */
-                str = _.escape(str);
-                //    .replace(/\"/g, '&' + 'quot;')
-                ///** Encode < */
-                //    .replace(/</g, '&' + 'lt;')
-                ///** Encode > */
-                //    .replace(/>/g, '&' + 'gt;');
+                /** Ensure we encode before sending to server (replace ", <, >)*/
+                str = SPServices.encodeXml(str);
             }
             return str;
         }

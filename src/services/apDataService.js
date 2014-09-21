@@ -18,7 +18,8 @@
 angular.module('angularPoint')
     .service('apDataService', function ($q, $timeout, $http, _, apQueueService, apConfig, apUtilityService,
                                         apCacheService, apDecodeService, apEncodeService, apFieldService,
-                                        apIndexedCacheFactory, apMocksService, toastr, SPServices) {
+                                        apIndexedCacheFactory, apMocksService, toastr, SPServices,
+                                        apWebServiceOperationConstants, apXMLToJSONService) {
 
         /** Exposed functionality */
         var apDataService = {
@@ -26,6 +27,7 @@ angular.module('angularPoint')
             deleteAttachment: deleteAttachment,
             deleteListItem: deleteListItem,
             executeQuery: executeQuery,
+            generateWebServiceUrl: generateWebServiceUrl,
             getCollection: getCollection,
             getCurrentSite: getCurrentSite,
             getFieldVersionHistory: getFieldVersionHistory,
@@ -34,10 +36,10 @@ angular.module('angularPoint')
             getListFields: getListFields,
             getListItemById: getListItemById,
             getUserProfileByName: getUserProfileByName,
-            requestData: requestData,
             getView: getView,
             processChangeTokenXML: processChangeTokenXML,
             processDeletionsSinceToken: processDeletionsSinceToken,
+            requestData: requestData,
             retrieveChangeToken: retrieveChangeToken,
             retrievePermMask: retrievePermMask,
             serviceWrapper: serviceWrapper,
@@ -46,58 +48,65 @@ angular.module('angularPoint')
 
         return apDataService;
 
-
         /*********************** Private ****************************/
 
-            //TODO Rename Me
+        /**
+         * @ngdoc function
+         * @name apDataService.requestData
+         * @description
+         * The primary function that handles all communication with the server.  This is very low level and isn't
+         * intended to be called directly.
+         * @param {object} opts Payload object containing the details of the request.
+         * @param {array} additionalArgs Optional parameters to pass to the mock service when working offline.
+         * @returns {promise} Promise that resolves with the server response.
+         */
         function requestData(opts, additionalArgs) {
             var deferred = $q.defer();
 
             if (apConfig.online) {
-                //TODO Convert jQuery style promise into $q promise for consistency
-                //var webServiceCall = SPServices(opts);
-                //$q.when($().SPServices(opts)).then(function (webServiceCall) {
-                //webServiceCall.then(function () {
+                var soapData = SPServices.generateXMLComponents(opts);
+                var service = apWebServiceOperationConstants[opts.operation][0];
+                generateWebServiceUrl(service, opts.webURL)
+                    .then(function (url) {
+                        $http({
+                            method: 'POST',
+                            url: url,
+                            data: soapData.msg,
+                            responseType: "document",
+                            headers: {
+                                "Content-Type": "text/xml;charset='utf-8'"
+                            },
+                            transformRequest: function (data, headersGetter) {
+                                if (soapData.SOAPAction) {
+                                    var headers = headersGetter();
+                                    headers["SOAPAction"] = soapData.SOAPAction;
+                                }
+                                return data;
+                            },
+                            transformResponse: function (data, headersGetter) {
+                                if(_.isString(data)) {
+                                    data = $.parseXML(data);
+                                }
+                                return data;
+                            }
+                        }).then(function (response) {
+                            /** Success */
+                            /** Errors can still be resolved without throwing an error so check the XML */
+                            var error = apDecodeService.checkResponseForErrors(response.data);
+                            if (error) {
+                                console.error(error, opts);
+                                deferred.reject(error);
+                            } else {
+                                deferred.resolve(response.data);
+                            }
+                        }, function (response) {
+                            /** Failure */
+                            var error = apDecodeService.checkResponseForErrors(response.data);
+                            console.error(response.statusText, opts);
+                            deferred.reject(response.statusText + ': ' + error);
+                        });
+                    });
 
-                var soapData = SPServices(opts);
-
-                $http({
-                    method: 'POST',
-                    url: soapData.ajaxURL,
-                    data: soapData.msg,
-                    responseType: "document",
-                    headers: {
-                        "Content-Type": "text/xml;charset='utf-8'"
-                    },
-                    transformRequest: function (data, headersGetter) {
-                        if (soapData.SOAPAction) {
-                            var headers = headersGetter();
-                            headers["SOAPAction"] = soapData.SOAPAction;
-                        }
-                        return data;
-                    },
-                    transformResponse: function (data, headersGetter) {
-                        if(_.isString(data)) {
-                            data = $.parseXML(data);
-                        }
-                        return data;
-                    }
-                }).then(function (response) {
-                    /** Success */
-                    /** Errors can still be resolved without throwing an error so check the XML */
-                    var error = apDecodeService.checkResponseForErrors(response.data);
-                    if (error) {
-                        console.error(error, opts);
-                        deferred.reject(error);
-                    } else {
-                        deferred.resolve(response.data);
-                    }
-                }, function (response) {
-                    /** Failure */
-                    var error = apDecodeService.checkResponseForErrors(response.data);
-                    console.error(response.statusText, opts);
-                    deferred.reject(response.statusText + ': ' + error);
-                });
             } else {
                 apMocksService.mockRequest(opts, additionalArgs)
                     .then(function (response) {
@@ -139,10 +148,8 @@ angular.module('angularPoint')
             /** Convert the xml returned from the server into an array of js objects */
             function processXML(serverResponse) {
                 if (opts.filterNode) {
-                    return $(serverResponse).SPFilterNode(opts.filterNode).SPXmlToJson({
-                        includeAllAttrs: true,
-                        removeOws: false
-                    });
+                    var nodes = $(serverResponse).SPFilterNode(opts.filterNode);
+                    return apXMLToJSONService(nodes, { includeAllAttrs: true, removeOws: false });
                 } else {
                     return serverResponse;
                 }
@@ -272,10 +279,8 @@ angular.module('angularPoint')
                         convertedItems.push($(this).text());
                     });
                 } else {
-                    convertedItems = $(serverResponse).SPFilterNode(filterNode).SPXmlToJson({
-                        includeAllAttrs: true,
-                        removeOws: false
-                    });
+                    var nodes = $(serverResponse).SPFilterNode(filterNode);
+                    convertedItems = apXMLToJSONService(nodes, { includeAllAttrs: true, removeOws: false });
                 }
                 return convertedItems;
             }
@@ -327,29 +332,6 @@ angular.module('angularPoint')
                     break;
             }
             return validPayload;
-        }
-
-
-        function buildAjaxUrl(opts) {
-            var deferred = $q.defer();
-
-            // Build the URL for the Ajax call based on which operation we're calling
-            // If the webURL has been provided, then use it, else use the current site
-            var ajaxURL = "_vti_bin/" + SPServices.WSops[opt.operation][0] + ".asmx";
-
-            if (opt.webURL.charAt(opt.webURL.length - 1) === SPServices.SLASH) {
-                deferred.resolve(opt.webURL + ajaxURL);
-            } else if (opt.webURL.length > 0) {
-                deferred.resolve(opt.webURL + SPServices.SLASH + ajaxURL);
-            } else {
-                //getCurrentSite()
-                //    .then(function (response) {
-                //        var updatedURL =
-                //    });
-                //ajaxURL = thisSite + ((thisSite.charAt(thisSite.length - 1) === SPServices.SLASH) ?
-                //    ajaxURL : (SPServices.SLASH + ajaxURL));
-            }
-            return deferred.promise;
         }
 
         /**
@@ -422,33 +404,73 @@ angular.module('angularPoint')
             }
         }
 
+        /**
+         * @ngdoc function
+         * @name apDataService.generateWebServiceUrl
+         * @description
+         * Builds the appropriate SharePoint resource URL.  If a URL isn't provided and it hasn't already been cached
+         * we make a call to the server to find the root URL.  All future requests will then use this cached value.
+         * @param {string} service The name of the service the SOAP operation is using.
+         * @param {string} [webURL] Optionally provide the URL so we don't need to make a call to the server.
+         * @returns {promise} Resolves with the url for the service.
+         */
+        function generateWebServiceUrl(service, webURL) {
+            var ajaxURL = "_vti_bin/" + service + ".asmx",
+                deferred = $q.defer();
+
+            if (webURL) {
+                ajaxURL = webURL.charAt(webURL.length - 1) === '/' ?
+                webURL + ajaxURL : webURL + '/' + ajaxURL;
+                deferred.resolve(ajaxURL);
+            } else {
+                getCurrentSite().then(function (thisSite) {
+                    ajaxURL = thisSite + ((thisSite.charAt(thisSite.length - 1) === '/') ? ajaxURL : ('/' + ajaxURL));
+                    deferred.resolve(ajaxURL);
+                });
+            }
+            return deferred.promise;
+        }
+
+        /**
+         * @ngdoc function
+         * @name apDataService.getCurrentSite
+         * @description
+         * Requests and caches the root url for the current site.  It caches the response so any future calls receive
+         * the cached promise.
+         * @returns {promise} Resolves with the current site root url.
+         */
         function getCurrentSite() {
             var deferred = $q.defer();
+            var self = getCurrentSite;
+            if(!self.query) {
+                /** We only want to run this once so cache the promise the first time and just reference it in the future */
+                self.query = deferred.promise;
 
-            var msg = SPServices.SOAPEnvelope.header +
-                "<WebUrlFromPageUrl xmlns='" + SPServices.SCHEMASharePoint + "/soap/' ><pageUrl>" +
-                ((location.href.indexOf("?") > 0) ? location.href.substr(0, location.href.indexOf("?")) : location.href) +
-                "</pageUrl></WebUrlFromPageUrl>" +
-                SPServices.SOAPEnvelope.footer;
+                var msg = SPServices.SOAPEnvelope.header +
+                    "<WebUrlFromPageUrl xmlns='" + SPServices.SCHEMASharePoint + "/soap/' ><pageUrl>" +
+                    ((location.href.indexOf("?") > 0) ? location.href.substr(0, location.href.indexOf("?")) : location.href) +
+                    "</pageUrl></WebUrlFromPageUrl>" +
+                    SPServices.SOAPEnvelope.footer;
 
-            $http({
-                method: 'POST',
-                url: '/_vti_bin/Webs.asmx',
-                data: msg,
-                responseType: "document",
-                headers: {
-                    "Content-Type": "text/xml;charset='utf-8'"
-                }
-            }).then(function (response) {
-                /** Success */
-                apConfig.defaultUrl = $(response.data).find("WebUrlFromPageUrlResult").text();
-                deferred.resolve(apConfig.defaultUrl)
-            }, function (response) {
-                /** Error */
-                var error = apDecodeService.checkResponseForErrors(response.data);
-                deferred.reject(error);
-            });
-            return deferred.promise;
+                $http({
+                    method: 'POST',
+                    url: '/_vti_bin/Webs.asmx',
+                    data: msg,
+                    responseType: "document",
+                    headers: {
+                        "Content-Type": "text/xml;charset='utf-8'"
+                    }
+                }).then(function (response) {
+                    /** Success */
+                    apConfig.defaultUrl = $(response.data).find("WebUrlFromPageUrlResult").text();
+                    deferred.resolve(apConfig.defaultUrl)
+                }, function (response) {
+                    /** Error */
+                    var error = apDecodeService.checkResponseForErrors(response.data);
+                    deferred.reject(error);
+                });
+            }
+            return self.query;
         }
 
         /**
@@ -483,10 +505,8 @@ angular.module('angularPoint')
             var deferred = $q.defer();
             getList(options)
                 .then(function (responseXml) {
-                    var fields = $(responseXml).SPFilterNode('Field').SPXmlToJson({
-                        includeAllAttrs: true,
-                        removeOws: false
-                    });
+                    var nodes = $(responseXml).SPFilterNode('Field');
+                    var fields = apXMLToJSONService(nodes, { includeAllAttrs: true, removeOws: false });
                     deferred.resolve(fields);
                 });
             return deferred.promise;
