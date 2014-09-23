@@ -20,7 +20,7 @@ angular.module('angularPoint')
             /** Based on functionality in Breeze.js */
             isGuid: function (value) {
                 return (typeof value === "string") && /[a-fA-F\d]{8}-(?:[a-fA-F\d]{4}-){3}[a-fA-F\d]{12}/
-                    .test(value);
+                        .test(value);
             }
         });
 
@@ -157,7 +157,6 @@ angular.module('angularPoint')
 
             return deferred.promise;
         }
-
 
 
         //function batchProcess(items, process, context, delay, maxItems) {
@@ -342,10 +341,11 @@ angular.module('angularPoint')
          * @param {object} model event
          */
         function registerChange(model) {
-            if (!apConfig.offline && model.sync && _.isFunction(model.sync.registerChange)) {
-                /** Register change after successful update */
-                model.sync.registerChange();
-            }
+            /** Disabled this functionality until I can spend the necessary time to test */
+            //if (!apConfig.offline && model.sync && _.isFunction(model.sync.registerChange)) {
+            //    /** Register change after successful update */
+            //    model.sync.registerChange();
+            //}
         }
 
         return {

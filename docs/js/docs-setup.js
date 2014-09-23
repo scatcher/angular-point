@@ -370,7 +370,7 @@ NG_DOCS={
       "type": "function",
       "moduleName": "apDataService",
       "shortDescription": "The primary function that handles all communication with the server.  This is very low level and isn&#39;t",
-      "keywords": "additionalargs apdataservice api called communication details directly function handles intended isn level low mock object offline optional opts parameters pass payload primary promise request requestdata resolves response server service working"
+      "keywords": "apdataservice api called communication details directly function handles intended isn level low object opts payload primary promise request requestdata resolves response server"
     },
     {
       "section": "api",

@@ -355,7 +355,7 @@ angular.module('angularPoint')
             var entityTypeKey = getListId(listId);
             removeEntity(entityTypeKey, entityId);
             var model = getModel(entityTypeKey);
-            _.each(model.queries, function(query) {
+            _.each(model.queries, function (query) {
                 var cache = query.getCache();
                 cache.removeEntity(entityId);
             });

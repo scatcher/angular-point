@@ -3,19 +3,19 @@
 //TODO: Remove dependency on toastr
 /** Check to see if dependent modules exist */
 try {
-  angular.module('toastr');
+    angular.module('toastr');
 }
 catch (e) {
-  /** Toastr wasn't found so redirect all toastr requests to $log */
-  angular.module('toastr', [])
-    .factory('toastr', ["$log", function ($log) {
-      return {
-        error: $log.error,
-        info: $log.info,
-        success: $log.info,
-        warning: $log.warn
-      };
-    }]);
+    /** Toastr wasn't found so redirect all toastr requests to $log */
+    angular.module('toastr', [])
+        .factory('toastr', ["$log", function ($log) {
+            return {
+                error: $log.error,
+                info: $log.info,
+                success: $log.info,
+                warning: $log.warn
+            };
+        }]);
 }
 /**
  * @ngdoc overview
@@ -27,7 +27,7 @@ catch (e) {
  * @installModule
  */
 angular.module('angularPoint', [
-  'toastr'
+    'toastr'
 ]);
 ;angular.module('angularPoint')
     .config(["apConfig", function (apConfig) {
@@ -694,7 +694,7 @@ angular.module('angularPoint')
             var entityTypeKey = getListId(listId);
             removeEntity(entityTypeKey, entityId);
             var model = getModel(entityTypeKey);
-            _.each(model.queries, function(query) {
+            _.each(model.queries, function (query) {
                 var cache = query.getCache();
                 cache.removeEntity(entityId);
             });
@@ -733,9 +733,9 @@ angular.module('angularPoint')
  // *  @requires apFieldService
  */
 angular.module('angularPoint')
-    .service('apDataService', ["$q", "$timeout", "$http", "_", "apQueueService", "apConfig", "apUtilityService", "apCacheService", "apDecodeService", "apEncodeService", "apFieldService", "apIndexedCacheFactory", "apMocksService", "toastr", "SPServices", "apWebServiceOperationConstants", "apXMLToJSONService", function ($q, $timeout, $http, _, apQueueService, apConfig, apUtilityService,
+    .service('apDataService', ["$q", "$timeout", "$http", "_", "apQueueService", "apConfig", "apUtilityService", "apCacheService", "apDecodeService", "apEncodeService", "apFieldService", "apIndexedCacheFactory", "toastr", "SPServices", "apWebServiceOperationConstants", "apXMLToJSONService", function ($q, $timeout, $http, _, apQueueService, apConfig, apUtilityService,
                                         apCacheService, apDecodeService, apEncodeService, apFieldService,
-                                        apIndexedCacheFactory, apMocksService, toastr, SPServices,
+                                        apIndexedCacheFactory, toastr, SPServices,
                                         apWebServiceOperationConstants, apXMLToJSONService) {
 
         /** Exposed functionality */
@@ -774,62 +774,54 @@ angular.module('angularPoint')
          * The primary function that handles all communication with the server.  This is very low level and isn't
          * intended to be called directly.
          * @param {object} opts Payload object containing the details of the request.
-         * @param {array} additionalArgs Optional parameters to pass to the mock service when working offline.
          * @returns {promise} Promise that resolves with the server response.
          */
-        function requestData(opts, additionalArgs) {
+        function requestData(opts) {
             var deferred = $q.defer();
 
-            if (apConfig.online) {
-                var soapData = SPServices.generateXMLComponents(opts);
-                var service = apWebServiceOperationConstants[opts.operation][0];
-                generateWebServiceUrl(service, opts.webURL)
-                    .then(function (url) {
-                        $http({
-                            method: 'POST',
-                            url: url,
-                            data: soapData.msg,
-                            responseType: "document",
-                            headers: {
-                                "Content-Type": "text/xml;charset='utf-8'"
-                            },
-                            transformRequest: function (data, headersGetter) {
-                                if (soapData.SOAPAction) {
-                                    var headers = headersGetter();
-                                    headers["SOAPAction"] = soapData.SOAPAction;
-                                }
-                                return data;
-                            },
-                            transformResponse: function (data, headersGetter) {
-                                if(_.isString(data)) {
-                                    data = $.parseXML(data);
-                                }
-                                return data;
+            var soapData = SPServices.generateXMLComponents(opts);
+            var service = apWebServiceOperationConstants[opts.operation][0];
+            generateWebServiceUrl(service, opts.webURL)
+                .then(function (url) {
+                    $http({
+                        method: 'POST',
+                        url: url,
+                        data: soapData.msg,
+                        responseType: "document",
+                        headers: {
+                            "Content-Type": "text/xml;charset='utf-8'"
+                        },
+                        transformRequest: function (data, headersGetter) {
+                            if (soapData.SOAPAction) {
+                                var headers = headersGetter();
+                                headers["SOAPAction"] = soapData.SOAPAction;
                             }
-                        }).then(function (response) {
-                            /** Success */
-                            /** Errors can still be resolved without throwing an error so check the XML */
-                            var error = apDecodeService.checkResponseForErrors(response.data);
-                            if (error) {
-                                console.error(error, opts);
-                                deferred.reject(error);
-                            } else {
-                                deferred.resolve(response.data);
+                            return data;
+                        },
+                        transformResponse: function (data, headersGetter) {
+                            if (_.isString(data)) {
+                                data = $.parseXML(data);
                             }
-                        }, function (response) {
-                            /** Failure */
-                            var error = apDecodeService.checkResponseForErrors(response.data);
-                            console.error(response.statusText, opts);
-                            deferred.reject(response.statusText + ': ' + error);
-                        });
+                            return data;
+                        }
+                    }).then(function (response) {
+                        /** Success */
+                        /** Errors can still be resolved without throwing an error so check the XML */
+                        var error = apDecodeService.checkResponseForErrors(response.data);
+                        if (error) {
+                            console.error(error, opts);
+                            deferred.reject(error);
+                        } else {
+                            deferred.resolve(response.data);
+                        }
+                    }, function (response) {
+                        /** Failure */
+                        var error = apDecodeService.checkResponseForErrors(response.data);
+                        console.error(response.statusText, opts);
+                        deferred.reject(response.statusText + ': ' + error);
                     });
+                });
 
-            } else {
-                apMocksService.mockRequest(opts, additionalArgs)
-                    .then(function (response) {
-                        deferred.resolve(response);
-                    });
-            }
             return deferred.promise;
         }
 
@@ -854,8 +846,6 @@ angular.module('angularPoint')
          */
         function serviceWrapper(options) {
             var defaults = {
-                /** You need to specify the offline xml file if you want to properly mock the request when offline */
-                offlineXML: apConfig.offlineXML + options.operation + '.xml',
                 postProcess: processXML,
                 webURL: apConfig.defaultUrl
             };
@@ -866,19 +856,16 @@ angular.module('angularPoint')
             function processXML(serverResponse) {
                 if (opts.filterNode) {
                     var nodes = $(serverResponse).SPFilterNode(opts.filterNode);
-                    return apXMLToJSONService(nodes, { includeAllAttrs: true, removeOws: false });
+                    return apXMLToJSONService(nodes, {includeAllAttrs: true, removeOws: false});
                 } else {
                     return serverResponse;
                 }
             }
 
-            /** Allow this method to be overloaded and pass any additional arguments to the mock service */
-            var additionalArgs = Array.prototype.slice.call(arguments, 1);
-
             /** Display any async animations listening */
             apQueueService.increase();
 
-            apDataService.requestData(opts, additionalArgs)
+            apDataService.requestData(opts)
                 .then(function (response) {
                     /** Failure */
                     var data = opts.postProcess(response);
@@ -921,22 +908,17 @@ angular.module('angularPoint')
 
             var deferred = $q.defer();
 
-            if (apConfig.online) {
-                serviceWrapper(opts)
-                    .then(function (response) {
-                        /** Parse XML response */
-                        var versions = apDecodeService.parseFieldVersions(response, fieldDefinition);
-                        /** Resolve with an array of all field versions */
-                        deferred.resolve(versions);
-                    }, function (outcome) {
-                        /** Failure */
-                        toastr.error('Failed to fetch version history.');
-                        deferred.reject(outcome);
-                    });
-            } else {
-                /** Resolve with an empty array because we don't know what the data should look like to mock */
-                deferred.resolve([]);
-            }
+            serviceWrapper(opts)
+                .then(function (response) {
+                    /** Parse XML response */
+                    var versions = apDecodeService.parseFieldVersions(response, fieldDefinition);
+                    /** Resolve with an array of all field versions */
+                    deferred.resolve(versions);
+                }, function (outcome) {
+                    /** Failure */
+                    toastr.error('Failed to fetch version history.');
+                    deferred.reject(outcome);
+                });
             return deferred.promise;
         }
 
@@ -975,10 +957,6 @@ angular.module('angularPoint')
             var defaults = {
                 postProcess: processXML
             };
-            /** Set the default location for the offline XML in case it isn't manually set. */
-            if (apConfig.offline && _.isString(options.operation)) {
-                defaults.offlineData = apConfig.offlineXML + options.operation + '.xml';
-            }
             var opts = _.extend({}, defaults, options);
 
             /** Determine the XML node to iterate over if filterNode isn't provided */
@@ -997,7 +975,7 @@ angular.module('angularPoint')
                     });
                 } else {
                     var nodes = $(serverResponse).SPFilterNode(filterNode);
-                    convertedItems = apXMLToJSONService(nodes, { includeAllAttrs: true, removeOws: false });
+                    convertedItems = apXMLToJSONService(nodes, {includeAllAttrs: true, removeOws: false});
                 }
                 return convertedItems;
             }
@@ -1159,7 +1137,7 @@ angular.module('angularPoint')
         function getCurrentSite() {
             var deferred = $q.defer();
             var self = getCurrentSite;
-            if(!self.query) {
+            if (!self.query) {
                 /** We only want to run this once so cache the promise the first time and just reference it in the future */
                 self.query = deferred.promise;
 
@@ -1223,7 +1201,7 @@ angular.module('angularPoint')
             getList(options)
                 .then(function (responseXml) {
                     var nodes = $(responseXml).SPFilterNode('Field');
-                    var fields = apXMLToJSONService(nodes, { includeAllAttrs: true, removeOws: false });
+                    var fields = apXMLToJSONService(nodes, {includeAllAttrs: true, removeOws: false});
                     deferred.resolve(fields);
                 });
             return deferred.promise;
@@ -1247,14 +1225,14 @@ angular.module('angularPoint')
                 operation: 'GetListItems',
                 CAMLRowLimit: 1,
                 CAMLQuery: '' +
-                    '<Query>' +
-                    ' <Where>' +
-                    '   <Eq>' +
-                    '     <FieldRef Name="ID"/>' +
-                    '     <Value Type="Number">' + entityId + '</Value>' +
-                    '   </Eq>' +
-                    ' </Where>' +
-                    '</Query>',
+                '<Query>' +
+                ' <Where>' +
+                '   <Eq>' +
+                '     <FieldRef Name="ID"/>' +
+                '     <Value Type="Number">' + entityId + '</Value>' +
+                '   </Eq>' +
+                ' </Where>' +
+                '</Query>',
                 /** Create a temporary cache to store response */
                 target: apIndexedCacheFactory.create()
             };
@@ -1359,9 +1337,7 @@ angular.module('angularPoint')
          */
         function getView(options) {
             var defaults = {
-                operation: 'GetView',
-                /** Optionally set alternate offline XML location */
-                offlineXML: apConfig.offlineXML + 'GetView.xml'
+                operation: 'GetView'
             };
 
             var deferred = $q.defer();
@@ -1413,28 +1389,18 @@ angular.module('angularPoint')
             /** Extend defaults **/
             var opts = _.extend({}, defaults, options);
 
-            /** Set the location of the offline xml file */
-            query.offlineXML = opts.offlineXML || query.offlineXML || apConfig.offlineXML + model.list.title + '.xml';
-
             serviceWrapper(query)
                 .then(function (response) {
-                    //TODO Remove offline logic
-                    if (apConfig.offline && !_.isNull(query.lastRun)) {
-                        /** Entities have already been previously processed so just return the existing cache */
-                        deferred.resolve(response);
-                    } else {
-                        if (query.operation === 'GetListItemChangesSinceToken') {
-                            processChangeTokenXML(model, query, response, opts);
-                        }
-
-                        /** Convert the XML into JS objects */
-                        var entities = apDecodeService.processListItems(model, query, response, opts);
-                        deferred.resolve(entities);
+                    if (query.operation === 'GetListItemChangesSinceToken') {
+                        processChangeTokenXML(model, query, response, opts);
                     }
+
+                    /** Convert the XML into JS objects */
+                    var entities = apDecodeService.processListItems(model, query, response, opts);
+                    deferred.resolve(entities);
 
                     /** Set date time to allow for time based updates */
                     query.lastRun = new Date();
-
                 });
 
             return deferred.promise;
@@ -1558,15 +1524,10 @@ angular.module('angularPoint')
             /** Overload the function then pass anything past the first parameter to the supporting methods */
             serviceWrapper(opts, entity, model)
                 .then(function (response) {
-                    if (apConfig.online) {
-                        /** Online this should return an XML object */
-                        var indexedCache = apDecodeService.processListItems(model, opts, response, opts);
-                        /** Return reference to last entity in cache because it will have the new highest id */
-                        deferred.resolve(indexedCache.last());
-                    } else {
-                        /** Offline response should be the updated entity as a JS Object */
-                        deferred.resolve(response);
-                    }
+                    /** Online this should return an XML object */
+                    var indexedCache = apDecodeService.processListItems(model, opts, response, opts);
+                    /** Return reference to last entity in cache because it will have the new highest id */
+                    deferred.resolve(indexedCache.last());
                 }, function (err) {
                     deferred.reject(err);
                 });
@@ -1607,15 +1568,9 @@ angular.module('angularPoint')
             /** Overload the function then pass anything past the first parameter to the supporting methods */
             serviceWrapper(opts, entity, model)
                 .then(function (response) {
-                    if (apConfig.online) {
-                        /** Online this should return an XML object */
-                        var indexedCache = apDecodeService.processListItems(model, entity.getQuery(), response, opts);
-                        /** Return reference to updated entity  */
-                        deferred.resolve(indexedCache[entity.id]);
-                    } else {
-                        /** Offline response should be the updated entity as a JS Object */
-                        deferred.resolve(response);
-                    }
+                    var indexedCache = apDecodeService.processListItems(model, entity.getQuery(), response, opts);
+                    /** Return reference to updated entity  */
+                    deferred.resolve(indexedCache[entity.id]);
                 }, function (err) {
                     deferred.reject(err);
                 });
@@ -1727,7 +1682,7 @@ angular.module('angularPoint')
             var filteredNodes = $(responseXML).SPFilterNode(opts.filter);
 
             /** Prepare constructor for XML entities with references to the query and cached container */
-            var listItemProvider= createListItemProvider(model, query, opts.target);
+            var listItemProvider = createListItemProvider(model, query, opts.target);
 
             /** Convert XML entities into JS objects and register in cache with listItemProvider, this returns an
              * array of entities but at this point we're not using them because the indexed cache should be more
@@ -2191,7 +2146,7 @@ angular.module('angularPoint')
             var versionCount = xmlVersions.length;
 
 
-            _.each(xmlVersions, function(xmlVersion, index) {
+            _.each(xmlVersions, function (xmlVersion, index) {
                 /** Parse the xml and create a representation of the version as a js object */
                 var version = {
                     editor: attrToJson($(xmlVersion).attr('Editor'), 'User'),
@@ -2226,7 +2181,7 @@ angular.module('angularPoint')
             var error = null;
             /** Look for <errorstring></errorstring> or <ErrorText></ErrorText> for details on any errors */
             var errorElements = ['ErrorText', 'errorstring'];
-            _.each(errorElements, function(element) {
+            _.each(errorElements, function (element) {
                 $(responseXML).find(element).each(function () {
                     error = $(this).text();
                     /** Break early if found */
@@ -2250,9 +2205,6 @@ angular.module('angularPoint')
 angular.module('angularPoint')
     .service('apEncodeService', ["_", "apConfig", "apUtilityService", "SPServices", function (_, apConfig, apUtilityService, SPServices) {
 
-        /** Flag to use cached XML files from the src/dev folder */
-        var offline = apConfig.offline;
-
         return {
             choiceMultiToString: choiceMultiToString,
             createValuePair: createValuePair,
@@ -2261,7 +2213,6 @@ angular.module('angularPoint')
             stringifySharePointMultiSelect: stringifySharePointMultiSelect
 
         };
-
 
         /**
          * Converts an array of selected values into a SharePoint MultiChoice string
@@ -2388,11 +2339,11 @@ angular.module('angularPoint')
          * @returns {string} ISO8601 date string.
          */
         function stringifySharePointDate(date) {
-            if(!_.isDate(date) && _.isString(date) && date.split('-').length === 3) {
+            if (!_.isDate(date) && _.isString(date) && date.split('-').length === 3) {
                 /** Date string formatted YYYY-MM-DD */
                 var dateComponents = date.split('-');
                 date = new Date(dateComponents[0], dateComponents[1] - 1, dateComponents[2], 0, 0, 0);
-            } else if(!_.isDate(date)) {
+            } else if (!_.isDate(date)) {
                 throw new Error('Invalid Date Provided: ' + value.toString());
             }
 
@@ -2459,177 +2410,177 @@ angular.module('angularPoint')
  * @requires angularPoint.apUtilityService
  */
 angular.module('angularPoint')
-  .service('apExportService', ["_", "apUtilityService", function (_, apUtilityService) {
+    .service('apExportService', ["_", "apUtilityService", function (_, apUtilityService) {
 
-    /**
-     * @ngdoc function
-     * @name angularPoint.apExportService:saveFile
-     * @methodOf angularPoint.apExportService
-     * @description
-     * Used to convert a JS object or XML document into a file that is then downloaded on the users
-     * local machine.  Original work located:
-     * [here](http://bgrins.github.io/devtools-snippets/#console-save).
-     * @param {object} data JS object that we'd like to dump to a JSON file and save to the local machine.
-     * @param {string} type Can be either 'xml' or 'json'.
-     * @param {string} [filename=debug.json] Optionally name the file.
-     * @example
-     * <pre>
-     * //Lets assume we want to looks at an object that is too big to be easily viewed in the console.
-     * apExportService.saveJSON(objectToSave, 'myobject.json');
-     * </pre>
-     *
-     */
-    var saveFile = function (data, type, filename) {
-      if (!data) {
-        console.error('apExportService.save' + type.toUpperCase() + ': No data');
-        return;
-      }
+        /**
+         * @ngdoc function
+         * @name angularPoint.apExportService:saveFile
+         * @methodOf angularPoint.apExportService
+         * @description
+         * Used to convert a JS object or XML document into a file that is then downloaded on the users
+         * local machine.  Original work located:
+         * [here](http://bgrins.github.io/devtools-snippets/#console-save).
+         * @param {object} data JS object that we'd like to dump to a JSON file and save to the local machine.
+         * @param {string} type Can be either 'xml' or 'json'.
+         * @param {string} [filename=debug.json] Optionally name the file.
+         * @example
+         * <pre>
+         * //Lets assume we want to looks at an object that is too big to be easily viewed in the console.
+         * apExportService.saveJSON(objectToSave, 'myobject.json');
+         * </pre>
+         *
+         */
+        var saveFile = function (data, type, filename) {
+            if (!data) {
+                console.error('apExportService.save' + type.toUpperCase() + ': No data');
+                return;
+            }
 
-      /** If passed in type="csv;charset=utf-8;" we just want to use "csv" */
-      var fileExtension = type.split(';')[0];
+            /** If passed in type="csv;charset=utf-8;" we just want to use "csv" */
+            var fileExtension = type.split(';')[0];
 
-      if (!filename) {
-        filename = 'debug.' + fileExtension;
-      }
+            if (!filename) {
+                filename = 'debug.' + fileExtension;
+            }
 
-      if (type === 'json' && typeof data === 'object') {
-        data = JSON.stringify(data, undefined, 4);
-      }
+            if (type === 'json' && typeof data === 'object') {
+                data = JSON.stringify(data, undefined, 4);
+            }
 
-      var blob = new Blob([data], {type: 'text/' + type}),
-        e = document.createEvent('MouseEvents'),
-        a = document.createElement('a');
+            var blob = new Blob([data], {type: 'text/' + type}),
+                e = document.createEvent('MouseEvents'),
+                a = document.createElement('a');
 
-      a.download = filename;
-      a.href = window.URL.createObjectURL(blob);
-      a.dataset.downloadurl = ['text/' + type, a.download, a.href].join(':');
-      e.initMouseEvent('click', true, false, window, 0, 0, 0, 0, 0, false, false, false, false, 0, null);
-      a.dispatchEvent(e);
-    };
+            a.download = filename;
+            a.href = window.URL.createObjectURL(blob);
+            a.dataset.downloadurl = ['text/' + type, a.download, a.href].join(':');
+            e.initMouseEvent('click', true, false, window, 0, 0, 0, 0, 0, false, false, false, false, 0, null);
+            a.dispatchEvent(e);
+        };
 
-    /**
-     * @ngdoc function
-     * @name angularPoint.apExportService:saveJSON
-     * @methodOf angularPoint.apExportService
-     * @description
-     * Simple convenience function that uses angularPoint.apExportService:saveFile to download json to the local machine.
-     * @requires angularPoint.apExportService:saveFile
-     * @param {object} data JS object that we'd like to dump to a JSON file and save to the local machine.
-     * @param {string} [filename=debug.json] Optionally name the file.
-     * @example
-     * <pre>
-     * //Lets assume we want to looks at an object that is too big to be easily viewed in the console.
-     * apExportService.saveJSON(objectToSave, 'myobject.json');
-     * </pre>
-     *
-     */
-    var saveJSON = function (data, filename) {
-      saveFile(data, 'json', filename);
-    };
+        /**
+         * @ngdoc function
+         * @name angularPoint.apExportService:saveJSON
+         * @methodOf angularPoint.apExportService
+         * @description
+         * Simple convenience function that uses angularPoint.apExportService:saveFile to download json to the local machine.
+         * @requires angularPoint.apExportService:saveFile
+         * @param {object} data JS object that we'd like to dump to a JSON file and save to the local machine.
+         * @param {string} [filename=debug.json] Optionally name the file.
+         * @example
+         * <pre>
+         * //Lets assume we want to looks at an object that is too big to be easily viewed in the console.
+         * apExportService.saveJSON(objectToSave, 'myobject.json');
+         * </pre>
+         *
+         */
+        var saveJSON = function (data, filename) {
+            saveFile(data, 'json', filename);
+        };
 
-    /**
-     * @ngdoc function
-     * @name angularPoint.apExportService:saveXML
-     * @methodOf angularPoint.apExportService
-     * @description
-     * Simple convenience function that uses angularPoint.apExportService:saveFile to download xml to the local machine.
-     * @requires angularPoint.apExportService:saveFile
-     * @param {object} data XML object that we'd like to dump to a XML file and save to the local machine.
-     * @param {string} [filename=debug.xml] Optionally name the file.
-     * @example
-     * <pre>
-     * //Lets assume we want to looks at an object that is too big to be easily viewed in the console.
-     * apExportService.saveXML(objectToSave, 'myobject.xml');
-     * </pre>
-     *
-     */
-    var saveXML = function (data, filename) {
-      saveFile(data, 'xml', filename);
-    };
+        /**
+         * @ngdoc function
+         * @name angularPoint.apExportService:saveXML
+         * @methodOf angularPoint.apExportService
+         * @description
+         * Simple convenience function that uses angularPoint.apExportService:saveFile to download xml to the local machine.
+         * @requires angularPoint.apExportService:saveFile
+         * @param {object} data XML object that we'd like to dump to a XML file and save to the local machine.
+         * @param {string} [filename=debug.xml] Optionally name the file.
+         * @example
+         * <pre>
+         * //Lets assume we want to looks at an object that is too big to be easily viewed in the console.
+         * apExportService.saveXML(objectToSave, 'myobject.xml');
+         * </pre>
+         *
+         */
+        var saveXML = function (data, filename) {
+            saveFile(data, 'xml', filename);
+        };
 
-    /**
-     * @description Replaces commonly-used Windows 1252 encoded chars that do not exist in ASCII or
-     *  ISO-8859-1 with ISO-8859-1 cognates.
-     * @param {string} text Text to be validated and cleaned.
-     * @returns {string}
-     */
-    var replaceWordChars = function (text) {
-      var s = text;
-      // smart single quotes and apostrophe
-      s = s.replace(/[\u2018|\u2019|\u201A]/g, "\'");
-      // smart double quotes
-      s = s.replace(/[\u201C|\u201D|\u201E]/g, "\"");
-      // ellipsis
-      s = s.replace(/\u2026/g, "...");
-      // dashes
-      s = s.replace(/[\u2013|\u2014]/g, "-");
-      // circumflex
-      s = s.replace(/\u02C6/g, "^");
-      // open angle bracket
-      s = s.replace(/\u2039/g, "<");
-      // close angle bracket
-      s = s.replace(/\u203A/g, ">");
-      // spaces
-      s = s.replace(/[\u02DC|\u00A0]/g, " ");
-      return s;
-    };
+        /**
+         * @description Replaces commonly-used Windows 1252 encoded chars that do not exist in ASCII or
+         *  ISO-8859-1 with ISO-8859-1 cognates.
+         * @param {string} text Text to be validated and cleaned.
+         * @returns {string}
+         */
+        var replaceWordChars = function (text) {
+            var s = text;
+            // smart single quotes and apostrophe
+            s = s.replace(/[\u2018|\u2019|\u201A]/g, "\'");
+            // smart double quotes
+            s = s.replace(/[\u201C|\u201D|\u201E]/g, "\"");
+            // ellipsis
+            s = s.replace(/\u2026/g, "...");
+            // dashes
+            s = s.replace(/[\u2013|\u2014]/g, "-");
+            // circumflex
+            s = s.replace(/\u02C6/g, "^");
+            // open angle bracket
+            s = s.replace(/\u2039/g, "<");
+            // close angle bracket
+            s = s.replace(/\u203A/g, ">");
+            // spaces
+            s = s.replace(/[\u02DC|\u00A0]/g, " ");
+            return s;
+        };
 
 
-    /**
-     * @ngdoc function
-     * @name angularPoint.apExportService:saveCSV
-     * @methodOf angularPoint.apExportService
-     * @description
-     * Converts an array of arrays into a valid CSV file that is then downloaded to the users machine
-     * @requires angularPoint.apExportService:saveFile
-     * @param {array[]} data Array of arrays that we'd like to dump to a CSV file and save to the local machine.
-     * @param {string} [filename=debug.csv] Optionally name the file.
-     * @example
-     * <pre>
-     * //Lets assume we want to looks at an object that is too big to be easily viewed in the console.
-     * apExportService.saveCSV(objectToSave, 'MyFile');
-     * //This would download a file named MyFile.csv
-     * </pre>
-     *
-     */
-    var saveCSV = function (data, filename) {
-      var csvString = '';
-      _.each(data, function (row) {
-        _.each(row, function (column, columnIndex) {
-          var result = column === null ? '' : replaceWordChars(column);
-          if (columnIndex > 0) {
-            csvString += ',';
-          }
-          /** Escape single quotes with doubles in within the string */
-          result = result.replace(/"/g, '""');
+        /**
+         * @ngdoc function
+         * @name angularPoint.apExportService:saveCSV
+         * @methodOf angularPoint.apExportService
+         * @description
+         * Converts an array of arrays into a valid CSV file that is then downloaded to the users machine
+         * @requires angularPoint.apExportService:saveFile
+         * @param {array[]} data Array of arrays that we'd like to dump to a CSV file and save to the local machine.
+         * @param {string} [filename=debug.csv] Optionally name the file.
+         * @example
+         * <pre>
+         * //Lets assume we want to looks at an object that is too big to be easily viewed in the console.
+         * apExportService.saveCSV(objectToSave, 'MyFile');
+         * //This would download a file named MyFile.csv
+         * </pre>
+         *
+         */
+        var saveCSV = function (data, filename) {
+            var csvString = '';
+            _.each(data, function (row) {
+                _.each(row, function (column, columnIndex) {
+                    var result = column === null ? '' : replaceWordChars(column);
+                    if (columnIndex > 0) {
+                        csvString += ',';
+                    }
+                    /** Escape single quotes with doubles in within the string */
+                    result = result.replace(/"/g, '""');
 
-          /** Surround string with quotes so we can have line breaks */
-          csvString += '"' + result + '"';
-        });
-        csvString += '\n';
-      });
-      saveFile(csvString, 'csv;charset=utf-8;', filename);
-    };
+                    /** Surround string with quotes so we can have line breaks */
+                    csvString += '"' + result + '"';
+                });
+                csvString += '\n';
+            });
+            saveFile(csvString, 'csv;charset=utf-8;', filename);
+        };
 
-    /**
-     * @ngdoc function
-     * @name angularPoint.apExportService:generateCSV
-     * @methodOf angularPoint.apExportService
-     * @description
-     * Converts an array of objects into a parsed array of arrays based on a field config object.
-     * @param {object[]} entities Array of objects to convert.
-     * @param {object|string[]} fields Array of objects defining the fields to parse.  Can also pass in strings representing the name of the field which will then be parsed based on field type.
-     * FieldDefinition:
-     * {string} object.field Property name on the object that we want to parse.
-     * {string} [object.label=object.field capitalized] Column Label
-     * {function} [object.getVal] Custom function that overrides the default method of parsing based on field type.
-     * @param {object} [options] Optional config settings.
-     * @param {string} [options.delim='; '] Delimiter used to separate fields that potentially contain multiple values that will be concatenated into a string.
-     * @returns {array[]} Return array of arrays, with the first array being the column names and every subsequent array representing a row in the csv dataset.
-     * @example
-     * <pre>
-     * var customDelimiter = ' | ';
-     * var saveCSV = function() {
+        /**
+         * @ngdoc function
+         * @name angularPoint.apExportService:generateCSV
+         * @methodOf angularPoint.apExportService
+         * @description
+         * Converts an array of objects into a parsed array of arrays based on a field config object.
+         * @param {object[]} entities Array of objects to convert.
+         * @param {object|string[]} fields Array of objects defining the fields to parse.  Can also pass in strings representing the name of the field which will then be parsed based on field type.
+         * FieldDefinition:
+         * {string} object.field Property name on the object that we want to parse.
+         * {string} [object.label=object.field capitalized] Column Label
+         * {function} [object.getVal] Custom function that overrides the default method of parsing based on field type.
+         * @param {object} [options] Optional config settings.
+         * @param {string} [options.delim='; '] Delimiter used to separate fields that potentially contain multiple values that will be concatenated into a string.
+         * @returns {array[]} Return array of arrays, with the first array being the column names and every subsequent array representing a row in the csv dataset.
+         * @example
+         * <pre>
+         * var customDelimiter = ' | ';
+         * var saveCSV = function() {
      *    var parsedCSV = apExportService.generateCSV(entities, [
      *     //Field definition
      *     { label: 'ID', field: 'id' },
@@ -2658,266 +2609,267 @@ angular.module('angularPoint')
      *   //Save to user's machine
      *   apExportService.saveCSV(parsedCSV, 'MyFile', {delim: customDelimiter});
      * }
-     * </pre>
-     *
-     */
-    var generateCSV = function (entities, fields, options) {
-      var defaults = {delim: '; '},
-        opts = _.extend({}, defaults, options),
-        entitiesArray = [
-          []
-        ];
+         * </pre>
+         *
+         */
+        var generateCSV = function (entities, fields, options) {
+            var defaults = {delim: '; '},
+                opts = _.extend({}, defaults, options),
+                entitiesArray = [
+                    []
+                ];
 
-      /** Process each of the entities in the data source */
-      _.each(entities, function (entity, entityIndex) {
-        var entityArray = [];
-        /** Process each of the specified fields */
-        _.each(fields, function (f) {
+            /** Process each of the entities in the data source */
+            _.each(entities, function (entity, entityIndex) {
+                var entityArray = [];
+                /** Process each of the specified fields */
+                _.each(fields, function (f) {
 
-          /** Handle both string and object definition */
-          var fieldDefinition = _.isString(f) ? {field: f} : f;
+                    /** Handle both string and object definition */
+                    var fieldDefinition = _.isString(f) ? {field: f} : f;
 
-          /** Split the field name from the property if provided */
-          var fieldComponents = fieldDefinition.field.split('.');
-          var propertyName = fieldComponents[0];
+                    /** Split the field name from the property if provided */
+                    var fieldComponents = fieldDefinition.field.split('.');
+                    var propertyName = fieldComponents[0];
 
-          /** First array has the field names */
-          if (entityIndex === 0) {
-            /** Take a best guess if a column label isn't specified by capitalizing and inserting spaces between camel humps*/
-            var label = fieldDefinition.label ?
-              fieldDefinition.label : apUtilityService.fromCamelCase(propertyName);
-            entitiesArray[0].push(label);
-          }
+                    /** First array has the field names */
+                    if (entityIndex === 0) {
+                        /** Take a best guess if a column label isn't specified by capitalizing and inserting spaces between camel humps*/
+                        var label = fieldDefinition.label ?
+                            fieldDefinition.label : apUtilityService.fromCamelCase(propertyName);
+                        entitiesArray[0].push(label);
+                    }
 
-          var val = '';
+                    var val = '';
 
-          if (_.isFunction(fieldDefinition.stringify)) {
-            /** Allows us to override standard field logic for special cases */
-            val = fieldDefinition.stringify(entity[fieldDefinition.field]);
-          } else if (fieldComponents.length > 1) {
-            /** Allow user to specify dot separated property path */
-            if (_.deepIn(entity, fieldDefinition.field)) {
-              val = _.deepGet(entity, fieldDefinition.field).toString();
-            }
-          } else {
-            /** Get the value based on field type defined in the model for the entity*/
-            var modelDefinition = entity.getFieldDefinition(propertyName);
-            val = stringifyProperty(entity[fieldDefinition.field], modelDefinition.objectType, opts.delim)
-          }
-          /** Add string to column */
-          entityArray.push(val);
-        });
-        /** Add row */
-        entitiesArray.push(entityArray);
-      });
-      return entitiesArray;
-    };
+                    if (_.isFunction(fieldDefinition.stringify)) {
+                        /** Allows us to override standard field logic for special cases */
+                        val = fieldDefinition.stringify(entity[fieldDefinition.field]);
+                    } else if (fieldComponents.length > 1) {
+                        /** Allow user to specify dot separated property path */
+                        if (_.deepIn(entity, fieldDefinition.field)) {
+                            val = _.deepGet(entity, fieldDefinition.field).toString();
+                        }
+                    } else {
+                        /** Get the value based on field type defined in the model for the entity*/
+                        var modelDefinition = entity.getFieldDefinition(propertyName);
+                        val = stringifyProperty(entity[fieldDefinition.field], modelDefinition.objectType, opts.delim)
+                    }
+                    /** Add string to column */
+                    entityArray.push(val);
+                });
+                /** Add row */
+                entitiesArray.push(entityArray);
+            });
+            return entitiesArray;
+        };
 
-    /**
-     * @ngdoc function
-     * @name angularPoint.apExportService:stringifyProperty
-     * @methodOf angularPoint.apExportService
-     * @param {object|array|string|integer|boolean} prop Target that we'd like to stringify.
-     * @param {string} [propertyType='String'] Assumes by default that it's already a string.  Most of the normal field
-     * types identified in the model field definitions are supported.
-     *
-     * - Lookup
-     * - User
-     * - Boolean
-     * - DateTime
-     * - Integer
-     * - Number
-     * - Counter
-     * - MultiChoice
-     * - UserMulti
-     * - LookupMulti
-     *
-     * @param {string} [delim='; '] Optional delimiter to split concatenated strings.
-     * @example
-     * <pre>
-     *  var project = {
+        /**
+         * @ngdoc function
+         * @name angularPoint.apExportService:stringifyProperty
+         * @methodOf angularPoint.apExportService
+         * @param {object|array|string|integer|boolean} prop Target that we'd like to stringify.
+         * @param {string} [propertyType='String'] Assumes by default that it's already a string.  Most of the normal field
+         * types identified in the model field definitions are supported.
+         *
+         * - Lookup
+         * - User
+         * - Boolean
+         * - DateTime
+         * - Integer
+         * - Number
+         * - Counter
+         * - MultiChoice
+         * - UserMulti
+         * - LookupMulti
+         *
+         * @param {string} [delim='; '] Optional delimiter to split concatenated strings.
+         * @example
+         * <pre>
+         *  var project = {
      *    title: 'Super Project',
       *   members: [
       *     { lookupId: 12, lookupValue: 'Joe' },
       *     { lookupId: 19, lookupValue: 'Beth' },
       *   ]
       * };
-     *
-     * var membersAsString = apExportService:stringifyProperty({
+         *
+         * var membersAsString = apExportService:stringifyProperty({
      *    project.members,
      *    'UserMulti',
      *    ' | ' //Custom Delimiter
      * });
-     *
-     * // membersAsString = 'Joe | Beth';
-     *
-     * </pre>
-     * @returns {string} Stringified property on the object based on the field type.
-     */
-    var stringifyProperty = function (prop, propertyType, delim) {
-      var str = '';
-      /** Only process if prop is defined */
-      if(prop) {
-        switch (propertyType) {
-          case 'Lookup':
-          case 'User':
-            str = parseLookup(prop);
-            break;
-          case 'Boolean':
-            str = parseBoolean(prop);
-            break;
-          case 'DateTime':
-            str = parseDate(prop);
-            break;
-          case 'Integer':
-          case 'Number':
-          case 'Counter':
-            str = parseNumber(prop);
-            break;
-          case 'MultiChoice':
-            str = parseMultiChoice(prop, delim);
-            break;
-          case 'UserMulti':
-          case 'LookupMulti':
-            str = parseMultiLookup(prop, delim);
-            break;
-          default:
-            str = prop;
-        }
-      }
-      return str;
-    };
+         *
+         * // membersAsString = 'Joe | Beth';
+         *
+         * </pre>
+         * @returns {string} Stringified property on the object based on the field type.
+         */
+        var stringifyProperty = function (prop, propertyType, delim) {
+            var str = '';
+            /** Only process if prop is defined */
+            if (prop) {
+                switch (propertyType) {
+                    case 'Lookup':
+                    case 'User':
+                        str = parseLookup(prop);
+                        break;
+                    case 'Boolean':
+                        str = parseBoolean(prop);
+                        break;
+                    case 'DateTime':
+                        str = parseDate(prop);
+                        break;
+                    case 'Integer':
+                    case 'Number':
+                    case 'Counter':
+                        str = parseNumber(prop);
+                        break;
+                    case 'MultiChoice':
+                        str = parseMultiChoice(prop, delim);
+                        break;
+                    case 'UserMulti':
+                    case 'LookupMulti':
+                        str = parseMultiLookup(prop, delim);
+                        break;
+                    default:
+                        str = prop;
+                }
+            }
+            return str;
+        };
 
-    /**
-     * @ngdoc function
-     * @name angularPoint.apExportService:parseNumber
-     * @methodOf angularPoint.apExportService
-     * @param {number} int Property on object to parse.
-     * @description
-     * Converts a number to a string representation.
-     * @returns {string} Stringified number.
-     */
-    var parseNumber = function (int) {
-      var str = '';
-      if (_.isNumber(int)) {
-        str = int.toString();
-      }
-      return str;
-    };
+        /**
+         * @ngdoc function
+         * @name angularPoint.apExportService:parseNumber
+         * @methodOf angularPoint.apExportService
+         * @param {number} int Property on object to parse.
+         * @description
+         * Converts a number to a string representation.
+         * @returns {string} Stringified number.
+         */
+        var parseNumber = function (int) {
+            var str = '';
+            if (_.isNumber(int)) {
+                str = int.toString();
+            }
+            return str;
+        };
 
-    /**
-     * @ngdoc function
-     * @name angularPoint.apExportService:parseLookup
-     * @methodOf angularPoint.apExportService
-     * @param {obj} prop Property on object to parse.
-     * @description
-     * Returns the property.lookupValue if present.
-     * @returns {string} Property.lookupValue.
-     */
-    var parseLookup = function (prop) {
-      var str = '';
-      if (prop && prop.lookupValue) {
-        str = prop.lookupValue;
-      }
-      return str;
-    };
+        /**
+         * @ngdoc function
+         * @name angularPoint.apExportService:parseLookup
+         * @methodOf angularPoint.apExportService
+         * @param {obj} prop Property on object to parse.
+         * @description
+         * Returns the property.lookupValue if present.
+         * @returns {string} Property.lookupValue.
+         */
+        var parseLookup = function (prop) {
+            var str = '';
+            if (prop && prop.lookupValue) {
+                str = prop.lookupValue;
+            }
+            return str;
+        };
 
-    /**
-     * @ngdoc function
-     * @name angularPoint.apExportService:parseBoolean
-     * @methodOf angularPoint.apExportService
-     * @param {boolean} bool Boolean to stringify.
-     * @description
-     * Returns the stringified boolean if it is set.
-     * @returns {string} Stringified boolean.
-     */
-    var parseBoolean = function (bool) {
-      var str = '';
-      if (_.isBoolean(bool)) {
-        str = bool.toString();
-      }
-      return str;
-    };
+        /**
+         * @ngdoc function
+         * @name angularPoint.apExportService:parseBoolean
+         * @methodOf angularPoint.apExportService
+         * @param {boolean} bool Boolean to stringify.
+         * @description
+         * Returns the stringified boolean if it is set.
+         * @returns {string} Stringified boolean.
+         */
+        var parseBoolean = function (bool) {
+            var str = '';
+            if (_.isBoolean(bool)) {
+                str = bool.toString();
+            }
+            return str;
+        };
 
-    /**
-     * @ngdoc function
-     * @name angularPoint.apExportService:parseDate
-     * @methodOf angularPoint.apExportService
-     * @param {date} date Date that if set converts to JSON representation.
-     * @description
-     * Returns JSON date.
-     * @returns {string} JSON date.
-     */
-    var parseDate = function (date) {
-      var str = '';
-      if (_.isDate(date)) {
-        str = date.toJSON();
-      }
-      return str;
-    };
+        /**
+         * @ngdoc function
+         * @name angularPoint.apExportService:parseDate
+         * @methodOf angularPoint.apExportService
+         * @param {date} date Date that if set converts to JSON representation.
+         * @description
+         * Returns JSON date.
+         * @returns {string} JSON date.
+         */
+        var parseDate = function (date) {
+            var str = '';
+            if (_.isDate(date)) {
+                str = date.toJSON();
+            }
+            return str;
+        };
 
-    /**
-     * @ngdoc function
-     * @name angularPoint.apExportService:parseMultiChoice
-     * @methodOf angularPoint.apExportService
-     * @param {string[]} arr Array of selected choices.
-     * @param {string} [delim='; '] Custom delimiter used between the concatenated values.
-     * @description
-     * Converts an array of strings into a single concatenated string.
-     * @returns {string} Concatenated string representation.
-     */
-    var parseMultiChoice = function (arr, delim) {
-      var str = '',
-        d = delim || '; ';
-      _.each(arr, function (choice, i) {
-        if (i > 0) {
-          str += d;
-        }
-        str += choice;
-      });
-      return str;
-    };
+        /**
+         * @ngdoc function
+         * @name angularPoint.apExportService:parseMultiChoice
+         * @methodOf angularPoint.apExportService
+         * @param {string[]} arr Array of selected choices.
+         * @param {string} [delim='; '] Custom delimiter used between the concatenated values.
+         * @description
+         * Converts an array of strings into a single concatenated string.
+         * @returns {string} Concatenated string representation.
+         */
+        var parseMultiChoice = function (arr, delim) {
+            var str = '',
+                d = delim || '; ';
+            _.each(arr, function (choice, i) {
+                if (i > 0) {
+                    str += d;
+                }
+                str += choice;
+            });
+            return str;
+        };
 
-    /**
-     * @ngdoc function
-     * @name angularPoint.apExportService:parseMultiLookup
-     * @methodOf angularPoint.apExportService
-     * @param {object[]} arr Array of lookup objects.
-     * @param {string} [delim='; '] Custom delimiter used between the concatenated values.
-     * @description
-     * Converts an array of selected lookup values into a single concatenated string.
-     * @returns {string} Concatenated string representation.
-     */
-    var parseMultiLookup = function (arr, delim) {
-      var str = '',
-        d = delim || '; ';
-      _.each(arr, function (val, valIndex) {
+        /**
+         * @ngdoc function
+         * @name angularPoint.apExportService:parseMultiLookup
+         * @methodOf angularPoint.apExportService
+         * @param {object[]} arr Array of lookup objects.
+         * @param {string} [delim='; '] Custom delimiter used between the concatenated values.
+         * @description
+         * Converts an array of selected lookup values into a single concatenated string.
+         * @returns {string} Concatenated string representation.
+         */
+        var parseMultiLookup = function (arr, delim) {
+            var str = '',
+                d = delim || '; ';
+            _.each(arr, function (val, valIndex) {
 
-        /** Add artificial delim */
-        if (valIndex > 0) {
-          str += d;
-        }
+                /** Add artificial delim */
+                if (valIndex > 0) {
+                    str += d;
+                }
 
-        str += parseLookup(val);
-      });
-      return str;
-    };
+                str += parseLookup(val);
+            });
+            return str;
+        };
 
-    return {
-      generateCSV: generateCSV,
-      parseMultiLookup: parseMultiLookup,
-      parseBoolean: parseBoolean,
-      parseDate: parseDate,
-      parseLookup: parseLookup,
-      parseMultiChoice: parseMultiChoice,
-      parseNumber: parseNumber,
-      saveCSV: saveCSV,
-      saveFile: saveFile,
-      saveJSON: saveJSON,
-      saveXML: saveXML,
-      stringifyProperty: stringifyProperty
-    };
-  }]);;'use strict';
+        return {
+            generateCSV: generateCSV,
+            parseMultiLookup: parseMultiLookup,
+            parseBoolean: parseBoolean,
+            parseDate: parseDate,
+            parseLookup: parseLookup,
+            parseMultiChoice: parseMultiChoice,
+            parseNumber: parseNumber,
+            saveCSV: saveCSV,
+            saveFile: saveFile,
+            saveJSON: saveJSON,
+            saveXML: saveXML,
+            stringifyProperty: stringifyProperty
+        };
+    }]);
+;'use strict';
 
 /**
  * @ngdoc service
@@ -2927,433 +2879,342 @@ angular.module('angularPoint')
  * @requires angularPoint.apUtilityService
  */
 angular.module('angularPoint')
-  .service('apFieldService', ["_", "apUtilityService", function (_, apUtilityService) {
+    .service('apFieldService', ["_", "apUtilityService", function (_, apUtilityService) {
 
-    var getUniqueCounter = function () {
-      var self = getUniqueCounter;
-      self.count = self.count || 0;
-      self.count++;
-      return self.count;
-    };
-
-    function randomBoolean() {
-      return chance.bool();
-    }
-
-    function randomString(len) {
-      return chance.word() + ' ' + chance.word();
-    }
-
-    function randomStringArray() {
-      var randomArr = [];
-      /** Create a random (1-4) number of strings and add to array */
-      _.times(_.random(1,4), function () {
-        randomArr.push(randomString());
-      });
-      return randomArr;
-    }
-
-    function randomParagraph() {
-      return chance.paragraph();
-    }
-
-    function randomCurrency() {
-      return parseInt(_.random(10000000, true) * 100) / 100;
-    }
-
-    function randomDate() {
-      return chance.date();
-    }
-
-    function randomInteger() {
-      return chance.integer();
-    }
-
-    /**
-     * @ngdoc function
-     * @name angularPoint.apFieldService:resolveValueForEffectivePermMask
-     * @methodOf angularPoint.apFieldService
-     * @description
-     * Takes the name of a permission mask and returns a permission value which can then be used
-     * to generate a permission object using modelService.resolvePermissions(outputfromthis)
-     * @param {string} perMask Options:
-     *  - AddListItems
-     *  - EditListItems
-     *  - DeleteListItems
-     *  - ApproveItems
-     *  - FullMask
-     *  - ViewListItems
-     * @returns {string} value
-     */
-    function resolveValueForEffectivePermMask(perMask) {
-      var permissionValue;
-      switch (perMask) {
-        case 'AddListItems':
-          permissionValue = '0x0000000000000002';
-          break;
-        case 'EditListItems':
-          permissionValue = '0x0000000000000004';
-          break;
-        case 'DeleteListItems':
-          permissionValue = '0x0000000000000008';
-          break;
-        case 'ApproveItems':
-          permissionValue = '0x0000000000000010';
-          break;
-        case 'FullMask':
-          permissionValue = '0x7FFFFFFFFFFFFFFF';
-          break;
-        case 'ViewListItems':
-        default:
-          permissionValue = '0x0000000000000001';
-          break;
-      }
-      return permissionValue;
-    }
-
-    /**
-     * @ngdoc function
-     * @name angularPoint.apFieldService:mockPermMask
-     * @methodOf angularPoint.apFieldService
-     * @description
-     * Defaults to a full mask but allows simulation of each of main permission levels
-     * @param {object} [options] Options container.
-     * @param {string} [options.permissionLevel=FullMask] Optional mask.
-     * @returns {string} Values for mask.
-     */
-    function mockPermMask(options) {
-      var mask = 'FullMask';
-      if (options && options.permissionLevel) {
-        mask = options.permissionLevel;
-      }
-      return resolveValueForEffectivePermMask(mask);
-    }
-
-    function randomLookup() {
-      return {
-        lookupId: getUniqueCounter(),
-        lookupValue: chance.word()
-      };
-    }
-
-    function randomUser() {
-      return {
-        lookupId: getUniqueCounter(),
-        lookupValue: chance.name()
-      };
-    }
-
-    function randomLookupMulti() {
-      var mockData = [];
-      _.each(_.random(10), function () {
-        mockData.push(randomLookup());
-      });
-      return mockData;
-    }
-
-    function randomUserMulti() {
-      var mockData = [];
-      _.each(_.random(10), function () {
-        mockData.push(randomUser());
-      });
-      return mockData;
-    }
-
-    /**
-     * @ngdoc function
-     * @name angularPoint.apFieldService:Field
-     * @methodOf angularPoint.apFieldService
-     * @description
-     * Decorates field with optional defaults
-     * @param {object} obj Field definition.
-     * @returns {object} Field
-     * @constructor
-     */
-    function Field(obj) {
-      var self = this;
-      var defaults = {
-        readOnly: false,
-        objectType: 'Text'
-      };
-      _.extend(self, defaults, obj);
-      self.displayName = self.displayName ? self.displayName : apUtilityService.fromCamelCase(self.mappedName);
-    }
-
-    Field.prototype.getDefinition = function () {
-      return getDefinition(this.objectType);
-    };
-
-    Field.prototype.getDefaultValueForType = function () {
-      return getDefaultValueForType(this.objectType);
-    };
-
-    Field.prototype.getMockData = function (options) {
-      return getMockData(this.objectType, options);
-    };
-
-    /** Field types used on the models to create a field definition */
-    var fieldTypes = {
-      Text: {defaultValue: '', staticMock: 'Test String', dynamicMock: randomString},
-      TextLong: {defaultValue: '', staticMock: 'This is a sentence.', dynamicMock: randomParagraph},
-      Boolean: { defaultValue: null, staticMock: true, dynamicMock: randomBoolean },
-      Choice: { defaultValue: '', staticMock: 'My Choice', dynamicMock: randomString },
-      Counter: { defaultValue: null, staticMock: getUniqueCounter(), dynamicMock: getUniqueCounter },
-      Currency: { defaultValue: null, staticMock: 120.50, dynamicMock: randomCurrency },
-      DateTime: { defaultValue: null, staticMock: new Date(2014, 5, 4, 11, 33, 25), dynamicMock: randomDate },
-      Integer: { defaultValue: null, staticMock: 14, dynamicMock: randomInteger },
-      JSON: { defaultValue: '', staticMock: [
-        {id: 1, title: 'test'},
-        {id: 2}
-      ], dynamicMock: randomString },
-      Lookup: { defaultValue: '', staticMock: {lookupId: 49, lookupValue: 'Static Lookup'}, dynamicMock: randomLookup },
-      LookupMulti: { defaultValue: [], staticMock: [
-        {lookupId: 50, lookupValue: 'Static Multi 1'},
-        {lookupId: 51, lookupValue: 'Static Multi 2'}
-      ], dynamicMock: randomLookupMulti },
-      Mask: { defaultValue: mockPermMask(), staticMock: mockPermMask(), dynamicMock: mockPermMask },
-      MultiChoice: { defaultValue: [], staticMock: ['A Good Choice', 'A Bad Choice'], dynamicMock: randomStringArray },
-      User: { defaultValue: '', staticMock: {lookupId: 52, lookupValue: 'Static User'}, dynamicMock: randomUser },
-      UserMulti: { defaultValue: [], staticMock: [
-        {lookupId: 53, lookupValue: 'Static User 1'},
-        {lookupId: 54, lookupValue: 'Static User 2'}
-      ], dynamicMock: randomUserMulti }
-    };
-
-    /**
-     * Returns an object defining a specific field type
-     * @param {string} fieldType
-     * @returns {object} fieldTypeDefinition
-     */
-    function getDefinition(fieldType) {
-      return fieldTypes[fieldType] ? fieldTypes[fieldType] : fieldTypes['Text'];
-    }
-
-    /**
-     * @ngdoc function
-     * @name angularPoint.apFieldService:getDefaultValueForType
-     * @methodOf angularPoint.apFieldService
-     * @description
-     * Returns the empty value expected for a field type
-     * @param {string} fieldType Type of field.
-     * @returns {*} Default value based on field type.
-     */
-    function getDefaultValueForType(fieldType) {
-      var fieldDefinition = getDefinition(fieldType), defaultValue;
-      if (fieldDefinition) {
-        defaultValue = fieldDefinition.defaultValue;
-      }
-      return defaultValue;
-    }
-
-    /**
-     * @ngdoc function
-     * @name angularPoint.apFieldService:getMockData
-     * @methodOf angularPoint.apFieldService
-     * @description
-     * Can return mock data appropriate for the field type, by default it dynamically generates data but
-     * the staticValue param will instead return a hard coded type specific value
-     *
-     * @requires ChanceJS to produce dynamic data.
-     * https://github.com/victorquinn/chancejs
-     * @param {string} fieldType Field type from the field definition.
-     * @param {object} [options] Optional params.
-     * @param {boolean} [options.staticValue=false] Default to dynamically build mock data.
-     * @returns {*} mockData
-     */
-    function getMockData(fieldType, options) {
-      var mock;
-      var fieldDefinition = getDefinition(fieldType);
-      if (fieldDefinition) {
-        if(_.isFunction(Chance) && options && !options.staticValue) {
-          /** Return dynamic data if ChanceJS is available and flag isn't set requiring static data */
-          mock = fieldDefinition.dynamicMock(options);
-        } else {
-          /** Return static data if the flag is set or ChanceJS isn't available */
-          mock = fieldDefinition.staticMock;
-        }
-      }
-      return mock;
-    }
-
-    /**
-     * @ngdoc function
-     * @name angularPoint.apFieldService:defaultFields
-     * @methodOf angularPoint.apFieldService
-     * @description
-     * Read only fields that should be included in all lists
-     */
-    var defaultFields = [
-      { internalName: 'ID', objectType: 'Counter', mappedName: 'id', readOnly: true},
-      { internalName: 'Modified', objectType: 'DateTime', mappedName: 'modified', readOnly: true},
-      { internalName: 'Created', objectType: 'DateTime', mappedName: 'created', readOnly: true},
-      { internalName: 'Author', objectType: 'User', mappedName: 'author', readOnly: true},
-      { internalName: 'Editor', objectType: 'User', mappedName: 'editor', readOnly: true},
-      { internalName: 'PermMask', objectType: 'Mask', mappedName: 'permMask', readOnly: true},
-      { internalName: 'UniqueId', objectType: 'String', mappedName: 'uniqueId', readOnly: true}
-    ];
-
-    /**
-     * @ngdoc function
-     * @name angularPoint.apFieldService:extendFieldDefinitions
-     * @methodOf angularPoint.apFieldService
-     * @description
-     * 1. Populates the fields array which uses the Field constructor to combine the default
-     * SharePoint fields with those defined in the list definition on the model
-     * 2. Creates the list.viewFields XML string that defines the fields to be requested on a query
-     *
-     * @param {object} list Reference to the list within a model.
-     */
-    function extendFieldDefinitions(list) {
-      /**
-       * Constructs the field
-       * - adds to viewField
-       * - create ows_ mapping
-       * @param fieldDefinition
-       */
-      var buildField = function (fieldDefinition) {
-        var field = new Field(fieldDefinition);
-        list.fields.push(field);
-        list.viewFields += '<FieldRef Name="' + field.internalName + '"/>';
-        list.mapping['ows_' + field.internalName] = { mappedName: field.mappedName, objectType: field.objectType };
-      };
-
-      /** Open viewFields */
-      list.viewFields += '<ViewFields>';
-
-      /** Add the default fields */
-      _.each(defaultFields, function (field) {
-        buildField(field);
-      });
-
-      /** Add each of the fields defined in the model */
-      _.each(list.customFields, function (field) {
-        buildField(field);
-      });
-
-      /** Close viewFields */
-      list.viewFields += '</ViewFields>';
-    }
-
-    return{
-      defaultFields: defaultFields,
-      extendFieldDefinitions: extendFieldDefinitions,
-      getDefaultValueForType: getDefaultValueForType,
-      getMockData: getMockData,
-      getDefinition: getDefinition,
-      mockPermMask: mockPermMask,
-      resolveValueForEffectivePermMask: resolveValueForEffectivePermMask
-    };
-
-  }]);
-;'use strict';
-
-
-angular.module('angularPoint')
-    .service('apMocksService', ["$q", "apCacheService", "apIndexedCacheFactory", "toastr", function ($q, apCacheService, apIndexedCacheFactory, toastr) {
-        return {
-            mockRequest: mockRequest
+        var getUniqueCounter = function () {
+            var self = getUniqueCounter;
+            self.count = self.count || 0;
+            self.count++;
+            return self.count;
         };
 
-        function mockRequest(opts, args) {
-            switch(opts.operation) {
-                case 'UpdateListItems':
-                    return updateListItems.apply(this, args);
-                case 'GetListItemChangesSinceToken':
-                case 'GetListItems':
-                    return processListItems(opts);
+        function randomBoolean() {
+            return chance.bool();
+        }
+
+        function randomString(len) {
+            return chance.word() + ' ' + chance.word();
+        }
+
+        function randomStringArray() {
+            var randomArr = [];
+            /** Create a random (1-4) number of strings and add to array */
+            _.times(_.random(1, 4), function () {
+                randomArr.push(randomString());
+            });
+            return randomArr;
+        }
+
+        function randomParagraph() {
+            return chance.paragraph();
+        }
+
+        function randomCurrency() {
+            return parseInt(_.random(10000000, true) * 100) / 100;
+        }
+
+        function randomDate() {
+            return chance.date();
+        }
+
+        function randomInteger() {
+            return chance.integer();
+        }
+
+        /**
+         * @ngdoc function
+         * @name angularPoint.apFieldService:resolveValueForEffectivePermMask
+         * @methodOf angularPoint.apFieldService
+         * @description
+         * Takes the name of a permission mask and returns a permission value which can then be used
+         * to generate a permission object using modelService.resolvePermissions(outputfromthis)
+         * @param {string} perMask Options:
+         *  - AddListItems
+         *  - EditListItems
+         *  - DeleteListItems
+         *  - ApproveItems
+         *  - FullMask
+         *  - ViewListItems
+         * @returns {string} value
+         */
+        function resolveValueForEffectivePermMask(perMask) {
+            var permissionValue;
+            switch (perMask) {
+                case 'AddListItems':
+                    permissionValue = '0x0000000000000002';
+                    break;
+                case 'EditListItems':
+                    permissionValue = '0x0000000000000004';
+                    break;
+                case 'DeleteListItems':
+                    permissionValue = '0x0000000000000008';
+                    break;
+                case 'ApproveItems':
+                    permissionValue = '0x0000000000000010';
+                    break;
+                case 'FullMask':
+                    permissionValue = '0x7FFFFFFFFFFFFFFF';
+                    break;
+                case 'ViewListItems':
                 default:
-                    return defaultRequest(opts)
-
+                    permissionValue = '0x0000000000000001';
+                    break;
             }
+            return permissionValue;
         }
 
-        function defaultRequest(opts) {
-            var deferred = $q.defer();
-
-            $.ajax(opts.offlineXML).then(
-                function (offlineData) {
-                    /** Pass back the group array */
-                    deferred.resolve(offlineData);
-                }, function (outcome) {
-                    toastr.error('You need to have a ' + opts.offlineXML + ' file in order mock this request.');
-                    deferred.reject(outcome);
-                });
-            return deferred.promise;
-        }
-        
-        function processListItems(opts) {
-            var deferred = $q.defer();
-
-            if (opts.lastRun) {
-                /** Query has already been run, resolve reference to existing data */
-                opts.lastRun = new Date();
-                deferred.resolve(opts.getCache());
-            } else {
-                defaultRequest(opts)
-                    .then(function (responseXML) {
-                        deferred.resolve(responseXML);
-                    })
+        /**
+         * @ngdoc function
+         * @name angularPoint.apFieldService:mockPermMask
+         * @methodOf angularPoint.apFieldService
+         * @description
+         * Defaults to a full mask but allows simulation of each of main permission levels
+         * @param {object} [options] Options container.
+         * @param {string} [options.permissionLevel=FullMask] Optional mask.
+         * @returns {string} Values for mask.
+         */
+        function mockPermMask(options) {
+            var mask = 'FullMask';
+            if (options && options.permissionLevel) {
+                mask = options.permissionLevel;
             }
-            return deferred.promise;
+            return resolveValueForEffectivePermMask(mask);
         }
 
-        function updateListItems(entity, model) {
-            var deferred = $q.defer();
+        function randomLookup() {
+            return {
+                lookupId: getUniqueCounter(),
+                lookupValue: chance.word()
+            };
+        }
 
-            /** Mock data */
-            var offlineDefaults = {
-                modified: new Date(),
-                editor: {
-                    lookupId: 23,
-                    lookupValue: 'Generic User'
-                },
-                getCache: function() {
-                    return apIndexedCacheFactory.create();
+        function randomUser() {
+            return {
+                lookupId: getUniqueCounter(),
+                lookupValue: chance.name()
+            };
+        }
+
+        function randomLookupMulti() {
+            var mockData = [];
+            _.each(_.random(10), function () {
+                mockData.push(randomLookup());
+            });
+            return mockData;
+        }
+
+        function randomUserMulti() {
+            var mockData = [];
+            _.each(_.random(10), function () {
+                mockData.push(randomUser());
+            });
+            return mockData;
+        }
+
+        /**
+         * @ngdoc function
+         * @name angularPoint.apFieldService:Field
+         * @methodOf angularPoint.apFieldService
+         * @description
+         * Decorates field with optional defaults
+         * @param {object} obj Field definition.
+         * @returns {object} Field
+         * @constructor
+         */
+        function Field(obj) {
+            var self = this;
+            var defaults = {
+                readOnly: false,
+                objectType: 'Text'
+            };
+            _.extend(self, defaults, obj);
+            self.displayName = self.displayName ? self.displayName : apUtilityService.fromCamelCase(self.mappedName);
+        }
+
+        Field.prototype.getDefinition = function () {
+            return getDefinition(this.objectType);
+        };
+
+        Field.prototype.getDefaultValueForType = function () {
+            return getDefaultValueForType(this.objectType);
+        };
+
+        Field.prototype.getMockData = function (options) {
+            return getMockData(this.objectType, options);
+        };
+
+        /** Field types used on the models to create a field definition */
+        var fieldTypes = {
+            Text: {defaultValue: '', staticMock: 'Test String', dynamicMock: randomString},
+            TextLong: {defaultValue: '', staticMock: 'This is a sentence.', dynamicMock: randomParagraph},
+            Boolean: {defaultValue: null, staticMock: true, dynamicMock: randomBoolean},
+            Choice: {defaultValue: '', staticMock: 'My Choice', dynamicMock: randomString},
+            Counter: {defaultValue: null, staticMock: getUniqueCounter(), dynamicMock: getUniqueCounter},
+            Currency: {defaultValue: null, staticMock: 120.50, dynamicMock: randomCurrency},
+            DateTime: {defaultValue: null, staticMock: new Date(2014, 5, 4, 11, 33, 25), dynamicMock: randomDate},
+            Integer: {defaultValue: null, staticMock: 14, dynamicMock: randomInteger},
+            JSON: {
+                defaultValue: '', staticMock: [
+                    {id: 1, title: 'test'},
+                    {id: 2}
+                ], dynamicMock: randomString
+            },
+            Lookup: {
+                defaultValue: '',
+                staticMock: {lookupId: 49, lookupValue: 'Static Lookup'},
+                dynamicMock: randomLookup
+            },
+            LookupMulti: {
+                defaultValue: [], staticMock: [
+                    {lookupId: 50, lookupValue: 'Static Multi 1'},
+                    {lookupId: 51, lookupValue: 'Static Multi 2'}
+                ], dynamicMock: randomLookupMulti
+            },
+            Mask: {defaultValue: mockPermMask(), staticMock: mockPermMask(), dynamicMock: mockPermMask},
+            MultiChoice: {
+                defaultValue: [],
+                staticMock: ['A Good Choice', 'A Bad Choice'],
+                dynamicMock: randomStringArray
+            },
+            User: {defaultValue: '', staticMock: {lookupId: 52, lookupValue: 'Static User'}, dynamicMock: randomUser},
+            UserMulti: {
+                defaultValue: [], staticMock: [
+                    {lookupId: 53, lookupValue: 'Static User 1'},
+                    {lookupId: 54, lookupValue: 'Static User 2'}
+                ], dynamicMock: randomUserMulti
+            }
+        };
+
+        /**
+         * Returns an object defining a specific field type
+         * @param {string} fieldType
+         * @returns {object} fieldTypeDefinition
+         */
+        function getDefinition(fieldType) {
+            return fieldTypes[fieldType] ? fieldTypes[fieldType] : fieldTypes['Text'];
+        }
+
+        /**
+         * @ngdoc function
+         * @name angularPoint.apFieldService:getDefaultValueForType
+         * @methodOf angularPoint.apFieldService
+         * @description
+         * Returns the empty value expected for a field type
+         * @param {string} fieldType Type of field.
+         * @returns {*} Default value based on field type.
+         */
+        function getDefaultValueForType(fieldType) {
+            var fieldDefinition = getDefinition(fieldType), defaultValue;
+            if (fieldDefinition) {
+                defaultValue = fieldDefinition.defaultValue;
+            }
+            return defaultValue;
+        }
+
+        /**
+         * @ngdoc function
+         * @name angularPoint.apFieldService:getMockData
+         * @methodOf angularPoint.apFieldService
+         * @description
+         * Can return mock data appropriate for the field type, by default it dynamically generates data but
+         * the staticValue param will instead return a hard coded type specific value
+         *
+         * @requires ChanceJS to produce dynamic data.
+         * https://github.com/victorquinn/chancejs
+         * @param {string} fieldType Field type from the field definition.
+         * @param {object} [options] Optional params.
+         * @param {boolean} [options.staticValue=false] Default to dynamically build mock data.
+         * @returns {*} mockData
+         */
+        function getMockData(fieldType, options) {
+            var mock;
+            var fieldDefinition = getDefinition(fieldType);
+            if (fieldDefinition) {
+                if (_.isFunction(Chance) && options && !options.staticValue) {
+                    /** Return dynamic data if ChanceJS is available and flag isn't set requiring static data */
+                    mock = fieldDefinition.dynamicMock(options);
+                } else {
+                    /** Return static data if the flag is set or ChanceJS isn't available */
+                    mock = fieldDefinition.staticMock;
                 }
+            }
+            return mock;
+        }
+
+        /**
+         * @ngdoc function
+         * @name angularPoint.apFieldService:defaultFields
+         * @methodOf angularPoint.apFieldService
+         * @description
+         * Read only fields that should be included in all lists
+         */
+        var defaultFields = [
+            {internalName: 'ID', objectType: 'Counter', mappedName: 'id', readOnly: true},
+            {internalName: 'Modified', objectType: 'DateTime', mappedName: 'modified', readOnly: true},
+            {internalName: 'Created', objectType: 'DateTime', mappedName: 'created', readOnly: true},
+            {internalName: 'Author', objectType: 'User', mappedName: 'author', readOnly: true},
+            {internalName: 'Editor', objectType: 'User', mappedName: 'editor', readOnly: true},
+            {internalName: 'PermMask', objectType: 'Mask', mappedName: 'permMask', readOnly: true},
+            {internalName: 'UniqueId', objectType: 'String', mappedName: 'uniqueId', readOnly: true}
+        ];
+
+        /**
+         * @ngdoc function
+         * @name angularPoint.apFieldService:extendFieldDefinitions
+         * @methodOf angularPoint.apFieldService
+         * @description
+         * 1. Populates the fields array which uses the Field constructor to combine the default
+         * SharePoint fields with those defined in the list definition on the model
+         * 2. Creates the list.viewFields XML string that defines the fields to be requested on a query
+         *
+         * @param {object} list Reference to the list within a model.
+         */
+        function extendFieldDefinitions(list) {
+            /**
+             * Constructs the field
+             * - adds to viewField
+             * - create ows_ mapping
+             * @param fieldDefinition
+             */
+            var buildField = function (fieldDefinition) {
+                var field = new Field(fieldDefinition);
+                list.fields.push(field);
+                list.viewFields += '<FieldRef Name="' + field.internalName + '"/>';
+                list.mapping['ows_' + field.internalName] = {
+                    mappedName: field.mappedName,
+                    objectType: field.objectType
+                };
             };
 
-            /** New Item */
-            if (!entity.id) {
-                var newItem = {};
+            /** Open viewFields */
+            list.viewFields += '<ViewFields>';
 
-                /* Include standard mock fields for new item */
-                offlineDefaults.author = {
-                    lookupId: 23,
-                    lookupValue: 'Generic User'
-                };
+            /** Add the default fields */
+            _.each(defaultFields, function (field) {
+                buildField(field);
+            });
 
-                offlineDefaults.created = new Date();
+            /** Add each of the fields defined in the model */
+            _.each(list.customFields, function (field) {
+                buildField(field);
+            });
 
-                /** We don't know which query cache to push it to so add it to all */
-                _.each(model.queries, function (query) {
-                    /** Find next logical id to assign */
-                    var maxId = 1;
-                    /** Find the entity with the highest ID number */
-                    var lastEntity = query.getCache().last();
-                    if(lastEntity) {
-                        maxId = lastEntity.id;
-                    }
-                    offlineDefaults.id = maxId + 1;
-                    /** Add default attributes */
-                    _.extend(entity, offlineDefaults);
-                    /** Use factory to build new object */
-                    newItem = new model.factory(entity);
-
-                    /** Register entity in global cache and in each query cache */
-                    apCacheService.registerEntity(newItem, query.getCache());
-                });
-
-
-                deferred.resolve(newItem);
-            } else {
-                /** Update existing record in local cache */
-                _.extend(entity, offlineDefaults);
-                deferred.resolve(entity);
-            }
-            return deferred.promise;
+            /** Close viewFields */
+            list.viewFields += '</ViewFields>';
         }
 
-    }]);;'use strict';
+        return {
+            defaultFields: defaultFields,
+            extendFieldDefinitions: extendFieldDefinitions,
+            getDefaultValueForType: getDefaultValueForType,
+            getMockData: getMockData,
+            getDefinition: getDefinition,
+            mockPermMask: mockPermMask,
+            resolveValueForEffectivePermMask: resolveValueForEffectivePermMask
+        };
+
+    }]);
+;'use strict';
 
 /**
  * @ngdoc service
@@ -3438,12 +3299,13 @@ angular.module('angularPoint')
 
         /** call this when queue changes */
         function notifyObservers() {
-            _.each(observerCallbacks, function(callback) {
+            _.each(observerCallbacks, function (callback) {
                 callback(apQueueService.count);
             });
         }
 
-    });;'use strict';
+    });
+;'use strict';
 
 /**
  * @ngdoc service
@@ -3525,7 +3387,6 @@ angular.module('angularPoint')
             completefunc: null // Function to call on completion
 
         }; // End SPServices.defaults
-
 
 
         // Set up SOAP envelope
@@ -4411,7 +4272,6 @@ angular.module('angularPoint')
         }; // End SPServices.generateXMLComponents
 
 
-
         //TODO Move this somewhere else, it's too buried down here
         // This method for finding specific nodes in the returned XML was developed by Steve Workman. See his blog post
         // http://www.steveworkman.com/html5-2/javascript/2011/improving-javascript-xml-node-finding-performance-by-2000/
@@ -5180,7 +5040,7 @@ angular.module('angularPoint')
             /** Based on functionality in Breeze.js */
             isGuid: function (value) {
                 return (typeof value === "string") && /[a-fA-F\d]{8}-(?:[a-fA-F\d]{4}-){3}[a-fA-F\d]{12}/
-                    .test(value);
+                        .test(value);
             }
         });
 
@@ -5317,7 +5177,6 @@ angular.module('angularPoint')
 
             return deferred.promise;
         }
-
 
 
         //function batchProcess(items, process, context, delay, maxItems) {
@@ -5502,10 +5361,11 @@ angular.module('angularPoint')
          * @param {object} model event
          */
         function registerChange(model) {
-            if (!apConfig.offline && model.sync && _.isFunction(model.sync.registerChange)) {
-                /** Register change after successful update */
-                model.sync.registerChange();
-            }
+            /** Disabled this functionality until I can spend the necessary time to test */
+            //if (!apConfig.offline && model.sync && _.isFunction(model.sync.registerChange)) {
+            //    /** Register change after successful update */
+            //    model.sync.registerChange();
+            //}
         }
 
         return {
@@ -5528,7 +5388,7 @@ angular.module('angularPoint')
 //      needs_SOAPAction    Boolean indicating whether the operation needs to have the SOAPAction passed in the setRequestHeaderfunction.
 //                          true if the operation does a write, else false
 angular.module('angularPoint')
-    .service('apWebServiceService', function() {
+    .service('apWebServiceService', function () {
         var SCHEMASharePoint = "http://schemas.microsoft.com/sharepoint";
         var serviceDefinitions = {
             Alerts: {
@@ -5620,6 +5480,7 @@ angular.module('angularPoint')
         function action(service) {
             return serviceDefinitions[service] ? serviceDefinitions[service].action : SCHEMASharePoint + '/soap/';
         }
+
         function xmlns(service) {
             return serviceDefinitions[service] ? serviceDefinitions[service].xmlns : SCHEMASharePoint + '/soap/';
         }
@@ -5653,18 +5514,18 @@ angular.module('angularPoint')
 
             var jsonObject = [];
 
-            _.each(xmlNodeSet, function(node) {
+            _.each(xmlNodeSet, function (node) {
                 var row = {};
                 var rowAttrs = node.attributes;
 
                 if (!opts.sparse) {
                     // Bring back all mapped columns, even those with no value
-                    _.each(opts.mapping, function(column) {
+                    _.each(opts.mapping, function (column) {
                         row[column.mappedName] = '';
                     });
                 }
 
-                _.each(rowAttrs, function(rowAttribute) {
+                _.each(rowAttrs, function (rowAttribute) {
                     var attributeName = rowAttribute.name;
                     var columnMapping = opts.mapping[attributeName];
                     var objectName = typeof columnMapping !== "undefined" ? columnMapping.mappedName : opts.removeOws ? attributeName.split("ows_")[1] : attributeName;
@@ -5836,7 +5697,7 @@ angular.module('angularPoint')
          */
         function IndexedCache(object) {
             var self = this;
-            if(object) {
+            if (object) {
                 _.extend(self, object);
             }
         }
@@ -5873,10 +5734,10 @@ angular.module('angularPoint')
 
             if (_.isObject(entity) && !!entity.id) {
                 /** Only add the entity to the cache if it's not already there */
-                if(!cache[entity.id]) {
+                if (!cache[entity.id]) {
                     cache[entity.id] = entity;
                 }
-            }else {
+            } else {
                 throw new Error('A valid entity wasn\'t found: ', entity);
             }
         }
@@ -5890,7 +5751,7 @@ angular.module('angularPoint')
          */
         function clear() {
             var cache = this;
-            _.each(cache, function(entity, key) {
+            _.each(cache, function (entity, key) {
                 delete cache[key];
             });
         }
@@ -5923,7 +5784,6 @@ angular.module('angularPoint')
             var keys = cache.keys();
             return cache[keys[index]];
         }
-
 
 
         /**
@@ -5976,9 +5836,9 @@ angular.module('angularPoint')
          */
         function removeEntity(entity) {
             var cache = this;
-            if(_.isObject && entity.id && cache[entity.id]) {
+            if (_.isObject && entity.id && cache[entity.id]) {
                 delete cache[entity.id];
-            } else if(_.isNumber(entity)) {
+            } else if (_.isNumber(entity)) {
                 /** Allow entity ID to be used instead of then entity */
                 delete cache[entity];
             }
@@ -6096,10 +5956,9 @@ angular.module('angularPoint')
         List.prototype.getListId = getListId;
 
 
-
         function getListId() {
             var list = this;
-            if(_.isString(list.environments[apConfig.environment])) {
+            if (_.isString(list.environments[apConfig.environment])) {
                 /**
                  * For a multi-environment setup, we accept a list.environments object with a property for each named
                  * environment with a corresponding value of the list guid.  The active environment can be selected
@@ -6279,7 +6138,8 @@ angular.module('angularPoint')
             create: create,
             List: List
         }
-    }]);;'use strict';
+    }]);
+;'use strict';
 
 /**
  * @ngdoc object
@@ -6502,7 +6362,7 @@ angular.module('angularPoint')
                     return apCacheService.getCachedEntity(fieldDefinition.List, targetId);
                 } else {
                     throw new Error('This isn\'t a valid Lookup field or the field definitions need to be extended ' +
-                        'before we can complete this request.', fieldName, lookupId);
+                    'before we can complete this request.', fieldName, lookupId);
                 }
             }
         }
@@ -6796,7 +6656,8 @@ angular.module('angularPoint')
             ListItem: ListItem,
             StandardListItem: StandardListItem
         }
-    }]);;'use strict';
+    }]);
+;'use strict';
 
 /**
  * @ngdoc function
@@ -8037,7 +7898,7 @@ angular.module('angularPoint')
             var query = this;
             var defaults = {
                 /** Container to hold returned entities */
-                    //todo moved to indexedCache instead for better performance
+                //todo moved to indexedCache instead for better performance
                 //cache: [],
                 /** Reference to the most recent query when performing GetListItemChangesSinceToken */
                 changeToken: undefined,
@@ -8212,7 +8073,8 @@ angular.module('angularPoint')
             return new Query(config, model);
         }
 
-    }]);;'use strict';
+    }]);
+;'use strict';
 
 /**
  * @ngdoc function
@@ -8415,115 +8277,116 @@ angular.module('angularPoint')
  * </pre>
  */
 angular.module('angularPoint')
-  .directive('apAttachments', ["$sce", "toastr", "_", function ($sce, toastr, _) {
-    return {
-      restrict: "A",
-      replace: true,
-      templateUrl: 'src/directives/ap_attachments/ap_attachments_tmpl.html',
-      scope: {
-        listItem: "=",      //List item the attachments belong to
-        changeEvent: '='    //Optional - called after an attachment is deleted
-      },
-      link: function (scope, element, attrs) {
+    .directive('apAttachments', ["$sce", "toastr", "_", function ($sce, toastr, _) {
+        return {
+            restrict: "A",
+            replace: true,
+            templateUrl: 'src/directives/ap_attachments/ap_attachments_tmpl.html',
+            scope: {
+                listItem: "=",      //List item the attachments belong to
+                changeEvent: '='    //Optional - called after an attachment is deleted
+            },
+            link: function (scope, element, attrs) {
 
-        scope.attachments = [];
-        scope.state = {
-          ready: false
-        };
+                scope.attachments = [];
+                scope.state = {
+                    ready: false
+                };
 
-        scope.refresh = function () {
-          if (!scope.$$phase) {
-            scope.$apply();
-          }
-        };
+                scope.refresh = function () {
+                    if (!scope.$$phase) {
+                        scope.$apply();
+                    }
+                };
 
-        function resetSrc() {
-          if (_.isFunction(scope.changeEvent)) {
-            scope.changeEvent();
-          }
-          //Reset iframe
-          element.find('iframe').attr('src', element.find('iframe').attr('src'));
-        }
+                function resetSrc() {
+                    if (_.isFunction(scope.changeEvent)) {
+                        scope.changeEvent();
+                    }
+                    //Reset iframe
+                    element.find('iframe').attr('src', element.find('iframe').attr('src'));
+                }
 
-        var listItemModel = scope.listItem.getModel();
-        var uploadUrl = listItemModel.list.webURL + '/_layouts/Attachfile.aspx?ListId=' +
-          listItemModel.list.getListId() + '&ItemId=' + scope.listItem.id + '&IsDlg=1';
+                var listItemModel = scope.listItem.getModel();
+                var uploadUrl = listItemModel.list.webURL + '/_layouts/Attachfile.aspx?ListId=' +
+                    listItemModel.list.getListId() + '&ItemId=' + scope.listItem.id + '&IsDlg=1';
 
-        scope.trustedUrl = $sce.trustAsResourceUrl(uploadUrl);
+                scope.trustedUrl = $sce.trustAsResourceUrl(uploadUrl);
 
-        //Pull down all attachments for the current list item
-        var fetchAttachments = function () {
-          toastr.info("Checking for attachments");
-          scope.listItem.getAttachmentCollection().then(function (attachments) {
-            scope.attachments.length = 0;
-            //Push any new attachments into the existing array to prevent breakage of references
-            Array.prototype.push.apply(scope.attachments, attachments);
-          });
-        };
+                //Pull down all attachments for the current list item
+                var fetchAttachments = function () {
+                    toastr.info("Checking for attachments");
+                    scope.listItem.getAttachmentCollection().then(function (attachments) {
+                        scope.attachments.length = 0;
+                        //Push any new attachments into the existing array to prevent breakage of references
+                        Array.prototype.push.apply(scope.attachments, attachments);
+                    });
+                };
 
-        //Instantiate request
-        fetchAttachments();
+                //Instantiate request
+                fetchAttachments();
 
-        scope.fileName = function (attachment) {
-          var index = attachment.lastIndexOf("/") + 1;
-          return attachment.substr(index);
-        };
+                scope.fileName = function (attachment) {
+                    var index = attachment.lastIndexOf("/") + 1;
+                    return attachment.substr(index);
+                };
 
-        scope.deleteAttachment = function (attachment) {
-          var confirmation = window.confirm("Are you sure you want to delete this file?");
-          if (confirmation) {
-            toastr.info("Negotiating with the server");
-            scope.listItem.deleteAttachment(attachment).then(function () {
-              toastr.success("Attachment successfully deleted");
-              fetchAttachments();
-              if (_.isFunction(scope.changeEvent)) {
-                scope.changeEvent();
-              }
-            });
-          }
-        };
+                scope.deleteAttachment = function (attachment) {
+                    var confirmation = window.confirm("Are you sure you want to delete this file?");
+                    if (confirmation) {
+                        toastr.info("Negotiating with the server");
+                        scope.listItem.deleteAttachment(attachment).then(function () {
+                            toastr.success("Attachment successfully deleted");
+                            fetchAttachments();
+                            if (_.isFunction(scope.changeEvent)) {
+                                scope.changeEvent();
+                            }
+                        });
+                    }
+                };
 
-        //Run when the iframe url changes and fully loaded
-        element.find('iframe').bind('load', function (event) {
-          scope.state.ready = true;
-          scope.refresh();
-          var iframe = $(this).contents();
+                //Run when the iframe url changes and fully loaded
+                element.find('iframe').bind('load', function (event) {
+                    scope.state.ready = true;
+                    scope.refresh();
+                    var iframe = $(this).contents();
 
-          if (iframe.find("#CancelButton").length < 1) {
-            //Upload complete, reset iframe
-            toastr.success("File successfully uploaded");
-            resetSrc();
-            fetchAttachments();
-            if (_.isFunction(scope.changeEvent)) {
-              scope.changeEvent();
+                    if (iframe.find("#CancelButton").length < 1) {
+                        //Upload complete, reset iframe
+                        toastr.success("File successfully uploaded");
+                        resetSrc();
+                        fetchAttachments();
+                        if (_.isFunction(scope.changeEvent)) {
+                            scope.changeEvent();
+                        }
+
+                    } else {
+                        //Hide the standard cancel button
+                        iframe.find("#CancelButton").hide();
+                        iframe.find(".ms-dialog").css({height: '95px'});
+
+                        //Style OK button
+                        iframe.find("input[name$='Ok']").css({float: 'left'}).click(function (event) {
+                            //Click handler
+                            toastr.info("Please wait while the file is uploaded");
+                        });
+
+                        iframe.find("input[name$='$InputFile']").attr({'size': 40});
+
+                        //Style iframe to prevent scroll bars from appearing
+                        iframe.find("#s4-workspace").css({
+                            'overflow-y': 'hidden',
+                            'overflow-x': 'hidden'
+                        });
+
+                        console.log("Frame Loaded");
+                    }
+                });
+
             }
-
-          } else {
-            //Hide the standard cancel button
-            iframe.find("#CancelButton").hide();
-            iframe.find(".ms-dialog").css({height: '95px'});
-
-            //Style OK button
-            iframe.find("input[name$='Ok']").css({float: 'left'}).click(function (event) {
-              //Click handler
-              toastr.info("Please wait while the file is uploaded");
-            });
-
-            iframe.find("input[name$='$InputFile']").attr({'size': 40});
-
-            //Style iframe to prevent scroll bars from appearing
-            iframe.find("#s4-workspace").css({
-              'overflow-y': 'hidden',
-              'overflow-x': 'hidden'
-            });
-
-            console.log("Frame Loaded");
-          }
-        });
-
-      }
-    };
-  }]);;'use strict';
+        };
+    }]);
+;'use strict';
 
 /**
  * @ngdoc directive
@@ -8566,91 +8429,92 @@ angular.module('angularPoint')
  * </pre>
  */
 angular.module('angularPoint')
-  .directive('apSelect', ["_", function (_) {
-    return {
-      restrict: 'A',
-      replace: true,
-      templateUrl: 'src/directives/ap_select/ap_select_tmpl.html',
-      scope: {
-        target: '=',   //The field on the model to bind to
-        bindedField: '=',   //Deprecated....why did I use binded instead of bound?
-        multi: '=',         //Single select if not set or set to false
-        arr: '=',           //Array of lookup options
-        lookupValue: '=',   //Field name to map the lookupValue to (default: 'title')
-        ngDisabled: '='     //Pass through to disable control using ng-disabled on element if set
-      },
-      link: function (scope) {
-        if (scope.bindedField && !scope.target) {
-          //Todo remove all references to "bindedField" and change to target
-          scope.target = scope.bindedField;
-        }
-        scope.state = {
-          multiSelectIDs: [],
-          singleSelectID: ''
-        };
+    .directive('apSelect', ["_", function (_) {
+        return {
+            restrict: 'A',
+            replace: true,
+            templateUrl: 'src/directives/ap_select/ap_select_tmpl.html',
+            scope: {
+                target: '=',   //The field on the model to bind to
+                bindedField: '=',   //Deprecated....why did I use binded instead of bound?
+                multi: '=',         //Single select if not set or set to false
+                arr: '=',           //Array of lookup options
+                lookupValue: '=',   //Field name to map the lookupValue to (default: 'title')
+                ngDisabled: '='     //Pass through to disable control using ng-disabled on element if set
+            },
+            link: function (scope) {
+                if (scope.bindedField && !scope.target) {
+                    //Todo remove all references to "bindedField" and change to target
+                    scope.target = scope.bindedField;
+                }
+                scope.state = {
+                    multiSelectIDs: [],
+                    singleSelectID: ''
+                };
 
-        /** Default to title field if not provided */
-        scope.state.lookupField = scope.lookupValue || 'title';
+                /** Default to title field if not provided */
+                scope.state.lookupField = scope.lookupValue || 'title';
 
-        var buildLookupObject = function (stringId) {
-          var intID = parseInt(stringId, 10);
-          var match = _.findWhere(scope.arr, {id: intID});
-          return { lookupId: intID, lookupValue: match[scope.state.lookupField] };
-        };
+                var buildLookupObject = function (stringId) {
+                    var intID = parseInt(stringId, 10);
+                    var match = _.findWhere(scope.arr, {id: intID});
+                    return {lookupId: intID, lookupValue: match[scope.state.lookupField]};
+                };
 
-        //Todo: Get this hooked up to allow custom function to be passed in instead of property name
-        scope.generateDisplayText = function (item) {
-          if (_.isFunction(scope.state.lookupField)) {
-            //Passed in a reference to a function to generate the select display text
-            return scope.state.lookupField(item);
-          } else if (_.isString(scope.state.lookupField)) {
-            //Passed in a property name on the item to use
-            return item[scope.state.lookupField];
-          } else {
-            //Default to the title property of the object
-            return item.title;
-          }
-        };
+                //Todo: Get this hooked up to allow custom function to be passed in instead of property name
+                scope.generateDisplayText = function (item) {
+                    if (_.isFunction(scope.state.lookupField)) {
+                        //Passed in a reference to a function to generate the select display text
+                        return scope.state.lookupField(item);
+                    } else if (_.isString(scope.state.lookupField)) {
+                        //Passed in a property name on the item to use
+                        return item[scope.state.lookupField];
+                    } else {
+                        //Default to the title property of the object
+                        return item.title;
+                    }
+                };
 
-        scope.updateMultiModel = function () {
-          /** Ensure field being binded against is array */
-          if (!_.isArray(scope.target)) {
-            scope.target = [];
-          }
-          /** Clear out existing contents */
-          scope.target.length = 0;
-          /** Push formatted lookup object back */
-          _.each(scope.state.multiSelectIDs, function (stringId) {
-            scope.target.push(buildLookupObject(stringId));
-          });
-        };
+                scope.updateMultiModel = function () {
+                    /** Ensure field being binded against is array */
+                    if (!_.isArray(scope.target)) {
+                        scope.target = [];
+                    }
+                    /** Clear out existing contents */
+                    scope.target.length = 0;
+                    /** Push formatted lookup object back */
+                    _.each(scope.state.multiSelectIDs, function (stringId) {
+                        scope.target.push(buildLookupObject(stringId));
+                    });
+                };
 
-        scope.updateSingleModel = function () {
-          /** Create an object with expected lookupId/lookupValue properties */
-          scope.target = buildLookupObject(scope.state.singleSelectID);
-        };
+                scope.updateSingleModel = function () {
+                    /** Create an object with expected lookupId/lookupValue properties */
+                    scope.target = buildLookupObject(scope.state.singleSelectID);
+                };
 
-        /** Process initially and whenever the underlying value is changed */
-        scope.$watch('target', function () {
-          if (scope.multi) {
-            /** Multi Select Mode
-             *  Set the string version of id's to allow multi-select control to work properly */
-            _.each(scope.target, function (selectedLookup) {
-              /** Push id as a string to match what Select2 is expecting */
-              scope.state.multiSelectIDs.push(selectedLookup.lookupId.toString());
-            });
-          } else {
-            /** Single Select Mode */
-            if (_.isObject(scope.target) && scope.target.lookupId) {
-              /** Set the selected id as string */
-              scope.state.singleSelectID = scope.target.lookupId;
+                /** Process initially and whenever the underlying value is changed */
+                scope.$watch('target', function () {
+                    if (scope.multi) {
+                        /** Multi Select Mode
+                         *  Set the string version of id's to allow multi-select control to work properly */
+                        _.each(scope.target, function (selectedLookup) {
+                            /** Push id as a string to match what Select2 is expecting */
+                            scope.state.multiSelectIDs.push(selectedLookup.lookupId.toString());
+                        });
+                    } else {
+                        /** Single Select Mode */
+                        if (_.isObject(scope.target) && scope.target.lookupId) {
+                            /** Set the selected id as string */
+                            scope.state.singleSelectID = scope.target.lookupId;
+                        }
+                    }
+                });
+
             }
-          }
-        });
-
-      }
-    };
-  }]);;angular.module('angularPoint').run(['$templateCache', function($templateCache) {
+        };
+    }]);
+;angular.module('angularPoint').run(['$templateCache', function($templateCache) {
   'use strict';
 
   $templateCache.put('src/directives/ap_attachments/ap_attachments_tmpl.html',
@@ -8670,32 +8534,6 @@ angular.module('angularPoint')
 
   $templateCache.put('src/directives/ap_select/ap_select_tmpl.html',
     "<span class=ng-cloak><span ng-if=!multi><select class=form-control ng-model=state.singleSelectID ng-change=updateSingleModel() style=\"width: 100%\" ng-disabled=ngDisabled ng-options=\"lookup.id as lookup[state.lookupField] for lookup in arr\"></select></span> <span ng-if=multi><select multiple ui-select2 ng-model=state.multiSelectIDs ng-change=updateMultiModel() style=\"width: 100%\" ng-disabled=ngDisabled><option></option><option ng-repeat=\"lookup in arr\" value=\"{{ lookup.id }}\" ng-bind=lookup[state.lookupField]>&nbsp;</option></select></span></span>"
-  );
-
-
-  $templateCache.put('src/views/group_manager_view.html',
-    "<style>select.multiselect {\n" +
-    "        min-height: 400px;\n" +
-    "    }\n" +
-    "\n" +
-    "    .ui-match {\n" +
-    "        background: yellow;\n" +
-    "    }</style><div class=container><ul class=\"nav nav-tabs\"><li ng-class=\"{active: state.activeTab === 'Users'}\"><a href ng-click=\"updateTab('Users')\">Users</a></li><li ng-class=\"{active: state.activeTab === 'Groups'}\"><a href ng-click=\"updateTab('Groups')\">Groups</a></li><li ng-class=\"{active: state.activeTab === 'Merge'}\"><a href ng-click=\"state.activeTab = 'Merge'\">Merge</a></li><li ng-class=\"{active: state.activeTab === 'UserList'}\"><a href ng-click=\"state.activeTab = 'UserList'\">User List</a></li><li ng-class=\"{active: state.activeTab === 'GroupList'}\"><a href ng-click=\"state.activeTab = 'GroupList'\">Group List</a></li></ul><div ng-if=\"state.activeTab === 'Users'\"><div class=\"panel panel-default\"><div class=panel-heading><div class=row><div class=col-xs-5><span style=font-weight:bold>Select a Group:</span><select class=form-control ng-model=users.filter ng-options=\"group.Name for group in groups.all\" ng-change=updateAvailableUsers(users.filter) style=\"min-width: 100px\"></select></div><div class=col-xs-7><span style=font-weight:bold>Site/Site Collection:</span> <input class=form-control ng-model=state.siteUrl ng-change=updateAvailableUsers(users.filter)></div></div><div class=row ng-if=users.filter.Description><div class=col-xs-12><p class=help-block>Description: {{ users.filter.Description }}</p></div></div></div><div class=panel-body><div class=row><div class=col-xs-12><div colspan=3 class=description>This tab will allow you to quickly assign multiple users to a selected group.</div></div></div><hr class=hr-sm><div class=row><div class=col-xs-5><div class=form-group><label>Available Users ({{users.available.length}})</label><select ng-model=users.selectedAvailable ng-options=\"user.Name for user in users.available\" multiple class=\"multiselect form-control\"></select></div></div><div class=\"col-xs-2 text-center\" style=\"padding-top: 175px\"><button class=\"btn btn-default\" style=width:80px ng-click=\"updatePermissions('AddUserToGroup', users.selectedAvailable, [users.filter])\" title=\"Add user\"><i class=\"fa fa-2x fa-angle-double-right\"></i></button><br><br><button class=\"btn btn-default\" style=width:80px ng-click=\"updatePermissions('RemoveUserFromGroup', users.selectedAssigned, [users.filter])\"><i class=\"fa fa-2x fa-angle-double-left\"></i></button></div><div class=col-xs-5><div class=form-group><label>Assigned Users ({{users.assigned.length}})</label><select ng-model=users.selectedAssigned ng-options=\"user.Name for user in users.assigned\" multiple class=\"multiselect form-control\"></select></div></div></div></div></div></div><div ng-if=\"state.activeTab === 'Groups'\"><div class=\"panel panel-default\"><div class=panel-heading><div class=row><div class=col-xs-5><span style=font-weight:bold>Select a User:</span><select class=form-control ng-model=groups.filter ng-options=\"user.Name for user in users.all\" ng-change=updateAvailableGroups(groups.filter) style=\"min-width: 100px\"></select></div><div class=col-xs-7><span style=font-weight:bold>Site/Site Collection:</span> <input class=form-control ng-model=state.siteUrl ng-change=updateAvailableGroups(groups.filter)></div></div></div><div class=panel-body><div class=row><div class=col-xs-12><div colspan=3 class=description>This page was created to make the process of managing users/groups within the site collection more manageable. When a user is selected, the available groups are displayed on the left and the groups that the user is currently a member of will show on the right. Selecting multiple groups is supported.</div></div></div><hr class=hr-sm><div class=row><div class=col-xs-5><div class=form-group><label>Available Groups ({{groups.available.length}})</label><select ng-model=groups.selectedAvailable ng-options=\"group.Name for group in groups.available\" multiple class=\"multiselect form-control\"></select></div></div><div class=\"col-xs-2 text-center\" style=\"padding-top: 175px\"><button class=\"btn btn-default\" style=width:80px ng-click=\"updatePermissions('AddUserToGroup', [groups.filter], groups.selectedAvailable)\" title=\"Add to group\"><i class=\"fa fa-2x fa-angle-double-right\"></i></button><br><br><button class=\"btn btn-default\" style=width:80px ng-click=\"updatePermissions('RemoveUserFromGroup', [groups.filter], groups.selectedAssigned)\"><i class=\"fa fa-2x fa-angle-double-left\"></i></button></div><div class=col-xs-5><div class=form-group><label>Assigned Users ({{users.assigned.length}})</label><select ng-model=groups.selectedAssigned ng-options=\"group.Name for group in groups.assigned\" multiple class=\"multiselect form-control\"></select></div></div></div></div></div></div><div ng-if=\"state.activeTab === 'Merge'\"><div class=\"panel panel-default\"><div class=panel-body><div class=row><div class=col-xs-12><div class=description>This tab allows us to copy the members from the \"Source\" group over to the \"Target\" group. It's not a problem if any of the users already exist in the destination group. Note: This is a onetime operation so any additional members added to the Source group will not automatically be added to the destination group. You will need to repeat this process.</div></div></div><hr class=hr-sm><div class=row><div class=col-xs-5><fieldset><legend>Step 1</legend><div class=well><div class=form-group><label>Source Group</label><select class=form-control ng-model=state.sourceGroup ng-options=\"group.Name for group in groups.all\" ng-change=updateAvailableUsers(state.sourceGroup) style=\"min-width: 100px\"></select></div></div></fieldset></div><div class=col-xs-5><fieldset><legend>Step 2</legend><div class=well><div class=form-group><label>Source Group</label><select class=form-control ng-model=state.targetGroup ng-options=\"group.Name for group in groups.all\" style=\"min-width: 100px\"></select></div></div></fieldset></div><div class=col-xs-2><fieldset><legend>Step 3</legend><button class=\"btn btn-success\" ng-disabled=\"state.sourceGroup.length < 1 || state.targetGroup.length < 1\" ng-click=mergeGroups() title=\"Copy all members from the source group over to the destination group.\"><i class=\"fa fa-2x fa-magic\"></i> Merge</button></fieldset></div></div></div></div></div><div ng-if=\"state.activeTab === 'UserList'\"><div class=\"panel panel-default\"><div class=panel-heading><span style=font-weight:bold>User Filter</span> <input class=form-control ng-model=state.userFilter ng-change=usersTable.reload()></div><table ng-table=usersTable class=table template-pagination=custom/pager><tr ng-repeat=\"user in $data\"><td data-title=\"'ID'\">{{ user.ID }}</td><td data-title=\"'Name'\"><a href ng-click=userDetailsLink(user) ng-bind-html=\"user.Name |  highlight:state.userFilter\"></a></td><td data-title=\"'Email'\">{{ user.Email }}</td></tr></table></div></div><div ng-if=\"state.activeTab === 'GroupList'\"><div class=\"panel panel-default\"><div class=panel-heading><span style=font-weight:bold>Group Filter</span> <input class=form-control ng-model=state.groupFilter ng-change=groupsTable.reload()></div><table ng-table=groupsTable class=table template-pagination=custom/pager><tr ng-repeat=\"group in $data\"><td data-title=\"'ID'\">{{ group.ID }}</td><td data-title=\"'Name'\"><a href ng-click=groupDetailsLink(group) ng-bind-html=\"group.Name |  highlight:state.groupFilter\"></a></td><td data-title=\"'Description'\">{{ group.Description }}</td></tr></table></div></div></div><script type=text/ng-template id=custom/pager><div class=\"row\">\n" +
-    "        <div class=\"col-xs-12\">\n" +
-    "            <ul class=\"pager ng-cloak\">\n" +
-    "                <li ng-repeat=\"page in pages\"\n" +
-    "                    ng-class=\"{'disabled': !page.active}\"\n" +
-    "                    ng-show=\"page.type == 'prev' || page.type == 'next'\" ng-switch=\"page.type\">\n" +
-    "                    <a ng-switch-when=\"prev\" ng-click=\"params.page(page.number)\" href=\"\">\n" +
-    "                        <i class=\"fa fa-chevron-left\"></i>\n" +
-    "                    </a>\n" +
-    "                    <a ng-switch-when=\"next\" ng-click=\"params.page(page.number)\" href=\"\">\n" +
-    "                        <i class=\"fa fa-chevron-right\"></i>\n" +
-    "                    </a>\n" +
-    "                </li>\n" +
-    "            </ul>\n" +
-    "        </div>\n" +
-    "    </div></script>"
   );
 
 }]);

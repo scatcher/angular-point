@@ -12,9 +12,6 @@
 angular.module('angularPoint')
     .service('apEncodeService', function (_, apConfig, apUtilityService, SPServices) {
 
-        /** Flag to use cached XML files from the src/dev folder */
-        var offline = apConfig.offline;
-
         return {
             choiceMultiToString: choiceMultiToString,
             createValuePair: createValuePair,
@@ -23,7 +20,6 @@ angular.module('angularPoint')
             stringifySharePointMultiSelect: stringifySharePointMultiSelect
 
         };
-
 
         /**
          * Converts an array of selected values into a SharePoint MultiChoice string
@@ -150,11 +146,11 @@ angular.module('angularPoint')
          * @returns {string} ISO8601 date string.
          */
         function stringifySharePointDate(date) {
-            if(!_.isDate(date) && _.isString(date) && date.split('-').length === 3) {
+            if (!_.isDate(date) && _.isString(date) && date.split('-').length === 3) {
                 /** Date string formatted YYYY-MM-DD */
                 var dateComponents = date.split('-');
                 date = new Date(dateComponents[0], dateComponents[1] - 1, dateComponents[2], 0, 0, 0);
-            } else if(!_.isDate(date)) {
+            } else if (!_.isDate(date)) {
                 throw new Error('Invalid Date Provided: ' + value.toString());
             }
 

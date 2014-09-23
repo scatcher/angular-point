@@ -26,18 +26,18 @@ angular.module('angularPoint')
 
             var jsonObject = [];
 
-            _.each(xmlNodeSet, function(node) {
+            _.each(xmlNodeSet, function (node) {
                 var row = {};
                 var rowAttrs = node.attributes;
 
                 if (!opts.sparse) {
                     // Bring back all mapped columns, even those with no value
-                    _.each(opts.mapping, function(column) {
+                    _.each(opts.mapping, function (column) {
                         row[column.mappedName] = '';
                     });
                 }
 
-                _.each(rowAttrs, function(rowAttribute) {
+                _.each(rowAttrs, function (rowAttribute) {
                     var attributeName = rowAttribute.name;
                     var columnMapping = opts.mapping[attributeName];
                     var objectName = typeof columnMapping !== "undefined" ? columnMapping.mappedName : opts.removeOws ? attributeName.split("ows_")[1] : attributeName;
