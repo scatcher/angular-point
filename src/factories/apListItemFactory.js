@@ -221,7 +221,7 @@ angular.module('angularPoint')
                     return apCacheService.getCachedEntity(fieldDefinition.List, targetId);
                 } else {
                     throw new Error('This isn\'t a valid Lookup field or the field definitions need to be extended ' +
-                        'before we can complete this request.', fieldName, lookupId);
+                    'before we can complete this request.', fieldName, lookupId);
                 }
             }
         }

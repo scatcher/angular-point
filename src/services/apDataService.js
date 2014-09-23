@@ -18,7 +18,7 @@
 angular.module('angularPoint')
     .service('apDataService', function ($q, $timeout, $http, _, apQueueService, apConfig, apUtilityService,
                                         apCacheService, apDecodeService, apEncodeService, apFieldService,
-                                        apIndexedCacheFactory, apMocksService, toastr, SPServices,
+                                        apIndexedCacheFactory, toastr, SPServices,
                                         apWebServiceOperationConstants, apXMLToJSONService) {
 
         /** Exposed functionality */
@@ -57,62 +57,54 @@ angular.module('angularPoint')
          * The primary function that handles all communication with the server.  This is very low level and isn't
          * intended to be called directly.
          * @param {object} opts Payload object containing the details of the request.
-         * @param {array} additionalArgs Optional parameters to pass to the mock service when working offline.
          * @returns {promise} Promise that resolves with the server response.
          */
-        function requestData(opts, additionalArgs) {
+        function requestData(opts) {
             var deferred = $q.defer();
 
-            if (apConfig.online) {
-                var soapData = SPServices.generateXMLComponents(opts);
-                var service = apWebServiceOperationConstants[opts.operation][0];
-                generateWebServiceUrl(service, opts.webURL)
-                    .then(function (url) {
-                        $http({
-                            method: 'POST',
-                            url: url,
-                            data: soapData.msg,
-                            responseType: "document",
-                            headers: {
-                                "Content-Type": "text/xml;charset='utf-8'"
-                            },
-                            transformRequest: function (data, headersGetter) {
-                                if (soapData.SOAPAction) {
-                                    var headers = headersGetter();
-                                    headers["SOAPAction"] = soapData.SOAPAction;
-                                }
-                                return data;
-                            },
-                            transformResponse: function (data, headersGetter) {
-                                if(_.isString(data)) {
-                                    data = $.parseXML(data);
-                                }
-                                return data;
+            var soapData = SPServices.generateXMLComponents(opts);
+            var service = apWebServiceOperationConstants[opts.operation][0];
+            generateWebServiceUrl(service, opts.webURL)
+                .then(function (url) {
+                    $http({
+                        method: 'POST',
+                        url: url,
+                        data: soapData.msg,
+                        responseType: "document",
+                        headers: {
+                            "Content-Type": "text/xml;charset='utf-8'"
+                        },
+                        transformRequest: function (data, headersGetter) {
+                            if (soapData.SOAPAction) {
+                                var headers = headersGetter();
+                                headers["SOAPAction"] = soapData.SOAPAction;
                             }
-                        }).then(function (response) {
-                            /** Success */
-                            /** Errors can still be resolved without throwing an error so check the XML */
-                            var error = apDecodeService.checkResponseForErrors(response.data);
-                            if (error) {
-                                console.error(error, opts);
-                                deferred.reject(error);
-                            } else {
-                                deferred.resolve(response.data);
+                            return data;
+                        },
+                        transformResponse: function (data, headersGetter) {
+                            if (_.isString(data)) {
+                                data = $.parseXML(data);
                             }
-                        }, function (response) {
-                            /** Failure */
-                            var error = apDecodeService.checkResponseForErrors(response.data);
-                            console.error(response.statusText, opts);
-                            deferred.reject(response.statusText + ': ' + error);
-                        });
+                            return data;
+                        }
+                    }).then(function (response) {
+                        /** Success */
+                        /** Errors can still be resolved without throwing an error so check the XML */
+                        var error = apDecodeService.checkResponseForErrors(response.data);
+                        if (error) {
+                            console.error(error, opts);
+                            deferred.reject(error);
+                        } else {
+                            deferred.resolve(response.data);
+                        }
+                    }, function (response) {
+                        /** Failure */
+                        var error = apDecodeService.checkResponseForErrors(response.data);
+                        console.error(response.statusText, opts);
+                        deferred.reject(response.statusText + ': ' + error);
                     });
+                });
 
-            } else {
-                apMocksService.mockRequest(opts, additionalArgs)
-                    .then(function (response) {
-                        deferred.resolve(response);
-                    });
-            }
             return deferred.promise;
         }
 
@@ -137,8 +129,6 @@ angular.module('angularPoint')
          */
         function serviceWrapper(options) {
             var defaults = {
-                /** You need to specify the offline xml file if you want to properly mock the request when offline */
-                offlineXML: apConfig.offlineXML + options.operation + '.xml',
                 postProcess: processXML,
                 webURL: apConfig.defaultUrl
             };
@@ -149,19 +139,16 @@ angular.module('angularPoint')
             function processXML(serverResponse) {
                 if (opts.filterNode) {
                     var nodes = $(serverResponse).SPFilterNode(opts.filterNode);
-                    return apXMLToJSONService(nodes, { includeAllAttrs: true, removeOws: false });
+                    return apXMLToJSONService(nodes, {includeAllAttrs: true, removeOws: false});
                 } else {
                     return serverResponse;
                 }
             }
 
-            /** Allow this method to be overloaded and pass any additional arguments to the mock service */
-            var additionalArgs = Array.prototype.slice.call(arguments, 1);
-
             /** Display any async animations listening */
             apQueueService.increase();
 
-            apDataService.requestData(opts, additionalArgs)
+            apDataService.requestData(opts)
                 .then(function (response) {
                     /** Failure */
                     var data = opts.postProcess(response);
@@ -204,22 +191,17 @@ angular.module('angularPoint')
 
             var deferred = $q.defer();
 
-            if (apConfig.online) {
-                serviceWrapper(opts)
-                    .then(function (response) {
-                        /** Parse XML response */
-                        var versions = apDecodeService.parseFieldVersions(response, fieldDefinition);
-                        /** Resolve with an array of all field versions */
-                        deferred.resolve(versions);
-                    }, function (outcome) {
-                        /** Failure */
-                        toastr.error('Failed to fetch version history.');
-                        deferred.reject(outcome);
-                    });
-            } else {
-                /** Resolve with an empty array because we don't know what the data should look like to mock */
-                deferred.resolve([]);
-            }
+            serviceWrapper(opts)
+                .then(function (response) {
+                    /** Parse XML response */
+                    var versions = apDecodeService.parseFieldVersions(response, fieldDefinition);
+                    /** Resolve with an array of all field versions */
+                    deferred.resolve(versions);
+                }, function (outcome) {
+                    /** Failure */
+                    toastr.error('Failed to fetch version history.');
+                    deferred.reject(outcome);
+                });
             return deferred.promise;
         }
 
@@ -258,10 +240,6 @@ angular.module('angularPoint')
             var defaults = {
                 postProcess: processXML
             };
-            /** Set the default location for the offline XML in case it isn't manually set. */
-            if (apConfig.offline && _.isString(options.operation)) {
-                defaults.offlineData = apConfig.offlineXML + options.operation + '.xml';
-            }
             var opts = _.extend({}, defaults, options);
 
             /** Determine the XML node to iterate over if filterNode isn't provided */
@@ -280,7 +258,7 @@ angular.module('angularPoint')
                     });
                 } else {
                     var nodes = $(serverResponse).SPFilterNode(filterNode);
-                    convertedItems = apXMLToJSONService(nodes, { includeAllAttrs: true, removeOws: false });
+                    convertedItems = apXMLToJSONService(nodes, {includeAllAttrs: true, removeOws: false});
                 }
                 return convertedItems;
             }
@@ -442,7 +420,7 @@ angular.module('angularPoint')
         function getCurrentSite() {
             var deferred = $q.defer();
             var self = getCurrentSite;
-            if(!self.query) {
+            if (!self.query) {
                 /** We only want to run this once so cache the promise the first time and just reference it in the future */
                 self.query = deferred.promise;
 
@@ -506,7 +484,7 @@ angular.module('angularPoint')
             getList(options)
                 .then(function (responseXml) {
                     var nodes = $(responseXml).SPFilterNode('Field');
-                    var fields = apXMLToJSONService(nodes, { includeAllAttrs: true, removeOws: false });
+                    var fields = apXMLToJSONService(nodes, {includeAllAttrs: true, removeOws: false});
                     deferred.resolve(fields);
                 });
             return deferred.promise;
@@ -530,14 +508,14 @@ angular.module('angularPoint')
                 operation: 'GetListItems',
                 CAMLRowLimit: 1,
                 CAMLQuery: '' +
-                    '<Query>' +
-                    ' <Where>' +
-                    '   <Eq>' +
-                    '     <FieldRef Name="ID"/>' +
-                    '     <Value Type="Number">' + entityId + '</Value>' +
-                    '   </Eq>' +
-                    ' </Where>' +
-                    '</Query>',
+                '<Query>' +
+                ' <Where>' +
+                '   <Eq>' +
+                '     <FieldRef Name="ID"/>' +
+                '     <Value Type="Number">' + entityId + '</Value>' +
+                '   </Eq>' +
+                ' </Where>' +
+                '</Query>',
                 /** Create a temporary cache to store response */
                 target: apIndexedCacheFactory.create()
             };
@@ -642,9 +620,7 @@ angular.module('angularPoint')
          */
         function getView(options) {
             var defaults = {
-                operation: 'GetView',
-                /** Optionally set alternate offline XML location */
-                offlineXML: apConfig.offlineXML + 'GetView.xml'
+                operation: 'GetView'
             };
 
             var deferred = $q.defer();
@@ -696,28 +672,18 @@ angular.module('angularPoint')
             /** Extend defaults **/
             var opts = _.extend({}, defaults, options);
 
-            /** Set the location of the offline xml file */
-            query.offlineXML = opts.offlineXML || query.offlineXML || apConfig.offlineXML + model.list.title + '.xml';
-
             serviceWrapper(query)
                 .then(function (response) {
-                    //TODO Remove offline logic
-                    if (apConfig.offline && !_.isNull(query.lastRun)) {
-                        /** Entities have already been previously processed so just return the existing cache */
-                        deferred.resolve(response);
-                    } else {
-                        if (query.operation === 'GetListItemChangesSinceToken') {
-                            processChangeTokenXML(model, query, response, opts);
-                        }
-
-                        /** Convert the XML into JS objects */
-                        var entities = apDecodeService.processListItems(model, query, response, opts);
-                        deferred.resolve(entities);
+                    if (query.operation === 'GetListItemChangesSinceToken') {
+                        processChangeTokenXML(model, query, response, opts);
                     }
+
+                    /** Convert the XML into JS objects */
+                    var entities = apDecodeService.processListItems(model, query, response, opts);
+                    deferred.resolve(entities);
 
                     /** Set date time to allow for time based updates */
                     query.lastRun = new Date();
-
                 });
 
             return deferred.promise;
@@ -841,15 +807,10 @@ angular.module('angularPoint')
             /** Overload the function then pass anything past the first parameter to the supporting methods */
             serviceWrapper(opts, entity, model)
                 .then(function (response) {
-                    if (apConfig.online) {
-                        /** Online this should return an XML object */
-                        var indexedCache = apDecodeService.processListItems(model, opts, response, opts);
-                        /** Return reference to last entity in cache because it will have the new highest id */
-                        deferred.resolve(indexedCache.last());
-                    } else {
-                        /** Offline response should be the updated entity as a JS Object */
-                        deferred.resolve(response);
-                    }
+                    /** Online this should return an XML object */
+                    var indexedCache = apDecodeService.processListItems(model, opts, response, opts);
+                    /** Return reference to last entity in cache because it will have the new highest id */
+                    deferred.resolve(indexedCache.last());
                 }, function (err) {
                     deferred.reject(err);
                 });
@@ -890,15 +851,9 @@ angular.module('angularPoint')
             /** Overload the function then pass anything past the first parameter to the supporting methods */
             serviceWrapper(opts, entity, model)
                 .then(function (response) {
-                    if (apConfig.online) {
-                        /** Online this should return an XML object */
-                        var indexedCache = apDecodeService.processListItems(model, entity.getQuery(), response, opts);
-                        /** Return reference to updated entity  */
-                        deferred.resolve(indexedCache[entity.id]);
-                    } else {
-                        /** Offline response should be the updated entity as a JS Object */
-                        deferred.resolve(response);
-                    }
+                    var indexedCache = apDecodeService.processListItems(model, entity.getQuery(), response, opts);
+                    /** Return reference to updated entity  */
+                    deferred.resolve(indexedCache[entity.id]);
                 }, function (err) {
                     deferred.reject(err);
                 });

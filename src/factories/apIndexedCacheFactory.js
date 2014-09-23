@@ -25,7 +25,7 @@ angular.module('angularPoint')
          */
         function IndexedCache(object) {
             var self = this;
-            if(object) {
+            if (object) {
                 _.extend(self, object);
             }
         }
@@ -62,10 +62,10 @@ angular.module('angularPoint')
 
             if (_.isObject(entity) && !!entity.id) {
                 /** Only add the entity to the cache if it's not already there */
-                if(!cache[entity.id]) {
+                if (!cache[entity.id]) {
                     cache[entity.id] = entity;
                 }
-            }else {
+            } else {
                 throw new Error('A valid entity wasn\'t found: ', entity);
             }
         }
@@ -79,7 +79,7 @@ angular.module('angularPoint')
          */
         function clear() {
             var cache = this;
-            _.each(cache, function(entity, key) {
+            _.each(cache, function (entity, key) {
                 delete cache[key];
             });
         }
@@ -112,7 +112,6 @@ angular.module('angularPoint')
             var keys = cache.keys();
             return cache[keys[index]];
         }
-
 
 
         /**
@@ -165,9 +164,9 @@ angular.module('angularPoint')
          */
         function removeEntity(entity) {
             var cache = this;
-            if(_.isObject && entity.id && cache[entity.id]) {
+            if (_.isObject && entity.id && cache[entity.id]) {
                 delete cache[entity.id];
-            } else if(_.isNumber(entity)) {
+            } else if (_.isNumber(entity)) {
                 /** Allow entity ID to be used instead of then entity */
                 delete cache[entity];
             }

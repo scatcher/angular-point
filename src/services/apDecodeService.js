@@ -62,7 +62,7 @@ angular.module('angularPoint')
             var filteredNodes = $(responseXML).SPFilterNode(opts.filter);
 
             /** Prepare constructor for XML entities with references to the query and cached container */
-            var listItemProvider= createListItemProvider(model, query, opts.target);
+            var listItemProvider = createListItemProvider(model, query, opts.target);
 
             /** Convert XML entities into JS objects and register in cache with listItemProvider, this returns an
              * array of entities but at this point we're not using them because the indexed cache should be more
@@ -526,7 +526,7 @@ angular.module('angularPoint')
             var versionCount = xmlVersions.length;
 
 
-            _.each(xmlVersions, function(xmlVersion, index) {
+            _.each(xmlVersions, function (xmlVersion, index) {
                 /** Parse the xml and create a representation of the version as a js object */
                 var version = {
                     editor: attrToJson($(xmlVersion).attr('Editor'), 'User'),
@@ -561,7 +561,7 @@ angular.module('angularPoint')
             var error = null;
             /** Look for <errorstring></errorstring> or <ErrorText></ErrorText> for details on any errors */
             var errorElements = ['ErrorText', 'errorstring'];
-            _.each(errorElements, function(element) {
+            _.each(errorElements, function (element) {
                 $(responseXML).find(element).each(function () {
                     error = $(this).text();
                     /** Break early if found */

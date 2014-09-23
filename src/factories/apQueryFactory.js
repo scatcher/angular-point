@@ -77,7 +77,7 @@ angular.module('angularPoint')
             var query = this;
             var defaults = {
                 /** Container to hold returned entities */
-                    //todo moved to indexedCache instead for better performance
+                //todo moved to indexedCache instead for better performance
                 //cache: [],
                 /** Reference to the most recent query when performing GetListItemChangesSinceToken */
                 changeToken: undefined,

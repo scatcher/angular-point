@@ -8,7 +8,7 @@ angular.module('angularPoint')
         };
 
         function mockRequest(opts, args) {
-            switch(opts.operation) {
+            switch (opts.operation) {
                 case 'UpdateListItems':
                     return updateListItems.apply(this, args);
                 case 'GetListItemChangesSinceToken':
@@ -33,7 +33,7 @@ angular.module('angularPoint')
                 });
             return deferred.promise;
         }
-        
+
         function processListItems(opts) {
             var deferred = $q.defer();
 
@@ -60,7 +60,7 @@ angular.module('angularPoint')
                     lookupId: 23,
                     lookupValue: 'Generic User'
                 },
-                getCache: function() {
+                getCache: function () {
                     return apIndexedCacheFactory.create();
                 }
             };
@@ -83,7 +83,7 @@ angular.module('angularPoint')
                     var maxId = 1;
                     /** Find the entity with the highest ID number */
                     var lastEntity = query.getCache().last();
-                    if(lastEntity) {
+                    if (lastEntity) {
                         maxId = lastEntity.id;
                     }
                     offlineDefaults.id = maxId + 1;

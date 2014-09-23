@@ -85,10 +85,9 @@ angular.module('angularPoint')
         List.prototype.getListId = getListId;
 
 
-
         function getListId() {
             var list = this;
-            if(_.isString(list.environments[apConfig.environment])) {
+            if (_.isString(list.environments[apConfig.environment])) {
                 /**
                  * For a multi-environment setup, we accept a list.environments object with a property for each named
                  * environment with a corresponding value of the list guid.  The active environment can be selected

@@ -82,7 +82,6 @@ angular.module('angularPoint')
         }; // End SPServices.defaults
 
 
-
         // Set up SOAP envelope
         function SOAPEnvelope() {
             return {
@@ -964,7 +963,6 @@ angular.module('angularPoint')
 
 
         }; // End SPServices.generateXMLComponents
-
 
 
         //TODO Move this somewhere else, it's too buried down here

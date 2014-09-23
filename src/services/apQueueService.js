@@ -83,7 +83,7 @@ angular.module('angularPoint')
 
         /** call this when queue changes */
         function notifyObservers() {
-            _.each(observerCallbacks, function(callback) {
+            _.each(observerCallbacks, function (callback) {
                 callback(apQueueService.count);
             });
         }
