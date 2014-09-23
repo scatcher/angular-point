@@ -23,7 +23,7 @@ module.exports = function (config) {
 
             // Angular Point
             'test/mock/app.mock.js',
-            'test/mock/run.mock.js',
+            'test/mock/apMockBackend.js',
             'test/mock/data/parsedXML.js',
             'src/constants/*.js',
             'src/config.js',

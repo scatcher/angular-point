@@ -7,7 +7,7 @@ angular.module('angularPoint')
          * operation */
         _.each(apWebServiceService.webServices, function (service) {
             /** Lists has many special cases so don't create generic backend for it */
-            if(service !== 'Lists') {
+            if (service !== 'Lists') {
                 /** Simple regex to check if the requested endpoint matches the one for this service */
                 var regExp = new RegExp('_vti_bin/' + service + '.asmx', 'g');
                 $httpBackend.when('POST', regExp)
@@ -23,7 +23,7 @@ angular.module('angularPoint')
             }
         });
 
-        $httpBackend.whenPOST('/test/_vti_bin/Lists.asmx')
+        $httpBackend.whenPOST(/Lists.asmx/)
             .respond(function (method, url, data) {
                 var requestXML = $.parseXML(data);
                 var request = $(requestXML).find('[xmlns^="http://schemas.microsoft.com/sharepoint/"]');
@@ -67,6 +67,10 @@ angular.module('angularPoint')
                 return responder(responseXML);
             });
 
+        //TODO Figure out why this doesn't work when doing unit tests
+        // Don't mock the html views
+        //$httpBackend.when('GET', /\.html$/).passThrough();
+
         function getNamedListItems(operation, data) {
             var responseXML;
             /** Find the list id */
@@ -97,49 +101,4 @@ angular.module('angularPoint')
             return [200, responseXML];
         }
 
-
     });
-
-//$httpBackend.whenPOST('/_vti_bin/Webs.asmx')
-//    .respond(function (method, url, data) {
-//        var requestXML = $.parseXML(data);
-//        var request = $(requestXML).find('[xmlns^="http://schemas.microsoft.com/"]');
-//        var operation = request[0].nodeName;
-//        var responseXML = getCachedResponse(operation);
-//        return responder(responseXML);
-//    });
-
-//$httpBackend.whenPOST('/test/_vti_bin/UserProfileService.asmx')
-//    .respond(function (method, url, data) {
-//        var requestXML = $.parseXML(data);
-//        var request = $(requestXML).find('[xmlns^="http://microsoft.com/"]');
-//        var operation = request[0].nodeName;
-//        var responseXML;
-//
-//        responseXML = getCachedResponse(operation);
-//        return responder(responseXML);
-//    });
-//
-//$httpBackend.whenPOST('/test/_vti_bin/usergroup.asmx')
-//    .respond(function (method, url, data) {
-//        var requestXML = $.parseXML(data);
-//        var request = $(requestXML).find('[xmlns^="http://schemas.microsoft.com/"]');
-//        var operation = request[0].nodeName;
-//        var responseXML;
-//
-//        responseXML = getCachedResponse(operation);
-//        return responder(responseXML);
-//    });
-
-//$httpBackend.whenPOST('/test/_vti_bin/Views.asmx')
-//    .respond(function (method, url, data) {
-//        console.info(typeof data);
-//        var requestXML = $.parseXML(data);
-//        var request = $(requestXML).find('[xmlns^="http://schemas.microsoft.com/"]');
-//        var operation = request[0].nodeName;
-//        var responseXML;
-//        responseXML = getCachedResponse(operation);
-//        return responder(responseXML);
-//    });
-
-
