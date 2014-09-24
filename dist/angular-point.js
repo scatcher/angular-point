@@ -2292,7 +2292,7 @@ angular.module('angularPoint')
                     case 'Lookup':
                     case 'User':
                         if (value.lookupId) {
-                            str = value.lookupId;
+                            str = value.lookupId + ';#' + value.lookupValue;
                         }
                         break;
                     case 'LookupMulti':
@@ -2384,16 +2384,18 @@ angular.module('angularPoint')
          *
          * @param {object[]} multiSelectValue Array of {lookupId: #, lookupValue: 'Some Value'} objects.
          * @param {string} [idProperty='lookupId'] Property name where we'll find the ID value on each of the objects.
+         * @param {string} [valueProperty='lookupValue'] Property name where we'll find the value for this object.
          * @returns {string} Need to format string of id's in following format [ID0];#;#[ID1];#;#[ID1]
          */
-        function stringifySharePointMultiSelect(multiSelectValue, idProperty) {
+        function stringifySharePointMultiSelect(multiSelectValue, idProperty, valueProperty) {
             var stringifiedValues = '';
             var idProp = idProperty || 'lookupId';
+            var valProp = valueProperty || 'lookupValue';
             _.each(multiSelectValue, function (lookupObject, iteration) {
-                /** Need to format string of id's in following format [ID0];#;#[ID1];#;#[ID1] */
-                stringifiedValues += lookupObject[idProp];
+                /** Need to format string of id's in following format [ID0];#[VAL0];#[ID1];#[VAL1];# */
+                stringifiedValues += lookupObject[idProp] + ';#' + lookupObject[valProp];
                 if (iteration < multiSelectValue.length) {
-                    stringifiedValues += ';#;#';
+                    stringifiedValues += ';#';
                 }
             });
             return stringifiedValues;
@@ -6686,7 +6688,7 @@ angular.module('angularPoint')
             var lookup = this;
             var thisLookup = new apUtilityService.SplitIndex(s);
             lookup.lookupId = thisLookup.id;
-            lookup.lookupValue = thisLookup.value;
+            lookup.lookupValue = thisLookup.value || '';
             //TODO Check to see if there's a better way to handle this besides adding a property to the lookup obj
             //lookup._props = function () {
             //    return options;
@@ -6792,7 +6794,8 @@ angular.module('angularPoint')
             create: create,
             Lookup: Lookup
         }
-    }]);;'use strict';
+    }]);
+;'use strict';
 
 /**
  * @ngdoc object

@@ -27,7 +27,7 @@ angular.module('angularPoint')
             var lookup = this;
             var thisLookup = new apUtilityService.SplitIndex(s);
             lookup.lookupId = thisLookup.id;
-            lookup.lookupValue = thisLookup.value;
+            lookup.lookupValue = thisLookup.value || '';
             //TODO Check to see if there's a better way to handle this besides adding a property to the lookup obj
             //lookup._props = function () {
             //    return options;

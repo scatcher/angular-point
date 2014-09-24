@@ -45,3 +45,25 @@
         </UpdateListItemsResponse>
     </soap:Body>
 </soap:Envelope>
+
+    <?xml version="1.0" encoding="utf-8"?>
+<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/"
+                                                         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                                                         xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+<soap:Body>
+    <UpdateListItemsResponse xmlns="http://schemas.microsoft.com/sharepoint/soap/">
+        <UpdateListItemsResult>
+            <Results>
+                <Result ID="1,Update">
+                    <ErrorCode>0x00000000</ErrorCode>
+                    <z:row ows_SubHead="15" ows_FundFunc="24" ows_Title="1S" ows_BESADesc="FIRST DEST TRANS CHARGE"
+                           ows_MCPC="051014" ows_MCPCDesc="Conventional Ground Ammunition" ows_FY="2014"
+                           ows_FYAuth="4557000" ows_Oct="164000" ows_Nov="414000" ows_Dec="828000" ows_Jan="1242000"
+                           ows_Feb="1656000" ows_Mar="2070000" ows_Apr="2484000" ows_May="2898000" ows_Jun="3312000"
+                           ows_Jul="3726000" ows_Aug="4140000" ows_Sep="4557000" ows_Comments="asdf" ows_ID="76"/>
+                </Result>
+            </Results>
+        </UpdateListItemsResult>
+    </UpdateListItemsResponse>
+</soap:Body>
+</soap:Envelope>

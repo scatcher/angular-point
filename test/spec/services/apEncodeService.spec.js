@@ -36,13 +36,13 @@ describe("Factory: apEncodeService", function () {
         it('correctly handles a Lookup field', function () {
             var validLookup = {lookupId: 1, lookupValue: 'Test'};
             expect(apEncodeService.createValuePair(mockDefinition('Lookup'), validLookup))
-                .toEqual([ 'Lookup', 1 ]);
-        });        
+                .toEqual([ 'Lookup', '1;#Test' ]);
+        });
 
         it('correctly handles a User field', function () {
             var validUser = {lookupId: 1100, lookupValue: 'Bill'};
             expect(apEncodeService.createValuePair(mockDefinition('User'), validUser))
-                .toEqual([ 'User', 1100 ]);
+                .toEqual([ 'User', '1100;#Bill' ]);
         });
 
         it('correctly handles a UserMulti field', function () {
@@ -51,7 +51,7 @@ describe("Factory: apEncodeService", function () {
                 {lookupId: 1101, lookupValue: 'Jane'}
             ];
             expect(apEncodeService.createValuePair(mockDefinition('UserMulti'), validUsers))
-                .toEqual([ 'UserMulti', '1100;#;#1101;#;#' ]);
+                .toEqual([ 'UserMulti', '1100;#Bill;#1101;#Jane;#' ]);
         });
 
         it('correctly handles a LookupMulti field', function () {
@@ -60,7 +60,7 @@ describe("Factory: apEncodeService", function () {
                 {lookupId: 2, lookupValue: 'Widget'}
             ];
             expect(apEncodeService.createValuePair(mockDefinition('LookupMulti'), validUsers))
-                .toEqual([ 'LookupMulti', '1;#;#2;#;#' ]);
+                .toEqual([ 'LookupMulti', '1;#Cog;#2;#Widget;#' ]);
         });
 
         it('correctly handles a true Boolean field', function () {
