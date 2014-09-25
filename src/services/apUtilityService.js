@@ -333,6 +333,39 @@ angular.module('angularPoint')
 
         /**
          * @ngdoc function
+         * @name angularPoint.apUtilityService:stringifyXML
+         * @methodOf angularPoint.apUtilityService
+         * @description Simple utility to convert an XML object into a string and remove unnecessary whitespace.
+         * @param {object} xml XML object.
+         * @returns {string} Stringified version of the XML object.
+         */
+        function stringifyXML(xml) {
+            var str;
+
+            if(_.isObject(xml)) {
+                str = xmlToString(xml).replace(/\s+/g, ' ');
+            } else if(_.isString(xml)) {
+                str = xml;
+            }
+            return str;
+        }
+
+        function xmlToString(xmlData) {
+
+            var xmlString;
+            //IE
+            if (window.ActiveXObject){
+                xmlString = xmlData.xml;
+            }
+            // code for Mozilla, Firefox, Opera, etc.
+            else{
+                xmlString = (new XMLSerializer()).serializeToString(xmlData);
+            }
+            return xmlString;
+        }
+
+        /**
+         * @ngdoc function
          * @name angularPoint.apUtilityService:registerChange
          * @methodOf angularPoint.apUtilityService
          * @description
@@ -356,6 +389,7 @@ angular.module('angularPoint')
             registerChange: registerChange,
             resolvePermissions: resolvePermissions,
             SplitIndex: SplitIndex,
+            stringifyXML:stringifyXML,
             toCamelCase: toCamelCase,
             yyyymmdd: yyyymmdd
         };

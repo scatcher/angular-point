@@ -29,31 +29,31 @@ angular.module('angularPoint')
          * <pre>
          * [
          *   {
-         *       internalName: "Title",
+         *       staticName: "Title",
          *       objectType: "Text",
          *       mappedName: "lastName",
          *       readOnly:false
          *   },
          *   {
-         *       internalName: "FirstName",
+         *       staticName: "FirstName",
          *       objectType: "Text",
          *       mappedName: "firstName",
          *       readOnly:false
          *   },
          *   {
-         *       internalName: "Organization",
+         *       staticName: "Organization",
          *       objectType: "Lookup",
          *       mappedName: "organization",
          *       readOnly:false
          *   },
          *   {
-         *       internalName: "Account",
+         *       staticName: "Account",
          *       objectType: "User",
          *       mappedName: "account",
          *       readOnly:false
          *   },
          *   {
-         *       internalName: "Details",
+         *       staticName: "Details",
          *       objectType: "Text",
          *       mappedName: "details",
          *       readOnly:false
@@ -103,7 +103,7 @@ angular.module('angularPoint')
         /**
          * @ngdoc object
          * @name List.FieldDefinition
-         * @property {string} internalName The actual SharePoint field name.
+         * @property {string} staticName The actual SharePoint field name.
          * @property {string} [objectType='Text']
          * <dl>
          *     <dt>Boolean</dt>
@@ -203,31 +203,31 @@ angular.module('angularPoint')
          *                 // Array of objects mapping each SharePoint field to a
          *                 // property on a list item object
          *                 {
-         *                  internalName: 'Title',
+         *                  staticName: 'Title',
          *                  objectType: 'Text',
          *                  mappedName: 'title',
          *                  readOnly:false
          *                 },
          *                 {
-         *                  internalName: 'Project',
+         *                  staticName: 'Project',
          *                  objectType: 'Lookup',
          *                  mappedName: 'project',
          *                  readOnly:false
          *                 },
          *                 {
-         *                  internalName: 'Priority',
+         *                  staticName: 'Priority',
          *                  objectType: 'Choice',
          *                  mappedName: 'priority',
          *                  readOnly:false
           *                },
          *                 {
-         *                  internalName: 'Description',
+         *                  staticName: 'Description',
          *                  objectType: 'Text',
          *                  mappedName: 'description',
          *                  readOnly:false
          *                 },
          *                 {
-         *                  internalName: 'Manager',
+         *                  staticName: 'Manager',
          *                  objectType: 'Lookup',
          *                  mappedName: 'requirement',
          *                  readOnly:false

@@ -59,55 +59,55 @@ angular.module('angularPoint')
          *         title: 'Projects',
          *         customFields: [
          *             {
-         *                internalName: 'Title',
+         *                staticName: 'Title',
          *                objectType: 'Text',
          *                mappedName: 'title',
          *                readOnly: false
          *             },
          *             {
-         *                internalName: 'Customer',
+         *                staticName: 'Customer',
          *                objectType: 'Lookup',
          *                mappedName: 'customer',
          *                readOnly: false
          *             },
          *             {
-         *                internalName: 'ProjectDescription',
+         *                staticName: 'ProjectDescription',
          *                objectType: 'Text',
          *                mappedName: 'projectDescription',
          *                readOnly: false
          *             },
          *             {
-         *                internalName: 'Status',
+         *                staticName: 'Status',
          *                objectType: 'Text',
          *                mappedName: 'status',
          *                readOnly: false
          *             },
          *             {
-         *                internalName: 'TaskManager',
+         *                staticName: 'TaskManager',
          *                objectType: 'User',
          *                mappedName: 'taskManager',
          *                readOnly: false
          *             },
          *             {
-         *                internalName: 'ProjectGroup',
+         *                staticName: 'ProjectGroup',
          *                objectType: 'Lookup',
          *                mappedName: 'group',
          *                readOnly: false
          *             },
          *             {
-         *                internalName: 'CostEstimate',
+         *                staticName: 'CostEstimate',
          *                objectType: 'Currency',
          *                mappedName: 'costEstimate',
          *                readOnly: false
          *             },
          *             {
-         *                internalName: 'Active',
+         *                staticName: 'Active',
          *                objectType: 'Boolean',
          *                mappedName: 'active',
          *                readOnly: false
          *             },
          *             {
-         *                internalName: 'Attachments',
+         *                staticName: 'Attachments',
          *                objectType: 'Attachments',
          *                mappedName: 'attachments',
          *                readOnly: true
@@ -425,12 +425,16 @@ angular.module('angularPoint')
          * </pre>
          */
         function addNewItem(entity, options) {
-            var model = this;
-            return apDataService.createListItem(model, entity, options)
+            var model = this,
+                deferred = $q.defer();
+
+            apDataService.createListItem(model, entity, options)
                 .then(function (response) {
+                    deferred.resolve(response);
                     /** Optionally broadcast change event */
                     apUtilityService.registerChange(model);
                 });
+            return deferred.promise;
         }
 
         /**
@@ -738,7 +742,7 @@ angular.module('angularPoint')
 
         /**
          * @ngdoc function
-         * @name Model.extendListDefinition
+         * @name Model.extendListMetadata
          * @module Model
          * @description
          * Extends the List and Fields with list information returned from the server.  Only runs once and after that
@@ -913,7 +917,7 @@ angular.module('angularPoint')
 
                     }
                     if (!valid && opts.toast) {
-                        var fieldName = fieldDefinition.label || fieldDefinition.internalName;
+                        var fieldName = fieldDefinition.label || fieldDefinition.staticName;
                         toastr.error(fieldName + ' does not appear to be a valid ' + fieldDescriptor);
                     }
                 }
@@ -1006,14 +1010,14 @@ angular.module('angularPoint')
          *         guid: '{DBA4535D-D8F3-4D65-B7C0-7E970AE3A52D}',
          *         customFields: [
          *             // Array of objects mapping each SharePoint field to a property on a list item object
-         *             {internalName: 'Title', objectType: 'Text', mappedName: 'title', readOnly: false},
-         *             {internalName: 'Description', objectType: 'Text', mappedName: 'description', readOnly: false},
-         *             {internalName: 'Priority', objectType: 'Text', mappedName: 'priority', readOnly: false},
-         *             {internalName: 'Status', objectType: 'Text', mappedName: 'status', readOnly: false},
-         *             {internalName: 'RequestedBy', objectType: 'User', mappedName: 'requestedBy', readOnly: false},
-         *             {internalName: 'AssignedTo', objectType: 'User', mappedName: 'assignedTo', readOnly: false},
-         *             {internalName: 'EstimatedEffort', objectType: 'Integer', mappedName: 'estimatedEffort', readOnly: false},
-         *             {internalName: 'PercentComplete', objectType: 'Integer', mappedName: 'percentComplete', readOnly: false}
+         *             {staticName: 'Title', objectType: 'Text', mappedName: 'title', readOnly: false},
+         *             {staticName: 'Description', objectType: 'Text', mappedName: 'description', readOnly: false},
+         *             {staticName: 'Priority', objectType: 'Text', mappedName: 'priority', readOnly: false},
+         *             {staticName: 'Status', objectType: 'Text', mappedName: 'status', readOnly: false},
+         *             {staticName: 'RequestedBy', objectType: 'User', mappedName: 'requestedBy', readOnly: false},
+         *             {staticName: 'AssignedTo', objectType: 'User', mappedName: 'assignedTo', readOnly: false},
+         *             {staticName: 'EstimatedEffort', objectType: 'Integer', mappedName: 'estimatedEffort', readOnly: false},
+         *             {staticName: 'PercentComplete', objectType: 'Integer', mappedName: 'percentComplete', readOnly: false}
          *         ]
          *     }
          * });

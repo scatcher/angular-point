@@ -26,12 +26,10 @@ describe('Factory: apModelFactory', function () {
 
     describe('addNewItem', function () {
         it('adds the new entity to the cacheService', function () {
-            /** No need to specify params here because it's just returning the canned XML entity */
-            mockModel.addNewItem()
-                .then(function () {
-                    var newEntity = mockModel.getCachedEntity(4);
-                    expect(newEntity).toBeDefined();
-                    expect(newEntity.titleText).toEqual('Mock 3');
+            mockModel.addNewItem({title: 'I am a Mock'})
+                .then(function (response) {
+                    expect(mockModel.getCachedEntity(response.id)).toBeDefined();
+                    expect(response.title).toEqual('I am a Mock');
                 });
             $httpBackend.flush();
         });
@@ -146,10 +144,10 @@ describe('Factory: apModelFactory', function () {
     });
 
     describe('Method: getAllListItems', function () {
-        it('returns the 4 expected entities', function () {
+        it('returns both expected entities', function () {
             mockModel.getAllListItems(1)
                 .then(function (response) {
-                    expect(response.count()).toEqual(4);
+                    expect(response.count()).toEqual(2);
                 });
             $httpBackend.flush();
         });

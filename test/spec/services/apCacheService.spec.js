@@ -16,11 +16,11 @@ describe('Service: apCacheService', function () {
         mockModel,
         updatedMock = {
             "id": 1,
-            "titleText": "Updated Mock"
+            "title": "Updated Mock"
         },
         newMock = {
             id: 3,
-            titleText: "New Mock"
+            title: "New Mock"
         },
         emptyEntityCache,
         resolvedEntityCache,
@@ -58,7 +58,7 @@ describe('Service: apCacheService', function () {
         });
 
         it('extends the existing record', function () {
-            expect(mockEntityCache.first().titleText).toEqual('Updated Mock');
+            expect(mockEntityCache.first().title).toEqual('Updated Mock');
         });
 
         it('adds a entity when a new mock is registered', function () {
@@ -70,7 +70,7 @@ describe('Service: apCacheService', function () {
         it('finds the correct entity via the cache service istead of the model', function () {
             mockModel.importMocks();
             var entity = apCacheService.getCachedEntity(mockModel.list.guid, 1);
-            expect(entity.titleText).toEqual('Mock 1');
+            expect(entity.title).toEqual('Mock 1');
         });
     });
 

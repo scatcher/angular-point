@@ -26,7 +26,7 @@ angular.module('angularPoint')
                 title: 'MockLookupList', /**Maps to the offline XML file in dev folder (no spaces) */
                 guid: '{D2448413-D9AE-4FE4-A499-1D8FE7201FDA}', /**List GUID can be found in list properties in SharePoint designer */
                 customFields: [
-                    { internalName: "Title", objectType: "Text", mappedName: "title", readOnly:false }
+                    { staticName: "Title", objectType: "Text", mappedName: "title", readOnly:false }
                 ]
             }
         });

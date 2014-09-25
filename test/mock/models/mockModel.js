@@ -28,43 +28,43 @@ angular.module('angularPoint')
                 guid: '{F5345FE7-2F7C-49F7-87D0-DBFEBDD0CE61}',
                 /**List GUID can be found in list properties in SharePoint designer */
                 customFields: [
-                    {internalName: "Title", objectType: "Text", mappedName: "titleText", readOnly: false},
+                    {staticName: "Title", objectType: "Text", mappedName: "title", readOnly: false},
                     // Has required = true to test field validation.
                     {
-                        internalName: "Boolean",
+                        staticName: "Boolean",
                         objectType: "Boolean",
                         mappedName: "boolean",
                         readOnly: false,
                         required: true
                     },
-                    {internalName: "Calculated", objectType: "Calculated", mappedName: "calculated", readOnly: true},
-                    {internalName: "Choice", objectType: "Choice", mappedName: "choice", readOnly: false},
+                    {staticName: "Calculated", objectType: "Calculated", mappedName: "calculated", readOnly: true},
+                    {staticName: "Choice", objectType: "Choice", mappedName: "choice", readOnly: false},
                     {
-                        internalName: 'MultiChoice',
+                        staticName: 'MultiChoice',
                         objectType: 'MultiChoice',
                         mappedName: 'multiChoice',
                         readOnly: false
                     },
-                    {internalName: "Currency", objectType: "Currency", mappedName: "currency", readOnly: false},
-                    {internalName: "Date", objectType: "DateTime", mappedName: "date", readOnly: false},
-                    {internalName: "DateTime", objectType: "DateTime", mappedName: "dateTime", readOnly: false},
-                    {internalName: "Integer", objectType: "Integer", mappedName: "integer", readOnly: false},
-                    {internalName: 'Float', objectType: 'Float', mappedName: 'float', readOnly: false},
-                    {internalName: 'HTML', objectType: 'HTML', mappedName: 'html', readOnly: false},
-                    {internalName: "JSON", objectType: "JSON", mappedName: "json", readOnly: false},
-                    {internalName: "Lookup", objectType: "Lookup", mappedName: "lookup", readOnly: false},
+                    {staticName: "Currency", objectType: "Currency", mappedName: "currency", readOnly: false},
+                    {staticName: "Date", objectType: "DateTime", mappedName: "date", readOnly: false},
+                    {staticName: "DateTime", objectType: "DateTime", mappedName: "dateTime", readOnly: false},
+                    {staticName: "Integer", objectType: "Integer", mappedName: "integer", readOnly: false},
+                    {staticName: 'Float', objectType: 'Float', mappedName: 'float', readOnly: false},
+                    {staticName: 'HTML', objectType: 'HTML', mappedName: 'html', readOnly: false},
+                    {staticName: "JSON", objectType: "JSON", mappedName: "json", readOnly: false},
+                    {staticName: "Lookup", objectType: "Lookup", mappedName: "lookup", readOnly: false},
                     {
-                        internalName: "LookupMulti",
+                        staticName: "LookupMulti",
                         objectType: "LookupMulti",
                         mappedName: "lookupMulti",
                         readOnly: false
                     },
-                    {internalName: 'Note', objectType: 'Note', mappedName: 'note', readOnly: false},
-                    {internalName: "User", objectType: "User", mappedName: "user", readOnly: false},
-                    {internalName: "UserMulti", objectType: "UserMulti", mappedName: "userMulti", readOnly: false},
-                    {internalName: 'Hyperlink', objectType: 'Hyperlink', mappedName: 'hyperlink', readOnly: false},
-                    {internalName: 'Picture', objectType: 'Picture', mappedName: 'picture', readOnly: false},
-                    {internalName: 'Attachments', objectType: 'Attachments', mappedName: 'attachments', readOnly: false}
+                    {staticName: 'Note', objectType: 'Note', mappedName: 'note', readOnly: false},
+                    {staticName: "User", objectType: "User", mappedName: "user", readOnly: false},
+                    {staticName: "UserMulti", objectType: "UserMulti", mappedName: "userMulti", readOnly: false},
+                    {staticName: 'Hyperlink', objectType: 'Hyperlink', mappedName: 'hyperlink', readOnly: false},
+                    {staticName: 'Picture', objectType: 'Picture', mappedName: 'picture', readOnly: false},
+                    {staticName: 'Attachments', objectType: 'Attachments', mappedName: 'attachments', readOnly: false}
                 ]
             }
         });

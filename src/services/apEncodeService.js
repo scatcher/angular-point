@@ -77,7 +77,7 @@ angular.module('angularPoint')
          * @param {object} fieldDefinition The field definition, typically defined in the model.
          * <pre>
          * {
-         *  internalName: "Title",
+         *  staticName: "Title",
          *  objectType: "Text",
          *  mappedName: "lastName",
          *  readOnly:false
@@ -88,7 +88,7 @@ angular.module('angularPoint')
          */
         function createValuePair(fieldDefinition, value) {
             var encodedValue = encodeValue(fieldDefinition.objectType, value);
-            return [fieldDefinition.internalName, encodedValue];
+            return [fieldDefinition.staticName, encodedValue];
         }
 
         function encodeValue(fieldType, value) {

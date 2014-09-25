@@ -28,7 +28,7 @@ angular.module('angularPoint')
          * Escapes characters that SharePoint gets upset about based on field type.
          * @example
          * <pre>
-         * var testHTML = {objectType: 'HTML', internalName: 'HTML'};
+         * var testHTML = {objectType: 'HTML', staticName: 'HTML'};
          *
          * var testCaml = createCamlContainsSelector(testHTML, 'Test Query');
          * console.log(testCaml);
@@ -47,7 +47,7 @@ angular.module('angularPoint')
                 case 'JSON':
                     camlSelector = '' +
                     '<Contains>' +
-                    '<FieldRef Name="' + fieldDefinition.internalName + '" />' +
+                    '<FieldRef Name="' + fieldDefinition.staticName + '" />' +
                     /** Use CDATA wrapper to escape [&, <, > ] */
                     '<Value Type="Text"><![CDATA[' + searchString + ']]></Value>' +
                     '</Contains>';
@@ -55,7 +55,7 @@ angular.module('angularPoint')
                 default:
                     camlSelector = '' +
                     '<Contains>' +
-                    '<FieldRef Name="' + fieldDefinition.internalName + '" />' +
+                    '<FieldRef Name="' + fieldDefinition.staticName + '" />' +
                     '<Value Type="Text">' + searchString + '</Value>' +
                     '</Contains>';
             }
@@ -98,10 +98,10 @@ angular.module('angularPoint')
          * @example
          * <pre>
          *
-         * var testHTML = {objectType: 'HTML', internalName: 'HTML'};
-         * var testJSON = {objectType: 'JSON', internalName: 'JSON'};
-         * var testText = {objectType: 'Text', internalName: 'Text'};
-         * var testText2 = {objectType: 'Text', internalName: 'Text'};
+         * var testHTML = {objectType: 'HTML', staticName: 'HTML'};
+         * var testJSON = {objectType: 'JSON', staticName: 'JSON'};
+         * var testText = {objectType: 'Text', staticName: 'Text'};
+         * var testText2 = {objectType: 'Text', staticName: 'Text'};
          *
          * var testCaml = camlContainsQuery([testHTML, testText, testJSON, testText2], 'Test Query');
          * console.log(testCaml);

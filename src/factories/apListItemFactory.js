@@ -90,7 +90,8 @@ angular.module('angularPoint')
          * @description
          * Saves a named subset of fields back to SharePoint
          * Alternative to saving all fields
-         * @param {array} fieldArray Array of internal field names that should be saved to SharePoint.
+         * @param {array|string} fieldArray Array of internal field names that should be saved to SharePoint or a single
+         * string to save an individual field.
          * @param {object} [options] Optionally pass params to the data service.
          * @param {boolean} [options.updateAllCaches=false] Search through the cache for each query to ensure entity is
          * updated everywhere.  This is more process intensive so by default we only update the cached entity in the
@@ -120,8 +121,10 @@ angular.module('angularPoint')
             var model = listItem.getModel();
             var deferred = $q.defer();
             var definitions = [];
+            /** Allow a string to be passed in to save a single field */
+            var fieldNames = _.isString(fieldArray) ? [fieldArray] : fieldArray;
             /** Find the field definition for each of the requested fields */
-            _.each(fieldArray, function (field) {
+            _.each(fieldNames, function (field) {
                 var match = _.findWhere(model.list.customFields, {mappedName: field});
                 if (match) {
                     definitions.push(match);
@@ -421,7 +424,7 @@ angular.module('angularPoint')
                     operation: 'GetVersionCollection',
                     strlistID: model.list.getListId(),
                     strlistItemID: listItem.id,
-                    strFieldName: fieldDefinition.internalName
+                    strFieldName: fieldDefinition.staticName
                 };
 
                 /** Manually set site url if defined, prevents SPServices from making a blocking call to fetch it. */

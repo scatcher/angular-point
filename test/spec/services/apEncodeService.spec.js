@@ -118,7 +118,7 @@ describe("Factory: apEncodeService", function () {
     });
 
     function mockDefinition(type) {
-        return _.find(mockModel.list.customFields, {internalName: type});
+        return _.find(mockModel.list.customFields, {staticName: type});
     }
 
     /** We don't know the timezone of the test server so can't hard code it therefore we need the build system

@@ -158,6 +158,8 @@ angular.module('angularPoint')
             };
             _.extend(self, defaults, obj);
             self.displayName = self.displayName ? self.displayName : apUtilityService.fromCamelCase(self.mappedName);
+            /** Deprecated internal name and replace with staticName but maintain compatibility */
+            self.staticName = self.staticName || self.internalName;
         }
 
         Field.prototype.getDefinition = function () {
@@ -278,13 +280,13 @@ angular.module('angularPoint')
          * Read only fields that should be included in all lists
          */
         var defaultFields = [
-            {internalName: 'ID', objectType: 'Counter', mappedName: 'id', readOnly: true},
-            {internalName: 'Modified', objectType: 'DateTime', mappedName: 'modified', readOnly: true},
-            {internalName: 'Created', objectType: 'DateTime', mappedName: 'created', readOnly: true},
-            {internalName: 'Author', objectType: 'User', mappedName: 'author', readOnly: true},
-            {internalName: 'Editor', objectType: 'User', mappedName: 'editor', readOnly: true},
-            {internalName: 'PermMask', objectType: 'Mask', mappedName: 'permMask', readOnly: true},
-            {internalName: 'UniqueId', objectType: 'String', mappedName: 'uniqueId', readOnly: true}
+            {staticName: 'ID', objectType: 'Counter', mappedName: 'id', readOnly: true},
+            {staticName: 'Modified', objectType: 'DateTime', mappedName: 'modified', readOnly: true},
+            {staticName: 'Created', objectType: 'DateTime', mappedName: 'created', readOnly: true},
+            {staticName: 'Author', objectType: 'User', mappedName: 'author', readOnly: true},
+            {staticName: 'Editor', objectType: 'User', mappedName: 'editor', readOnly: true},
+            {staticName: 'PermMask', objectType: 'Mask', mappedName: 'permMask', readOnly: true},
+            {staticName: 'UniqueId', objectType: 'String', mappedName: 'uniqueId', readOnly: true}
         ];
 
         /**
@@ -308,8 +310,8 @@ angular.module('angularPoint')
             var buildField = function (fieldDefinition) {
                 var field = new Field(fieldDefinition);
                 list.fields.push(field);
-                list.viewFields += '<FieldRef Name="' + field.internalName + '"/>';
-                list.mapping['ows_' + field.internalName] = {
+                list.viewFields += '<FieldRef Name="' + field.staticName + '"/>';
+                list.mapping['ows_' + field.staticName] = {
                     mappedName: field.mappedName,
                     objectType: field.objectType
                 };

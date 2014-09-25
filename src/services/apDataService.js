@@ -36,7 +36,7 @@ angular.module('angularPoint')
             getListFields: getListFields,
             getListItemById: getListItemById,
             getUserProfileByName: getUserProfileByName,
-            getView: getView,
+            //getView: getView,
             processChangeTokenXML: processChangeTokenXML,
             processDeletionsSinceToken: processDeletionsSinceToken,
             requestData: requestData,
@@ -177,7 +177,7 @@ angular.module('angularPoint')
          *        webURL: apConfig.defaultUrl,
          *        strlistID: model.list.getListId(),
          *        strlistItemID: listItem.id,
-         *        strFieldName: fieldDefinition.internalName
+         *        strFieldName: fieldDefinition.staticName
          *    };
          * </pre>
          * @param {object} fieldDefinition Field definition object from the model.
@@ -517,6 +517,7 @@ angular.module('angularPoint')
                 ' </Where>' +
                 '</Query>',
                 /** Create a temporary cache to store response */
+                listName: model.list.getListId(),
                 target: apIndexedCacheFactory.create()
             };
 
@@ -568,84 +569,6 @@ angular.module('angularPoint')
             var opts = _.extend({}, defaults, options);
 
             return serviceWrapper(opts);
-        }
-
-        /**
-         * @ngdoc function
-         * @name apDataService.getView
-         * @description
-         * Returns the schema of the specified view for the specified list.
-         * @param {object} options Configuration parameters.
-         * @param {string} options.listName GUID of the list.
-         * @param {string} [options.viewName] Formatted as a GUID, if not provided
-         * <pre>'{37388A98-534C-4A28-BFFA-22429276897B}'</pre>
-         * @param {string} [options.webURL] Can override the default web url if desired.
-         * @returns {object} {query: '', viewFields: '', rowLimit: ''}
-         * Promise that resolves with an object similar to this.
-         * @example
-         * <pre>
-         * apDataService.getView({
-     *    viewName: '{EE7C652F-9CBF-433F-B376-86B0EE989A06}',
-     *    listName: '{AA7C652F-44BF-433F-B376-234423234A06}'
-     * })
-         *
-         *
-         * </pre>
-         * <h3>Returned XML</h3>
-         * <pre>
-         *  <View Name="{EE7C652F-9CBF-433F-B376-86B0EE989A06}"
-         *  DefaultView="TRUE" Type="HTML" DisplayName="View_Name"
-         *  Url="Lists/Events/File_Name.aspx" BaseViewID="1">
-         *  <Query>
-         *    <Where>
-         *      <Leq>
-         *        <FieldRef Name="Created"/>
-         *        <Value Type="DateTime">2003-03-03T00:00:00Z</Value>
-         *      </Leq>
-         *    </Where>
-         *  </Query>
-         *  <ViewFields>
-         *    <FieldRef Name="fRecurrence"/>
-         *    <FieldRef Name="Attachments"/>
-         *    <FieldRef Name="WorkspaceLink"/>
-         *    <FieldRef Name="LinkTitle"/>
-         *    <FieldRef Name="Location"/>
-         *    <FieldRef Name="EventDate"/>
-         *    <FieldRef Name="EndDate"/>
-         *  </ViewFields>
-         *  <RowLimit Paged="TRUE">100</RowLimit>
-         * </View>
-         * </pre>
-         *
-         */
-        function getView(options) {
-            var defaults = {
-                operation: 'GetView'
-            };
-
-            var deferred = $q.defer();
-
-
-            var opts = _.extend({}, defaults, options);
-
-            serviceWrapper(opts)
-                .then(function (response) {
-                    /** Success */
-                    var output = {
-                        query: '<Query>' + $(response).find('Query').html() + '</Query>',
-                        viewFields: '<ViewFields>' + $(response).find('ViewFields').html() + '</ViewFields>',
-                        rowLimit: $(response).find('RowLimit').html()
-                    };
-
-                    /** Pass back the lists array */
-                    deferred.resolve(output);
-                }, function (err) {
-                    /** Failure */
-                    toastr.error('Failed to fetch view details.');
-                    deferred.reject(err);
-                });
-
-            return deferred.promise;
         }
 
         /**
@@ -899,5 +822,90 @@ angular.module('angularPoint')
 
             return deferred.promise;
         }
+
+        //Todo Determine if this has any value.
+     //   /**
+     //    * @ngdoc function
+     //    * @name apDataService.getView
+     //    * @description
+     //    * Returns the schema of the specified view for the specified list.
+     //    * @param {object} options Configuration parameters.
+     //    * @param {string} options.listName GUID of the list.
+     //    * @param {string} [options.viewName] Formatted as a GUID, if not provided returns the default view.
+     //    * <pre>'{37388A98-534C-4A28-BFFA-22429276897B}'</pre>
+     //    * @param {string} [options.webURL] Can override the default web url if desired.
+     //    * @returns {object} {query: '', viewFields: '', rowLimit: ''}
+     //    * Promise that resolves with an object similar to this.
+     //    * @example
+     //    * <pre>
+     //    * apDataService.getView({
+     //*    viewName: '{EE7C652F-9CBF-433F-B376-86B0EE989A06}',
+     //*    listName: '{AA7C652F-44BF-433F-B376-234423234A06}'
+     //* })
+     //    *
+     //    *
+     //    * </pre>
+     //    * <h3>Returned XML</h3>
+     //    * <pre>
+     //    *  <View Name="{EE7C652F-9CBF-433F-B376-86B0EE989A06}"
+     //    *  DefaultView="TRUE" Type="HTML" DisplayName="View_Name"
+     //    *  Url="Lists/Events/File_Name.aspx" BaseViewID="1">
+     //    *  <Query>
+     //    *    <Where>
+     //    *      <Leq>
+     //    *        <FieldRef Name="Created"/>
+     //    *        <Value Type="DateTime">2003-03-03T00:00:00Z</Value>
+     //    *      </Leq>
+     //    *    </Where>
+     //    *  </Query>
+     //    *  <ViewFields>
+     //    *    <FieldRef Name="fRecurrence"/>
+     //    *    <FieldRef Name="Attachments"/>
+     //    *    <FieldRef Name="WorkspaceLink"/>
+     //    *    <FieldRef Name="LinkTitle"/>
+     //    *    <FieldRef Name="Location"/>
+     //    *    <FieldRef Name="EventDate"/>
+     //    *    <FieldRef Name="EndDate"/>
+     //    *  </ViewFields>
+     //    *  <RowLimit Paged="TRUE">100</RowLimit>
+     //    * </View>
+     //    * </pre>
+     //    *
+     //    */
+     //   function getView(options) {
+     //       var defaults = {
+     //           operation: 'GetView'
+     //       };
+     //
+     //       var deferred = $q.defer();
+     //
+     //
+     //       var opts = _.extend({}, defaults, options);
+     //
+     //       serviceWrapper(opts)
+     //           .then(function (response) {
+     //               /** Success */
+     //               var output = {
+     //                   query: '<Query>' + apUtilityService.stringifyXML($(response).find('Query')) + '</Query>',
+     //                   viewFields: [],
+     //                   rowLimit: $(response).find('RowLimit')[0].outerHTML
+     //               };
+     //
+     //               var viewFields = $(response).find('ViewFields');
+     //               _.each(viewFields, function(field) {
+     //                   output.
+     //               });
+     //
+     //               ///** Pass back the lists array */
+     //               deferred.resolve(response);
+     //           }, function (err) {
+     //               /** Failure */
+     //               toastr.error('Failed to fetch view details.');
+     //               deferred.reject(err);
+     //           });
+     //
+     //       return deferred.promise;
+     //   }
+
     }
 );

@@ -5,6 +5,7 @@
         <UpdateListItemsResponse xmlns="http://schemas.microsoft.com/sharepoint/soap/">
             <UpdateListItemsResult>
                 <Results>
+                <Results>
                     <Result ID="1,New">
                         <ErrorCode>0x00000000</ErrorCode>
                         <ID/>

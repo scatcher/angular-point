@@ -122,6 +122,7 @@ describe("Factory: apListItemFactory", function () {
         describe('successful calls', function () {
             beforeEach(function () {
                 expect(mockListItem.integer).toEqual(12);
+                mockListItem.integer = 13;
                 mockListItem.saveChanges()
                     .then(function (response) {
                         expect(response.integer).toEqual(13);
@@ -155,20 +156,21 @@ describe("Factory: apListItemFactory", function () {
             expect(mockListItem.integer).toEqual(12);
         });
         it('has the updated value after updating', function () {
-            //mockModel.importMocks();
+            mockListItem.integer = 29;
             mockListItem.saveFields('integer')
                 .then(function (response) {
-                    expect(response.integer).toEqual(13);
+                    expect(response.integer).toEqual(29);
                 });
             $httpBackend.flush();
         });
         it('shows the updating value in the secondary cache', function () {
+            mockListItem.integer = 41;
             mockListItem.saveFields('integer')
                 .then(function (response) {
 
                 });
             $httpBackend.flush();
-            expect(mockModel.getCache('secondary')[1].integer).toEqual(13);
+            expect(mockModel.getCache('secondary')[1].integer).toEqual(41);
         });
         //it('resolves the promise with the updated entity', function () {
         //    mockXMLService.xhrStub('UpdateListItem');

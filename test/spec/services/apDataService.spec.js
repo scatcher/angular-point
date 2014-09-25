@@ -42,10 +42,11 @@ describe("Service: apDataService", function () {
 
     describe('Function: updateListItem', function () {
         it('updates the list item', function () {
+            mockToUpdate.integer = 44;
             apDataService.updateListItem(mockModel, mockToUpdate)
                 .then(function (response) {
-                    expect(mockToUpdate.integer).toEqual(13);
-                    expect(response.integer).toEqual(13);
+                    expect(mockToUpdate.integer).toEqual(44);
+                    expect(response.integer).toEqual(44);
                 });
             $httpBackend.flush();
         });
@@ -64,15 +65,15 @@ describe("Service: apDataService", function () {
             apDataService.createListItem(mockModel, {integer: 11})
                 .then(function (response) {
                     expect(response.integer).toEqual(11);
-                    expect(response.id).toEqual(4);
+                    expect(response.id).toEqual(3);
                 });
             $httpBackend.flush();
         });
         it('doesn\'t add it to existing caches', function () {
             apDataService.createListItem(mockModel, {integer: 11})
                 .then(function (response) {
-                    expect(response.id).toEqual(4);
-                    expect(secondaryQueryCache[4]).toBeUndefined()
+                    expect(response.id).toEqual(3);
+                    expect(secondaryQueryCache[3]).toBeUndefined()
                 });
             $httpBackend.flush();
         });
@@ -177,7 +178,6 @@ describe("Service: apDataService", function () {
         });
     });
 
-    //TODO Figure out why this thows error in Phantom but not Chrome
     //ddescribe('Function: getView', function () {
     //    it('can process a list definition', function () {
     //        apDataService.getView({listName: mockModel.list.guid})
@@ -222,8 +222,9 @@ describe("Service: apDataService", function () {
     describe('Function: executeQuery', function () {
         it('can complete a query form a known model', function () {
             primaryQueryCache.clear();
-            //Ensure there's nothing left in the cache
+            ////Ensure there's nothing left in the cache and we remove any existing change token
             expect(primaryQueryCache.count()).toEqual(0);
+            mockModel.getQuery().changeToken = undefined;
             apDataService.executeQuery(mockModel, mockModel.getQuery())
                 .then(function (response) {
                     expect(response.count()).toEqual(2);

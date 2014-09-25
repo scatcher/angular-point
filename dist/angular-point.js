@@ -753,7 +753,7 @@ angular.module('angularPoint')
             getListFields: getListFields,
             getListItemById: getListItemById,
             getUserProfileByName: getUserProfileByName,
-            getView: getView,
+            //getView: getView,
             processChangeTokenXML: processChangeTokenXML,
             processDeletionsSinceToken: processDeletionsSinceToken,
             requestData: requestData,
@@ -894,7 +894,7 @@ angular.module('angularPoint')
          *        webURL: apConfig.defaultUrl,
          *        strlistID: model.list.getListId(),
          *        strlistItemID: listItem.id,
-         *        strFieldName: fieldDefinition.internalName
+         *        strFieldName: fieldDefinition.staticName
          *    };
          * </pre>
          * @param {object} fieldDefinition Field definition object from the model.
@@ -1234,6 +1234,7 @@ angular.module('angularPoint')
                 ' </Where>' +
                 '</Query>',
                 /** Create a temporary cache to store response */
+                listName: model.list.getListId(),
                 target: apIndexedCacheFactory.create()
             };
 
@@ -1285,84 +1286,6 @@ angular.module('angularPoint')
             var opts = _.extend({}, defaults, options);
 
             return serviceWrapper(opts);
-        }
-
-        /**
-         * @ngdoc function
-         * @name apDataService.getView
-         * @description
-         * Returns the schema of the specified view for the specified list.
-         * @param {object} options Configuration parameters.
-         * @param {string} options.listName GUID of the list.
-         * @param {string} [options.viewName] Formatted as a GUID, if not provided
-         * <pre>'{37388A98-534C-4A28-BFFA-22429276897B}'</pre>
-         * @param {string} [options.webURL] Can override the default web url if desired.
-         * @returns {object} {query: '', viewFields: '', rowLimit: ''}
-         * Promise that resolves with an object similar to this.
-         * @example
-         * <pre>
-         * apDataService.getView({
-     *    viewName: '{EE7C652F-9CBF-433F-B376-86B0EE989A06}',
-     *    listName: '{AA7C652F-44BF-433F-B376-234423234A06}'
-     * })
-         *
-         *
-         * </pre>
-         * <h3>Returned XML</h3>
-         * <pre>
-         *  <View Name="{EE7C652F-9CBF-433F-B376-86B0EE989A06}"
-         *  DefaultView="TRUE" Type="HTML" DisplayName="View_Name"
-         *  Url="Lists/Events/File_Name.aspx" BaseViewID="1">
-         *  <Query>
-         *    <Where>
-         *      <Leq>
-         *        <FieldRef Name="Created"/>
-         *        <Value Type="DateTime">2003-03-03T00:00:00Z</Value>
-         *      </Leq>
-         *    </Where>
-         *  </Query>
-         *  <ViewFields>
-         *    <FieldRef Name="fRecurrence"/>
-         *    <FieldRef Name="Attachments"/>
-         *    <FieldRef Name="WorkspaceLink"/>
-         *    <FieldRef Name="LinkTitle"/>
-         *    <FieldRef Name="Location"/>
-         *    <FieldRef Name="EventDate"/>
-         *    <FieldRef Name="EndDate"/>
-         *  </ViewFields>
-         *  <RowLimit Paged="TRUE">100</RowLimit>
-         * </View>
-         * </pre>
-         *
-         */
-        function getView(options) {
-            var defaults = {
-                operation: 'GetView'
-            };
-
-            var deferred = $q.defer();
-
-
-            var opts = _.extend({}, defaults, options);
-
-            serviceWrapper(opts)
-                .then(function (response) {
-                    /** Success */
-                    var output = {
-                        query: '<Query>' + $(response).find('Query').html() + '</Query>',
-                        viewFields: '<ViewFields>' + $(response).find('ViewFields').html() + '</ViewFields>',
-                        rowLimit: $(response).find('RowLimit').html()
-                    };
-
-                    /** Pass back the lists array */
-                    deferred.resolve(output);
-                }, function (err) {
-                    /** Failure */
-                    toastr.error('Failed to fetch view details.');
-                    deferred.reject(err);
-                });
-
-            return deferred.promise;
         }
 
         /**
@@ -1616,6 +1539,91 @@ angular.module('angularPoint')
 
             return deferred.promise;
         }
+
+        //Todo Determine if this has any value.
+     //   /**
+     //    * @ngdoc function
+     //    * @name apDataService.getView
+     //    * @description
+     //    * Returns the schema of the specified view for the specified list.
+     //    * @param {object} options Configuration parameters.
+     //    * @param {string} options.listName GUID of the list.
+     //    * @param {string} [options.viewName] Formatted as a GUID, if not provided returns the default view.
+     //    * <pre>'{37388A98-534C-4A28-BFFA-22429276897B}'</pre>
+     //    * @param {string} [options.webURL] Can override the default web url if desired.
+     //    * @returns {object} {query: '', viewFields: '', rowLimit: ''}
+     //    * Promise that resolves with an object similar to this.
+     //    * @example
+     //    * <pre>
+     //    * apDataService.getView({
+     //*    viewName: '{EE7C652F-9CBF-433F-B376-86B0EE989A06}',
+     //*    listName: '{AA7C652F-44BF-433F-B376-234423234A06}'
+     //* })
+     //    *
+     //    *
+     //    * </pre>
+     //    * <h3>Returned XML</h3>
+     //    * <pre>
+     //    *  <View Name="{EE7C652F-9CBF-433F-B376-86B0EE989A06}"
+     //    *  DefaultView="TRUE" Type="HTML" DisplayName="View_Name"
+     //    *  Url="Lists/Events/File_Name.aspx" BaseViewID="1">
+     //    *  <Query>
+     //    *    <Where>
+     //    *      <Leq>
+     //    *        <FieldRef Name="Created"/>
+     //    *        <Value Type="DateTime">2003-03-03T00:00:00Z</Value>
+     //    *      </Leq>
+     //    *    </Where>
+     //    *  </Query>
+     //    *  <ViewFields>
+     //    *    <FieldRef Name="fRecurrence"/>
+     //    *    <FieldRef Name="Attachments"/>
+     //    *    <FieldRef Name="WorkspaceLink"/>
+     //    *    <FieldRef Name="LinkTitle"/>
+     //    *    <FieldRef Name="Location"/>
+     //    *    <FieldRef Name="EventDate"/>
+     //    *    <FieldRef Name="EndDate"/>
+     //    *  </ViewFields>
+     //    *  <RowLimit Paged="TRUE">100</RowLimit>
+     //    * </View>
+     //    * </pre>
+     //    *
+     //    */
+     //   function getView(options) {
+     //       var defaults = {
+     //           operation: 'GetView'
+     //       };
+     //
+     //       var deferred = $q.defer();
+     //
+     //
+     //       var opts = _.extend({}, defaults, options);
+     //
+     //       serviceWrapper(opts)
+     //           .then(function (response) {
+     //               /** Success */
+     //               var output = {
+     //                   query: '<Query>' + apUtilityService.stringifyXML($(response).find('Query')) + '</Query>',
+     //                   viewFields: [],
+     //                   rowLimit: $(response).find('RowLimit')[0].outerHTML
+     //               };
+     //
+     //               var viewFields = $(response).find('ViewFields');
+     //               _.each(viewFields, function(field) {
+     //                   output.
+     //               });
+     //
+     //               ///** Pass back the lists array */
+     //               deferred.resolve(response);
+     //           }, function (err) {
+     //               /** Failure */
+     //               toastr.error('Failed to fetch view details.');
+     //               deferred.reject(err);
+     //           });
+     //
+     //       return deferred.promise;
+     //   }
+
     }]
 );
 ;'use strict';
@@ -2090,10 +2098,10 @@ angular.module('angularPoint')
         function extendFieldDefinitionsFromXML(fieldDefinitions, responseXML) {
             var fieldMap = {};
 
-            /** Map all custom fields with keys of the internalName and values = field definition */
+            /** Map all custom fields with keys of the staticName and values = field definition */
             _.each(fieldDefinitions, function (field) {
-                if (field.internalName) {
-                    fieldMap[field.internalName] = field;
+                if (field.staticName) {
+                    fieldMap[field.staticName] = field;
                 }
             });
 
@@ -2158,7 +2166,7 @@ angular.module('angularPoint')
 
                 /** Properly format field based on definition from model */
                 version[fieldDefinition.mappedName] =
-                    attrToJson($(xmlVersion).attr(fieldDefinition.internalName), fieldDefinition.objectType);
+                    attrToJson($(xmlVersion).attr(fieldDefinition.staticName), fieldDefinition.objectType);
 
                 /** Push to beginning of array */
                 versions.unshift(version);
@@ -2270,7 +2278,7 @@ angular.module('angularPoint')
          * @param {object} fieldDefinition The field definition, typically defined in the model.
          * <pre>
          * {
-         *  internalName: "Title",
+         *  staticName: "Title",
          *  objectType: "Text",
          *  mappedName: "lastName",
          *  readOnly:false
@@ -2281,7 +2289,7 @@ angular.module('angularPoint')
          */
         function createValuePair(fieldDefinition, value) {
             var encodedValue = encodeValue(fieldDefinition.objectType, value);
-            return [fieldDefinition.internalName, encodedValue];
+            return [fieldDefinition.staticName, encodedValue];
         }
 
         function encodeValue(fieldType, value) {
@@ -3031,6 +3039,8 @@ angular.module('angularPoint')
             };
             _.extend(self, defaults, obj);
             self.displayName = self.displayName ? self.displayName : apUtilityService.fromCamelCase(self.mappedName);
+            /** Deprecated internal name and replace with staticName but maintain compatibility */
+            self.staticName = self.staticName || self.internalName;
         }
 
         Field.prototype.getDefinition = function () {
@@ -3151,13 +3161,13 @@ angular.module('angularPoint')
          * Read only fields that should be included in all lists
          */
         var defaultFields = [
-            {internalName: 'ID', objectType: 'Counter', mappedName: 'id', readOnly: true},
-            {internalName: 'Modified', objectType: 'DateTime', mappedName: 'modified', readOnly: true},
-            {internalName: 'Created', objectType: 'DateTime', mappedName: 'created', readOnly: true},
-            {internalName: 'Author', objectType: 'User', mappedName: 'author', readOnly: true},
-            {internalName: 'Editor', objectType: 'User', mappedName: 'editor', readOnly: true},
-            {internalName: 'PermMask', objectType: 'Mask', mappedName: 'permMask', readOnly: true},
-            {internalName: 'UniqueId', objectType: 'String', mappedName: 'uniqueId', readOnly: true}
+            {staticName: 'ID', objectType: 'Counter', mappedName: 'id', readOnly: true},
+            {staticName: 'Modified', objectType: 'DateTime', mappedName: 'modified', readOnly: true},
+            {staticName: 'Created', objectType: 'DateTime', mappedName: 'created', readOnly: true},
+            {staticName: 'Author', objectType: 'User', mappedName: 'author', readOnly: true},
+            {staticName: 'Editor', objectType: 'User', mappedName: 'editor', readOnly: true},
+            {staticName: 'PermMask', objectType: 'Mask', mappedName: 'permMask', readOnly: true},
+            {staticName: 'UniqueId', objectType: 'String', mappedName: 'uniqueId', readOnly: true}
         ];
 
         /**
@@ -3181,8 +3191,8 @@ angular.module('angularPoint')
             var buildField = function (fieldDefinition) {
                 var field = new Field(fieldDefinition);
                 list.fields.push(field);
-                list.viewFields += '<FieldRef Name="' + field.internalName + '"/>';
-                list.mapping['ows_' + field.internalName] = {
+                list.viewFields += '<FieldRef Name="' + field.staticName + '"/>';
+                list.mapping['ows_' + field.staticName] = {
                     mappedName: field.mappedName,
                     objectType: field.objectType
                 };
@@ -5355,6 +5365,39 @@ angular.module('angularPoint')
 
         /**
          * @ngdoc function
+         * @name angularPoint.apUtilityService:stringifyXML
+         * @methodOf angularPoint.apUtilityService
+         * @description Simple utility to convert an XML object into a string and remove unnecessary whitespace.
+         * @param {object} xml XML object.
+         * @returns {string} Stringified version of the XML object.
+         */
+        function stringifyXML(xml) {
+            var str;
+
+            if(_.isObject(xml)) {
+                str = xmlToString(xml).replace(/\s+/g, ' ');
+            } else if(_.isString(xml)) {
+                str = xml;
+            }
+            return str;
+        }
+
+        function xmlToString(xmlData) {
+
+            var xmlString;
+            //IE
+            if (window.ActiveXObject){
+                xmlString = xmlData.xml;
+            }
+            // code for Mozilla, Firefox, Opera, etc.
+            else{
+                xmlString = (new XMLSerializer()).serializeToString(xmlData);
+            }
+            return xmlString;
+        }
+
+        /**
+         * @ngdoc function
          * @name angularPoint.apUtilityService:registerChange
          * @methodOf angularPoint.apUtilityService
          * @description
@@ -5378,6 +5421,7 @@ angular.module('angularPoint')
             registerChange: registerChange,
             resolvePermissions: resolvePermissions,
             SplitIndex: SplitIndex,
+            stringifyXML:stringifyXML,
             toCamelCase: toCamelCase,
             yyyymmdd: yyyymmdd
         };
@@ -5575,7 +5619,7 @@ angular.module('angularPoint')
          * Escapes characters that SharePoint gets upset about based on field type.
          * @example
          * <pre>
-         * var testHTML = {objectType: 'HTML', internalName: 'HTML'};
+         * var testHTML = {objectType: 'HTML', staticName: 'HTML'};
          *
          * var testCaml = createCamlContainsSelector(testHTML, 'Test Query');
          * console.log(testCaml);
@@ -5594,7 +5638,7 @@ angular.module('angularPoint')
                 case 'JSON':
                     camlSelector = '' +
                     '<Contains>' +
-                    '<FieldRef Name="' + fieldDefinition.internalName + '" />' +
+                    '<FieldRef Name="' + fieldDefinition.staticName + '" />' +
                     /** Use CDATA wrapper to escape [&, <, > ] */
                     '<Value Type="Text"><![CDATA[' + searchString + ']]></Value>' +
                     '</Contains>';
@@ -5602,7 +5646,7 @@ angular.module('angularPoint')
                 default:
                     camlSelector = '' +
                     '<Contains>' +
-                    '<FieldRef Name="' + fieldDefinition.internalName + '" />' +
+                    '<FieldRef Name="' + fieldDefinition.staticName + '" />' +
                     '<Value Type="Text">' + searchString + '</Value>' +
                     '</Contains>';
             }
@@ -5645,10 +5689,10 @@ angular.module('angularPoint')
          * @example
          * <pre>
          *
-         * var testHTML = {objectType: 'HTML', internalName: 'HTML'};
-         * var testJSON = {objectType: 'JSON', internalName: 'JSON'};
-         * var testText = {objectType: 'Text', internalName: 'Text'};
-         * var testText2 = {objectType: 'Text', internalName: 'Text'};
+         * var testHTML = {objectType: 'HTML', staticName: 'HTML'};
+         * var testJSON = {objectType: 'JSON', staticName: 'JSON'};
+         * var testText = {objectType: 'Text', staticName: 'Text'};
+         * var testText2 = {objectType: 'Text', staticName: 'Text'};
          *
          * var testCaml = camlContainsQuery([testHTML, testText, testJSON, testText2], 'Test Query');
          * console.log(testCaml);
@@ -5672,7 +5716,8 @@ angular.module('angularPoint')
             return chainCamlSelects(selectStatements, 'And');
         }
 
-    }]);;'use strict';
+    }]);
+;'use strict';
 
 /**
  * @ngdoc object
@@ -5902,31 +5947,31 @@ angular.module('angularPoint')
          * <pre>
          * [
          *   {
-         *       internalName: "Title",
+         *       staticName: "Title",
          *       objectType: "Text",
          *       mappedName: "lastName",
          *       readOnly:false
          *   },
          *   {
-         *       internalName: "FirstName",
+         *       staticName: "FirstName",
          *       objectType: "Text",
          *       mappedName: "firstName",
          *       readOnly:false
          *   },
          *   {
-         *       internalName: "Organization",
+         *       staticName: "Organization",
          *       objectType: "Lookup",
          *       mappedName: "organization",
          *       readOnly:false
          *   },
          *   {
-         *       internalName: "Account",
+         *       staticName: "Account",
          *       objectType: "User",
          *       mappedName: "account",
          *       readOnly:false
          *   },
          *   {
-         *       internalName: "Details",
+         *       staticName: "Details",
          *       objectType: "Text",
          *       mappedName: "details",
          *       readOnly:false
@@ -5976,7 +6021,7 @@ angular.module('angularPoint')
         /**
          * @ngdoc object
          * @name List.FieldDefinition
-         * @property {string} internalName The actual SharePoint field name.
+         * @property {string} staticName The actual SharePoint field name.
          * @property {string} [objectType='Text']
          * <dl>
          *     <dt>Boolean</dt>
@@ -6076,31 +6121,31 @@ angular.module('angularPoint')
          *                 // Array of objects mapping each SharePoint field to a
          *                 // property on a list item object
          *                 {
-         *                  internalName: 'Title',
+         *                  staticName: 'Title',
          *                  objectType: 'Text',
          *                  mappedName: 'title',
          *                  readOnly:false
          *                 },
          *                 {
-         *                  internalName: 'Project',
+         *                  staticName: 'Project',
          *                  objectType: 'Lookup',
          *                  mappedName: 'project',
          *                  readOnly:false
          *                 },
          *                 {
-         *                  internalName: 'Priority',
+         *                  staticName: 'Priority',
          *                  objectType: 'Choice',
          *                  mappedName: 'priority',
          *                  readOnly:false
           *                },
          *                 {
-         *                  internalName: 'Description',
+         *                  staticName: 'Description',
          *                  objectType: 'Text',
          *                  mappedName: 'description',
          *                  readOnly:false
          *                 },
          *                 {
-         *                  internalName: 'Manager',
+         *                  staticName: 'Manager',
          *                  objectType: 'Lookup',
          *                  mappedName: 'requirement',
          *                  readOnly:false
@@ -6233,7 +6278,8 @@ angular.module('angularPoint')
          * @description
          * Saves a named subset of fields back to SharePoint
          * Alternative to saving all fields
-         * @param {array} fieldArray Array of internal field names that should be saved to SharePoint.
+         * @param {array|string} fieldArray Array of internal field names that should be saved to SharePoint or a single
+         * string to save an individual field.
          * @param {object} [options] Optionally pass params to the data service.
          * @param {boolean} [options.updateAllCaches=false] Search through the cache for each query to ensure entity is
          * updated everywhere.  This is more process intensive so by default we only update the cached entity in the
@@ -6263,8 +6309,10 @@ angular.module('angularPoint')
             var model = listItem.getModel();
             var deferred = $q.defer();
             var definitions = [];
+            /** Allow a string to be passed in to save a single field */
+            var fieldNames = _.isString(fieldArray) ? [fieldArray] : fieldArray;
             /** Find the field definition for each of the requested fields */
-            _.each(fieldArray, function (field) {
+            _.each(fieldNames, function (field) {
                 var match = _.findWhere(model.list.customFields, {mappedName: field});
                 if (match) {
                     definitions.push(match);
@@ -6564,7 +6612,7 @@ angular.module('angularPoint')
                     operation: 'GetVersionCollection',
                     strlistID: model.list.getListId(),
                     strlistItemID: listItem.id,
-                    strFieldName: fieldDefinition.internalName
+                    strFieldName: fieldDefinition.staticName
                 };
 
                 /** Manually set site url if defined, prevents SPServices from making a blocking call to fetch it. */
@@ -6856,55 +6904,55 @@ angular.module('angularPoint')
          *         title: 'Projects',
          *         customFields: [
          *             {
-         *                internalName: 'Title',
+         *                staticName: 'Title',
          *                objectType: 'Text',
          *                mappedName: 'title',
          *                readOnly: false
          *             },
          *             {
-         *                internalName: 'Customer',
+         *                staticName: 'Customer',
          *                objectType: 'Lookup',
          *                mappedName: 'customer',
          *                readOnly: false
          *             },
          *             {
-         *                internalName: 'ProjectDescription',
+         *                staticName: 'ProjectDescription',
          *                objectType: 'Text',
          *                mappedName: 'projectDescription',
          *                readOnly: false
          *             },
          *             {
-         *                internalName: 'Status',
+         *                staticName: 'Status',
          *                objectType: 'Text',
          *                mappedName: 'status',
          *                readOnly: false
          *             },
          *             {
-         *                internalName: 'TaskManager',
+         *                staticName: 'TaskManager',
          *                objectType: 'User',
          *                mappedName: 'taskManager',
          *                readOnly: false
          *             },
          *             {
-         *                internalName: 'ProjectGroup',
+         *                staticName: 'ProjectGroup',
          *                objectType: 'Lookup',
          *                mappedName: 'group',
          *                readOnly: false
          *             },
          *             {
-         *                internalName: 'CostEstimate',
+         *                staticName: 'CostEstimate',
          *                objectType: 'Currency',
          *                mappedName: 'costEstimate',
          *                readOnly: false
          *             },
          *             {
-         *                internalName: 'Active',
+         *                staticName: 'Active',
          *                objectType: 'Boolean',
          *                mappedName: 'active',
          *                readOnly: false
          *             },
          *             {
-         *                internalName: 'Attachments',
+         *                staticName: 'Attachments',
          *                objectType: 'Attachments',
          *                mappedName: 'attachments',
          *                readOnly: true
@@ -7222,12 +7270,16 @@ angular.module('angularPoint')
          * </pre>
          */
         function addNewItem(entity, options) {
-            var model = this;
-            return apDataService.createListItem(model, entity, options)
+            var model = this,
+                deferred = $q.defer();
+
+            apDataService.createListItem(model, entity, options)
                 .then(function (response) {
+                    deferred.resolve(response);
                     /** Optionally broadcast change event */
                     apUtilityService.registerChange(model);
                 });
+            return deferred.promise;
         }
 
         /**
@@ -7535,7 +7587,7 @@ angular.module('angularPoint')
 
         /**
          * @ngdoc function
-         * @name Model.extendListDefinition
+         * @name Model.extendListMetadata
          * @module Model
          * @description
          * Extends the List and Fields with list information returned from the server.  Only runs once and after that
@@ -7710,7 +7762,7 @@ angular.module('angularPoint')
 
                     }
                     if (!valid && opts.toast) {
-                        var fieldName = fieldDefinition.label || fieldDefinition.internalName;
+                        var fieldName = fieldDefinition.label || fieldDefinition.staticName;
                         toastr.error(fieldName + ' does not appear to be a valid ' + fieldDescriptor);
                     }
                 }
@@ -7803,14 +7855,14 @@ angular.module('angularPoint')
          *         guid: '{DBA4535D-D8F3-4D65-B7C0-7E970AE3A52D}',
          *         customFields: [
          *             // Array of objects mapping each SharePoint field to a property on a list item object
-         *             {internalName: 'Title', objectType: 'Text', mappedName: 'title', readOnly: false},
-         *             {internalName: 'Description', objectType: 'Text', mappedName: 'description', readOnly: false},
-         *             {internalName: 'Priority', objectType: 'Text', mappedName: 'priority', readOnly: false},
-         *             {internalName: 'Status', objectType: 'Text', mappedName: 'status', readOnly: false},
-         *             {internalName: 'RequestedBy', objectType: 'User', mappedName: 'requestedBy', readOnly: false},
-         *             {internalName: 'AssignedTo', objectType: 'User', mappedName: 'assignedTo', readOnly: false},
-         *             {internalName: 'EstimatedEffort', objectType: 'Integer', mappedName: 'estimatedEffort', readOnly: false},
-         *             {internalName: 'PercentComplete', objectType: 'Integer', mappedName: 'percentComplete', readOnly: false}
+         *             {staticName: 'Title', objectType: 'Text', mappedName: 'title', readOnly: false},
+         *             {staticName: 'Description', objectType: 'Text', mappedName: 'description', readOnly: false},
+         *             {staticName: 'Priority', objectType: 'Text', mappedName: 'priority', readOnly: false},
+         *             {staticName: 'Status', objectType: 'Text', mappedName: 'status', readOnly: false},
+         *             {staticName: 'RequestedBy', objectType: 'User', mappedName: 'requestedBy', readOnly: false},
+         *             {staticName: 'AssignedTo', objectType: 'User', mappedName: 'assignedTo', readOnly: false},
+         *             {staticName: 'EstimatedEffort', objectType: 'Integer', mappedName: 'estimatedEffort', readOnly: false},
+         *             {staticName: 'PercentComplete', objectType: 'Integer', mappedName: 'percentComplete', readOnly: false}
          *         ]
          *     }
          * });

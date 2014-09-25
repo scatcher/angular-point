@@ -470,10 +470,10 @@ angular.module('angularPoint')
         function extendFieldDefinitionsFromXML(fieldDefinitions, responseXML) {
             var fieldMap = {};
 
-            /** Map all custom fields with keys of the internalName and values = field definition */
+            /** Map all custom fields with keys of the staticName and values = field definition */
             _.each(fieldDefinitions, function (field) {
-                if (field.internalName) {
-                    fieldMap[field.internalName] = field;
+                if (field.staticName) {
+                    fieldMap[field.staticName] = field;
                 }
             });
 
@@ -538,7 +538,7 @@ angular.module('angularPoint')
 
                 /** Properly format field based on definition from model */
                 version[fieldDefinition.mappedName] =
-                    attrToJson($(xmlVersion).attr(fieldDefinition.internalName), fieldDefinition.objectType);
+                    attrToJson($(xmlVersion).attr(fieldDefinition.staticName), fieldDefinition.objectType);
 
                 /** Push to beginning of array */
                 versions.unshift(version);
