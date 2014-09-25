@@ -36,14 +36,14 @@ var model = apModelFactory.create({
         guid: '{DBA4535D-D8F3-4D65-B7C0-7E970AE3A52D}',
         customFields: [
             // Array of objects mapping each SharePoint field to a property on a list item object
-            {internalName: 'Title', objectType: 'Text', mappedName: 'title', readOnly: false},
-            {internalName: 'Description', objectType: 'Text', mappedName: 'description', readOnly: false},
-            {internalName: 'Priority', objectType: 'Text', mappedName: 'priority', readOnly: false},
-            {internalName: 'Status', objectType: 'Text', mappedName: 'status', readOnly: false},
-            {internalName: 'RequestedBy', objectType: 'User', mappedName: 'requestedBy', readOnly: false},
-            {internalName: 'AssignedTo', objectType: 'User', mappedName: 'assignedTo', readOnly: false},
-            {internalName: 'EstimatedEffort', objectType: 'Integer', mappedName: 'estimatedEffort', readOnly: false},
-            {internalName: 'PercentComplete', objectType: 'Integer', mappedName: 'percentComplete', readOnly: false}
+            {staticName: 'Title', objectType: 'Text', mappedName: 'title', readOnly: false},
+            {staticName: 'Description', objectType: 'Text', mappedName: 'description', readOnly: false},
+            {staticName: 'Priority', objectType: 'Text', mappedName: 'priority', readOnly: false},
+            {staticName: 'Status', objectType: 'Text', mappedName: 'status', readOnly: false},
+            {staticName: 'RequestedBy', objectType: 'User', mappedName: 'requestedBy', readOnly: false},
+            {staticName: 'AssignedTo', objectType: 'User', mappedName: 'assignedTo', readOnly: false},
+            {staticName: 'EstimatedEffort', objectType: 'Integer', mappedName: 'estimatedEffort', readOnly: false},
+            {staticName: 'PercentComplete', objectType: 'Integer', mappedName: 'percentComplete', readOnly: false}
         ]
     }
 });

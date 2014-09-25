@@ -20,7 +20,7 @@ for a list item and convert those value into value pairs that we can then hand o
 </div><h5 id="methods_createvaluepair_parameters">Parameters</h5><table class="variables-matrix table table-bordered table-striped"><thead><tr><th>Param</th><th>Type</th><th>Details</th></tr></thead><tbody><tr><td>fieldDefinition</td><td><a href="" class="label type-hint type-hint-object">object</a></td><td><div class="angularpoint-apencodeservice-page angularpoint-apencodeservice-createvaluepair-page"><p>The field definition, typically defined in the model.
 <pre class="prettyprint linenums">
 {
- internalName: "Title",
+ staticName: "Title",
  objectType: "Text",
  mappedName: "lastName",
  readOnly:false
@@ -49,13 +49,14 @@ offset for the current user.</p>
 </div></div>
 </div>
 </li>
-<li><h3 id="methods_stringifysharepointmultiselect">stringifySharePointMultiSelect(multiSelectValue, idProperty)</h3>
+<li><h3 id="methods_stringifysharepointmultiselect">stringifySharePointMultiSelect(multiSelectValue, idProperty, valueProperty)</h3>
 <div class="stringifysharepointmultiselect"><div class="angularpoint-apencodeservice-page angularpoint-apencodeservice-stringifysharepointmultiselect-page"><p>Turns an array of, typically {lookupId: someId, lookupValue: someValue}, objects into a string
 of delimited id&#39;s that can be passed to SharePoint for a multi select lookup or multi user selection
 field.  SharePoint doesn&#39;t need the lookup values so we only need to pass the ID&#39;s back.</p>
 </div><h5 id="methods_stringifysharepointmultiselect_parameters">Parameters</h5><table class="variables-matrix table table-bordered table-striped"><thead><tr><th>Param</th><th>Type</th><th>Details</th></tr></thead><tbody><tr><td>multiSelectValue</td><td><a href="" class="label type-hint type-hint-object">object[]</a></td><td><div class="angularpoint-apencodeservice-page angularpoint-apencodeservice-stringifysharepointmultiselect-page"><p>Array of {lookupId: #, lookupValue: &#39;Some Value&#39;} objects.</p>
 </div></td></tr><tr><td>idProperty</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="angularpoint-apencodeservice-page angularpoint-apencodeservice-stringifysharepointmultiselect-page"><p>Property name where we&#39;ll find the ID value on each of the objects.</p>
-</div> <p><em>(default: 'lookupId')</em></p></td></tr></tbody></table><h5 id="methods_stringifysharepointmultiselect_returns">Returns</h5><table class="variables-matrix"><tr><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="angularpoint-apencodeservice-page angularpoint-apencodeservice-stringifysharepointmultiselect-page"><p>Need to format string of id&#39;s in following format [ID0];#;#[ID1];#;#[ID1]</p>
+</div> <p><em>(default: 'lookupId')</em></p></td></tr><tr><td>valueProperty</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="angularpoint-apencodeservice-page angularpoint-apencodeservice-stringifysharepointmultiselect-page"><p>Property name where we&#39;ll find the value for this object.</p>
+</div> <p><em>(default: 'lookupValue')</em></p></td></tr></tbody></table><h5 id="methods_stringifysharepointmultiselect_returns">Returns</h5><table class="variables-matrix"><tr><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="angularpoint-apencodeservice-page angularpoint-apencodeservice-stringifysharepointmultiselect-page"><p>Need to format string of id&#39;s in following format [ID0];#;#[ID1];#;#[ID1]</p>
 </div></td></tr></table></div>
 </li>
 </ul>

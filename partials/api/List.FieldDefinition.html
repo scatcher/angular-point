@@ -10,8 +10,8 @@ type, and the desired JavaScript property name to add onto the parsed list item 
 each field definition is just an object within the fieldDefinitions array.</p>
 </div></div>
 <div class="member property"><h2 id="properties">Properties</h2>
-<ul class="properties"><li><h3 id="properties_internalname">internalName</h3>
-<div class="internalname"><div class="list-fielddefinition-page"><p>The actual SharePoint field name.</p>
+<ul class="properties"><li><h3 id="properties_staticname">staticName</h3>
+<div class="staticname"><div class="list-fielddefinition-page"><p>The actual SharePoint field name.</p>
 </div></div>
 </li>
 <li><h3 id="properties_[objecttype=text]">[objectType='Text']</h3>
@@ -118,31 +118,31 @@ angular.module('App')
                 // Array of objects mapping each SharePoint field to a
                 // property on a list item object
                 {
-                 internalName: 'Title',
+                 staticName: 'Title',
                  objectType: 'Text',
                  mappedName: 'title',
                  readOnly:false
                 },
                 {
-                 internalName: 'Project',
+                 staticName: 'Project',
                  objectType: 'Lookup',
                  mappedName: 'project',
                  readOnly:false
                 },
                 {
-                 internalName: 'Priority',
+                 staticName: 'Priority',
                  objectType: 'Choice',
                  mappedName: 'priority',
                  readOnly:false
                },
                 {
-                 internalName: 'Description',
+                 staticName: 'Description',
                  objectType: 'Text',
                  mappedName: 'description',
                  readOnly:false
                 },
                 {
-                 internalName: 'Manager',
+                 staticName: 'Manager',
                  objectType: 'Lookup',
                  mappedName: 'requirement',
                  readOnly:false

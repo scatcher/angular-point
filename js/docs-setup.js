@@ -28,7 +28,7 @@ NG_DOCS={
       "type": "function",
       "moduleName": "angularPoint",
       "shortDescription": "Tools to assist with the creation of CAML queries.",
-      "keywords": "angularpoint apcamlfactory api array assist based caml camlcontainsquery characters combination combine console createcamlcontainsselector creation elements escapes field fielddefinitionsarray fields function html internalname join jointype json log multiple properly queries query records returns search searchstring select selectors selectstatements sharepoint single statements string test testcaml testhtml testjson testtext testtext2 text tools type upset valid var wrap wrapped"
+      "keywords": "angularpoint apcamlfactory api array assist based caml camlcontainsquery characters combination combine console createcamlcontainsselector creation elements escapes field fielddefinitionsarray fields function html join jointype json log multiple properly queries query records returns search searchstring select selectors selectstatements sharepoint single statements staticname string test testcaml testhtml testjson testtext testtext2 text tools type upset valid var wrap wrapped"
     },
     {
       "section": "api",
@@ -64,7 +64,7 @@ NG_DOCS={
       "type": "service",
       "moduleName": "angularPoint",
       "shortDescription": "Processes JavaScript objects and converts them to a format SharePoint expects.",
-      "keywords": "angularpoint apconfig apencodeservice api aputilityservice array attempt convert converts current defined definition definitions delimited doesn entity expects field fielddefinition fielddefinitions fields fieldvalue find format function hand internalname iso8601 item iterate javascript js lastname list ll lookup lookupid lookupvalue mappedname model modified multi multiselectvalue non-readonly objects objecttype offset pairs pass passed prior processes properly properties property readonly save saving select selection service sharepoint someid somevalue spservices stored string submission text timezone title turns typically user valid values"
+      "keywords": "angularpoint apconfig apencodeservice api aputilityservice array attempt convert converts current defined definition definitions delimited doesn entity expects field fielddefinition fielddefinitions fields fieldvalue find format function hand iso8601 item iterate javascript js lastname list ll lookup lookupid lookupvalue mappedname model modified multi multiselectvalue non-readonly object objects objecttype offset pairs pass passed prior processes properly properties property readonly save saving select selection service sharepoint someid somevalue spservices staticname stored string submission text timezone title turns typically user valid values"
     },
     {
       "section": "api",
@@ -172,7 +172,7 @@ NG_DOCS={
       "type": "service",
       "moduleName": "angularPoint",
       "shortDescription": "Provides shared utility functionality across the application.",
-      "keywords": "$q addandcustomizepages adddelprivatewebparts addlistitems admin angularpoint apconfig api application applystylesheets applythemeandborder approveitems aputilityservice array article assigned based batches batchprocess bit break browsedirectories browser browseuserinfo buildprojectsummary camel cancelcheckout capitalized case change chunks codeplex comparison complete context convert converts create createalerts creategroups createsscsite current cuts dates datetocheck defaults defer deferred delay deletelistitems deleteversions delimited desired determine directly don dvwps easier easily editlistitems editmyuserinfo enddate entities enumeratepermissions evaluate evaluates event example executed extendprojectsummary fall falls false fictitious firebase flags formatted fullmask function functionality getalllistitems group hang humanized identifying info int integer intensive ints item iterate iterating javascript js length letter level list listitem lock long managealerts managelists managepermissions managesubwebs manageweb mask maximum milliseconds model module nczonline net notify number object online open openitems pausing performing perm permission permissionsmask permmask personalviews portion problem process processed processing projectmodel projects projectsmodel promise properties provided range reference resolve resolvepermissions return returned rights running security service set shared sharepoint site space specifies splookupaddnew spservices startdate starting string stuff sufficient summary summaryobject sync thread time trimming typically ui unsigned updatepersonalwebparts usable user useremoteapis users utility var viewformpages viewlistitems viewpages viewusagedata viewversions word wss yyyymmdd"
+      "keywords": "$q addandcustomizepages adddelprivatewebparts addlistitems admin angularpoint apconfig api application applystylesheets applythemeandborder approveitems aputilityservice array article assigned based batches batchprocess bit break browsedirectories browser browseuserinfo buildprojectsummary camel cancelcheckout capitalized case change chunks codeplex comparison complete context convert converts create createalerts creategroups createsscsite current cuts dates datetocheck defaults defer deferred delay deletelistitems deleteversions delimited desired determine directly don dvwps easier easily editlistitems editmyuserinfo enddate entities enumeratepermissions evaluate evaluates event example executed extendprojectsummary fall falls false fictitious firebase flags formatted fullmask function functionality getalllistitems group hang humanized identifying info int integer intensive ints item iterate iterating javascript js length letter level list listitem lock long managealerts managelists managepermissions managesubwebs manageweb mask maximum milliseconds model module nczonline net notify number object online open openitems pausing performing perm permission permissionsmask permmask personalviews portion problem process processed processing projectmodel projects projectsmodel promise properties provided range reference remove resolve resolvepermissions return returned rights running security service set shared sharepoint simple site space specifies splookupaddnew spservices startdate starting string stringified stuff sufficient summary summaryobject sync thread time trimming typically ui unnecessary unsigned updatepersonalwebparts usable user useremoteapis users utility var version viewformpages viewlistitems viewpages viewusagedata viewversions whitespace word wss xml yyyymmdd"
     },
     {
       "section": "api",
@@ -289,7 +289,7 @@ NG_DOCS={
       "type": "function",
       "moduleName": "apDataService",
       "shortDescription": "Returns the version history for a field in a list item.",
-      "keywords": "apconfig apdataservice api array changes configuration defaulturl definition field fielddefinition function getfieldversionhistory getlistid getversioncollection history internalname item list listitem model object operation options passed promise resolves returns spservices strfieldname strlistid strlistitemid var version weburl"
+      "keywords": "apconfig apdataservice api array changes configuration defaulturl definition field fielddefinition function getfieldversionhistory getlistid getversioncollection history item list listitem model object operation options passed promise resolves returns spservices staticname strfieldname strlistid strlistitemid var version weburl"
     },
     {
       "section": "api",
@@ -338,15 +338,6 @@ NG_DOCS={
     },
     {
       "section": "api",
-      "id": "apDataService.getView",
-      "shortName": "apDataService.getView",
-      "type": "function",
-      "moduleName": "apDataService",
-      "shortDescription": "Returns the schema of the specified view for the specified list.",
-      "keywords": "apdataservice api aspx attachments baseviewid configuration created datetime default defaultview desired displayname enddate eventdate formatted frecurrence function getview guid html linktitle list listname lists location object options override paged parameters promise provided resolves returns rowlimit schema true type url view view_name viewfields viewname web weburl workspacelink xml"
-    },
-    {
-      "section": "api",
       "id": "apDataService.processChangeTokenXML",
       "shortName": "apDataService.processChangeTokenXML",
       "type": "function",
@@ -370,7 +361,7 @@ NG_DOCS={
       "type": "function",
       "moduleName": "apDataService",
       "shortDescription": "The primary function that handles all communication with the server.  This is very low level and isn&#39;t",
-      "keywords": "additionalargs apdataservice api called communication details directly function handles intended isn level low mock object offline optional opts parameters pass payload primary promise request requestdata resolves response server service working"
+      "keywords": "apdataservice api called communication details directly function handles intended isn level low object opts payload primary promise request requestdata resolves response server"
     },
     {
       "section": "api",
@@ -415,7 +406,7 @@ NG_DOCS={
       "type": "object",
       "moduleName": "List",
       "shortDescription": "List Object Constructor.  This is handled automatically when creating a new model so there shouldn&#39;t be",
-      "keywords": "account additional apconfig api application attribute automatically basing call config creating customfields define details dev field fielddefinition file firstname folder guid handled info initialization internal internalname lastname list ll located lookup manually mappedname mapping maps model names non-standard object objecttype offline offlinexml organization parameters projectslist readonly reason settings sharepoint shouldn spaces text title type unique user xml"
+      "keywords": "account additional apconfig api application attribute automatically basing call config creating customfields define details dev field fielddefinition file firstname folder guid handled info initialization internal lastname list ll located lookup manually mappedname mapping maps model names non-standard object objecttype offline offlinexml organization parameters projectslist readonly reason settings sharepoint shouldn spaces staticname text title type unique user xml"
     },
     {
       "section": "api",
@@ -424,7 +415,7 @@ NG_DOCS={
       "type": "object",
       "moduleName": "List",
       "shortDescription": "Defined in the MODEL.list.fieldDefinitions array.  Each field definition object maps an internal field",
-      "keywords": "actual add additional allows angular api apmodelfactory app array attribute attributes automatically base based broken calculated call changed choice choice_field_name choices class collection column convert converts counter create created current customfields dashes data defined definition deliminator delimited description designer desired dev display element ensure error extend factory fetch field fielddefinition fielddefinitions fields file float folder form function generally getfielddefinition guid href ignore info inherits initial initially int integer internal internalname invalid item items javascript js json list list-fielddefinition-page listitem local lookup lookupid lookupvalue manager mapped mappedname mapping maps methods model modelname module multiple named newly number obj object objects objecttype offline parsed passed point post primary priority processing project properties property prototype pulls push read read-only readonly records reference registerquery representing requested requirement respect retrieve return returned returns saving second selected service set sharepoint single site slashes space spaces store stored string strings subsequent task taskermodel tasks text thrown title true type typically unescape unique updated updates usage user valid validate var xml"
+      "keywords": "actual add additional allows angular api apmodelfactory app array attribute attributes automatically base based broken calculated call changed choice choice_field_name choices class collection column convert converts counter create created current customfields dashes data defined definition deliminator delimited description designer desired dev display element ensure error extend factory fetch field fielddefinition fielddefinitions fields file float folder form function generally getfielddefinition guid href ignore info inherits initial initially int integer internal invalid item items javascript js json list list-fielddefinition-page listitem local lookup lookupid lookupvalue manager mapped mappedname mapping maps methods model modelname module multiple named newly number obj object objects objecttype offline parsed passed point post primary priority processing project properties property prototype pulls push read read-only readonly records reference registerquery representing requested requirement respect retrieve return returned returns saving second selected service set sharepoint single site slashes space spaces staticname store stored string strings subsequent task taskermodel tasks text thrown title true type typically unescape unique updated updates usage user valid validate var xml"
     },
     {
       "section": "api",
@@ -514,7 +505,7 @@ NG_DOCS={
       "type": "function",
       "moduleName": "ListItem",
       "shortDescription": "Saves a named subset of fields back to SharePoint",
-      "keywords": "$scope alternative api app array cache cached currently data default ensure entity example failure fictitious field fieldarray fields form function intensive internal item js list listitem modal named names notes optionally params pass process promise pushing query resolves save savechanges saved savefields saves saving search server service sharepoint status stored subset task update updateallcaches updated updatestatus"
+      "keywords": "$scope alternative api app array cache cached currently data default ensure entity example failure fictitious field fieldarray fields form function individual intensive internal item js list listitem modal named names notes optionally params pass process promise pushing query resolves save savechanges saved savefields saves saving search server service sharepoint single status stored string subset task update updateallcaches updated updatestatus"
     },
     {
       "section": "api",
@@ -541,7 +532,7 @@ NG_DOCS={
       "type": "function",
       "moduleName": "Model",
       "shortDescription": "Model Constructor",
-      "keywords": "active additional addnewitem adds apconfig api aplistitemfactory apmodelfactory application array attachments boolean builds choice complete config costestimate creategenericfactory currency customer customfields customlist data deferred defined definition definitions denotes description display don empty entities examples executed extend factory false fictitious field fielddefinitionsextended fields file flag formats full function getalllistitems getlistid getlistitemchangessincetoken group guid identifies individual internalname items js list ll lookup mappedname maps model named names obj object objecttype offline offlinexml operation optional options params passed process project projectdescription projectgroup projects projectsmodel provided queries query read readonly ready requested return server set sharepoint spaces status taskmanager text time title true types unique user var xml"
+      "keywords": "active additional addnewitem adds apconfig api aplistitemfactory apmodelfactory application array attachments boolean builds choice complete config costestimate creategenericfactory currency customer customfields customlist data deferred defined definition definitions denotes description display don empty entities examples executed extend factory false fictitious field fielddefinitionsextended fields file flag formats full function getalllistitems getlistid getlistitemchangessincetoken group guid identifies individual items js list ll lookup mappedname maps model named names obj object objecttype offline offlinexml operation optional options params passed process project projectdescription projectgroup projects projectsmodel provided queries query read readonly ready requested return server set sharepoint spaces staticname status taskmanager text time title true types unique user var xml"
     },
     {
       "section": "api",
@@ -581,12 +572,12 @@ NG_DOCS={
     },
     {
       "section": "api",
-      "id": "Model.extendListDefinition",
-      "shortName": "Model.extendListDefinition",
+      "id": "Model.extendListMetadata",
+      "shortName": "Model.extendListMetadata",
       "type": "function",
       "moduleName": "Model",
       "shortDescription": "Extends the List and Fields with list information returned from the server.  Only runs once and after that",
-      "keywords": "apdataservice api existing extendlistdefinition extends fields function getlist list model options pass-through promise resolved returned returns runs server"
+      "keywords": "apdataservice api existing extendlistmetadata extends fields function getlist list model options pass-through promise resolved returned returns runs server"
     },
     {
       "section": "api",
