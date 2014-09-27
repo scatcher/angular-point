@@ -219,7 +219,6 @@ module.exports = function (grunt) {
         'clean:server',
         'parse-xml',
         //'concurrent:test',
-        //'autoprefixer',
         //'connect:test',
         'karma:unit'
     ]);
