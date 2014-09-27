@@ -17,20 +17,7 @@
 </li>
 </ul>
 <div class="member method"><h2 id="methods">Methods</h2>
-<ul class="methods"><li><h3 id="methods_attrtojson">attrToJson(str, objectType, [options])</h3>
-<div class="attrtojson"><div class="angularpoint-apdecodeservice-page angularpoint-apdecodeservice-attrtojson-page"><p>Converts a SharePoint string representation of a field into the correctly formatted JavaScript version
-based on object type.  A majority of this code is directly taken from Marc Anderson&#39;s incredible
-<a href="http://spservices.codeplex.com/">SPServices</a> project but it needed some minor tweaking to work here.</p>
-</div><h5 id="methods_attrtojson_parameters">Parameters</h5><table class="variables-matrix table table-bordered table-striped"><thead><tr><th>Param</th><th>Type</th><th>Details</th></tr></thead><tbody><tr><td>str</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="angularpoint-apdecodeservice-page angularpoint-apdecodeservice-attrtojson-page"><p>SharePoint string representing the value.</p>
-</div></td></tr><tr><td>objectType</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="angularpoint-apdecodeservice-page angularpoint-apdecodeservice-attrtojson-page"><p>The type based on field definition.  See
-See <a href="#/api/List.FieldDefinition">List.customFields</a> for additional info on how to define a field type.</p>
-</div> <p><em>(default: 'Text')</em></p></td></tr><tr><td>[options]</td><td><a href="" class="label type-hint type-hint-object">object</a></td><td><div class="angularpoint-apdecodeservice-page angularpoint-apdecodeservice-attrtojson-page"><p>Options to pass to the object constructor.</p>
-</div></td></tr><tr><td>[options.entity]</td><td><a href="" class="label type-hint type-hint-object">object</a></td><td><div class="angularpoint-apdecodeservice-page angularpoint-apdecodeservice-attrtojson-page"><p>Reference to the parent list item which can be used by child constructors.</p>
-</div></td></tr><tr><td>[options.propertyName]</td><td><a href="" class="label type-hint type-hint-object">object</a></td><td><div class="angularpoint-apdecodeservice-page angularpoint-apdecodeservice-attrtojson-page"><p>Name of property on the list item.</p>
-</div></td></tr></tbody></table><h5 id="methods_attrtojson_returns">Returns</h5><table class="variables-matrix"><tr><td><a href="" class="label type-hint type-hint-object">*</a></td><td><div class="angularpoint-apdecodeservice-page angularpoint-apdecodeservice-attrtojson-page"><p>The newly instantiated JavaScript value based on field type.</p>
-</div></td></tr></table></div>
-</li>
-<li><h3 id="methods_checkresponseforerrors">checkResponseForErrors(responseXML)</h3>
+<ul class="methods"><li><h3 id="methods_checkresponseforerrors">checkResponseForErrors(responseXML)</h3>
 <div class="checkresponseforerrors"><div class="angularpoint-apdecodeservice-page angularpoint-apdecodeservice-checkresponseforerrors-page"><p>Errors don&#39;t always throw correctly from SPServices so this function checks to see if part
 of the XHR response contains an &quot;errorstring&quot; element.</p>
 </div><h5 id="methods_checkresponseforerrors_parameters">Parameters</h5><table class="variables-matrix table table-bordered table-striped"><thead><tr><th>Param</th><th>Type</th><th>Details</th></tr></thead><tbody><tr><td>responseXML</td><td><a href="" class="label type-hint type-hint-object">object</a></td><td><div class="angularpoint-apdecodeservice-page angularpoint-apdecodeservice-checkresponseforerrors-page"><p>XHR response from the server.</p>
@@ -81,9 +68,23 @@ Note: Properties are not necessarily CAMLCase.</p>
 </div></td></tr></tbody></table><h5 id="methods_parsefieldversions_returns">Returns</h5><table class="variables-matrix"><tr><td><a href="" class="label type-hint type-hint-array">Array</a></td><td><div class="angularpoint-apdecodeservice-page angularpoint-apdecodeservice-parsefieldversions-page"><p>Array objects containing the various version of a field for each change.</p>
 </div></td></tr></table></div>
 </li>
-<li><h3 id="methods_parsexmlentity">parseXMLEntity(xmlEntity, opts)</h3>
+<li><h3 id="methods_parsestringvalue">parseStringValue(str, objectType, [options])</h3>
+<div class="parsestringvalue"><div class="angularpoint-apdecodeservice-page angularpoint-apdecodeservice-parsestringvalue-page"><p>Converts a SharePoint string representation of a field into the correctly formatted JavaScript version
+based on object type.  A majority of this code is directly taken from Marc Anderson&#39;s incredible
+<a href="http://spservices.codeplex.com/">SPServices</a> project but it needed some minor tweaking to work here.</p>
+</div><h5 id="methods_parsestringvalue_parameters">Parameters</h5><table class="variables-matrix table table-bordered table-striped"><thead><tr><th>Param</th><th>Type</th><th>Details</th></tr></thead><tbody><tr><td>str</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="angularpoint-apdecodeservice-page angularpoint-apdecodeservice-parsestringvalue-page"><p>SharePoint string representing the value.</p>
+</div></td></tr><tr><td>objectType</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="angularpoint-apdecodeservice-page angularpoint-apdecodeservice-parsestringvalue-page"><p>The type based on field definition.  See
+See <a href="#/api/List.FieldDefinition">List.customFields</a> for additional info on how to define a field type.</p>
+</div> <p><em>(default: 'Text')</em></p></td></tr><tr><td>[options]</td><td><a href="" class="label type-hint type-hint-object">object</a></td><td><div class="angularpoint-apdecodeservice-page angularpoint-apdecodeservice-parsestringvalue-page"><p>Options to pass to the object constructor.</p>
+</div></td></tr><tr><td>[options.entity]</td><td><a href="" class="label type-hint type-hint-object">object</a></td><td><div class="angularpoint-apdecodeservice-page angularpoint-apdecodeservice-parsestringvalue-page"><p>Reference to the parent list item which can be used by child constructors.</p>
+</div></td></tr><tr><td>[options.propertyName]</td><td><a href="" class="label type-hint type-hint-object">object</a></td><td><div class="angularpoint-apdecodeservice-page angularpoint-apdecodeservice-parsestringvalue-page"><p>Name of property on the list item.</p>
+</div></td></tr></tbody></table><h5 id="methods_parsestringvalue_returns">Returns</h5><table class="variables-matrix"><tr><td><a href="" class="label type-hint type-hint-object">*</a></td><td><div class="angularpoint-apdecodeservice-page angularpoint-apdecodeservice-parsestringvalue-page"><p>The newly instantiated JavaScript value based on field type.</p>
+</div></td></tr></table></div>
+</li>
+<li><h3 id="methods_parsexmlentity">parseXMLEntity(xmlEntity, listItemProvider, opts)</h3>
 <div class="parsexmlentity"><div class="angularpoint-apdecodeservice-page angularpoint-apdecodeservice-parsexmlentity-page"><p>Convert an XML list item into a JS object using the fields defined in the model for the given list item.</p>
 </div><h5 id="methods_parsexmlentity_parameters">Parameters</h5><table class="variables-matrix table table-bordered table-striped"><thead><tr><th>Param</th><th>Type</th><th>Details</th></tr></thead><tbody><tr><td>xmlEntity</td><td><a href="" class="label type-hint type-hint-object">object</a></td><td><div class="angularpoint-apdecodeservice-page angularpoint-apdecodeservice-parsexmlentity-page"><p>XML Object.</p>
+</div></td></tr><tr><td>listItemProvider</td><td><a href="" class="label type-hint type-hint-function">function</a></td><td><div class="angularpoint-apdecodeservice-page angularpoint-apdecodeservice-parsexmlentity-page"><p>Constructor function that instantiates a new object.</p>
 </div></td></tr><tr><td>opts</td><td><a href="" class="label type-hint type-hint-object">object</a></td><td><div class="angularpoint-apdecodeservice-page angularpoint-apdecodeservice-parsexmlentity-page"><p>Configuration options.</p>
 </div></td></tr><tr><td>opts.mapping</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="angularpoint-apdecodeservice-page angularpoint-apdecodeservice-parsexmlentity-page"><p>Mapping of fields we&#39;d like to extend on our JS object.</p>
 </div></td></tr><tr><td>opts.includeAllAttrs</td><td><a href="" class="label type-hint type-hint-boolean">boolean</a></td><td><div class="angularpoint-apdecodeservice-page angularpoint-apdecodeservice-parsexmlentity-page"><p>If true, return all attributes, regardless whether</p>
