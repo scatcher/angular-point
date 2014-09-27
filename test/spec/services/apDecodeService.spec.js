@@ -19,11 +19,11 @@ describe("Factory: apDecodeService", function () {
     }));
 
 
-    describe('attrToJson', function () {
+    describe('parseStringValue', function () {
         //Boolean
         describe('Boolean', function () {
             it('Should convert the string representation.', function () {
-                expect(apDecodeService.attrToJson('1', 'Boolean'))
+                expect(apDecodeService.parseStringValue('1', 'Boolean'))
                     .toEqual(true);
             });
         });
@@ -31,7 +31,7 @@ describe("Factory: apDecodeService", function () {
         //Calc
         describe('Calc', function () {
             it('Should parse a calculated string.', function () {
-                expect(apDecodeService.attrToJson('99;#Test', 'Calc'))
+                expect(apDecodeService.parseStringValue('99;#Test', 'Calc'))
                     .toEqual('Test');
             });
         });
@@ -39,11 +39,11 @@ describe("Factory: apDecodeService", function () {
         //Currency
         describe('Currency', function () {
             it('creates valid float', function () {
-                expect(apDecodeService.attrToJson('19.99', 'Currency'))
+                expect(apDecodeService.parseStringValue('19.99', 'Currency'))
                     .toEqual(19.99);
             });
             it('not throw error when currency isn\'t found', function () {
-                expect(apDecodeService.attrToJson('', 'Currency'))
+                expect(apDecodeService.parseStringValue('', 'Currency'))
                     .toEqual('');
             });
         });
@@ -52,15 +52,15 @@ describe("Factory: apDecodeService", function () {
         //DateTime
         describe('DateTime', function () {
             it('Should properly handle a date string.', function () {
-                expect(apDecodeService.attrToJson('2009-08-25 14:24:48', 'DateTime'))
+                expect(apDecodeService.parseStringValue('2009-08-25 14:24:48', 'DateTime'))
                     .toEqual(new Date(2009, 7, 25, 14, 24, 48));
             });
             it('Should handle a date with a "T" delimiter instead of a space.', function () {
-                expect(apDecodeService.attrToJson('2009-08-25T14:24:48', 'DateTime'))
+                expect(apDecodeService.parseStringValue('2009-08-25T14:24:48', 'DateTime'))
                     .toEqual(new Date(2009, 7, 25, 14, 24, 48));
             });
             it('Should handle a Z at the end.', function () {
-                expect(apDecodeService.attrToJson('2014-09-02T13:35:57Z', 'DateTime'))
+                expect(apDecodeService.parseStringValue('2014-09-02T13:35:57Z', 'DateTime'))
                     .toEqual(new Date(2014, 8, 2, 13, 35, 57));
             });
         });
@@ -68,11 +68,11 @@ describe("Factory: apDecodeService", function () {
         //HTML
         describe('HTML', function () {
             it('decodes an HTML string', function () {
-                expect(apDecodeService.attrToJson('&lt; Test &amp; Test &gt;', 'HTML'))
+                expect(apDecodeService.parseStringValue('&lt; Test &amp; Test &gt;', 'HTML'))
                     .toEqual('< Test & Test >');
             });
             it('not throw error when HTML isn\'t found', function () {
-                expect(apDecodeService.attrToJson('', 'HTML'))
+                expect(apDecodeService.parseStringValue('', 'HTML'))
                     .toEqual('');
             });
         });
@@ -80,11 +80,11 @@ describe("Factory: apDecodeService", function () {
         //Integer
         describe('Integer', function () {
             it('creates valid integer', function () {
-                expect(apDecodeService.attrToJson('11', 'Integer'))
+                expect(apDecodeService.parseStringValue('11', 'Integer'))
                     .toEqual(11);
             });
             it('not throw error when integer isn\'t found', function () {
-                expect(apDecodeService.attrToJson('', 'Integer'))
+                expect(apDecodeService.parseStringValue('', 'Integer'))
                     .toEqual('');
             });
         });
@@ -92,11 +92,11 @@ describe("Factory: apDecodeService", function () {
         //JSON
         //describe('JSON', function () {
         //    it('decodes an JSON string', function () {
-        //        expect(apDecodeService.attrToJson('{"cog": "widget"}', 'JSON').cog)
+        //        expect(apDecodeService.parseStringValue('{"cog": "widget"}', 'JSON').cog)
         //            .toEqual('widget');
         //    });
         //    it('to throw error if malformed', function () {
-        //        expect(apDecodeService.attrToJson('', 'JSON'))
+        //        expect(apDecodeService.parseStringValue('', 'JSON'))
         //            .toThrow();
         //    });
         //});
@@ -105,11 +105,11 @@ describe("Factory: apDecodeService", function () {
         //Lookup
         describe('Lookup', function () {
             it('will create the lookup ID', function () {
-                expect(apDecodeService.attrToJson('12;#Widget', 'Lookup').lookupId)
+                expect(apDecodeService.parseStringValue('12;#Widget', 'Lookup').lookupId)
                     .toEqual(12);
             });
             it('will create the lookup value', function () {
-                expect(apDecodeService.attrToJson('12;#Widget', 'Lookup').lookupValue)
+                expect(apDecodeService.parseStringValue('12;#Widget', 'Lookup').lookupValue)
                     .toEqual('Widget');
             });
         });
@@ -117,11 +117,11 @@ describe("Factory: apDecodeService", function () {
         //LookupMulti
         describe('LookupMulti', function () {
             it('will parse multiple lookups', function () {
-                expect(apDecodeService.attrToJson('12;#Widget;#13;#Cog', 'LookupMulti').length)
+                expect(apDecodeService.parseStringValue('12;#Widget;#13;#Cog', 'LookupMulti').length)
                     .toEqual(2);
             });
             it('will accept an empty value', function () {
-                expect(apDecodeService.attrToJson('', 'LookupMulti'))
+                expect(apDecodeService.parseStringValue('', 'LookupMulti'))
                     .toEqual([]);
             });
         });
@@ -129,11 +129,11 @@ describe("Factory: apDecodeService", function () {
         //User
         describe('User', function () {
             it('create the user id', function () {
-                expect(apDecodeService.attrToJson('9;#Joe', 'User').lookupId)
+                expect(apDecodeService.parseStringValue('9;#Joe', 'User').lookupId)
                     .toEqual(9);
             });
             it('create the user name', function () {
-                expect(apDecodeService.attrToJson('9;#Joe', 'User').lookupValue)
+                expect(apDecodeService.parseStringValue('9;#Joe', 'User').lookupValue)
                     .toEqual('Joe');
             });
         });
@@ -142,11 +142,11 @@ describe("Factory: apDecodeService", function () {
         //LookupMulti
         describe('UserMulti', function () {
             it('will parse multiple users', function () {
-                expect(apDecodeService.attrToJson('9;#Joe;#10;#Jane;#11;#Pete', 'UserMulti').length)
+                expect(apDecodeService.parseStringValue('9;#Joe;#10;#Jane;#11;#Pete', 'UserMulti').length)
                     .toEqual(3);
             });
             it('will accept an empty value', function () {
-                expect(apDecodeService.attrToJson('', 'UserMulti'))
+                expect(apDecodeService.parseStringValue('', 'UserMulti'))
                     .toEqual([]);
             });
         });
@@ -154,15 +154,15 @@ describe("Factory: apDecodeService", function () {
         //MultiChoice
         describe('MultiChoice', function () {
             it('will create an array of selected choices', function () {
-                expect(apDecodeService.attrToJson('Choice 1;#Choice 2;#Choice 3;#Choice 4', 'MultiChoice').length)
+                expect(apDecodeService.parseStringValue('Choice 1;#Choice 2;#Choice 3;#Choice 4', 'MultiChoice').length)
                     .toEqual(4);
             });
             it('will add choices in correct order', function () {
-                expect(apDecodeService.attrToJson('Choice 1;#Choice 2;#Choice 3;#Choice 4', 'MultiChoice')[2])
+                expect(apDecodeService.parseStringValue('Choice 1;#Choice 2;#Choice 3;#Choice 4', 'MultiChoice')[2])
                     .toEqual('Choice 3');
             });
             it('will accept an empty value', function () {
-                expect(apDecodeService.attrToJson('', 'MultiChoice'))
+                expect(apDecodeService.parseStringValue('', 'MultiChoice'))
                     .toEqual([]);
             });
         });

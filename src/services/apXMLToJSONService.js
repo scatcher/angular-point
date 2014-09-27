@@ -43,7 +43,7 @@ angular.module('angularPoint')
                     var objectName = typeof columnMapping !== "undefined" ? columnMapping.mappedName : opts.removeOws ? attributeName.split("ows_")[1] : attributeName;
                     var objectType = typeof columnMapping !== "undefined" ? columnMapping.objectType : undefined;
                     if (opts.includeAllAttrs || columnMapping !== undefined) {
-                        row[objectName] = apDecodeService.attrToJson(rowAttribute.value, objectType);
+                        row[objectName] = apDecodeService.parseStringValue(rowAttribute.value, objectType);
                     }
                 });
 

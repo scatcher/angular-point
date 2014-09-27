@@ -17,12 +17,23 @@ angular.module('angularPoint')
 
 
         return {
-            attrToJson: attrToJson,
             checkResponseForErrors: checkResponseForErrors,
             extendFieldDefinitionsFromXML: extendFieldDefinitionsFromXML,
             extendListDefinitionFromXML: extendListDefinitionsFromXML,
-            lookupToJsonObject: jsLookup,
+            jsBoolean: jsBoolean,
+            jsCalc: jsCalc,
+            jsChoiceMulti: jsChoiceMulti,
+            jsDate:jsDate,
+            jsFloat: jsFloat,
+            jsInt:jsInt,
+            jsLookup: jsLookup,
+            jsLookupMulti: jsLookupMulti,
+            jsObject: jsObject,
+            jsString: jsString,
+            jsUser:jsUser,
+            jsUserMulti: jsUserMulti,
             parseFieldVersions: parseFieldVersions,
+            parseStringValue: parseStringValue,
             processListItems: processListItems,
             //updateLocalCache: updateLocalCache,
             xmlToJson: xmlToJson
@@ -188,6 +199,7 @@ angular.module('angularPoint')
          * @description
          * Convert an XML list item into a JS object using the fields defined in the model for the given list item.
          * @param {object} xmlEntity XML Object.
+         * @param {function} listItemProvider Constructor function that instantiates a new object.
          * @param {object} opts Configuration options.
          * @param {string} opts.mapping Mapping of fields we'd like to extend on our JS object.
          * @param {boolean} [opts.includeAllAttrs=false] If true, return all attributes, regardless whether
@@ -212,7 +224,7 @@ angular.module('angularPoint')
                 var thisObjectName = typeof thisMapping !== 'undefined' ? thisMapping.mappedName : opts.removeOws ? thisAttrName.split('ows_')[1] : thisAttrName;
                 var thisObjectType = typeof thisMapping !== 'undefined' ? thisMapping.objectType : undefined;
                 if (opts.includeAllAttrs || thisMapping !== undefined) {
-                    entity[thisObjectName] = attrToJson(attr.value, thisObjectType, {
+                    entity[thisObjectName] = parseStringValue(attr.value, thisObjectType, {
                         entity: entity,
                         propertyName: thisObjectName
                     });
@@ -224,7 +236,7 @@ angular.module('angularPoint')
 
         /**
          * @ngdoc function
-         * @name angularPoint.apDecodeService:attrToJson
+         * @name angularPoint.apDecodeService:parseStringValue
          * @methodOf angularPoint.apDecodeService
          * @description
          * Converts a SharePoint string representation of a field into the correctly formatted JavaScript version
@@ -238,7 +250,7 @@ angular.module('angularPoint')
          * @param {object} [options.propertyName] Name of property on the list item.
          * @returns {*} The newly instantiated JavaScript value based on field type.
          */
-        function attrToJson(str, objectType, options) {
+        function parseStringValue(str, objectType, options) {
 
             var unescapedValue = _.unescape(str);
 
@@ -405,7 +417,7 @@ angular.module('angularPoint')
             } else {
                 var thisCalc = s.split(';#');
                 // The first value will be the calculated column value type, the second will be the value
-                return attrToJson(thisCalc[1], thisCalc[0]);
+                return parseStringValue(thisCalc[1], thisCalc[0]);
             }
         }
 
@@ -529,16 +541,16 @@ angular.module('angularPoint')
             _.each(xmlVersions, function (xmlVersion, index) {
                 /** Parse the xml and create a representation of the version as a js object */
                 var version = {
-                    editor: attrToJson($(xmlVersion).attr('Editor'), 'User'),
+                    editor: parseStringValue($(xmlVersion).attr('Editor'), 'User'),
                     /** Turn the SharePoint formatted date into a valid date object */
-                    modified: attrToJson($(xmlVersion).attr('Modified'), 'DateTime'),
+                    modified: parseStringValue($(xmlVersion).attr('Modified'), 'DateTime'),
                     /** Returns records in desc order so compute the version number from index */
                     version: versionCount - index
                 };
 
                 /** Properly format field based on definition from model */
                 version[fieldDefinition.mappedName] =
-                    attrToJson($(xmlVersion).attr(fieldDefinition.staticName), fieldDefinition.objectType);
+                    parseStringValue($(xmlVersion).attr(fieldDefinition.staticName), fieldDefinition.objectType);
 
                 /** Push to beginning of array */
                 versions.unshift(version);
