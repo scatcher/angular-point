@@ -23,21 +23,21 @@ module.exports = function (config) {
 
             // Angular Point
             'test/mock/app.mock.js',
-            'test/mock/apMockBackend.js',
-            'test/mock/data/parsedXML.js',
             'src/constants/*.js',
             'src/config.js',
             'src/services/*.js',
             'src/factories/*.js',
             'src/models/*.js',
             'src/directives/**/*.js',
-            'test/mock/**/*.js',
+            'test/mock/*.js',
+            'test/mock/data/*.js',
+            'test/mock/models/*.js',
             'test/spec/factories/*.js',
             'test/spec/services/*.js'
         ],
 
         // list of files / patterns to exclude
-        exclude: ['test/mock/xmlConverter.js'],
+        exclude: [],
 
         // web server port
         port: 8080,
