@@ -1,6 +1,6 @@
 {
   "name": "angular-point",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "dependencies": {},
   "devDependencies": {
     "angular-point-xml-parser": "latest",
@@ -28,6 +28,7 @@
     "karma-jasmine": "^0.2.2",
     "karma-phantomjs-launcher": "^0.1.4",
     "load-grunt-tasks": "^0.6",
+    "phantomjs": "^1.9.10",
     "time-grunt": "^1.0"
   },
   "engines": {
