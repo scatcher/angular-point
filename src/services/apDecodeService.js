@@ -23,14 +23,14 @@ angular.module('angularPoint')
             jsBoolean: jsBoolean,
             jsCalc: jsCalc,
             jsChoiceMulti: jsChoiceMulti,
-            jsDate:jsDate,
+            jsDate: jsDate,
             jsFloat: jsFloat,
-            jsInt:jsInt,
+            jsInt: jsInt,
             jsLookup: jsLookup,
             jsLookupMulti: jsLookupMulti,
             jsObject: jsObject,
             jsString: jsString,
-            jsUser:jsUser,
+            jsUser: jsUser,
             jsUserMulti: jsUserMulti,
             parseFieldVersions: parseFieldVersions,
             parseStringValue: parseStringValue,
@@ -430,23 +430,29 @@ angular.module('angularPoint')
          * @methodOf angularPoint.apDecodeService
          * @description
          * Takes an XML element and copies all attributes over to a given JS object with corresponding values.  If
-         * no JS Object is provided, it extends an empty object and returns it.
+         * no JS Object is provided, it extends an empty object and returns it.  If an attributeTypes object is provided
+         * we parse each of the defined field so they are typed correctly instead of being a simple string.
          * Note: Properties are not necessarily CAMLCase.
          * @param {object} xmlObject An XML element.
          * @param {object} [jsObject={}] An optional JS Object to extend XML attributes to.
+         * @param {object} [attributeTypes={}] Key/Val object with keys being the name of the field and val being the
+         * type of field.
          * @returns {object} JS Object
          */
-        function extendObjectWithXMLAttributes(xmlObject, jsObject) {
+        function extendObjectWithXMLAttributes(xmlObject, jsObject, attributeTypes) {
             var objectToExtend = jsObject || {};
+            var attributeMap = attributeTypes || {};
             var xmlAttributes = xmlObject.attributes;
 
             _.each(xmlAttributes, function (attr, attrNum) {
                 var attrName = xmlAttributes[attrNum].name;
                 objectToExtend[attrName] = $(xmlObject).attr(attrName);
+                if (attributeMap[attrName]) {
+                    objectToExtend[attrName] = parseStringValue(objectToExtend[attrName], attributeMap[attrName]);
+                }
             });
             return objectToExtend;
         }
-
 
         /**
          * @ngdoc function
@@ -461,8 +467,52 @@ angular.module('angularPoint')
          * @returns {object} Extended list object.
          */
         function extendListDefinitionsFromXML(list, responseXML) {
+            /** Object map of common fields and their types */
+            var attributeTypes = {
+                BaseType: 'Number',
+                ServerTemplate: 'Number',
+                Created: 'DateTime',
+                Modified: 'DateTime',
+                LastDeleted: 'DateTime',
+                Version: 'Number',
+                ThumbnailSize: 'Number',
+                WebImageWidth: 'Number',
+                WebImageHeight: 'Number',
+                Flags: 'Number',
+                ItemCount: 'Number',
+                ReadSecurity: 'Number',
+                WriteSecurity: 'Number',
+                Author: 'Number',
+                MajorWithMinorVersionsLimit: 'Number',
+                HasUniqueScopes: 'Boolean',
+                NoThrottleListOperations: 'Boolean',
+                HasRelatedLists: 'Boolean',
+                AllowDeletion: 'Boolean',
+                AllowMultiResponses: 'Boolean',
+                EnableAttachments: 'Boolean',
+                EnableModeration: 'Boolean',
+                EnableVersioning: 'Boolean',
+                HasExternalDataSource: 'Boolean',
+                Hidden: 'Boolean',
+                MultipleDataList: 'Boolean',
+                Ordered: 'Boolean',
+                ShowUser: 'Boolean',
+                EnablePeopleSelector: 'Boolean',
+                EnableResourceSelector: 'Boolean',
+                EnableMinorVersion: 'Boolean',
+                RequireCheckout: 'Boolean',
+                ThrottleListOperations: 'Boolean',
+                ExcludeFromOfflineClient: 'Boolean',
+                EnableFolderCreation: 'Boolean',
+                IrmEnabled: 'Boolean',
+                IsApplicationList: 'Boolean',
+                PreserveEmptyValues: 'Boolean',
+                StrictTypeCoercion: 'Boolean',
+                EnforceDataValidation: 'Boolean',
+                MaxItemsPerThrottledOperation: 'Number'
+            };
             $(responseXML).find("List").each(function () {
-                extendObjectWithXMLAttributes(this, list);
+                extendObjectWithXMLAttributes(this, list, attributeTypes);
             });
             return list;
         }
@@ -480,7 +530,20 @@ angular.module('angularPoint')
          * @param {object} responseXML XML response from the server.
          */
         function extendFieldDefinitionsFromXML(fieldDefinitions, responseXML) {
-            var fieldMap = {};
+            var fieldMap = {},
+                attributeTypes = {
+                    Decimals: 'Number',
+                    EnforceUniqueValues: 'Boolean',
+                    Filterable: 'Boolean',
+                    FromBaseType: 'Boolean',
+                    Hidden: 'Boolean',
+                    Indexed: 'Boolean',
+                    NumLines: 'Number',
+                    ReadOnly: 'Boolean',
+                    Required: 'Boolean',
+                    Sortable: 'Boolean'
+                };
+
 
             /** Map all custom fields with keys of the staticName and values = field definition */
             _.each(fieldDefinitions, function (field) {
@@ -501,7 +564,7 @@ angular.module('angularPoint')
                 /** If we've defined this field then we should extend it */
                 if (fieldDefinition) {
 
-                    extendObjectWithXMLAttributes(xmlField, fieldDefinition);
+                    extendObjectWithXMLAttributes(xmlField, fieldDefinition, attributeTypes);
 
                     /** Additional processing for Choice fields to include the default value and choices */
                     if (fieldDefinition.objectType === 'Choice' || fieldDefinition.objectType === 'MultiChoice') {

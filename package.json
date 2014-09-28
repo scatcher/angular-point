@@ -1,6 +1,6 @@
 {
   "name": "angular-point",
-  "version": "1.0.6",
+  "version": "1.0.8",
   "dependencies": {},
   "devDependencies": {
     "angular-point-xml-parser": "latest",
@@ -28,7 +28,6 @@
     "karma-jasmine": "^0.2.2",
     "karma-phantomjs-launcher": "^0.1.4",
     "load-grunt-tasks": "^0.6",
-    "phantomjs": "^1.9.10",
     "time-grunt": "^1.0"
   },
   "engines": {
@@ -39,7 +38,7 @@
     "url": "https://github.com/scatcher/angular-point.git"
   },
   "scripts": {
-    "test": "./node_modules/karma/bin/karma start --single-run"
+    "test": "grunt test"
   },
   "jshintConfig": {
     "bitwise": true,

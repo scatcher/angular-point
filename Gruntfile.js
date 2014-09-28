@@ -192,6 +192,15 @@ module.exports = function (grunt) {
                 autoWatch: true
             }
         }
+        //coveralls: {
+        //    options: {
+        //        debug: true,
+        //        coverage_dir: 'coverage/',
+        //        dryRun: true,
+        //        force: true,
+        //        recursive: true
+        //    }
+        //}
 
     });
 

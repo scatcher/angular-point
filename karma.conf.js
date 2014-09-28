@@ -65,10 +65,16 @@ module.exports = function (config) {
         preprocessors: {
             'scripts{services, factories, models, directives}/**/*.js': ['coverage']
         },
-
-        proxies: {
-            '/dev/': 'dev/'
-        },
+        //coverageReporter: {
+        //    type: "lcov",
+        //    dir: "coverage/"
+        //},
+        //plugins: [
+        //    'karma-coverage'
+        //],
+        //proxies: {
+        //    '/dev/': 'dev/'
+        //},
 
         urlRoot: '/base',
 
