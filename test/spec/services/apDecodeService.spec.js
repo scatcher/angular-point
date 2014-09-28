@@ -22,9 +22,21 @@ describe("Factory: apDecodeService", function () {
     describe('parseStringValue', function () {
         //Boolean
         describe('Boolean', function () {
-            it('Should convert the string representation.', function () {
+            it('evaluates "1" as true', function () {
                 expect(apDecodeService.parseStringValue('1', 'Boolean'))
                     .toEqual(true);
+            });
+            it('evaluates "True" as true', function () {
+                expect(apDecodeService.parseStringValue('True', 'Boolean'))
+                    .toEqual(true);
+            });
+            it('evaluates "TRUE" as true', function () {
+                expect(apDecodeService.parseStringValue('TRUE', 'Boolean'))
+                    .toEqual(true);
+            });
+            it('evaluates "false" as false', function () {
+                expect(apDecodeService.parseStringValue('false', 'Boolean'))
+                    .toEqual(false);
             });
         });
 

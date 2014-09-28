@@ -342,7 +342,8 @@ angular.module('angularPoint')
         }
 
         function jsBoolean(s) {
-            return (s === '0' || s === 'False') ? false : true;
+            /** SharePoint uses different string representations for booleans in different places so account for each */
+            return s === '1' || s === 'True' || s === 'TRUE';
         }
 
         function jsDate(s) {
