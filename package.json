@@ -4,9 +4,7 @@
   "dependencies": {},
   "devDependencies": {
     "angular-point-xml-parser": "latest",
-    "bower": "^1",
     "canonical-path": "0.0.2",
-    "grunt": "^0.4.5",
     "grunt-angular-templates": "^0.5.7",
     "grunt-bump": "^0.0.15",
     "grunt-concurrent": "^1.0",
