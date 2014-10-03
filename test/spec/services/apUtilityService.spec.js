@@ -133,6 +133,15 @@ describe("Service: apUtilityService", function () {
         });
     });
 
+    describe('Function convertEffectivePermMask', function () {
+        it('returns the mask for \'FullMask\'', function () {
+            expect(apUtilityService.convertEffectivePermMask('FullMask')).toEqual('0x7FFFFFFFFFFFFFFF');
+        });
+        it('returns null when a matching permission name isn\'t found', function () {
+            expect(apUtilityService.convertEffectivePermMask('Some Unknown Mask')).toBeNull();
+        });
+    });
+
     describe('toCamlCase', function () {
         it("Convert multiple words with spaces.", function() {
             expect(apUtilityService.toCamelCase('This is a test')).toEqual('thisIsATest');

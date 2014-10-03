@@ -211,17 +211,16 @@ describe('Factory: apModelFactory', function () {
         });
     });
 
-
-    //describe('Method: executeQuery', function () {
-    //    beforeEach(function () {
-    //        spyOn(apDataService, 'executeQuery').and.callFake(mockExecuteQuery);
-    //
-    //    });
-    //
-    //    it('should return the cache for a given query', function () {
-    //        expect(mockModel.executeQuery('primary')).toBe();
-    //    });
-    //});
+    describe('Method: resolvePermissions', function () {
+        it('correctly identifies that the user can approve', function () {
+            mockModel.list.effectivePermMask = 'ApproveItems';
+            expect(mockModel.resolvePermissions().ApproveItems).toBe(true);
+        });
+        it('correctly identifies that the user doesn\'t have the required permissions', function () {
+            mockModel.list.effectivePermMask = 'ViewListItems';
+            expect(mockModel.resolvePermissions().ApproveItems).toBe(false);
+        });
+    });
 
     function getResponseXML() {
         var deferred = $q.defer();

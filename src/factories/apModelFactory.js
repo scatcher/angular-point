@@ -174,7 +174,7 @@ angular.module('angularPoint')
             getQuery: getQuery,
             //initializeModalState: initializeModalState,
             isInitialised: isInitialised,
-            //resolvePermissions: resolvePermissions,
+            resolvePermissions: resolvePermissions,
             registerQuery: registerQuery,
             validateEntity: validateEntity
         };
@@ -929,69 +929,70 @@ angular.module('angularPoint')
         }
 
 
-        ///**
-        // * @ngdoc function
-        // * @name Model.resolvePermissions
-        // * @module Model
-        // * @description
-        // * See apModelFactory.resolvePermissions for details on what we expect to have returned.
-        // * @returns {Object} Contains properties for each permission level evaluated for current user.
-        // * @example
-        // * Lets assume we're checking to see if a user has edit rights for a given list.
-        // * <pre>
-        // * var userPermissions = tasksModel.resolvePermissions();
-        // * var userCanEdit = userPermissions.EditListItems;
-        // * </pre>
-        // * Example of what the returned object would look like
-        // * for a site admin.
-        // * <pre>
-        // * perm = {
-        // *    "ViewListItems":true,
-        // *    "AddListItems":true,
-        // *    "EditListItems":true,
-        // *    "DeleteListItems":true,
-        // *    "ApproveItems":true,
-        // *    "OpenItems":true,
-        // *    "ViewVersions":true,
-        // *    "DeleteVersions":true,
-        // *    "CancelCheckout":true,
-        // *    "PersonalViews":true,
-        // *    "ManageLists":true,
-        // *    "ViewFormPages":true,
-        // *    "Open":true,
-        // *    "ViewPages":true,
-        // *    "AddAndCustomizePages":true,
-        // *    "ApplyThemeAndBorder":true,
-        // *    "ApplyStyleSheets":true,
-        // *    "ViewUsageData":true,
-        // *    "CreateSSCSite":true,
-        // *    "ManageSubwebs":true,
-        // *    "CreateGroups":true,
-        // *    "ManagePermissions":true,
-        // *    "BrowseDirectories":true,
-        // *    "BrowseUserInfo":true,
-        // *    "AddDelPrivateWebParts":true,
-        // *    "UpdatePersonalWebParts":true,
-        // *    "ManageWeb":true,
-        // *    "UseRemoteAPIs":true,
-        // *    "ManageAlerts":true,
-        // *    "CreateAlerts":true,
-        // *    "EditMyUserInfo":true,
-        // *    "EnumeratePermissions":true,
-        // *    "FullMask":true
-        // * }
-        // * </pre>
-        // */
-        //
-        //function resolvePermissions() {
-        //    var model = this;
-        //    if (model.list && model.list.effectivePermMask) {
-        //        return apUtilityService.resolvePermissions(model.list.effectivePermMask);
-        //    } else {
-        //        window.console.error('Attempted to resolve permissions of a model that hasn\'t been initialized.', model);
-        //        return apUtilityService.resolvePermissions(null);
-        //    }
-        //}
+        /**
+        * @ngdoc function
+        * @name Model.resolvePermissions
+        * @module Model
+        * @description
+        * See apModelFactory.resolvePermissions for details on what we expect to have returned.
+        * @returns {Object} Contains properties for each permission level evaluated for current user.
+        * @example
+        * Lets assume we're checking to see if a user has edit rights for a given list.
+        * <pre>
+        * var userPermissions = tasksModel.resolvePermissions();
+        * var userCanEdit = userPermissions.EditListItems;
+        * </pre>
+        * Example of what the returned object would look like
+        * for a site admin.
+        * <pre>
+        * perm = {
+        *    "ViewListItems":true,
+        *    "AddListItems":true,
+        *    "EditListItems":true,
+        *    "DeleteListItems":true,
+        *    "ApproveItems":true,
+        *    "OpenItems":true,
+        *    "ViewVersions":true,
+        *    "DeleteVersions":true,
+        *    "CancelCheckout":true,
+        *    "PersonalViews":true,
+        *    "ManageLists":true,
+        *    "ViewFormPages":true,
+        *    "Open":true,
+        *    "ViewPages":true,
+        *    "AddAndCustomizePages":true,
+        *    "ApplyThemeAndBorder":true,
+        *    "ApplyStyleSheets":true,
+        *    "ViewUsageData":true,
+        *    "CreateSSCSite":true,
+        *    "ManageSubwebs":true,
+        *    "CreateGroups":true,
+        *    "ManagePermissions":true,
+        *    "BrowseDirectories":true,
+        *    "BrowseUserInfo":true,
+        *    "AddDelPrivateWebParts":true,
+        *    "UpdatePersonalWebParts":true,
+        *    "ManageWeb":true,
+        *    "UseRemoteAPIs":true,
+        *    "ManageAlerts":true,
+        *    "CreateAlerts":true,
+        *    "EditMyUserInfo":true,
+        *    "EnumeratePermissions":true,
+        *    "FullMask":true
+        * }
+        * </pre>
+        */
+        function resolvePermissions() {
+            var model = this;
+            if (model.list && model.list.effectivePermMask) {
+                /** Get the permission mask from the permission mask name */
+                var permissionMask = apUtilityService.convertEffectivePermMask(model.list.effectivePermMask);
+                return apUtilityService.resolvePermissions(permissionMask);
+            } else {
+                window.console.error('Attempted to resolve permissions of a model that hasn\'t been initialized.', model);
+                return apUtilityService.resolvePermissions(null);
+            }
+        }
 
         /**
          * @ngdoc function

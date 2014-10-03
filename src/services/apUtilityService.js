@@ -300,6 +300,72 @@ angular.module('angularPoint')
             return permissionSet;
         }
 
+        /**
+         * @ngdoc function
+         * @name angularPoint.apUtilityService:convertEffectivePermMask
+         * @methodOf angularPoint.apUtilityService
+         * @description
+         * GetListItemsSinceToken operation returns the list element with an EffectivePermMask attribute which is the
+         * name of the PermissionMask.  We then need to convert the name into an actual mask so this function contains
+         * the known permission names with their masks.  If a provided mask name is found, the cooresponding mask
+         * is returned.  Otherwise returns null.  [MSDN Source](http://msdn.microsoft.com/en-us/library/jj575178(v=office.12).aspx)
+         * @param {string} permMaskName Permission mask name.
+         * @returns {string|null} Return the mask for the name.
+         */
+        function convertEffectivePermMask(permMaskName) {
+            var permissionMask = null;
+
+            var permissions = {
+                //General
+                EmptyMask: '0x0000000000000000',
+                FullMask: '0x7FFFFFFFFFFFFFFF',
+
+                //List and document permissions
+                ViewListItems: '0x0000000000000001',
+                AddListItems: '',
+                EditListItems: '0x0000000000000004',
+                DeleteListItems: '0x0000000000000008',
+                ApproveItems: '0x0000000000000010',
+                OpenItems: '0x0000000000000020',
+                ViewVersions: '0x0000000000000040',
+                DeleteVersions: '0x0000000000000080',
+                CancelCheckout: '0x0000000000000100',
+                ManagePersonalViews: '0x0000000000000200',
+                ManageLists: '0x0000000000000800',
+                ViewFormPages: '0x0000000000001000',
+
+                //Web level permissions
+                Open: '0x0000000000010000',
+                ViewPages: '0x0000000000020000',
+                AddAndCustomizePages: '0x0000000000040000',
+                ApplyThemeAndBorder: '0x0000000000080000',
+                ApplyStyleSheets: '0x0000000000100000',
+                ViewUsageData: '0x0000000000200000',
+                CreateSSCSite: '0x0000000000400000',
+                ManageSubwebs: '0x0000000000800000',
+                CreateGroups: '0x0000000001000000',
+                ManagePermissions: '0x0000000002000000',
+                BrowseDirectories: '0x0000000004000000',
+                BrowseUserInfo: '0x0000000008000000',
+                AddDelPrivateWebParts: '0x0000000010000000',
+                UpdatePersonalWebParts: '0x0000000020000000',
+                ManageWeb: '0x0000000040000000',
+                UseClientIntegration: '0x0000001000000000',
+                UseRemoteAPIs: '0x0000002000000000',
+                ManageAlerts: '0x0000004000000000',
+                CreateAlerts: '0x0000008000000000',
+                EditMyUserInfo: '0x0000010000000000',
+
+                //Special Permissions
+                EnumeratePermissions: '0x4000000000000000'
+            };
+
+            if(permissions[permMaskName]) {
+                permissionMask = permissions[permMaskName];
+            }
+            return permissionMask;
+        }
+
         function toCamelCase(s) {
             return s.replace(/(?:^\w|[A-Z]|\b\w)/g, function (letter, index) {
                 return index == 0 ? letter.toLowerCase() : letter.toUpperCase();
@@ -383,6 +449,7 @@ angular.module('angularPoint')
 
         return {
             batchProcess: batchProcess,
+            convertEffectivePermMask: convertEffectivePermMask,
             dateWithinRange: dateWithinRange,
             doubleDigit: doubleDigit,
             fromCamelCase: fromCamelCase,

@@ -7,11 +7,10 @@
  * Simple service that allows us to request and cache both the current user and their group memberships.
  *
  * @requires apDataService
- * @requires apConfig
  *
  */
 angular.module('angularPoint')
-    .service('apUserModel', function ($q, _, apDataService, apConfig) {
+    .service('apUserModel', function ($q, _, apDataService) {
 
         var model = {
                 checkIfMember: checkIfMember,
