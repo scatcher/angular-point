@@ -52,12 +52,15 @@ with a capital letter.</p>
 </div></td></tr></tbody></table><h5 id="methods_extendlistdefinitionfromxml_returns">Returns</h5><table class="variables-matrix"><tr><td><a href="" class="label type-hint type-hint-object">object</a></td><td><div class="angularpoint-apdecodeservice-page angularpoint-apdecodeservice-extendlistdefinitionfromxml-page"><p>Extended list object.</p>
 </div></td></tr></table></div>
 </li>
-<li><h3 id="methods_extendobjectwithxmlattributes">extendObjectWithXMLAttributes(xmlObject, jsObject)</h3>
+<li><h3 id="methods_extendobjectwithxmlattributes">extendObjectWithXMLAttributes(xmlObject, jsObject, attributeTypes)</h3>
 <div class="extendobjectwithxmlattributes"><div class="angularpoint-apdecodeservice-page angularpoint-apdecodeservice-extendobjectwithxmlattributes-page"><p>Takes an XML element and copies all attributes over to a given JS object with corresponding values.  If
-no JS Object is provided, it extends an empty object and returns it.
+no JS Object is provided, it extends an empty object and returns it.  If an attributeTypes object is provided
+we parse each of the defined field so they are typed correctly instead of being a simple string.
 Note: Properties are not necessarily CAMLCase.</p>
 </div><h5 id="methods_extendobjectwithxmlattributes_parameters">Parameters</h5><table class="variables-matrix table table-bordered table-striped"><thead><tr><th>Param</th><th>Type</th><th>Details</th></tr></thead><tbody><tr><td>xmlObject</td><td><a href="" class="label type-hint type-hint-object">object</a></td><td><div class="angularpoint-apdecodeservice-page angularpoint-apdecodeservice-extendobjectwithxmlattributes-page"><p>An XML element.</p>
 </div></td></tr><tr><td>jsObject</td><td><a href="" class="label type-hint type-hint-object">object</a></td><td><div class="angularpoint-apdecodeservice-page angularpoint-apdecodeservice-extendobjectwithxmlattributes-page"><p>An optional JS Object to extend XML attributes to.</p>
+</div> <p><em>(default: {})</em></p></td></tr><tr><td>attributeTypes</td><td><a href="" class="label type-hint type-hint-object">object</a></td><td><div class="angularpoint-apdecodeservice-page angularpoint-apdecodeservice-extendobjectwithxmlattributes-page"><p>Key/Val object with keys being the name of the field and val being the
+type of field.</p>
 </div> <p><em>(default: {})</em></p></td></tr></tbody></table><h5 id="methods_extendobjectwithxmlattributes_returns">Returns</h5><table class="variables-matrix"><tr><td><a href="" class="label type-hint type-hint-object">object</a></td><td><div class="angularpoint-apdecodeservice-page angularpoint-apdecodeservice-extendobjectwithxmlattributes-page"><p>JS Object</p>
 </div></td></tr></table></div>
 </li>

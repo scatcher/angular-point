@@ -52,6 +52,15 @@ function buildProjectSummary = function() {
 </div></div>
 </div>
 </li>
+<li><h3 id="methods_converteffectivepermmask">convertEffectivePermMask(permMaskName)</h3>
+<div class="converteffectivepermmask"><div class="angularpoint-aputilityservice-page angularpoint-aputilityservice-converteffectivepermmask-page"><p>GetListItemsSinceToken operation returns the list element with an EffectivePermMask attribute which is the
+name of the PermissionMask.  We then need to convert the name into an actual mask so this function contains
+the known permission names with their masks.  If a provided mask name is found, the cooresponding mask
+is returned.  Otherwise returns null.  <a href="http://msdn.microsoft.com/en-us/library/jj575178(v=office.12">MSDN Source</a>.aspx)</p>
+</div><h5 id="methods_converteffectivepermmask_parameters">Parameters</h5><table class="variables-matrix table table-bordered table-striped"><thead><tr><th>Param</th><th>Type</th><th>Details</th></tr></thead><tbody><tr><td>permMaskName</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="angularpoint-aputilityservice-page angularpoint-aputilityservice-converteffectivepermmask-page"><p>Permission mask name.</p>
+</div></td></tr></tbody></table><h5 id="methods_converteffectivepermmask_returns">Returns</h5><table class="variables-matrix"><tr><td><a href="" class="label type-hint type-hint-string">string|null</a></td><td><div class="angularpoint-aputilityservice-page angularpoint-aputilityservice-converteffectivepermmask-page"><p>Return the mask for the name.</p>
+</div></td></tr></table></div>
+</li>
 <li><h3 id="methods_datewithinrange">dateWithinRange(startDate, endDate, dateToCheck)</h3>
 <div class="datewithinrange"><div class="angularpoint-aputilityservice-page angularpoint-aputilityservice-datewithinrange-page"><p>Converts dates into yyyymmdd formatted ints and evaluates to determine if the dateToCheck
 falls within the date range provided</p>
