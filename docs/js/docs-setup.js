@@ -504,7 +504,7 @@ NG_DOCS={
       "shortName": "ListItem.saveFields",
       "type": "function",
       "moduleName": "ListItem",
-      "shortDescription": "Saves a named subset of fields back to SharePoint",
+      "shortDescription": "Saves a named subset of fields back to SharePoint.  This is an alternative to saving all fields.",
       "keywords": "$scope alternative api app array cache cached currently data default ensure entity example failure fictitious field fieldarray fields form function individual intensive internal item js list listitem modal named names notes optionally params pass process promise pushing query resolves save savechanges saved savefields saves saving search server service sharepoint single status stored string subset task update updateallcaches updated updatestatus"
     },
     {

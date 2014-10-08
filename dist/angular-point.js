@@ -6405,6 +6405,13 @@ angular.module('angularPoint')
             var model = listItem.getModel();
             var deferred = $q.defer();
 
+            /** Redirect if the request is actually creating a new list item.  This can occur if we create
+             * an empty item that is instantiated from the model and then attempt to save instead of using
+             * model.addNewItem */
+            if(!listItem.id) {
+                return model.addNewItem(listItem, options);
+            }
+
             apDataService.updateListItem(model, listItem, options)
                 .then(function (response) {
                     deferred.resolve(response);
@@ -6419,8 +6426,7 @@ angular.module('angularPoint')
          * @ngdoc function
          * @name ListItem.saveFields
          * @description
-         * Saves a named subset of fields back to SharePoint
-         * Alternative to saving all fields
+         * Saves a named subset of fields back to SharePoint.  This is an alternative to saving all fields.
          * @param {array|string} fieldArray Array of internal field names that should be saved to SharePoint or a single
          * string to save an individual field.
          * @param {object} [options] Optionally pass params to the data service.
