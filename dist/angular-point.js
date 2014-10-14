@@ -745,6 +745,7 @@ angular.module('angularPoint')
             deleteListItem: deleteListItem,
             executeQuery: executeQuery,
             generateWebServiceUrl: generateWebServiceUrl,
+            getAvailableWorkflows: getAvailableWorkflows,
             getCollection: getCollection,
             getCurrentSite: getCurrentSite,
             getFieldVersionHistory: getFieldVersionHistory,
@@ -760,6 +761,7 @@ angular.module('angularPoint')
             retrieveChangeToken: retrieveChangeToken,
             retrievePermMask: retrievePermMask,
             serviceWrapper: serviceWrapper,
+            startWorkflow: startWorkflow,
             updateListItem: updateListItem
         };
 
@@ -1538,6 +1540,105 @@ angular.module('angularPoint')
                 });
 
             return deferred.promise;
+        }
+
+        function createItemUrlFromFileRef(fileRefString) {
+            return window.location.protocol + '//' + window.location.hostname + '/' + fileRefString;
+        }
+
+        /**
+         * @ngdoc function
+         * @name apDataService.getAvailableWorkflows
+         * @description
+         * Given a list item or document, return an array of all available workflows.  This is used in combination with
+         * apDataService.startWorkflow because it requires the template GUID for the target workflow.
+         * @example
+         * <pre>
+         * apDataService.getAvailableWorkflows(entity)
+         *     .then(function(templateArray) {
+         *          ....templateArray = [{
+         *              "name":"WidgetApproval",
+         *              "instantiationUrl":"https://sharepoint.mycompany.com/_layouts/IniWrkflIP.aspx?List=fc17890e-8c0…311-cea9-40d1-a183-6edde9333815}&Web={ec744d8e-ae0a-45dd-bcd1-8a63b9b399bd}",
+         *              "templateId":"59062311-cea9-40d1-a183-6edde9333815"
+         *          }]
+         *     });
+         * </pre>
+         * @param {object} entity SharePoint list item or document.
+         * @returns {object} Resolves with an array of objects defining each of the available workflows for the item.
+         */
+        function getAvailableWorkflows(entity) {
+            var deferred = $q.defer();
+            if(!entity.fileRef || !entity.fileRef.lookupValue) {
+                throw error('The provided entity doesn\'t have a valid fileRef property', entity);
+            }
+            /** Build the full url for the fileRef */
+            var itemUrl = createItemUrlFromFileRef(entity.fileRef.lookupValue);
+
+            serviceWrapper({
+                operation: 'GetTemplatesForItem',
+                item: itemUrl
+            }).then(function (responseXML) {
+                var workflowTemplates = [];
+                var xmlTemplates = $(responseXML).SPFilterNode('WorkflowTemplate');
+                _.each(xmlTemplates, function (xmlTemplate) {
+                    var template = {
+                        name: $(xmlTemplate).attr('Name'),
+                        instantiationUrl: $(xmlTemplate).attr('InstantiationUrl'),
+                        templateId: $(xmlTemplate).find('WorkflowTemplateIdSet').attr('TemplateId')
+                    };
+                    workflowTemplates.push(template);
+                });
+                deferred.resolve(workflowTemplates);
+            });
+
+
+            return deferred.promise;
+        }
+
+        /**
+         * @ngdoc function
+         * @name apDataService.startWorkflow
+         * @description
+         * Initiate a workflow for a given list item or document.  You can view additional info at
+         * [StartWorkflow](http://spservices.codeplex.com/wikipage?title=StartWorkflow&referringTitle=Workflow).
+         * @param {object} options Configuration options.
+         * @param {string} options.item Full fileRef for the given list item/document.
+         * @param {string} options.templateId The workflow template GUID.  You can use dataService.getAvailableWorkflows
+         * to locate to appropriate one.
+         * @param {string} [options.workflowParameters='<root />'] Optionally provide paramaters to the workflow.
+         * @param {string} [options.fileRef] Optionally pass in the relative fileRef of an entity and then we can
+         * convert it to options.item.
+         * @returns {object} Deferred object that resolves once complete.
+         * @example
+         * <pre>
+         * apDataService.startWorkflow({
+         *     item: "https://server/site/Lists/item" + idData + "_.000",
+         *     templateId: "{c29c1291-a25c-47d7-9345-8fb1de2a1fa3}",
+         *     workflowParameters: "<Data><monthName>" + txtBox.value + "</monthName></Data>",
+         *   ...}).then(function() {
+         *       //Success
+         *   }, function(err) {
+         *       //Error
+         *   })
+         * </pre>
+         */
+        function startWorkflow(options) {
+            var defaults = {
+                    operation: 'StartWorkflow',
+                    item: '',
+                    fileRef: '',
+                    templateId: '',
+                    workflowParameters: '<root />'
+                },
+                opts = _.extend({}, defaults, options);
+
+            /** We have the relative file reference but we need to create the fully qualified reference */
+            if(!opts.item && opts.fileRef) {
+                opts.item = createItemUrlFromFileRef(opts.fileRef);
+            }
+
+            return serviceWrapper(opts);
+
         }
 
         //Todo Determine if this has any value.
@@ -6366,12 +6467,14 @@ angular.module('angularPoint')
             deleteAttachment: deleteAttachment,
             deleteItem: deleteItem,
             getAttachmentCollection: getAttachmentCollection,
+            getAvailableWorkflows: getAvailableWorkflows,
             getFieldDefinition: getFieldDefinition,
             getFieldVersionHistory: getFieldVersionHistory,
             getLookupReference: getLookupReference,
             resolvePermissions: resolvePermissions,
             saveChanges: saveChanges,
             saveFields: saveFields,
+            startWorkflow: startWorkflow,
             validateEntity: validateEntity
         };
 
@@ -6606,6 +6709,55 @@ angular.module('angularPoint')
         function getFieldDefinition(fieldName) {
             var listItem = this;
             return listItem.getModel().getFieldDefinition(fieldName);
+        }
+
+
+        /**
+         * @ngdoc function
+         * @name ListItem.getAvailableWorkflows
+         * @description
+         * Wrapper for apDataService.getAvailableWorkflows.  Simply passes the current item in.
+         * @returns {promise} Array of objects defining each of the available workflows.
+         */
+        function getAvailableWorkflows() {
+            var listItem = this;
+            return apDataService.getAvailableWorkflows(listItem);
+        }
+
+
+        /**
+         * @ngdoc function
+         * @name ListItem.startWorkflow
+         * @description
+         * Given a workflow name, we look for the template GUID for that workflow then attempt
+         * to start it.
+         * @param {string} workflowName Name of the workflow in SharePoint.
+         * @param {object} [options] Pass through options to apDataService.startWorkflow.
+         * @returns {promise} Resolves with server response.
+         */
+        function startWorkflow(workflowName, options) {
+            var listItem = this,
+                deferred = $q.defer();
+            /** We first need to get the template GUID for the workflow */
+            listItem.getAvailableWorkflows()
+                .then(function (workflows) {
+                    var targetWorklow = _.findWhere(workflows, {name: workflowName});
+                    if(!targetWorklow) {
+                        throw error('A workflow with the specified name wasn\'t found.');
+                    }
+                    /** Create an extended set of options to pass any overrides to apDataService */
+                    var opts = _.extend({}, {
+                        fileRef: listItem.fileRef.lookupValue,
+                        templateId: targetWorklow.templateId
+                    }, options);
+
+                    apDataService.startWorkflow(opts)
+                        .then(function (xmlResponse) {
+                            deferred.resolve(xmlResponse);
+                        })
+                });
+
+            return deferred.promise;
         }
 
 

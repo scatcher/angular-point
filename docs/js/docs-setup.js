@@ -266,6 +266,15 @@ NG_DOCS={
     },
     {
       "section": "api",
+      "id": "apDataService.getAvailableWorkflows",
+      "shortName": "apDataService.getAvailableWorkflows",
+      "type": "function",
+      "moduleName": "apDataService",
+      "shortDescription": "Given a list item or document, return an array of all available workflows.  This is used in combination with",
+      "keywords": "apdataservice api array aspx combination defining document entity function getavailableworkflows guid https instantiationurl item list mycompany objects requires resolves return sharepoint startworkflow target template templatearray templateid widgetapproval workflow workflows"
+    },
+    {
+      "section": "api",
       "id": "apDataService.getCollection",
       "shortName": "apDataService.getCollection",
       "type": "function",
@@ -392,6 +401,15 @@ NG_DOCS={
     },
     {
       "section": "api",
+      "id": "apDataService.startWorkflow",
+      "shortName": "apDataService.startWorkflow",
+      "type": "function",
+      "moduleName": "apDataService",
+      "shortDescription": "Initiate a workflow for a given list item or document.  You can view additional info at",
+      "keywords": "additional apdataservice api appropriate codeplex complete configuration convert dataservice deferred document entity fileref full function getavailableworkflows guid https iddata info initiate item list locate object optionally options paramaters pass provide relative resolves startworkflow template templateid txtbox view workflow workflowparameters"
+    },
+    {
+      "section": "api",
       "id": "apDataService.updateListItem",
       "shortName": "apDataService.updateListItem",
       "type": "function",
@@ -455,6 +473,15 @@ NG_DOCS={
     },
     {
       "section": "api",
+      "id": "ListItem.getAvailableWorkflows",
+      "shortName": "ListItem.getAvailableWorkflows",
+      "type": "function",
+      "moduleName": "ListItem",
+      "shortDescription": "Wrapper for apDataService.getAvailableWorkflows.  Simply passes the current item in.",
+      "keywords": "apdataservice api array current defining function getavailableworkflows item listitem objects passes simply workflows wrapper"
+    },
+    {
+      "section": "api",
       "id": "ListItem.getFieldDefinition",
       "shortName": "ListItem.getFieldDefinition",
       "type": "function",
@@ -506,6 +533,15 @@ NG_DOCS={
       "moduleName": "ListItem",
       "shortDescription": "Saves a named subset of fields back to SharePoint.  This is an alternative to saving all fields.",
       "keywords": "$scope alternative api app array cache cached currently data default ensure entity example failure fictitious field fieldarray fields form function individual intensive internal item js list listitem modal named names notes optionally params pass process promise pushing query resolves save savechanges saved savefields saves saving search server service sharepoint single status stored string subset task update updateallcaches updated updatestatus"
+    },
+    {
+      "section": "api",
+      "id": "ListItem.startWorkflow",
+      "shortName": "ListItem.startWorkflow",
+      "type": "function",
+      "moduleName": "ListItem",
+      "shortDescription": "Given a workflow name, we look for the template GUID for that workflow then attempt",
+      "keywords": "apdataservice api attempt function guid listitem options pass resolves response server sharepoint start startworkflow template workflow workflowname"
     },
     {
       "section": "api",

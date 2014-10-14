@@ -240,4 +240,15 @@ describe("Service: apDataService", function () {
         });
     });
 
+    describe('Function: getAvailableWorkflows', function () {
+        it('removes a deleted entity from the array', function () {
+            apDataService.getAvailableWorkflows(mockToUpdate)
+                .then(function (templates) {
+                    expect(templates.length).toBeGreaterThan(0);
+                    expect(templates[0].name).toEqual('WidgetApproval');
+                });
+            $httpBackend.flush();
+        });
+    });
+
 });

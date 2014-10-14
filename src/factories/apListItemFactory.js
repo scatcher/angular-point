@@ -34,12 +34,14 @@ angular.module('angularPoint')
             deleteAttachment: deleteAttachment,
             deleteItem: deleteItem,
             getAttachmentCollection: getAttachmentCollection,
+            getAvailableWorkflows: getAvailableWorkflows,
             getFieldDefinition: getFieldDefinition,
             getFieldVersionHistory: getFieldVersionHistory,
             getLookupReference: getLookupReference,
             resolvePermissions: resolvePermissions,
             saveChanges: saveChanges,
             saveFields: saveFields,
+            startWorkflow: startWorkflow,
             validateEntity: validateEntity
         };
 
@@ -274,6 +276,55 @@ angular.module('angularPoint')
         function getFieldDefinition(fieldName) {
             var listItem = this;
             return listItem.getModel().getFieldDefinition(fieldName);
+        }
+
+
+        /**
+         * @ngdoc function
+         * @name ListItem.getAvailableWorkflows
+         * @description
+         * Wrapper for apDataService.getAvailableWorkflows.  Simply passes the current item in.
+         * @returns {promise} Array of objects defining each of the available workflows.
+         */
+        function getAvailableWorkflows() {
+            var listItem = this;
+            return apDataService.getAvailableWorkflows(listItem);
+        }
+
+
+        /**
+         * @ngdoc function
+         * @name ListItem.startWorkflow
+         * @description
+         * Given a workflow name, we look for the template GUID for that workflow then attempt
+         * to start it.
+         * @param {string} workflowName Name of the workflow in SharePoint.
+         * @param {object} [options] Pass through options to apDataService.startWorkflow.
+         * @returns {promise} Resolves with server response.
+         */
+        function startWorkflow(workflowName, options) {
+            var listItem = this,
+                deferred = $q.defer();
+            /** We first need to get the template GUID for the workflow */
+            listItem.getAvailableWorkflows()
+                .then(function (workflows) {
+                    var targetWorklow = _.findWhere(workflows, {name: workflowName});
+                    if(!targetWorklow) {
+                        throw error('A workflow with the specified name wasn\'t found.');
+                    }
+                    /** Create an extended set of options to pass any overrides to apDataService */
+                    var opts = _.extend({}, {
+                        fileRef: listItem.fileRef.lookupValue,
+                        templateId: targetWorklow.templateId
+                    }, options);
+
+                    apDataService.startWorkflow(opts)
+                        .then(function (xmlResponse) {
+                            deferred.resolve(xmlResponse);
+                        })
+                });
+
+            return deferred.promise;
         }
 
 
