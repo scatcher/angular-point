@@ -1,6 +1,6 @@
 {
   "name": "angular-point",
-  "version": "1.0.11",
+  "version": "1.0.12",
   "dependencies": {},
   "devDependencies": {
     "angular-point-xml-parser": "latest",
