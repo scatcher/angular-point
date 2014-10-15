@@ -240,9 +240,9 @@ describe("Service: apDataService", function () {
         });
     });
 
-    describe('Function: getAvailableWorkflows', function () {
+    ddescribe('Function: getAvailableWorkflows', function () {
         it('removes a deleted entity from the array', function () {
-            apDataService.getAvailableWorkflows(mockToUpdate)
+            apDataService.getAvailableWorkflows(mockToUpdate.fileRef.lookupValue)
                 .then(function (templates) {
                     expect(templates.length).toBeGreaterThan(0);
                     expect(templates[0].name).toEqual('WidgetApproval');

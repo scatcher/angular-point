@@ -837,7 +837,7 @@ angular.module('angularPoint')
          * apDataService.startWorkflow because it requires the template GUID for the target workflow.
          * @example
          * <pre>
-         * apDataService.getAvailableWorkflows(entity)
+         * apDataService.getAvailableWorkflows(entity.fileRef.lookupValue)
          *     .then(function(templateArray) {
          *          ....templateArray = [{
          *              "name":"WidgetApproval",
@@ -846,16 +846,13 @@ angular.module('angularPoint')
          *          }]
          *     });
          * </pre>
-         * @param {object} entity SharePoint list item or document.
+         * @param {string} fileRefString Relative or static url referencing the item.
          * @returns {object} Resolves with an array of objects defining each of the available workflows for the item.
          */
-        function getAvailableWorkflows(entity) {
+        function getAvailableWorkflows(fileRefString) {
             var deferred = $q.defer();
-            if(!entity.fileRef || !entity.fileRef.lookupValue) {
-                throw error('The provided entity doesn\'t have a valid fileRef property', entity);
-            }
-            /** Build the full url for the fileRef */
-            var itemUrl = createItemUrlFromFileRef(entity.fileRef.lookupValue);
+            /** Build the full url for the fileRef if not already provided.  FileRef for an item defaults to a relative url */
+            var itemUrl = fileRefString.indexOf('://') > -1 ? fileRefString : createItemUrlFromFileRef(fileRefString);
 
             serviceWrapper({
                 operation: 'GetTemplatesForItem',
@@ -867,7 +864,7 @@ angular.module('angularPoint')
                     var template = {
                         name: $(xmlTemplate).attr('Name'),
                         instantiationUrl: $(xmlTemplate).attr('InstantiationUrl'),
-                        templateId: $(xmlTemplate).find('WorkflowTemplateIdSet').attr('TemplateId')
+                        templateId: '{' + $(xmlTemplate).find('WorkflowTemplateIdSet').attr('TemplateId') + '}'
                     };
                     workflowTemplates.push(template);
                 });
