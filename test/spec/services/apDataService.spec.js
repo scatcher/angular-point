@@ -240,7 +240,7 @@ describe("Service: apDataService", function () {
         });
     });
 
-    ddescribe('Function: getAvailableWorkflows', function () {
+    describe('Function: getAvailableWorkflows', function () {
         it('removes a deleted entity from the array', function () {
             apDataService.getAvailableWorkflows(mockToUpdate.fileRef.lookupValue)
                 .then(function (templates) {

@@ -271,7 +271,7 @@ NG_DOCS={
       "type": "function",
       "moduleName": "apDataService",
       "shortDescription": "Given a list item or document, return an array of all available workflows.  This is used in combination with",
-      "keywords": "apdataservice api array aspx combination defining document entity function getavailableworkflows guid https instantiationurl item list mycompany objects requires resolves return sharepoint startworkflow target template templatearray templateid widgetapproval workflow workflows"
+      "keywords": "apdataservice api array aspx combination defining document fileref filerefstring function getavailableworkflows guid https instantiationurl item list lookupvalue mycompany objects referencing relative requires resolves return startworkflow static target template templatearray templateid url widgetapproval workflow workflows"
     },
     {
       "section": "api",
@@ -540,8 +540,8 @@ NG_DOCS={
       "shortName": "ListItem.startWorkflow",
       "type": "function",
       "moduleName": "ListItem",
-      "shortDescription": "Given a workflow name, we look for the template GUID for that workflow then attempt",
-      "keywords": "apdataservice api attempt function guid listitem options pass resolves response server sharepoint start startworkflow template workflow workflowname"
+      "shortDescription": "Given a workflow name or templateId we initiate a given workflow using apDataService.startWorkflow.",
+      "keywords": "apdataservice api directly function initiate listitem lookup method options params pass resolves response server start startworkflow templateid workflow workflowname"
     },
     {
       "section": "api",
