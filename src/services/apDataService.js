@@ -713,7 +713,8 @@ angular.module('angularPoint')
                     indexedCache: apIndexedCacheFactory.create({}),
                     listName: model.list.getListId(),
                     operation: 'UpdateListItems',
-                    valuePairs: []
+                    valuePairs: [],
+                    webUrl: identifyWebURL(model)
                 },
                 deferred = $q.defer();
 
@@ -763,7 +764,8 @@ angular.module('angularPoint')
                     listName: model.list.getListId(),
                     operation: 'UpdateListItems',
                     target: entity.getCache(),
-                    valuePairs: []
+                    valuePairs: [],
+                    webUrl: identifyWebURL(model)
                 },
                 deferred = $q.defer(),
                 opts = _.extend({}, defaults, options);
@@ -771,6 +773,10 @@ angular.module('angularPoint')
             if (opts.buildValuePairs === true) {
                 var editableFields = _.where(model.list.fields, {readOnly: false});
                 opts.valuePairs = apEncodeService.generateValuePairs(editableFields, entity);
+            }
+
+            if(model.list.webURL && !opts.webURL) {
+                opts.webURL = model.list.webURL;
             }
 
             /** Overload the function then pass anything past the first parameter to the supporting methods */
@@ -804,7 +810,8 @@ angular.module('angularPoint')
                 operation: 'UpdateListItems',
                 listName: model.list.getListId(),
                 batchCmd: 'Delete',
-                ID: entity.id
+                ID: entity.id,
+                webUrl: identifyWebURL(model)
             };
 
             var opts = _.extend({}, defaults, options);
@@ -823,6 +830,12 @@ angular.module('angularPoint')
                 });
 
             return deferred.promise;
+        }
+
+        /** Locate the webUrl param from the list on the model */
+        function identifyWebURL(model) {
+            /** WebFullUrl available after list is extended */
+            return model.list.WebFullUrl ? model.list.WebFullUrl : model.list.webUrl;
         }
 
         function createItemUrlFromFileRef(fileRefString) {
