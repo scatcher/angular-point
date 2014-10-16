@@ -3342,7 +3342,7 @@ angular.module('angularPoint')
             {staticName: 'Editor', objectType: 'User', mappedName: 'editor', readOnly: true},
             {staticName: 'PermMask', objectType: 'Mask', mappedName: 'permMask', readOnly: true},
             {staticName: 'UniqueId', objectType: 'String', mappedName: 'uniqueId', readOnly: true},
-            {staticName: 'FileRef', objectType: 'Lookup', mappedName: 'fileRef', readOnly: false}
+            {staticName: 'FileRef', objectType: 'Lookup', mappedName: 'fileRef', readOnly: true}
         ];
 
         /**
