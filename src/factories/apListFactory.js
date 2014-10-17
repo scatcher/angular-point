@@ -83,8 +83,19 @@ angular.module('angularPoint')
         }
 
         List.prototype.getListId = getListId;
+        List.prototype.identifyWebURL = identifyWebURL;
 
 
+        /**
+         * @ngdoc function
+         * @name List:getListId
+         * @methodOf List
+         * @description
+         * Defaults to list.guid.  For a multi-environment setup, we accept a list.environments object with a property for each named
+         * environment with a corresponding value of the list guid.  The active environment can be selected
+         * by setting apConfig.environment to the string name of the desired environment.
+         * @returns {string} List ID.
+         */
         function getListId() {
             var list = this;
             if (_.isString(list.environments[apConfig.environment])) {
@@ -98,6 +109,20 @@ angular.module('angularPoint')
                 throw new Error('There isn\'t a valid environment definition for apConfig.environment=' + apConfig.environment + '  ' +
                 'Please confirm that the list "' + list.title + '" has the necessary environmental configuration.');
             }
+        }
+
+        /**
+         * @ngdoc function
+         * @name List:identifyWebURL
+         * @methodOf List
+         * @description
+         * If a list is extended, use the provided webURL, otherwise use list.webURL.  If never set it will default
+         * to apConfig.defaultUrl.
+         * @returns {string} webURL param.
+         */
+        function identifyWebURL() {
+            var list = this;
+            return list.WebFullUrl ? list.WebFullUrl : list.webURL;
         }
 
         /**
