@@ -309,10 +309,6 @@ angular.module('angularPoint')
             /** Set the relative file reference */
             options.fileRef = listItem.fileRef.lookupValue;
 
-            /** Set the webURL for this list */
-            options.webURL = listItem.getModel().list.identifyWebURL();
-
-
             if(!options.templateId && !options.workflowName) {
                 throw 'Either a templateId or workflowName is required to initiate a workflow.';
             } else if(options.templateId) {
