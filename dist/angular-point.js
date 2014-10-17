@@ -1990,7 +1990,14 @@ angular.module('angularPoint')
             var colValue;
 
             switch (objectType) {
-                case 'DateTime': // For calculated columns, stored as datetime;#value
+                case 'Boolean':
+                    colValue = jsBoolean(unescapedValue);
+                    break;
+                case 'Calculated': // Formatted like type;#value so we break it apart and then pass back in to format correctly
+                    colValue = jsCalc(unescapedValue);
+                    break;
+                case 'datetime': // For calculated columns, stored as datetime;#value
+                case 'DateTime':
                     // Dates have dashes instead of slashes: ows_Created='2009-08-25 14:24:48'
                     colValue = jsDate(unescapedValue);
                     break;
@@ -2006,25 +2013,20 @@ angular.module('angularPoint')
                 case 'UserMulti':
                     colValue = jsUserMulti(unescapedValue);
                     break;
-                case 'Boolean':
-                    colValue = jsBoolean(unescapedValue);
-                    break;
                 case 'Integer':
-                case 'Counter':
+                case 'Counter': // Only really used for the ID field
                     colValue = jsInt(unescapedValue);
                     break;
-                case 'Currency':
                 case 'Number':
-                case 'Float': // For calculated columns, stored as float;#value
+                case 'Currency':
+                case 'float': // For calculated columns, stored as float;#value
+                case 'Float':
                     colValue = jsFloat(unescapedValue);
-                    break;
-                case 'Calc':
-                    colValue = jsCalc(unescapedValue);
                     break;
                 case 'MultiChoice':
                     colValue = jsChoiceMulti(unescapedValue);
                     break;
-                case 'JSON':
+                case 'JSON': // Not a true SharePoint field type but acts as a decorator for Note
                     colValue = jsObject(unescapedValue);
                     break;
                 case 'Choice':
@@ -3083,6 +3085,10 @@ angular.module('angularPoint')
             return chance.bool();
         }
 
+        function randomCalc() {
+            return 'float;#' + chance.floating({min: 0, max: 10000});
+        }
+
         function randomString(len) {
             return chance.word() + ' ' + chance.word();
         }
@@ -3241,6 +3247,7 @@ angular.module('angularPoint')
             Text: {defaultValue: '', staticMock: 'Test String', dynamicMock: randomString},
             TextLong: {defaultValue: '', staticMock: 'This is a sentence.', dynamicMock: randomParagraph},
             Boolean: {defaultValue: null, staticMock: true, dynamicMock: randomBoolean},
+            Calculated: {defaultValue: null, staticMock: 'float;#123.45', dynamicMock: randomCalc},
             Choice: {defaultValue: '', staticMock: 'My Choice', dynamicMock: randomString},
             Counter: {defaultValue: null, staticMock: getUniqueCounter(), dynamicMock: getUniqueCounter},
             Currency: {defaultValue: null, staticMock: 120.50, dynamicMock: randomCurrency},
@@ -6770,10 +6777,6 @@ angular.module('angularPoint')
 
             /** Set the relative file reference */
             options.fileRef = listItem.fileRef.lookupValue;
-
-            /** Set the webURL for this list */
-            options.webURL = listItem.getModel().list.identifyWebURL();
-
 
             if(!options.templateId && !options.workflowName) {
                 throw 'Either a templateId or workflowName is required to initiate a workflow.';

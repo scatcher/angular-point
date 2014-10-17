@@ -21,6 +21,10 @@ angular.module('angularPoint')
             return chance.bool();
         }
 
+        function randomCalc() {
+            return 'float;#' + chance.floating({min: 0, max: 10000});
+        }
+
         function randomString(len) {
             return chance.word() + ' ' + chance.word();
         }
@@ -179,6 +183,7 @@ angular.module('angularPoint')
             Text: {defaultValue: '', staticMock: 'Test String', dynamicMock: randomString},
             TextLong: {defaultValue: '', staticMock: 'This is a sentence.', dynamicMock: randomParagraph},
             Boolean: {defaultValue: null, staticMock: true, dynamicMock: randomBoolean},
+            Calculated: {defaultValue: null, staticMock: 'float;#123.45', dynamicMock: randomCalc},
             Choice: {defaultValue: '', staticMock: 'My Choice', dynamicMock: randomString},
             Counter: {defaultValue: null, staticMock: getUniqueCounter(), dynamicMock: getUniqueCounter},
             Currency: {defaultValue: null, staticMock: 120.50, dynamicMock: randomCurrency},

@@ -40,11 +40,15 @@ describe("Factory: apDecodeService", function () {
             });
         });
 
-        //Calc
-        describe('Calc', function () {
-            it('Should parse a calculated string.', function () {
-                expect(apDecodeService.parseStringValue('99;#Test', 'Calc'))
-                    .toEqual('Test');
+        //Calculated
+        describe('Calculated', function () {
+            it('Should parse a calculated float.', function () {
+                expect(apDecodeService.parseStringValue('float;#1234.5', 'Calculated'))
+                    .toEqual(1234.5);
+            });
+            it('Should parse a calculated date.', function () {
+                expect(apDecodeService.parseStringValue('datetime;#2009-08-25 14:24:48', 'Calculated'))
+                    .toEqual(new Date(2009, 7, 25, 14, 24, 48));
             });
         });
 

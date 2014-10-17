@@ -257,7 +257,14 @@ angular.module('angularPoint')
             var colValue;
 
             switch (objectType) {
-                case 'DateTime': // For calculated columns, stored as datetime;#value
+                case 'Boolean':
+                    colValue = jsBoolean(unescapedValue);
+                    break;
+                case 'Calculated': // Formatted like type;#value so we break it apart and then pass back in to format correctly
+                    colValue = jsCalc(unescapedValue);
+                    break;
+                case 'datetime': // For calculated columns, stored as datetime;#value
+                case 'DateTime':
                     // Dates have dashes instead of slashes: ows_Created='2009-08-25 14:24:48'
                     colValue = jsDate(unescapedValue);
                     break;
@@ -273,25 +280,20 @@ angular.module('angularPoint')
                 case 'UserMulti':
                     colValue = jsUserMulti(unescapedValue);
                     break;
-                case 'Boolean':
-                    colValue = jsBoolean(unescapedValue);
-                    break;
                 case 'Integer':
-                case 'Counter':
+                case 'Counter': // Only really used for the ID field
                     colValue = jsInt(unescapedValue);
                     break;
-                case 'Currency':
                 case 'Number':
-                case 'Float': // For calculated columns, stored as float;#value
+                case 'Currency':
+                case 'float': // For calculated columns, stored as float;#value
+                case 'Float':
                     colValue = jsFloat(unescapedValue);
-                    break;
-                case 'Calc':
-                    colValue = jsCalc(unescapedValue);
                     break;
                 case 'MultiChoice':
                     colValue = jsChoiceMulti(unescapedValue);
                     break;
-                case 'JSON':
+                case 'JSON': // Not a true SharePoint field type but acts as a decorator for Note
                     colValue = jsObject(unescapedValue);
                     break;
                 case 'Choice':
