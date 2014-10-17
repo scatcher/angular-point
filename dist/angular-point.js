@@ -1431,7 +1431,7 @@ angular.module('angularPoint')
                     listName: model.list.getListId(),
                     operation: 'UpdateListItems',
                     valuePairs: [],
-                    webUrl: identifyWebURL(model)
+                    webURL: identifyWebURL(model)
                 },
                 deferred = $q.defer();
 
@@ -1482,7 +1482,7 @@ angular.module('angularPoint')
                     operation: 'UpdateListItems',
                     target: entity.getCache(),
                     valuePairs: [],
-                    webUrl: identifyWebURL(model)
+                    webURL: identifyWebURL(model)
                 },
                 deferred = $q.defer(),
                 opts = _.extend({}, defaults, options);
@@ -1528,7 +1528,7 @@ angular.module('angularPoint')
                 listName: model.list.getListId(),
                 batchCmd: 'Delete',
                 ID: entity.id,
-                webUrl: identifyWebURL(model)
+                webURL: identifyWebURL(model)
             };
 
             var opts = _.extend({}, defaults, options);
@@ -1549,10 +1549,10 @@ angular.module('angularPoint')
             return deferred.promise;
         }
 
-        /** Locate the webUrl param from the list on the model */
+        /** Locate the webURL param from the list on the model */
         function identifyWebURL(model) {
             /** WebFullUrl available after list is extended */
-            return model.list.WebFullUrl ? model.list.WebFullUrl : model.list.webUrl;
+            return model.list.WebFullUrl ? model.list.WebFullUrl : model.list.webURL;
         }
 
         function createItemUrlFromFileRef(fileRefString) {
