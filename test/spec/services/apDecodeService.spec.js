@@ -47,8 +47,8 @@ describe("Factory: apDecodeService", function () {
                     .toEqual(1234.5);
             });
             it('Should parse a calculated date.', function () {
-                expect(service.parseStringValue('datetime;#2009-08-25 14:24:48', 'Calculated'))
-                    .toEqual(new Date(2009, 7, 25, 14, 24, 48));
+                expect(service.parseStringValue('datetime;#2009-08-25 7:24:48', 'Calculated'))
+                    .toEqual(new Date(Date.UTC(2009, 7, 25, 14, 24, 48)));
             });
         });
 
@@ -68,16 +68,16 @@ describe("Factory: apDecodeService", function () {
         //DateTime
         describe('DateTime', function () {
             it('Should properly handle a date string.', function () {
-                expect(service.parseStringValue('2009-08-25 14:24:48', 'DateTime'))
-                    .toEqual(new Date(2009, 7, 25, 14, 24, 48));
+                expect(service.parseStringValue('2009-08-25 7:24:48', 'DateTime'))
+                    .toEqual(new Date(Date.UTC(2009, 7, 25, 14, 24, 48)));
             });
             it('Should handle a date with a "T" delimiter instead of a space.', function () {
-                expect(service.parseStringValue('2009-08-25T14:24:48', 'DateTime'))
-                    .toEqual(new Date(2009, 7, 25, 14, 24, 48));
+                expect(service.parseStringValue('2009-08-25T7:24:48', 'DateTime'))
+                    .toEqual(new Date(Date.UTC(2009, 7, 25, 14, 24, 48)));
             });
             it('Should handle a Z at the end.', function () {
-                expect(service.parseStringValue('2014-09-02T13:35:57Z', 'DateTime'))
-                    .toEqual(new Date(2014, 8, 2, 13, 35, 57));
+                expect(service.parseStringValue('2014-09-02T6:35:57Z', 'DateTime'))
+                    .toEqual(new Date(Date.UTC(2014, 8, 2, 13, 35, 57)));
             });
         });
 

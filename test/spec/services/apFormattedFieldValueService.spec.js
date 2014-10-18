@@ -34,8 +34,8 @@ describe('Service: apFormattedFieldValueService', function () {
     describe('Method: stringifyCalc', function () {
         it('converts a calculated field value to a string', function () {
             expect(service.stringifyCalc(32)).toEqual('32');
-            expect(service.stringifyCalc(new Date(2009, 7, 25, 14, 24, 48)))
-                .toEqual('8/25/09 2:24 PM');
+            expect(service.stringifyCalc(new Date(Date.UTC(2009, 7, 25, 14, 24, 48))))
+                .toEqual('8/25/09 7:24 AM');
             expect(service.stringifyCalc('Test String')).toEqual('Test String');
         });
     });
@@ -48,10 +48,10 @@ describe('Service: apFormattedFieldValueService', function () {
 
     describe('Method: stringifyDate', function () {
         it('converts a date to a string', function () {
-            expect(service.stringifyDate(new Date(2009, 7, 25, 14, 24, 48), ''))
+            expect(service.stringifyDate(new Date(Date.UTC(2009, 7, 25, 14, 24, 48)), ''))
                 .toEqual('Aug 25, 2009');
-            expect(service.stringifyDate(new Date(2009, 7, 25, 14, 24, 48), 'json'))
-                .toEqual('2009-08-25T21:24:48.000Z');
+            expect(service.stringifyDate(new Date(Date.UTC(2009, 7, 25, 14, 24, 48)), 'json'))
+                .toEqual('2009-08-25T14:24:48.000Z');
         });
     });
 

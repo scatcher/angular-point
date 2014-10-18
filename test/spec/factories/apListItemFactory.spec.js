@@ -9,9 +9,11 @@ describe("Factory: apListItemFactory", function () {
         mockLookupModel,
         mockListItem,
         apCachedXML,
-        $httpBackend;
+        $httpBackend,
+        utils;
 
-    beforeEach(inject(function (_apListItemFactory_, _mockModel_, _mockLookupModel_, _$httpBackend_, _apCachedXML_) {
+    beforeEach(inject(function (_apListItemFactory_, _mockModel_, _mockLookupModel_, _$httpBackend_, _apCachedXML_
+        , apMockUtils) {
         factory = _apListItemFactory_;
         mockModel = _mockModel_;
         mockLookupModel = _mockLookupModel_;
@@ -19,6 +21,8 @@ describe("Factory: apListItemFactory", function () {
         apCachedXML = _apCachedXML_;
         mockModel.importMocks();
         mockListItem = mockModel.getCache()[1];
+        utils = apMockUtils;
+
     }));
 
     describe('Function create', function () {
@@ -74,7 +78,7 @@ describe("Factory: apListItemFactory", function () {
 
         it('returns a stringified json date with params', function () {
             expect(mockListItem.getFormattedValue('date', {dateFormat: 'json'}))
-                .toEqual('2014-08-19T07:00:00.000Z');
+                .toEqual('2014-08-19T' + utils.getTimezoneOffsetString() + ':00.000Z');
         });
     });
 
