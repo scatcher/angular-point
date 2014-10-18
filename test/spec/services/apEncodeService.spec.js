@@ -75,9 +75,9 @@ describe("Factory: apEncodeService", function () {
         });
 
         it('correctly handles a DateTime field', function () {
-            var validDate = new Date(Date.UTC(2014, 5, 10, 3, 25, 30));
+            var validDate = new Date(2014, 5, 10, 3, 25, 30);
             expect(service.createValuePair(mockDefinition('DateTime'), validDate))
-                .toEqual([ 'DateTime', '2014-06-09T20:25:30Z-07:00']);
+                .toEqual([ 'DateTime', '2014-06-10T03:25:30Z-07:00']);
         });
 
         it('handles a DateTime value as a string', function () {
