@@ -4,7 +4,7 @@ describe("Service: apDataService", function () {
 
     beforeEach(module("angularPoint"));
 
-    var apDataService,
+    var service,
         primaryQueryCache,
         secondaryQueryCache,
         mockModel,
@@ -15,7 +15,7 @@ describe("Service: apDataService", function () {
 
 
     beforeEach(inject(function (_apDataService_, _mockModel_, _mockXMLService_, $injector) {
-        apDataService = _apDataService_;
+        service = _apDataService_;
         mockModel = _mockModel_;
         mockXMLService = _mockXMLService_;
         mockXML = mockXMLService.GetListItemChangesSinceToken;
@@ -32,7 +32,7 @@ describe("Service: apDataService", function () {
 
     describe('Function: getCurrentSite', function () {
         it('returns the site url', function () {
-            apDataService.getCurrentSite()
+            service.getCurrentSite()
                 .then(function (response) {
                     expect(response).toEqual('http://sharepoint.company-server.com/mysite');
                 });
@@ -43,7 +43,7 @@ describe("Service: apDataService", function () {
     describe('Function: updateListItem', function () {
         it('updates the list item', function () {
             mockToUpdate.integer = 44;
-            apDataService.updateListItem(mockModel, mockToUpdate)
+            service.updateListItem(mockModel, mockToUpdate)
                 .then(function (response) {
                     expect(mockToUpdate.integer).toEqual(44);
                     expect(response.integer).toEqual(44);
@@ -51,7 +51,7 @@ describe("Service: apDataService", function () {
             $httpBackend.flush();
         });
         it('updates all cache\'s because they are be referencing the same object', function () {
-            apDataService.updateListItem(mockModel, primaryQueryCache[1])
+            service.updateListItem(mockModel, primaryQueryCache[1])
                 .then(function (response) {
                     expect(primaryQueryCache[1]).toEqual(secondaryQueryCache[1]);
                     expect(secondaryQueryCache[1].integer).toEqual(response.integer);
@@ -62,7 +62,7 @@ describe("Service: apDataService", function () {
 
     describe('Function: createListItem', function () {
         it('creates a new list item', function () {
-            apDataService.createListItem(mockModel, {integer: 11})
+            service.createListItem(mockModel, {integer: 11})
                 .then(function (response) {
                     expect(response.integer).toEqual(11);
                     expect(response.id).toEqual(3);
@@ -70,7 +70,7 @@ describe("Service: apDataService", function () {
             $httpBackend.flush();
         });
         it('doesn\'t add it to existing caches', function () {
-            apDataService.createListItem(mockModel, {integer: 11})
+            service.createListItem(mockModel, {integer: 11})
                 .then(function (response) {
                     expect(response.id).toEqual(3);
                     expect(secondaryQueryCache[3]).toBeUndefined()
@@ -81,7 +81,7 @@ describe("Service: apDataService", function () {
 
     describe('Function: deleteListItem', function () {
         it('removes entity with ID of 1 from all cache objects', function () {
-            apDataService.deleteListItem(mockModel, primaryQueryCache[1], {updateAllCaches: true})
+            service.deleteListItem(mockModel, primaryQueryCache[1], {updateAllCaches: true})
                 .then(function () {
                     expect(primaryQueryCache[1]).toBeUndefined();
                     expect(secondaryQueryCache[1]).toBeUndefined();
@@ -93,7 +93,7 @@ describe("Service: apDataService", function () {
 
     describe('Function: deleteAttachment', function () {
         it('resolves the deleteAttachment request', function () {
-            apDataService.deleteAttachment({})
+            service.deleteAttachment({})
                 .then(function (response) {
                     /** If an error isn't returned, the operation was successful */
                     expect(response).toBeDefined();
@@ -103,20 +103,20 @@ describe("Service: apDataService", function () {
 
     describe('Function: retrieveChangeToken', function () {
         it('returns the change token from the XML', function () {
-            expect(apDataService.retrieveChangeToken(mockXML))
+            expect(service.retrieveChangeToken(mockXML))
                 .toEqual('1;3;f5345fe7-2f7c-49f7-87d0-dbfebdd0ce61;635452551037430000;387547');
         })
     });
 
     describe('Function: retrievePermMask', function () {
         it('returns perm mask for the current user on this lsit', function () {
-            expect(apDataService.retrievePermMask(mockXML)).toEqual('FullMask');
+            expect(service.retrievePermMask(mockXML)).toEqual('FullMask');
         })
     });
 
     describe('Function: getCollection', function () {
         it('can process a GetListCollection call', function () {
-            apDataService.getCollection({operation: 'GetListCollection'})
+            service.getCollection({operation: 'GetListCollection'})
                 .then(function (listCollection) {
                     expect(listCollection.length).toEqual(1);
                 });
@@ -126,7 +126,7 @@ describe("Service: apDataService", function () {
 
     describe('Function: getListItemById', function () {
         it('returns a single list item', function () {
-            apDataService.getListItemById(1, mockModel)
+            service.getListItemById(1, mockModel)
                 .then(function (response) {
                     expect(response.id).toEqual(1);
                 });
@@ -136,7 +136,7 @@ describe("Service: apDataService", function () {
 
     describe('Function: getUserProfileByName', function () {
         it('returns a user profile object', function () {
-            apDataService.getUserProfileByName()
+            service.getUserProfileByName()
                 .then(function (response) {
                     expect(response).toEqual({
                         UserProfile_GUID: 'e1234f12-6992-42eb-9bbc-b3a123b29295',
@@ -152,7 +152,7 @@ describe("Service: apDataService", function () {
 
     describe('Function: getGroupCollectionFromUser', function () {
         it('returns an array of groups the user belongs to', function () {
-            apDataService.getGroupCollectionFromUser()
+            service.getGroupCollectionFromUser()
                 .then(function (response) {
                     expect(response).toEqual([{
                         ID: '385',
@@ -190,7 +190,7 @@ describe("Service: apDataService", function () {
 
     describe('Function: getList', function () {
         it('can process a list definition', function () {
-            apDataService.getList({listName: mockModel.list.guid})
+            service.getList({listName: mockModel.list.guid})
                 .then(function (response) {
                     expect(response).toBeDefined();
                 });
@@ -200,7 +200,7 @@ describe("Service: apDataService", function () {
 
     describe('Function: getListFields', function () {
         it('returns an array of field definition objects', function () {
-            apDataService.getListFields({listName: mockModel.list.guid})
+            service.getListFields({listName: mockModel.list.guid})
                 .then(function (response) {
                     expect(response.length).toEqual(98);
                 });
@@ -211,7 +211,7 @@ describe("Service: apDataService", function () {
     describe('Function: getFieldVersionHistory', function () {
         it('returns an array containing 3 versions of the mock.integer field', function () {
             var fieldDefinition = mockModel.getField('integer');
-            apDataService.getFieldVersionHistory({}, fieldDefinition)
+            service.getFieldVersionHistory({}, fieldDefinition)
                 .then(function (response) {
                     expect(response.length).toEqual(3);
                 });
@@ -225,7 +225,7 @@ describe("Service: apDataService", function () {
             ////Ensure there's nothing left in the cache and we remove any existing change token
             expect(primaryQueryCache.count()).toEqual(0);
             mockModel.getQuery().changeToken = undefined;
-            apDataService.executeQuery(mockModel, mockModel.getQuery())
+            service.executeQuery(mockModel, mockModel.getQuery())
                 .then(function (response) {
                     expect(response.count()).toEqual(2);
                 });
@@ -235,14 +235,14 @@ describe("Service: apDataService", function () {
 
     describe('Function: processDeletionsSinceToken', function () {
         it('removes a deleted entity from the array', function () {
-            apDataService.processDeletionsSinceToken(mockXMLService.getChangeToken_Delete, primaryQueryCache);
+            service.processDeletionsSinceToken(mockXMLService.getChangeToken_Delete, primaryQueryCache);
             expect(primaryQueryCache[1]).toBeUndefined();
         });
     });
 
     describe('Function: getAvailableWorkflows', function () {
         it('removes a deleted entity from the array', function () {
-            apDataService.getAvailableWorkflows(mockToUpdate.fileRef.lookupValue)
+            service.getAvailableWorkflows(mockToUpdate.fileRef.lookupValue)
                 .then(function (templates) {
                     expect(templates.length).toBeGreaterThan(0);
                     expect(templates[0].name).toEqual('WidgetApproval');

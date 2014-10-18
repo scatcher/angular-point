@@ -8,7 +8,7 @@
  * Typical use is to display a loading animation of some sort
  */
 angular.module('angularPoint')
-    .service('apQueueService', function () {
+    .factory('apQueueService', function () {
 
         var observerCallbacks = [],
             apQueueService = {

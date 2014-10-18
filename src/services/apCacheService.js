@@ -8,7 +8,7 @@
  * resolve once a requested list item is registered in the future.
  */
 angular.module('angularPoint')
-    .service('apCacheService', function ($q, $log, _, apIndexedCacheFactory) {
+    .factory('apCacheService', function ($q, $log, _, apIndexedCacheFactory) {
         /**
          * @description Stores list names when a new model is registered along with the GUID to allow us to retrieve the
          * GUID in future

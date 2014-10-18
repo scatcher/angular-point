@@ -12,8 +12,9 @@
  * @requires angularPoint.apCacheService
  */
 angular.module('angularPoint')
-    .service('apDecodeService', function ($q, _, apUtilityService, apQueueService, apConfig, apCacheService,
-                                          apLookupFactory, apUserFactory, apFieldService) {
+    .factory('apDecodeService', function ($q, _, apUtilityService, apQueueService, apConfig, apCacheService,
+                                          apLookupFactory, apUserFactory, apFieldService, apXMLListAttributeTypes,
+                                          apXMLFieldAttributeTypes) {
 
 
         return {
@@ -470,52 +471,8 @@ angular.module('angularPoint')
          * @returns {object} Extended list object.
          */
         function extendListDefinitionsFromXML(list, responseXML) {
-            /** Object map of common fields and their types */
-            var attributeTypes = {
-                BaseType: 'Number',
-                ServerTemplate: 'Number',
-                Created: 'DateTime',
-                Modified: 'DateTime',
-                LastDeleted: 'DateTime',
-                Version: 'Number',
-                ThumbnailSize: 'Number',
-                WebImageWidth: 'Number',
-                WebImageHeight: 'Number',
-                Flags: 'Number',
-                ItemCount: 'Number',
-                ReadSecurity: 'Number',
-                WriteSecurity: 'Number',
-                Author: 'Number',
-                MajorWithMinorVersionsLimit: 'Number',
-                HasUniqueScopes: 'Boolean',
-                NoThrottleListOperations: 'Boolean',
-                HasRelatedLists: 'Boolean',
-                AllowDeletion: 'Boolean',
-                AllowMultiResponses: 'Boolean',
-                EnableAttachments: 'Boolean',
-                EnableModeration: 'Boolean',
-                EnableVersioning: 'Boolean',
-                HasExternalDataSource: 'Boolean',
-                Hidden: 'Boolean',
-                MultipleDataList: 'Boolean',
-                Ordered: 'Boolean',
-                ShowUser: 'Boolean',
-                EnablePeopleSelector: 'Boolean',
-                EnableResourceSelector: 'Boolean',
-                EnableMinorVersion: 'Boolean',
-                RequireCheckout: 'Boolean',
-                ThrottleListOperations: 'Boolean',
-                ExcludeFromOfflineClient: 'Boolean',
-                EnableFolderCreation: 'Boolean',
-                IrmEnabled: 'Boolean',
-                IsApplicationList: 'Boolean',
-                PreserveEmptyValues: 'Boolean',
-                StrictTypeCoercion: 'Boolean',
-                EnforceDataValidation: 'Boolean',
-                MaxItemsPerThrottledOperation: 'Number'
-            };
             $(responseXML).find("List").each(function () {
-                extendObjectWithXMLAttributes(this, list, attributeTypes);
+                extendObjectWithXMLAttributes(this, list, apXMLListAttributeTypes);
             });
             return list;
         }
@@ -533,20 +490,7 @@ angular.module('angularPoint')
          * @param {object} responseXML XML response from the server.
          */
         function extendFieldDefinitionsFromXML(fieldDefinitions, responseXML) {
-            var fieldMap = {},
-                attributeTypes = {
-                    Decimals: 'Number',
-                    EnforceUniqueValues: 'Boolean',
-                    Filterable: 'Boolean',
-                    FromBaseType: 'Boolean',
-                    Hidden: 'Boolean',
-                    Indexed: 'Boolean',
-                    NumLines: 'Number',
-                    ReadOnly: 'Boolean',
-                    Required: 'Boolean',
-                    Sortable: 'Boolean'
-                };
-
+            var fieldMap = {};
 
             /** Map all custom fields with keys of the staticName and values = field definition */
             _.each(fieldDefinitions, function (field) {
@@ -567,7 +511,7 @@ angular.module('angularPoint')
                 /** If we've defined this field then we should extend it */
                 if (fieldDefinition) {
 
-                    extendObjectWithXMLAttributes(xmlField, fieldDefinition, attributeTypes);
+                    extendObjectWithXMLAttributes(xmlField, fieldDefinition, apXMLFieldAttributeTypes);
 
                     /** Additional processing for Choice fields to include the default value and choices */
                     if (fieldDefinition.objectType === 'Choice' || fieldDefinition.objectType === 'MultiChoice') {

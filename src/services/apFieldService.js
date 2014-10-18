@@ -8,14 +8,104 @@
  * @requires angularPoint.apUtilityService
  */
 angular.module('angularPoint')
-    .service('apFieldService', function (_, apUtilityService) {
+    .factory('apFieldService', function (_, apUtilityService, apDefaultFields) {
 
-        var getUniqueCounter = function () {
-            var self = getUniqueCounter;
-            self.count = self.count || 0;
-            self.count++;
-            return self.count;
+        var uniqueCount = 0;
+
+        /**
+         * @ngdoc function
+         * @name angularPoint.apFieldService:Field
+         * @methodOf angularPoint.apFieldService
+         * @description
+         * Decorates field with optional defaults
+         * @param {object} obj Field definition.
+         * @returns {object} Field
+         * @constructor
+         */
+        function Field(obj) {
+            var self = this;
+            var defaults = {
+                readOnly: false,
+                objectType: 'Text'
+            };
+            _.extend(self, defaults, obj);
+            self.displayName = self.displayName ? self.displayName : apUtilityService.fromCamelCase(self.mappedName);
+            /** Deprecated internal name and replace with staticName but maintain compatibility */
+            self.staticName = self.staticName || self.internalName;
+        }
+
+        Field.prototype.getDefinition = function () {
+            return getDefinition(this.objectType);
         };
+
+        Field.prototype.getDefaultValueForType = function () {
+            return getDefaultValueForType(this.objectType);
+        };
+
+        Field.prototype.getMockData = function (options) {
+            return getMockData(this.objectType, options);
+        };
+
+        /** Field types used on the models to create a field definition */
+        var fieldTypes = {
+            Text: {defaultValue: '', staticMock: 'Test String', dynamicMock: randomString},
+            Note: {defaultValue: '', staticMock: 'This is a sentence.', dynamicMock: randomParagraph},
+            Boolean: {defaultValue: null, staticMock: true, dynamicMock: randomBoolean},
+            Calculated: {defaultValue: null, staticMock: 'float;#123.45', dynamicMock: randomCalc},
+            Choice: {defaultValue: '', staticMock: 'My Choice', dynamicMock: randomString},
+            Counter: {defaultValue: null, staticMock: getUniqueCounter(), dynamicMock: getUniqueCounter},
+            Currency: {defaultValue: null, staticMock: 120.50, dynamicMock: randomCurrency},
+            DateTime: {defaultValue: null, staticMock: new Date(2014, 5, 4, 11, 33, 25), dynamicMock: randomDate},
+            Integer: {defaultValue: null, staticMock: 14, dynamicMock: randomInteger},
+            JSON: {
+                defaultValue: '', staticMock: [
+                    {id: 1, title: 'test'},
+                    {id: 2}
+                ], dynamicMock: randomString
+            },
+            Lookup: {
+                defaultValue: '',
+                staticMock: {lookupId: 49, lookupValue: 'Static Lookup'},
+                dynamicMock: randomLookup
+            },
+            LookupMulti: {
+                defaultValue: [], staticMock: [
+                    {lookupId: 50, lookupValue: 'Static Multi 1'},
+                    {lookupId: 51, lookupValue: 'Static Multi 2'}
+                ], dynamicMock: randomLookupMulti
+            },
+            Mask: {defaultValue: mockPermMask(), staticMock: mockPermMask(), dynamicMock: mockPermMask},
+            MultiChoice: {
+                defaultValue: [],
+                staticMock: ['A Good Choice', 'A Bad Choice'],
+                dynamicMock: randomStringArray
+            },
+            User: {defaultValue: '', staticMock: {lookupId: 52, lookupValue: 'Static User'}, dynamicMock: randomUser},
+            UserMulti: {
+                defaultValue: [], staticMock: [
+                    {lookupId: 53, lookupValue: 'Static User 1'},
+                    {lookupId: 54, lookupValue: 'Static User 2'}
+                ], dynamicMock: randomUserMulti
+            }
+        };
+
+        return {
+            extendFieldDefinitions: extendFieldDefinitions,
+            getDefaultValueForType: getDefaultValueForType,
+            getMockData: getMockData,
+            getDefinition: getDefinition,
+            mockPermMask: mockPermMask,
+            resolveValueForEffectivePermMask: resolveValueForEffectivePermMask
+        };
+
+
+
+        /**=================PRIVATE===================*/
+
+        function getUniqueCounter () {
+            uniqueCount++;
+            return uniqueCount;
+        }
 
         function randomBoolean() {
             return chance.bool();
@@ -144,82 +234,6 @@ angular.module('angularPoint')
             return mockData;
         }
 
-        /**
-         * @ngdoc function
-         * @name angularPoint.apFieldService:Field
-         * @methodOf angularPoint.apFieldService
-         * @description
-         * Decorates field with optional defaults
-         * @param {object} obj Field definition.
-         * @returns {object} Field
-         * @constructor
-         */
-        function Field(obj) {
-            var self = this;
-            var defaults = {
-                readOnly: false,
-                objectType: 'Text'
-            };
-            _.extend(self, defaults, obj);
-            self.displayName = self.displayName ? self.displayName : apUtilityService.fromCamelCase(self.mappedName);
-            /** Deprecated internal name and replace with staticName but maintain compatibility */
-            self.staticName = self.staticName || self.internalName;
-        }
-
-        Field.prototype.getDefinition = function () {
-            return getDefinition(this.objectType);
-        };
-
-        Field.prototype.getDefaultValueForType = function () {
-            return getDefaultValueForType(this.objectType);
-        };
-
-        Field.prototype.getMockData = function (options) {
-            return getMockData(this.objectType, options);
-        };
-
-        /** Field types used on the models to create a field definition */
-        var fieldTypes = {
-            Text: {defaultValue: '', staticMock: 'Test String', dynamicMock: randomString},
-            TextLong: {defaultValue: '', staticMock: 'This is a sentence.', dynamicMock: randomParagraph},
-            Boolean: {defaultValue: null, staticMock: true, dynamicMock: randomBoolean},
-            Calculated: {defaultValue: null, staticMock: 'float;#123.45', dynamicMock: randomCalc},
-            Choice: {defaultValue: '', staticMock: 'My Choice', dynamicMock: randomString},
-            Counter: {defaultValue: null, staticMock: getUniqueCounter(), dynamicMock: getUniqueCounter},
-            Currency: {defaultValue: null, staticMock: 120.50, dynamicMock: randomCurrency},
-            DateTime: {defaultValue: null, staticMock: new Date(2014, 5, 4, 11, 33, 25), dynamicMock: randomDate},
-            Integer: {defaultValue: null, staticMock: 14, dynamicMock: randomInteger},
-            JSON: {
-                defaultValue: '', staticMock: [
-                    {id: 1, title: 'test'},
-                    {id: 2}
-                ], dynamicMock: randomString
-            },
-            Lookup: {
-                defaultValue: '',
-                staticMock: {lookupId: 49, lookupValue: 'Static Lookup'},
-                dynamicMock: randomLookup
-            },
-            LookupMulti: {
-                defaultValue: [], staticMock: [
-                    {lookupId: 50, lookupValue: 'Static Multi 1'},
-                    {lookupId: 51, lookupValue: 'Static Multi 2'}
-                ], dynamicMock: randomLookupMulti
-            },
-            Mask: {defaultValue: mockPermMask(), staticMock: mockPermMask(), dynamicMock: mockPermMask},
-            MultiChoice: {
-                defaultValue: [],
-                staticMock: ['A Good Choice', 'A Bad Choice'],
-                dynamicMock: randomStringArray
-            },
-            User: {defaultValue: '', staticMock: {lookupId: 52, lookupValue: 'Static User'}, dynamicMock: randomUser},
-            UserMulti: {
-                defaultValue: [], staticMock: [
-                    {lookupId: 53, lookupValue: 'Static User 1'},
-                    {lookupId: 54, lookupValue: 'Static User 2'}
-                ], dynamicMock: randomUserMulti
-            }
-        };
 
         /**
          * Returns an object defining a specific field type
@@ -279,24 +293,6 @@ angular.module('angularPoint')
 
         /**
          * @ngdoc function
-         * @name angularPoint.apFieldService:defaultFields
-         * @methodOf angularPoint.apFieldService
-         * @description
-         * Read only fields that should be included in all lists
-         */
-        var defaultFields = [
-            {staticName: 'ID', objectType: 'Counter', mappedName: 'id', readOnly: true},
-            {staticName: 'Modified', objectType: 'DateTime', mappedName: 'modified', readOnly: true},
-            {staticName: 'Created', objectType: 'DateTime', mappedName: 'created', readOnly: true},
-            {staticName: 'Author', objectType: 'User', mappedName: 'author', readOnly: true},
-            {staticName: 'Editor', objectType: 'User', mappedName: 'editor', readOnly: true},
-            {staticName: 'PermMask', objectType: 'Mask', mappedName: 'permMask', readOnly: true},
-            {staticName: 'UniqueId', objectType: 'String', mappedName: 'uniqueId', readOnly: true},
-            {staticName: 'FileRef', objectType: 'Lookup', mappedName: 'fileRef', readOnly: true}
-        ];
-
-        /**
-         * @ngdoc function
          * @name angularPoint.apFieldService:extendFieldDefinitions
          * @methodOf angularPoint.apFieldService
          * @description
@@ -327,7 +323,7 @@ angular.module('angularPoint')
             list.viewFields += '<ViewFields>';
 
             /** Add the default fields */
-            _.each(defaultFields, function (field) {
+            _.each(apDefaultFields, function (field) {
                 buildField(field);
             });
 
@@ -340,14 +336,8 @@ angular.module('angularPoint')
             list.viewFields += '</ViewFields>';
         }
 
-        return {
-            defaultFields: defaultFields,
-            extendFieldDefinitions: extendFieldDefinitions,
-            getDefaultValueForType: getDefaultValueForType,
-            getMockData: getMockData,
-            getDefinition: getDefinition,
-            mockPermMask: mockPermMask,
-            resolveValueForEffectivePermMask: resolveValueForEffectivePermMask
-        };
+
+
+
 
     });

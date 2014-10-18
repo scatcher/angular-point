@@ -35,6 +35,30 @@ angular.module('angularPoint', [
         /** Add a convenience flag, inverse of offline */
         apConfig.online = !apConfig.offline;
     }]);
+;(function () {
+    'use strict';
+
+    /**
+     * @ngdoc object
+     * @name angularPoint.apDefaultFields
+     * @methodOf angularPoint.apFieldService
+     * @description
+     * Read only fields that should be included in all lists
+     */
+    angular
+        .module('angularPoint')
+        .constant('apDefaultFields',[
+            {staticName: 'ID', objectType: 'Counter', mappedName: 'id', readOnly: true},
+            {staticName: 'Modified', objectType: 'DateTime', mappedName: 'modified', readOnly: true},
+            {staticName: 'Created', objectType: 'DateTime', mappedName: 'created', readOnly: true},
+            {staticName: 'Author', objectType: 'User', mappedName: 'author', readOnly: true},
+            {staticName: 'Editor', objectType: 'User', mappedName: 'editor', readOnly: true},
+            {staticName: 'PermMask', objectType: 'Mask', mappedName: 'permMask', readOnly: true},
+            {staticName: 'UniqueId', objectType: 'String', mappedName: 'uniqueId', readOnly: true},
+            {staticName: 'FileRef', objectType: 'Lookup', mappedName: 'fileRef', readOnly: true}
+        ]);
+
+})();
 ;//  apWebServiceOperationConstants.OpName = [WebService, needs_SOAPAction];
 //      OpName              The name of the Web Service operation -> These names are unique
 //      WebService          The name of the WebService this operation belongs to
@@ -268,6 +292,87 @@ angular.module('angularPoint')
         "GetWorkflowTaskData": ["Workflow", false],
         "StartWorkflow": ["Workflow", true]
     });
+;(function () {
+    'use strict';
+
+    /**
+     * @ngdoc object
+     * @name angularPoint.apXMLListAttributeTypes
+     * @description Constant object map which contains many common XML attributes found on a field definition with their
+     * corresponding type.
+     */
+    angular
+        .module('angularPoint')
+        .constant('apXMLFieldAttributeTypes',{
+            Decimals: 'Number',
+            EnforceUniqueValues: 'Boolean',
+            Filterable: 'Boolean',
+            FromBaseType: 'Boolean',
+            Hidden: 'Boolean',
+            Indexed: 'Boolean',
+            NumLines: 'Number',
+            ReadOnly: 'Boolean',
+            Required: 'Boolean',
+            Sortable: 'Boolean'
+        });
+
+})();
+;(function () {
+    'use strict';
+
+    /**
+     * @ngdoc object
+     * @name angularPoint.apXMLListAttributeTypes
+     * @description Constant object map which contains many common XML attributes found on a list definition with their
+     * corresponding type.
+     */
+    angular
+        .module('angularPoint')
+        .constant('apXMLListAttributeTypes',{
+            BaseType: 'Number',
+            ServerTemplate: 'Number',
+            Created: 'DateTime',
+            Modified: 'DateTime',
+            LastDeleted: 'DateTime',
+            Version: 'Number',
+            ThumbnailSize: 'Number',
+            WebImageWidth: 'Number',
+            WebImageHeight: 'Number',
+            Flags: 'Number',
+            ItemCount: 'Number',
+            ReadSecurity: 'Number',
+            WriteSecurity: 'Number',
+            Author: 'Number',
+            MajorWithMinorVersionsLimit: 'Number',
+            HasUniqueScopes: 'Boolean',
+            NoThrottleListOperations: 'Boolean',
+            HasRelatedLists: 'Boolean',
+            AllowDeletion: 'Boolean',
+            AllowMultiResponses: 'Boolean',
+            EnableAttachments: 'Boolean',
+            EnableModeration: 'Boolean',
+            EnableVersioning: 'Boolean',
+            HasExternalDataSource: 'Boolean',
+            Hidden: 'Boolean',
+            MultipleDataList: 'Boolean',
+            Ordered: 'Boolean',
+            ShowUser: 'Boolean',
+            EnablePeopleSelector: 'Boolean',
+            EnableResourceSelector: 'Boolean',
+            EnableMinorVersion: 'Boolean',
+            RequireCheckout: 'Boolean',
+            ThrottleListOperations: 'Boolean',
+            ExcludeFromOfflineClient: 'Boolean',
+            EnableFolderCreation: 'Boolean',
+            IrmEnabled: 'Boolean',
+            IsApplicationList: 'Boolean',
+            PreserveEmptyValues: 'Boolean',
+            StrictTypeCoercion: 'Boolean',
+            EnforceDataValidation: 'Boolean',
+            MaxItemsPerThrottledOperation: 'Number'
+        });
+
+})();
 ;/**
  * Provides a way to inject vendor libraries that otherwise are globals.
  * This improves code testability by allowing you to more easily know what
@@ -347,7 +452,7 @@ angular.module('angularPoint')
  * resolve once a requested list item is registered in the future.
  */
 angular.module('angularPoint')
-    .service('apCacheService', ["$q", "$log", "_", "apIndexedCacheFactory", function ($q, $log, _, apIndexedCacheFactory) {
+    .factory('apCacheService', ["$q", "$log", "_", "apIndexedCacheFactory", function ($q, $log, _, apIndexedCacheFactory) {
         /**
          * @description Stores list names when a new model is registered along with the GUID to allow us to retrieve the
          * GUID in future
@@ -733,7 +838,7 @@ angular.module('angularPoint')
  // *  @requires apFieldService
  */
 angular.module('angularPoint')
-    .service('apDataService', ["$q", "$timeout", "$http", "_", "apQueueService", "apConfig", "apUtilityService", "apCacheService", "apDecodeService", "apEncodeService", "apFieldService", "apIndexedCacheFactory", "toastr", "SPServices", "apWebServiceOperationConstants", "apXMLToJSONService", function ($q, $timeout, $http, _, apQueueService, apConfig, apUtilityService,
+    .factory('apDataService', ["$q", "$timeout", "$http", "_", "apQueueService", "apConfig", "apUtilityService", "apCacheService", "apDecodeService", "apEncodeService", "apFieldService", "apIndexedCacheFactory", "toastr", "SPServices", "apWebServiceOperationConstants", "apXMLToJSONService", function ($q, $timeout, $http, _, apQueueService, apConfig, apUtilityService,
                                         apCacheService, apDecodeService, apEncodeService, apFieldService,
                                         apIndexedCacheFactory, toastr, SPServices,
                                         apWebServiceOperationConstants, apXMLToJSONService) {
@@ -1745,8 +1850,9 @@ angular.module('angularPoint')
  * @requires angularPoint.apCacheService
  */
 angular.module('angularPoint')
-    .service('apDecodeService', ["$q", "_", "apUtilityService", "apQueueService", "apConfig", "apCacheService", "apLookupFactory", "apUserFactory", "apFieldService", function ($q, _, apUtilityService, apQueueService, apConfig, apCacheService,
-                                          apLookupFactory, apUserFactory, apFieldService) {
+    .factory('apDecodeService', ["$q", "_", "apUtilityService", "apQueueService", "apConfig", "apCacheService", "apLookupFactory", "apUserFactory", "apFieldService", "apXMLListAttributeTypes", "apXMLFieldAttributeTypes", function ($q, _, apUtilityService, apQueueService, apConfig, apCacheService,
+                                          apLookupFactory, apUserFactory, apFieldService, apXMLListAttributeTypes,
+                                          apXMLFieldAttributeTypes) {
 
 
         return {
@@ -2203,52 +2309,8 @@ angular.module('angularPoint')
          * @returns {object} Extended list object.
          */
         function extendListDefinitionsFromXML(list, responseXML) {
-            /** Object map of common fields and their types */
-            var attributeTypes = {
-                BaseType: 'Number',
-                ServerTemplate: 'Number',
-                Created: 'DateTime',
-                Modified: 'DateTime',
-                LastDeleted: 'DateTime',
-                Version: 'Number',
-                ThumbnailSize: 'Number',
-                WebImageWidth: 'Number',
-                WebImageHeight: 'Number',
-                Flags: 'Number',
-                ItemCount: 'Number',
-                ReadSecurity: 'Number',
-                WriteSecurity: 'Number',
-                Author: 'Number',
-                MajorWithMinorVersionsLimit: 'Number',
-                HasUniqueScopes: 'Boolean',
-                NoThrottleListOperations: 'Boolean',
-                HasRelatedLists: 'Boolean',
-                AllowDeletion: 'Boolean',
-                AllowMultiResponses: 'Boolean',
-                EnableAttachments: 'Boolean',
-                EnableModeration: 'Boolean',
-                EnableVersioning: 'Boolean',
-                HasExternalDataSource: 'Boolean',
-                Hidden: 'Boolean',
-                MultipleDataList: 'Boolean',
-                Ordered: 'Boolean',
-                ShowUser: 'Boolean',
-                EnablePeopleSelector: 'Boolean',
-                EnableResourceSelector: 'Boolean',
-                EnableMinorVersion: 'Boolean',
-                RequireCheckout: 'Boolean',
-                ThrottleListOperations: 'Boolean',
-                ExcludeFromOfflineClient: 'Boolean',
-                EnableFolderCreation: 'Boolean',
-                IrmEnabled: 'Boolean',
-                IsApplicationList: 'Boolean',
-                PreserveEmptyValues: 'Boolean',
-                StrictTypeCoercion: 'Boolean',
-                EnforceDataValidation: 'Boolean',
-                MaxItemsPerThrottledOperation: 'Number'
-            };
             $(responseXML).find("List").each(function () {
-                extendObjectWithXMLAttributes(this, list, attributeTypes);
+                extendObjectWithXMLAttributes(this, list, apXMLListAttributeTypes);
             });
             return list;
         }
@@ -2266,20 +2328,7 @@ angular.module('angularPoint')
          * @param {object} responseXML XML response from the server.
          */
         function extendFieldDefinitionsFromXML(fieldDefinitions, responseXML) {
-            var fieldMap = {},
-                attributeTypes = {
-                    Decimals: 'Number',
-                    EnforceUniqueValues: 'Boolean',
-                    Filterable: 'Boolean',
-                    FromBaseType: 'Boolean',
-                    Hidden: 'Boolean',
-                    Indexed: 'Boolean',
-                    NumLines: 'Number',
-                    ReadOnly: 'Boolean',
-                    Required: 'Boolean',
-                    Sortable: 'Boolean'
-                };
-
+            var fieldMap = {};
 
             /** Map all custom fields with keys of the staticName and values = field definition */
             _.each(fieldDefinitions, function (field) {
@@ -2300,7 +2349,7 @@ angular.module('angularPoint')
                 /** If we've defined this field then we should extend it */
                 if (fieldDefinition) {
 
-                    extendObjectWithXMLAttributes(xmlField, fieldDefinition, attributeTypes);
+                    extendObjectWithXMLAttributes(xmlField, fieldDefinition, apXMLFieldAttributeTypes);
 
                     /** Additional processing for Choice fields to include the default value and choices */
                     if (fieldDefinition.objectType === 'Choice' || fieldDefinition.objectType === 'MultiChoice') {
@@ -2394,7 +2443,7 @@ angular.module('angularPoint')
  * @requires angularPoint.apUtilityService
  */
 angular.module('angularPoint')
-    .service('apEncodeService', ["_", "apConfig", "apUtilityService", "SPServices", function (_, apConfig, apUtilityService, SPServices) {
+    .factory('apEncodeService', ["_", "apConfig", "apUtilityService", "SPServices", function (_, apConfig, apUtilityService, SPServices) {
 
         return {
             choiceMultiToString: choiceMultiToString,
@@ -2603,7 +2652,16 @@ angular.module('angularPoint')
  * @requires angularPoint.apUtilityService
  */
 angular.module('angularPoint')
-    .service('apExportService', ["_", "apUtilityService", function (_, apUtilityService) {
+    .factory('apExportService', ["_", "apUtilityService", "apFormattedFieldValueService", function (_, apUtilityService, apFormattedFieldValueService) {
+
+        return {
+            generateCSV: generateCSV,
+            saveCSV: saveCSV,
+            saveFile: saveFile,
+            saveJSON: saveJSON,
+            saveXML: saveXML
+        };
+
 
         /**
          * @ngdoc function
@@ -2623,7 +2681,7 @@ angular.module('angularPoint')
          * </pre>
          *
          */
-        var saveFile = function (data, type, filename) {
+        function saveFile (data, type, filename) {
             if (!data) {
                 console.error('apExportService.save' + type.toUpperCase() + ': No data');
                 return;
@@ -2649,7 +2707,7 @@ angular.module('angularPoint')
             a.dataset.downloadurl = ['text/' + type, a.download, a.href].join(':');
             e.initMouseEvent('click', true, false, window, 0, 0, 0, 0, 0, false, false, false, false, 0, null);
             a.dispatchEvent(e);
-        };
+        }
 
         /**
          * @ngdoc function
@@ -2667,9 +2725,9 @@ angular.module('angularPoint')
          * </pre>
          *
          */
-        var saveJSON = function (data, filename) {
+        function saveJSON(data, filename) {
             saveFile(data, 'json', filename);
-        };
+        }
 
         /**
          * @ngdoc function
@@ -2687,9 +2745,9 @@ angular.module('angularPoint')
          * </pre>
          *
          */
-        var saveXML = function (data, filename) {
+        function saveXML(data, filename) {
             saveFile(data, 'xml', filename);
-        };
+        }
 
         /**
          * @description Replaces commonly-used Windows 1252 encoded chars that do not exist in ASCII or
@@ -2697,7 +2755,7 @@ angular.module('angularPoint')
          * @param {string} text Text to be validated and cleaned.
          * @returns {string}
          */
-        var replaceWordChars = function (text) {
+        function replaceWordChars(text) {
             var s = text;
             // smart single quotes and apostrophe
             s = s.replace(/[\u2018|\u2019|\u201A]/g, "\'");
@@ -2716,7 +2774,7 @@ angular.module('angularPoint')
             // spaces
             s = s.replace(/[\u02DC|\u00A0]/g, " ");
             return s;
-        };
+        }
 
 
         /**
@@ -2736,7 +2794,7 @@ angular.module('angularPoint')
          * </pre>
          *
          */
-        var saveCSV = function (data, filename) {
+        function saveCSV(data, filename) {
             var csvString = '';
             _.each(data, function (row) {
                 _.each(row, function (column, columnIndex) {
@@ -2753,7 +2811,7 @@ angular.module('angularPoint')
                 csvString += '\n';
             });
             saveFile(csvString, 'csv;charset=utf-8;', filename);
-        };
+        }
 
         /**
          * @ngdoc function
@@ -2805,8 +2863,12 @@ angular.module('angularPoint')
          * </pre>
          *
          */
-        var generateCSV = function (entities, fields, options) {
-            var defaults = {delim: '; '},
+        function generateCSV(entities, fields, options) {
+            var defaults = {
+                    dateFormat: 'json', //Format as JSON date rather than a formal date string
+                    delim: '; ',
+                    includeTitleRow: true
+                },
                 opts = _.extend({}, defaults, options),
                 entitiesArray = [
                     []
@@ -2826,7 +2888,7 @@ angular.module('angularPoint')
                     var propertyName = fieldComponents[0];
 
                     /** First array has the field names */
-                    if (entityIndex === 0) {
+                    if (entityIndex === 0 && opts.includeTitleRow) {
                         /** Take a best guess if a column label isn't specified by capitalizing and inserting spaces between camel humps*/
                         var label = fieldDefinition.label ?
                             fieldDefinition.label : apUtilityService.fromCamelCase(propertyName);
@@ -2846,7 +2908,11 @@ angular.module('angularPoint')
                     } else {
                         /** Get the value based on field type defined in the model for the entity*/
                         var modelDefinition = entity.getFieldDefinition(propertyName);
-                        val = stringifyProperty(entity[fieldDefinition.field], modelDefinition.objectType, opts.delim)
+                        val = apFormattedFieldValueService.getFormattedFieldValue(
+                            entity[fieldDefinition.field],
+                            modelDefinition.objectType,
+                            opts
+                        )
                     }
                     /** Add string to column */
                     entityArray.push(val);
@@ -2855,212 +2921,8 @@ angular.module('angularPoint')
                 entitiesArray.push(entityArray);
             });
             return entitiesArray;
-        };
+        }
 
-        /**
-         * @ngdoc function
-         * @name angularPoint.apExportService:stringifyProperty
-         * @methodOf angularPoint.apExportService
-         * @param {object|array|string|integer|boolean} prop Target that we'd like to stringify.
-         * @param {string} [propertyType='String'] Assumes by default that it's already a string.  Most of the normal field
-         * types identified in the model field definitions are supported.
-         *
-         * - Lookup
-         * - User
-         * - Boolean
-         * - DateTime
-         * - Integer
-         * - Number
-         * - Counter
-         * - MultiChoice
-         * - UserMulti
-         * - LookupMulti
-         *
-         * @param {string} [delim='; '] Optional delimiter to split concatenated strings.
-         * @example
-         * <pre>
-         *  var project = {
-     *    title: 'Super Project',
-      *   members: [
-      *     { lookupId: 12, lookupValue: 'Joe' },
-      *     { lookupId: 19, lookupValue: 'Beth' },
-      *   ]
-      * };
-         *
-         * var membersAsString = apExportService:stringifyProperty({
-     *    project.members,
-     *    'UserMulti',
-     *    ' | ' //Custom Delimiter
-     * });
-         *
-         * // membersAsString = 'Joe | Beth';
-         *
-         * </pre>
-         * @returns {string} Stringified property on the object based on the field type.
-         */
-        var stringifyProperty = function (prop, propertyType, delim) {
-            var str = '';
-            /** Only process if prop is defined */
-            if (prop) {
-                switch (propertyType) {
-                    case 'Lookup':
-                    case 'User':
-                        str = parseLookup(prop);
-                        break;
-                    case 'Boolean':
-                        str = parseBoolean(prop);
-                        break;
-                    case 'DateTime':
-                        str = parseDate(prop);
-                        break;
-                    case 'Integer':
-                    case 'Number':
-                    case 'Counter':
-                        str = parseNumber(prop);
-                        break;
-                    case 'MultiChoice':
-                        str = parseMultiChoice(prop, delim);
-                        break;
-                    case 'UserMulti':
-                    case 'LookupMulti':
-                        str = parseMultiLookup(prop, delim);
-                        break;
-                    default:
-                        str = prop;
-                }
-            }
-            return str;
-        };
-
-        /**
-         * @ngdoc function
-         * @name angularPoint.apExportService:parseNumber
-         * @methodOf angularPoint.apExportService
-         * @param {number} int Property on object to parse.
-         * @description
-         * Converts a number to a string representation.
-         * @returns {string} Stringified number.
-         */
-        var parseNumber = function (int) {
-            var str = '';
-            if (_.isNumber(int)) {
-                str = int.toString();
-            }
-            return str;
-        };
-
-        /**
-         * @ngdoc function
-         * @name angularPoint.apExportService:parseLookup
-         * @methodOf angularPoint.apExportService
-         * @param {obj} prop Property on object to parse.
-         * @description
-         * Returns the property.lookupValue if present.
-         * @returns {string} Property.lookupValue.
-         */
-        var parseLookup = function (prop) {
-            var str = '';
-            if (prop && prop.lookupValue) {
-                str = prop.lookupValue;
-            }
-            return str;
-        };
-
-        /**
-         * @ngdoc function
-         * @name angularPoint.apExportService:parseBoolean
-         * @methodOf angularPoint.apExportService
-         * @param {boolean} bool Boolean to stringify.
-         * @description
-         * Returns the stringified boolean if it is set.
-         * @returns {string} Stringified boolean.
-         */
-        var parseBoolean = function (bool) {
-            var str = '';
-            if (_.isBoolean(bool)) {
-                str = bool.toString();
-            }
-            return str;
-        };
-
-        /**
-         * @ngdoc function
-         * @name angularPoint.apExportService:parseDate
-         * @methodOf angularPoint.apExportService
-         * @param {date} date Date that if set converts to JSON representation.
-         * @description
-         * Returns JSON date.
-         * @returns {string} JSON date.
-         */
-        var parseDate = function (date) {
-            var str = '';
-            if (_.isDate(date)) {
-                str = date.toJSON();
-            }
-            return str;
-        };
-
-        /**
-         * @ngdoc function
-         * @name angularPoint.apExportService:parseMultiChoice
-         * @methodOf angularPoint.apExportService
-         * @param {string[]} arr Array of selected choices.
-         * @param {string} [delim='; '] Custom delimiter used between the concatenated values.
-         * @description
-         * Converts an array of strings into a single concatenated string.
-         * @returns {string} Concatenated string representation.
-         */
-        var parseMultiChoice = function (arr, delim) {
-            var str = '',
-                d = delim || '; ';
-            _.each(arr, function (choice, i) {
-                if (i > 0) {
-                    str += d;
-                }
-                str += choice;
-            });
-            return str;
-        };
-
-        /**
-         * @ngdoc function
-         * @name angularPoint.apExportService:parseMultiLookup
-         * @methodOf angularPoint.apExportService
-         * @param {object[]} arr Array of lookup objects.
-         * @param {string} [delim='; '] Custom delimiter used between the concatenated values.
-         * @description
-         * Converts an array of selected lookup values into a single concatenated string.
-         * @returns {string} Concatenated string representation.
-         */
-        var parseMultiLookup = function (arr, delim) {
-            var str = '',
-                d = delim || '; ';
-            _.each(arr, function (val, valIndex) {
-
-                /** Add artificial delim */
-                if (valIndex > 0) {
-                    str += d;
-                }
-
-                str += parseLookup(val);
-            });
-            return str;
-        };
-
-        return {
-            generateCSV: generateCSV,
-            parseMultiLookup: parseMultiLookup,
-            parseBoolean: parseBoolean,
-            parseDate: parseDate,
-            parseLookup: parseLookup,
-            parseMultiChoice: parseMultiChoice,
-            parseNumber: parseNumber,
-            saveCSV: saveCSV,
-            saveFile: saveFile,
-            saveJSON: saveJSON,
-            saveXML: saveXML,
-            stringifyProperty: stringifyProperty
-        };
     }]);
 ;'use strict';
 
@@ -3072,14 +2934,104 @@ angular.module('angularPoint')
  * @requires angularPoint.apUtilityService
  */
 angular.module('angularPoint')
-    .service('apFieldService', ["_", "apUtilityService", function (_, apUtilityService) {
+    .factory('apFieldService', ["_", "apUtilityService", "apDefaultFields", function (_, apUtilityService, apDefaultFields) {
 
-        var getUniqueCounter = function () {
-            var self = getUniqueCounter;
-            self.count = self.count || 0;
-            self.count++;
-            return self.count;
+        var uniqueCount = 0;
+
+        /**
+         * @ngdoc function
+         * @name angularPoint.apFieldService:Field
+         * @methodOf angularPoint.apFieldService
+         * @description
+         * Decorates field with optional defaults
+         * @param {object} obj Field definition.
+         * @returns {object} Field
+         * @constructor
+         */
+        function Field(obj) {
+            var self = this;
+            var defaults = {
+                readOnly: false,
+                objectType: 'Text'
+            };
+            _.extend(self, defaults, obj);
+            self.displayName = self.displayName ? self.displayName : apUtilityService.fromCamelCase(self.mappedName);
+            /** Deprecated internal name and replace with staticName but maintain compatibility */
+            self.staticName = self.staticName || self.internalName;
+        }
+
+        Field.prototype.getDefinition = function () {
+            return getDefinition(this.objectType);
         };
+
+        Field.prototype.getDefaultValueForType = function () {
+            return getDefaultValueForType(this.objectType);
+        };
+
+        Field.prototype.getMockData = function (options) {
+            return getMockData(this.objectType, options);
+        };
+
+        /** Field types used on the models to create a field definition */
+        var fieldTypes = {
+            Text: {defaultValue: '', staticMock: 'Test String', dynamicMock: randomString},
+            Note: {defaultValue: '', staticMock: 'This is a sentence.', dynamicMock: randomParagraph},
+            Boolean: {defaultValue: null, staticMock: true, dynamicMock: randomBoolean},
+            Calculated: {defaultValue: null, staticMock: 'float;#123.45', dynamicMock: randomCalc},
+            Choice: {defaultValue: '', staticMock: 'My Choice', dynamicMock: randomString},
+            Counter: {defaultValue: null, staticMock: getUniqueCounter(), dynamicMock: getUniqueCounter},
+            Currency: {defaultValue: null, staticMock: 120.50, dynamicMock: randomCurrency},
+            DateTime: {defaultValue: null, staticMock: new Date(2014, 5, 4, 11, 33, 25), dynamicMock: randomDate},
+            Integer: {defaultValue: null, staticMock: 14, dynamicMock: randomInteger},
+            JSON: {
+                defaultValue: '', staticMock: [
+                    {id: 1, title: 'test'},
+                    {id: 2}
+                ], dynamicMock: randomString
+            },
+            Lookup: {
+                defaultValue: '',
+                staticMock: {lookupId: 49, lookupValue: 'Static Lookup'},
+                dynamicMock: randomLookup
+            },
+            LookupMulti: {
+                defaultValue: [], staticMock: [
+                    {lookupId: 50, lookupValue: 'Static Multi 1'},
+                    {lookupId: 51, lookupValue: 'Static Multi 2'}
+                ], dynamicMock: randomLookupMulti
+            },
+            Mask: {defaultValue: mockPermMask(), staticMock: mockPermMask(), dynamicMock: mockPermMask},
+            MultiChoice: {
+                defaultValue: [],
+                staticMock: ['A Good Choice', 'A Bad Choice'],
+                dynamicMock: randomStringArray
+            },
+            User: {defaultValue: '', staticMock: {lookupId: 52, lookupValue: 'Static User'}, dynamicMock: randomUser},
+            UserMulti: {
+                defaultValue: [], staticMock: [
+                    {lookupId: 53, lookupValue: 'Static User 1'},
+                    {lookupId: 54, lookupValue: 'Static User 2'}
+                ], dynamicMock: randomUserMulti
+            }
+        };
+
+        return {
+            extendFieldDefinitions: extendFieldDefinitions,
+            getDefaultValueForType: getDefaultValueForType,
+            getMockData: getMockData,
+            getDefinition: getDefinition,
+            mockPermMask: mockPermMask,
+            resolveValueForEffectivePermMask: resolveValueForEffectivePermMask
+        };
+
+
+
+        /**=================PRIVATE===================*/
+
+        function getUniqueCounter () {
+            uniqueCount++;
+            return uniqueCount;
+        }
 
         function randomBoolean() {
             return chance.bool();
@@ -3208,82 +3160,6 @@ angular.module('angularPoint')
             return mockData;
         }
 
-        /**
-         * @ngdoc function
-         * @name angularPoint.apFieldService:Field
-         * @methodOf angularPoint.apFieldService
-         * @description
-         * Decorates field with optional defaults
-         * @param {object} obj Field definition.
-         * @returns {object} Field
-         * @constructor
-         */
-        function Field(obj) {
-            var self = this;
-            var defaults = {
-                readOnly: false,
-                objectType: 'Text'
-            };
-            _.extend(self, defaults, obj);
-            self.displayName = self.displayName ? self.displayName : apUtilityService.fromCamelCase(self.mappedName);
-            /** Deprecated internal name and replace with staticName but maintain compatibility */
-            self.staticName = self.staticName || self.internalName;
-        }
-
-        Field.prototype.getDefinition = function () {
-            return getDefinition(this.objectType);
-        };
-
-        Field.prototype.getDefaultValueForType = function () {
-            return getDefaultValueForType(this.objectType);
-        };
-
-        Field.prototype.getMockData = function (options) {
-            return getMockData(this.objectType, options);
-        };
-
-        /** Field types used on the models to create a field definition */
-        var fieldTypes = {
-            Text: {defaultValue: '', staticMock: 'Test String', dynamicMock: randomString},
-            TextLong: {defaultValue: '', staticMock: 'This is a sentence.', dynamicMock: randomParagraph},
-            Boolean: {defaultValue: null, staticMock: true, dynamicMock: randomBoolean},
-            Calculated: {defaultValue: null, staticMock: 'float;#123.45', dynamicMock: randomCalc},
-            Choice: {defaultValue: '', staticMock: 'My Choice', dynamicMock: randomString},
-            Counter: {defaultValue: null, staticMock: getUniqueCounter(), dynamicMock: getUniqueCounter},
-            Currency: {defaultValue: null, staticMock: 120.50, dynamicMock: randomCurrency},
-            DateTime: {defaultValue: null, staticMock: new Date(2014, 5, 4, 11, 33, 25), dynamicMock: randomDate},
-            Integer: {defaultValue: null, staticMock: 14, dynamicMock: randomInteger},
-            JSON: {
-                defaultValue: '', staticMock: [
-                    {id: 1, title: 'test'},
-                    {id: 2}
-                ], dynamicMock: randomString
-            },
-            Lookup: {
-                defaultValue: '',
-                staticMock: {lookupId: 49, lookupValue: 'Static Lookup'},
-                dynamicMock: randomLookup
-            },
-            LookupMulti: {
-                defaultValue: [], staticMock: [
-                    {lookupId: 50, lookupValue: 'Static Multi 1'},
-                    {lookupId: 51, lookupValue: 'Static Multi 2'}
-                ], dynamicMock: randomLookupMulti
-            },
-            Mask: {defaultValue: mockPermMask(), staticMock: mockPermMask(), dynamicMock: mockPermMask},
-            MultiChoice: {
-                defaultValue: [],
-                staticMock: ['A Good Choice', 'A Bad Choice'],
-                dynamicMock: randomStringArray
-            },
-            User: {defaultValue: '', staticMock: {lookupId: 52, lookupValue: 'Static User'}, dynamicMock: randomUser},
-            UserMulti: {
-                defaultValue: [], staticMock: [
-                    {lookupId: 53, lookupValue: 'Static User 1'},
-                    {lookupId: 54, lookupValue: 'Static User 2'}
-                ], dynamicMock: randomUserMulti
-            }
-        };
 
         /**
          * Returns an object defining a specific field type
@@ -3343,24 +3219,6 @@ angular.module('angularPoint')
 
         /**
          * @ngdoc function
-         * @name angularPoint.apFieldService:defaultFields
-         * @methodOf angularPoint.apFieldService
-         * @description
-         * Read only fields that should be included in all lists
-         */
-        var defaultFields = [
-            {staticName: 'ID', objectType: 'Counter', mappedName: 'id', readOnly: true},
-            {staticName: 'Modified', objectType: 'DateTime', mappedName: 'modified', readOnly: true},
-            {staticName: 'Created', objectType: 'DateTime', mappedName: 'created', readOnly: true},
-            {staticName: 'Author', objectType: 'User', mappedName: 'author', readOnly: true},
-            {staticName: 'Editor', objectType: 'User', mappedName: 'editor', readOnly: true},
-            {staticName: 'PermMask', objectType: 'Mask', mappedName: 'permMask', readOnly: true},
-            {staticName: 'UniqueId', objectType: 'String', mappedName: 'uniqueId', readOnly: true},
-            {staticName: 'FileRef', objectType: 'Lookup', mappedName: 'fileRef', readOnly: true}
-        ];
-
-        /**
-         * @ngdoc function
          * @name angularPoint.apFieldService:extendFieldDefinitions
          * @methodOf angularPoint.apFieldService
          * @description
@@ -3391,7 +3249,7 @@ angular.module('angularPoint')
             list.viewFields += '<ViewFields>';
 
             /** Add the default fields */
-            _.each(defaultFields, function (field) {
+            _.each(apDefaultFields, function (field) {
                 buildField(field);
             });
 
@@ -3404,17 +3262,277 @@ angular.module('angularPoint')
             list.viewFields += '</ViewFields>';
         }
 
-        return {
-            defaultFields: defaultFields,
-            extendFieldDefinitions: extendFieldDefinitions,
-            getDefaultValueForType: getDefaultValueForType,
-            getMockData: getMockData,
-            getDefinition: getDefinition,
-            mockPermMask: mockPermMask,
-            resolveValueForEffectivePermMask: resolveValueForEffectivePermMask
-        };
+
+
+
 
     }]);
+;(function () {
+    'use strict';
+
+    angular
+        .module('angularPoint')
+        .factory('apFormattedFieldValueService', apFormattedFieldValueService);
+
+    /**
+     * @ngdoc service
+     * @name angularPoint.apFormattedFieldValueService
+     * @description
+     * Returns the formatted string value for a field based on field type.
+     */
+    function apFormattedFieldValueService($filter) {
+        var service = {
+            getFormattedFieldValue: getFormattedFieldValue,
+            stringifyBoolean: stringifyBoolean,
+            stringifyCalc: stringifyCalc,
+            stringifyCurrency: stringifyCurrency,
+            stringifyDate: stringifyDate,
+            stringifyLookup: stringifyLookup,
+            stringifyMultiChoice: stringifyMultiChoice,
+            stringifyMultiLookup: stringifyMultiLookup,
+            stringifyNumber: stringifyNumber
+        };
+
+        return service;
+
+        /**==================PRIVATE==================*/
+
+        /**
+         * @ngdoc function
+         * @name angularPoint.apFormattedFieldValueService:getFormattedFieldValue
+         * @methodOf angularPoint.apFormattedFieldValueService
+         * @param {object|array|string|integer|boolean} prop Target that we'd like to stringify.
+         * @param {string} [propertyType='String'] Assumes by default that it's already a string.  Most of the normal field
+         * types identified in the model field definitions are supported.
+         *
+         * - Lookup
+         * - User
+         * - Boolean
+         * - DateTime
+         * - Integer
+         * - Number
+         * - Counter
+         * - MultiChoice
+         * - UserMulti
+         * - LookupMulti
+         * @param {object} options Optional config.
+         * @param {string} [options.delim=', '] Optional delimiter to split concatenated strings.
+         * @param {string} [options.dateFormat='short'] Either 'json' which converts a date into ISO8601 date string
+         * or a mask for the angular date filter.
+         * @example
+         * <pre>
+         *  var project = {
+         *    title: 'Super Project',
+         *   members: [
+         *     { lookupId: 12, lookupValue: 'Joe' },
+         *     { lookupId: 19, lookupValue: 'Beth' }
+         *   ]
+         * };
+         *
+         * var membersAsString = apFormattedFieldValueService:getFormattedFieldValue({
+         *    project.members,
+         *    'UserMulti',
+         *    { delim: ' | '} //Custom Delimiter
+         * });
+         *
+         * // membersAsString = 'Joe | Beth';
+         *
+         * </pre>
+         * @returns {string} Stringified property on the object based on the field type.
+         */
+        function getFormattedFieldValue(prop, propertyType, options) {
+            var defaults = {
+                    delim: ', ',
+                    dateFormat: 'short'
+                },
+                opts = _.extend({}, defaults, options);
+
+            var str = '';
+            /** Only process if prop is defined */
+            if (prop) {
+                switch (propertyType) {
+                    case 'Boolean':
+                        str = stringifyBoolean(prop);
+                        break;
+                    case 'Calculated': // Can be DateTime, Float, or String
+                        str = stringifyCalc(prop);
+                        break;
+                    case 'Lookup':
+                    case 'User':
+                        str = stringifyLookup(prop);
+                        break;
+                    case 'DateTime':
+                        str = stringifyDate(prop, opts.dateFormat);
+                        break;
+                    case 'Integer':
+                    case 'Number':
+                    case 'Float':
+                    case 'Counter':
+                        str = stringifyNumber(prop);
+                        break;
+                    case 'Currency':
+                        str = stringifyCurrency(prop);
+                        break;
+                    case 'MultiChoice':
+                        str = stringifyMultiChoice(prop, opts.delim);
+                        break;
+                    case 'UserMulti':
+                    case 'LookupMulti':
+                        str = stringifyMultiLookup(prop, opts.delim);
+                        break;
+                    default:
+                        str = prop;
+                }
+            }
+            return str;
+        }
+
+        function stringifyCalc(prop) {
+            if (prop.length === 0) {
+                return '';
+            } else if (_.isNumber(prop)) {
+                return getFormattedFieldValue(prop, 'Number');
+            } else if (_.isDate(prop)) {
+                return getFormattedFieldValue(prop, 'DateTime');
+            } else {
+                return getFormattedFieldValue(prop, 'Text');
+            }
+        }
+
+
+        /**
+         * @ngdoc function
+         * @name angularPoint.apFormattedFieldValueService:stringifyNumber
+         * @methodOf angularPoint.apFormattedFieldValueService
+         * @param {number} prop Property on object to parse.
+         * @description
+         * Converts a number to a string representation.
+         * @returns {string} Stringified number.
+         */
+        function stringifyNumber(prop) {
+            var str = '';
+            if (_.isNumber(prop)) {
+                str = prop.toString();
+            }
+            return str;
+        }
+
+        /**
+         * @ngdoc function
+         * @name angularPoint.apFormattedFieldValueService:stringifyCurrency
+         * @methodOf angularPoint.apFormattedFieldValueService
+         * @description
+         * Converts a numeric value into a formatted currency string.
+         * @param {number} prop Property on object to parse.
+         * @returns {string} Stringified currency.
+         */
+        function stringifyCurrency(prop) {
+            return $filter('currency')(prop, '$');
+        }
+
+        /**
+         * @ngdoc function
+         * @name angularPoint.apFormattedFieldValueService:stringifyLookup
+         * @methodOf angularPoint.apFormattedFieldValueService
+         * @param {obj} prop Property on object to parse.
+         * @description
+         * Returns the property.lookupValue if present.
+         * @returns {string} Property.lookupValue.
+         */
+        function stringifyLookup(prop) {
+            var str = '';
+            if (prop && prop.lookupValue) {
+                str = prop.lookupValue;
+            }
+            return str;
+        }
+
+        /**
+         * @ngdoc function
+         * @name angularPoint.apFormattedFieldValueService:stringifyBoolean
+         * @methodOf angularPoint.apFormattedFieldValueService
+         * @param {boolean} prop Boolean to stringify.
+         * @description
+         * Returns the stringified boolean if it is set.
+         * @returns {string} Stringified boolean.
+         */
+        function stringifyBoolean(prop) {
+            var str = '';
+            if (_.isBoolean(prop)) {
+                str = prop.toString();
+            }
+            return str;
+        }
+
+        /**
+         * @ngdoc function
+         * @name angularPoint.apFormattedFieldValueService:stringifyDate
+         * @methodOf angularPoint.apFormattedFieldValueService
+         * @param {date} prop Date object.
+         * @param {string} dateFormat Either 'json' which converts a date into ISO8601 date string or a mask for
+         * the angular date filter.
+         * @description
+         * Returns JSON date.
+         * @returns {string} JSON date.
+         */
+        function stringifyDate(prop, dateFormat) {
+            var str = '';
+            if (_.isDate(prop)) {
+                str = dateFormat === 'json' ? prop.toJSON() : $filter('date')(prop, dateFormat);
+            }
+            return str;
+        }
+
+        /**
+         * @ngdoc function
+         * @name angularPoint.apFormattedFieldValueService:stringifyMultiChoice
+         * @methodOf angularPoint.apFormattedFieldValueService
+         * @param {string[]} prop Array of selected choices.
+         * @param {string} [delim='; '] Custom delimiter used between the concatenated values.
+         * @description
+         * Converts an array of strings into a single concatenated string.
+         * @returns {string} Concatenated string representation.
+         */
+        function stringifyMultiChoice(prop, delim) {
+            var str = '',
+                d = delim || '; ';
+            _.each(prop, function (choice, i) {
+                if (i > 0) {
+                    str += d;
+                }
+                str += choice;
+            });
+            return str;
+        }
+
+        /**
+         * @ngdoc function
+         * @name angularPoint.apFormattedFieldValueService:stringifyMultiLookup
+         * @methodOf angularPoint.apFormattedFieldValueService
+         * @param {object[]} prop Array of lookup objects.
+         * @param {string} [delim='; '] Custom delimiter used between the concatenated values.
+         * @description
+         * Converts an array of selected lookup values into a single concatenated string.
+         * @returns {string} Concatenated string representation.
+         */
+        function stringifyMultiLookup(prop, delim) {
+            var str = '',
+                d = delim || '; ';
+            _.each(prop, function (val, valIndex) {
+
+                /** Add artificial delim */
+                if (valIndex > 0) {
+                    str += d;
+                }
+
+                str += stringifyLookup(val);
+            });
+            return str;
+        }
+
+    }
+    apFormattedFieldValueService.$inject = ["$filter"];
+})();
 ;'use strict';
 
 /**
@@ -3425,7 +3543,7 @@ angular.module('angularPoint')
  * Typical use is to display a loading animation of some sort
  */
 angular.module('angularPoint')
-    .service('apQueueService', function () {
+    .factory('apQueueService', function () {
 
         var observerCallbacks = [],
             apQueueService = {
@@ -3518,7 +3636,7 @@ angular.module('angularPoint')
  *
  * */
 angular.module('angularPoint')
-    .service('SPServices', ["apWebServiceOperationConstants", "apWebServiceService", function (apWebServiceOperationConstants, apWebServiceService) {
+    .factory('SPServices', ["apWebServiceOperationConstants", "apWebServiceService", function (apWebServiceOperationConstants, apWebServiceService) {
 
         /*
          * SPServices - Work with SharePoint's Web Services using jQuery
@@ -5230,7 +5348,7 @@ angular.module('angularPoint')
  * @requires angularPoint.apConfig
  */
 angular.module('angularPoint')
-    .service('apUtilityService', ["$q", "_", "apConfig", "$timeout", function ($q, _, apConfig, $timeout) {
+    .factory('apUtilityService', ["$q", "_", "apConfig", "$timeout", function ($q, _, apConfig, $timeout) {
         // AngularJS will instantiate a singleton by calling "new" on this function
 
         /** Extend underscore with a simple helper function */
@@ -5244,6 +5362,22 @@ angular.module('angularPoint')
                         .test(value);
             }
         });
+
+
+        return {
+            batchProcess: batchProcess,
+            convertEffectivePermMask: convertEffectivePermMask,
+            dateWithinRange: dateWithinRange,
+            doubleDigit: doubleDigit,
+            fromCamelCase: fromCamelCase,
+            registerChange: registerChange,
+            resolvePermissions: resolvePermissions,
+            SplitIndex: SplitIndex,
+            stringifyXML:stringifyXML,
+            toCamelCase: toCamelCase,
+            yyyymmdd: yyyymmdd
+        };
+
 
 
         /**
@@ -5667,20 +5801,6 @@ angular.module('angularPoint')
             //    model.sync.registerChange();
             //}
         }
-
-        return {
-            batchProcess: batchProcess,
-            convertEffectivePermMask: convertEffectivePermMask,
-            dateWithinRange: dateWithinRange,
-            doubleDigit: doubleDigit,
-            fromCamelCase: fromCamelCase,
-            registerChange: registerChange,
-            resolvePermissions: resolvePermissions,
-            SplitIndex: SplitIndex,
-            stringifyXML:stringifyXML,
-            toCamelCase: toCamelCase,
-            yyyymmdd: yyyymmdd
-        };
     }]);
 ;'use strict';
 
@@ -5690,7 +5810,7 @@ angular.module('angularPoint')
 //      needs_SOAPAction    Boolean indicating whether the operation needs to have the SOAPAction passed in the setRequestHeaderfunction.
 //                          true if the operation does a write, else false
 angular.module('angularPoint')
-    .service('apWebServiceService', function () {
+    .factory('apWebServiceService', function () {
         var SCHEMASharePoint = "http://schemas.microsoft.com/sharepoint";
         var serviceDefinitions = {
             Alerts: {
@@ -6482,7 +6602,8 @@ angular.module('angularPoint')
  * @requires angularPoint.apUtilityService
  */
 angular.module('angularPoint')
-    .factory('apListItemFactory', ["$q", "_", "apCacheService", "apDataService", "apEncodeService", "apUtilityService", "apConfig", function ($q, _, apCacheService, apDataService, apEncodeService, apUtilityService, apConfig) {
+    .factory('apListItemFactory', ["$q", "_", "apCacheService", "apDataService", "apEncodeService", "apUtilityService", "apFormattedFieldValueService", "apConfig", function ($q, _, apCacheService, apDataService, apEncodeService, apUtilityService,
+                                            apFormattedFieldValueService, apConfig) {
 
         /**
          * @ngdoc object
@@ -6506,6 +6627,7 @@ angular.module('angularPoint')
             getAvailableWorkflows: getAvailableWorkflows,
             getFieldDefinition: getFieldDefinition,
             getFieldVersionHistory: getFieldVersionHistory,
+            getFormattedValue: getFormattedValue,
             getLookupReference: getLookupReference,
             resolvePermissions: resolvePermissions,
             saveChanges: saveChanges,
@@ -6704,6 +6826,26 @@ angular.module('angularPoint')
                     'before we can complete this request.', fieldName, lookupId);
                 }
             }
+        }
+
+        /**
+         * @ngdoc function
+         * @name ListItem.getFormattedValue
+         * @description
+         * Given the attribute name on an entity, we can lookup the field type and from there return a formatted
+         * string representation of that value.
+         * @param {string} fieldName Attribute name on the object that contains the value to stringify.
+         * @param {object} [options] Pass through to apFormattedFieldValueService.getFormattedFieldValue.
+         * @returns {string} Formatted string representing the field value.
+         */
+        function getFormattedValue(fieldName, options) {
+            var listItem = this;
+            var fieldDefinition = listItem.getFieldDefinition(fieldName);
+            if(!fieldDefinition) {
+                throw 'A field definition for a field named ' + fieldName + ' wasn\'t found.';
+            }
+            return apFormattedFieldValueService
+                .getFormattedFieldValue(listItem[fieldName], fieldDefinition.objectType, options);
         }
 
         /**

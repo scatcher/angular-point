@@ -6,7 +6,7 @@
 //      needs_SOAPAction    Boolean indicating whether the operation needs to have the SOAPAction passed in the setRequestHeaderfunction.
 //                          true if the operation does a write, else false
 angular.module('angularPoint')
-    .service('apWebServiceService', function () {
+    .factory('apWebServiceService', function () {
         var SCHEMASharePoint = "http://schemas.microsoft.com/sharepoint";
         var serviceDefinitions = {
             Alerts: {

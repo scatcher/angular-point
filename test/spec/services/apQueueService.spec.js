@@ -9,41 +9,41 @@ describe('Service: apQueueService', function () {
 
     beforeEach(module("angularPoint"));
 
-    var apQueueService,
+    var service,
         $rootScope;
 
     beforeEach(inject(function (_apQueueService_, _$rootScope_) {
-        apQueueService = _apQueueService_;
+        service = _apQueueService_;
         $rootScope = _$rootScope_;
     }));
 
     describe('Function: increase', function () {
         it('should lower queue by 1', function () {
-            apQueueService.count = 1;
-            expect(apQueueService.count).toEqual(1);
-            apQueueService.increase();
-            expect(apQueueService.count).toEqual(2);
-            apQueueService.reset();
+            service.count = 1;
+            expect(service.count).toEqual(1);
+            service.increase();
+            expect(service.count).toEqual(2);
+            service.reset();
         });
     });
 
     describe('Function: decrease', function () {
         it('should lower queue by 1', function () {
-            apQueueService.count = 5;
-            expect(apQueueService.count).toEqual(5);
-            apQueueService.decrease();
-            expect(apQueueService.count).toEqual(4);
-            apQueueService.reset();
+            service.count = 5;
+            expect(service.count).toEqual(5);
+            service.decrease();
+            expect(service.count).toEqual(4);
+            service.reset();
         });
     });
 
 
     describe('Function: reset', function () {
         it('should reset counter back to 0', function () {
-            apQueueService.increase();
-            expect(apQueueService.count).toEqual(1);
-            apQueueService.reset();
-            expect(apQueueService.count).toEqual(0);
+            service.increase();
+            expect(service.count).toEqual(1);
+            service.reset();
+            expect(service.count).toEqual(0);
         });
     });
 
@@ -52,9 +52,9 @@ describe('Service: apQueueService', function () {
             var callback = function (count) {
                 expect(count).toEqual(1);
             };
-            expect(apQueueService.count).toEqual(0);
-            apQueueService.registerObserverCallback(callback);
-            apQueueService.increase();
+            expect(service.count).toEqual(0);
+            service.registerObserverCallback(callback);
+            service.increase();
         });
     });
 

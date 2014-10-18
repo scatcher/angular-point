@@ -1,12 +1,12 @@
 describe("Service: apUtilityService", function () {
 
-    var apUtilityService,
+    var service,
         mockModel,
         $rootScope;
     beforeEach(module("angularPoint"));
 
     beforeEach(inject(function(_apUtilityService_, _mockModel_, _$rootScope_) {
-        apUtilityService = _apUtilityService_;
+        service = _apUtilityService_;
         mockModel = _mockModel_;
         $rootScope = _$rootScope_;
     }));
@@ -40,19 +40,19 @@ describe("Service: apUtilityService", function () {
 
     describe('doubleDigit', function () {
         it("Should add a leading 0 for a single digit.", function() {
-            expect(apUtilityService.doubleDigit(3)).toEqual('03');
+            expect(service.doubleDigit(3)).toEqual('03');
         });
         it("Should return a 2 digit string for a double digit.", function() {
-            expect(apUtilityService.doubleDigit(11)).toEqual('11');
+            expect(service.doubleDigit(11)).toEqual('11');
         });
         it("Should work when a number represented by string is used.", function() {
-            expect(apUtilityService.doubleDigit('3')).toEqual('03');
+            expect(service.doubleDigit('3')).toEqual('03');
         });
     });
 
     describe('yyyymmdd', function () {
         it("Should convert a date.", function() {
-            var testDate = apUtilityService.yyyymmdd(new Date(2012, 0, 1));
+            var testDate = service.yyyymmdd(new Date(2012, 0, 1));
             expect(testDate).toEqual(20120101);
         });
     });
@@ -62,23 +62,23 @@ describe("Service: apUtilityService", function () {
             var start = new Date(2012,1,1),
                 end = new Date(2012,1,3),
                 date = new Date(2012,1,2);
-            expect(apUtilityService.dateWithinRange(start, end, date)).toBe(true);
+            expect(service.dateWithinRange(start, end, date)).toBe(true);
         });
         it("works without a date to check.", function() {
             var start = new Date(2014,1,1),
                 end = new Date(2014,1,2);
             //Current date is in the future so it is not within the range.
-            expect(apUtilityService.dateWithinRange(start, end)).toBe(false);
+            expect(service.dateWithinRange(start, end)).toBe(false);
         });
         it('returns false if a start date is missing', function () {
             var start,
                 end = new Date(2014,1,2);
-            expect(apUtilityService.dateWithinRange(start, end)).toBe(false);
+            expect(service.dateWithinRange(start, end)).toBe(false);
         });
         it('returns false if a end date is missing', function () {
             var start = new Date(2014,1,1),
                 end;
-            expect(apUtilityService.dateWithinRange(start, end)).toBe(false);
+            expect(service.dateWithinRange(start, end)).toBe(false);
         });
     });
 
@@ -100,7 +100,7 @@ describe("Service: apUtilityService", function () {
         });
 
         it('resolves with the expected outcome in a single batch', function () {
-            apUtilityService.batchProcess(entities, someBigTask, this, 25, 2000)
+            service.batchProcess(entities, someBigTask, this, 25, 2000)
                 .then(function (entityArray) {
                     expect(output.length).toEqual(1000);
                     expect(batchCount).toEqual(1);
@@ -121,30 +121,30 @@ describe("Service: apUtilityService", function () {
     describe('resolvePermissions', function () {
         it('Should allow admin to approve.', function () {
             //Full rights mask
-            expect(apUtilityService.resolvePermissions('0x7FFFFFFFFFFFFFFF').ApproveItems).toBe(true);
+            expect(service.resolvePermissions('0x7FFFFFFFFFFFFFFF').ApproveItems).toBe(true);
         });
         it('Should prevent read-only user from approving.', function () {
             //Limited user (view only)
-            expect(apUtilityService.resolvePermissions('0x0000000000000001').ApproveItems).toBe(false);
+            expect(service.resolvePermissions('0x0000000000000001').ApproveItems).toBe(false);
         });
         it('Should allow a user with edit rights to edit.', function () {
             //User can edit
-            expect(apUtilityService.resolvePermissions('0x0000000000000004').EditListItems).toBe(true);
+            expect(service.resolvePermissions('0x0000000000000004').EditListItems).toBe(true);
         });
     });
 
     describe('Function convertEffectivePermMask', function () {
         it('returns the mask for \'FullMask\'', function () {
-            expect(apUtilityService.convertEffectivePermMask('FullMask')).toEqual('0x7FFFFFFFFFFFFFFF');
+            expect(service.convertEffectivePermMask('FullMask')).toEqual('0x7FFFFFFFFFFFFFFF');
         });
         it('returns null when a matching permission name isn\'t found', function () {
-            expect(apUtilityService.convertEffectivePermMask('Some Unknown Mask')).toBeNull();
+            expect(service.convertEffectivePermMask('Some Unknown Mask')).toBeNull();
         });
     });
 
     describe('toCamlCase', function () {
         it("Convert multiple words with spaces.", function() {
-            expect(apUtilityService.toCamelCase('This is a test')).toEqual('thisIsATest');
+            expect(service.toCamelCase('This is a test')).toEqual('thisIsATest');
         });
     });
 
@@ -156,7 +156,7 @@ describe("Service: apUtilityService", function () {
 
     describe('SplitIndex', function () {
         it("Converts delimited string into object", function() {
-            var splitObj = new apUtilityService.SplitIndex('12;#TestValue');
+            var splitObj = new service.SplitIndex('12;#TestValue');
             expect(JSON.stringify(splitObj)).toEqual(JSON.stringify({id: 12, value: 'TestValue'}));
         });
     });

@@ -2,19 +2,13 @@
 
 describe('Factory: apModelFactory', function () {
 
-    beforeEach(module('angularPoint', function ($provide) {
-        //$provide.value("apDataService", {
-        //    getList: simpleGetList
-        //});
-    }));
+    beforeEach(module("angularPoint"));
 
-
-
-    var mockModel, apModelFactory, mockEntityCache, mockXMLService, $rootScope, $q, apDataService, $httpBackend;
+    var factory, mockModel, mockEntityCache, mockXMLService, $rootScope, $q, apDataService, $httpBackend;
 
     beforeEach(inject(function (_mockModel_, _apModelFactory_, _mockXMLService_, _$rootScope_, _$q_, _apDataService_, _$httpBackend_) {
         mockModel = _mockModel_;
-        apModelFactory = _apModelFactory_;
+        factory = _apModelFactory_;
         mockXMLService = _mockXMLService_;
         apDataService = _apDataService_;
         $httpBackend = _$httpBackend_;

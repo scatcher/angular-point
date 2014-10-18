@@ -2,26 +2,26 @@
 
 describe("Factory: apListFactory", function () {
 
-    var apListFactory,
+    var factory,
         apConfig,
         mockModel,
         savedGuid;
     beforeEach(module("angularPoint"));
     beforeEach(inject(function(_apListFactory_, _apConfig_, _mockModel_) {
-        apListFactory = _apListFactory_;
+        factory = _apListFactory_;
         apConfig = _apConfig_;
         mockModel = _mockModel_;
     }));
 
     describe('create', function() {
         it("should instantiate a new List", function() {
-            expect(apListFactory.create()).toEqual(new apListFactory.List);
+            expect(factory.create()).toEqual(new factory.List);
         })
     });
 
     describe('Factory: List', function () {
         it('is an instance of List', function () {
-            expect(mockModel.list instanceof apListFactory.List).toBe(true);
+            expect(mockModel.list instanceof factory.List).toBe(true);
         });
     });
 

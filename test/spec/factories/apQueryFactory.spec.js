@@ -4,12 +4,12 @@ describe('Factory: apQueryFactory', function () {
 
     beforeEach(module('angularPoint'));
 
-    var mockModel, apQueryFactory, mockQuery, $rootScope, $q, apDataService;
+    var factory, mockModel, mockQuery, $rootScope, $q, apDataService;
 
     beforeEach(inject(function (_mockModel_, _apQueryFactory_, _$rootScope_, _$q_, _apDataService_) {
 
         mockModel = _mockModel_;
-        apQueryFactory = _apQueryFactory_;
+        factory = _apQueryFactory_;
         $q = _$q_;
         apDataService = _apDataService_;
         mockQuery = mockModel.getQuery();

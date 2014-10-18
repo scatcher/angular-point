@@ -9,7 +9,7 @@
  * @requires angularPoint.apConfig
  */
 angular.module('angularPoint')
-    .service('apUtilityService', function ($q, _, apConfig, $timeout) {
+    .factory('apUtilityService', function ($q, _, apConfig, $timeout) {
         // AngularJS will instantiate a singleton by calling "new" on this function
 
         /** Extend underscore with a simple helper function */
@@ -23,6 +23,22 @@ angular.module('angularPoint')
                         .test(value);
             }
         });
+
+
+        return {
+            batchProcess: batchProcess,
+            convertEffectivePermMask: convertEffectivePermMask,
+            dateWithinRange: dateWithinRange,
+            doubleDigit: doubleDigit,
+            fromCamelCase: fromCamelCase,
+            registerChange: registerChange,
+            resolvePermissions: resolvePermissions,
+            SplitIndex: SplitIndex,
+            stringifyXML:stringifyXML,
+            toCamelCase: toCamelCase,
+            yyyymmdd: yyyymmdd
+        };
+
 
 
         /**
@@ -446,18 +462,4 @@ angular.module('angularPoint')
             //    model.sync.registerChange();
             //}
         }
-
-        return {
-            batchProcess: batchProcess,
-            convertEffectivePermMask: convertEffectivePermMask,
-            dateWithinRange: dateWithinRange,
-            doubleDigit: doubleDigit,
-            fromCamelCase: fromCamelCase,
-            registerChange: registerChange,
-            resolvePermissions: resolvePermissions,
-            SplitIndex: SplitIndex,
-            stringifyXML:stringifyXML,
-            toCamelCase: toCamelCase,
-            yyyymmdd: yyyymmdd
-        };
     });

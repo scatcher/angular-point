@@ -13,7 +13,8 @@
  * @requires angularPoint.apUtilityService
  */
 angular.module('angularPoint')
-    .factory('apListItemFactory', function ($q, _, apCacheService, apDataService, apEncodeService, apUtilityService, apConfig) {
+    .factory('apListItemFactory', function ($q, _, apCacheService, apDataService, apEncodeService, apUtilityService,
+                                            apFormattedFieldValueService, apConfig) {
 
         /**
          * @ngdoc object
@@ -37,6 +38,7 @@ angular.module('angularPoint')
             getAvailableWorkflows: getAvailableWorkflows,
             getFieldDefinition: getFieldDefinition,
             getFieldVersionHistory: getFieldVersionHistory,
+            getFormattedValue: getFormattedValue,
             getLookupReference: getLookupReference,
             resolvePermissions: resolvePermissions,
             saveChanges: saveChanges,
@@ -235,6 +237,26 @@ angular.module('angularPoint')
                     'before we can complete this request.', fieldName, lookupId);
                 }
             }
+        }
+
+        /**
+         * @ngdoc function
+         * @name ListItem.getFormattedValue
+         * @description
+         * Given the attribute name on an entity, we can lookup the field type and from there return a formatted
+         * string representation of that value.
+         * @param {string} fieldName Attribute name on the object that contains the value to stringify.
+         * @param {object} [options] Pass through to apFormattedFieldValueService.getFormattedFieldValue.
+         * @returns {string} Formatted string representing the field value.
+         */
+        function getFormattedValue(fieldName, options) {
+            var listItem = this;
+            var fieldDefinition = listItem.getFieldDefinition(fieldName);
+            if(!fieldDefinition) {
+                throw 'A field definition for a field named ' + fieldName + ' wasn\'t found.';
+            }
+            return apFormattedFieldValueService
+                .getFormattedFieldValue(listItem[fieldName], fieldDefinition.objectType, options);
         }
 
         /**

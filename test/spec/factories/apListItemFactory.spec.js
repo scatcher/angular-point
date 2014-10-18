@@ -4,7 +4,7 @@ describe("Factory: apListItemFactory", function () {
 
     beforeEach(module("angularPoint"));
 
-    var apListItemFactory,
+    var factory,
         mockModel,
         mockLookupModel,
         mockListItem,
@@ -12,7 +12,7 @@ describe("Factory: apListItemFactory", function () {
         $httpBackend;
 
     beforeEach(inject(function (_apListItemFactory_, _mockModel_, _mockLookupModel_, _$httpBackend_, _apCachedXML_) {
-        apListItemFactory = _apListItemFactory_;
+        factory = _apListItemFactory_;
         mockModel = _mockModel_;
         mockLookupModel = _mockLookupModel_;
         $httpBackend = _$httpBackend_;
@@ -23,7 +23,7 @@ describe("Factory: apListItemFactory", function () {
 
     describe('Function create', function () {
         it("instantiates a new List item using constructor", function () {
-            expect(apListItemFactory.create()).toEqual(new apListItemFactory.ListItem);
+            expect(factory.create()).toEqual(new factory.ListItem);
         })
     });
 
@@ -59,6 +59,23 @@ describe("Factory: apListItemFactory", function () {
             expect(mockListItem.getFieldDefinition('invalidField')).toBeUndefined();
         })
 
+    });
+
+    describe('Method: getFormattedValue', function () {
+        it('throws an error if the provided field name isn\'t valid', function () {
+            expect(function () {
+                mockListItem.getFormattedValue('invalidField');
+            }).toThrow();
+        });
+
+        it('returns a stringified date without params', function () {
+            expect(mockListItem.getFormattedValue('date')).toEqual('8/19/14 12:00 AM');
+        });
+
+        it('returns a stringified json date with params', function () {
+            expect(mockListItem.getFormattedValue('date', {dateFormat: 'json'}))
+                .toEqual('2014-08-19T07:00:00.000Z');
+        });
     });
 
     describe('Method: getLookupReference', function () {

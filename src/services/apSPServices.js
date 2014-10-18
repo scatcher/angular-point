@@ -10,7 +10,7 @@
  *
  * */
 angular.module('angularPoint')
-    .service('SPServices', function (apWebServiceOperationConstants, apWebServiceService) {
+    .factory('SPServices', function (apWebServiceOperationConstants, apWebServiceService) {
 
         /*
          * SPServices - Work with SharePoint's Web Services using jQuery

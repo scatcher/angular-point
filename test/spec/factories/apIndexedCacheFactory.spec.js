@@ -4,13 +4,13 @@ describe("Factory: apIndexedCacheFactory", function () {
 
     beforeEach(module("angularPoint"));
 
-    var apIndexedCacheFactory, mockCache,
+    var factory, mockCache,
         entityOne = {id: 1, title: 'test'},
         entityTwo = {id: 2, title: 'test2'};
 
     beforeEach(inject(function (_apIndexedCacheFactory_) {
-        apIndexedCacheFactory = _apIndexedCacheFactory_;
-        mockCache = apIndexedCacheFactory.create();
+        factory = _apIndexedCacheFactory_;
+        mockCache = factory.create();
         mockCache.addEntity(entityOne);
         mockCache.addEntity(entityTwo);
     }));
@@ -19,7 +19,7 @@ describe("Factory: apIndexedCacheFactory", function () {
 
     describe('IndexCache', function () {
         it('the cache to have the correct constructor', function () {
-            expect(mockCache instanceof apIndexedCacheFactory.IndexedCache).toBe(true);
+            expect(mockCache instanceof factory.IndexedCache).toBe(true);
         });
     });
 

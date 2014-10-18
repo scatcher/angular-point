@@ -10,7 +10,7 @@
  * @requires angularPoint.apUtilityService
  */
 angular.module('angularPoint')
-    .service('apEncodeService', function (_, apConfig, apUtilityService, SPServices) {
+    .factory('apEncodeService', function (_, apConfig, apUtilityService, SPServices) {
 
         return {
             choiceMultiToString: choiceMultiToString,

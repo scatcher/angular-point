@@ -73,7 +73,7 @@ NG_DOCS={
       "type": "service",
       "moduleName": "angularPoint",
       "shortDescription": "Tools to assist with development.",
-      "keywords": "angularpoint apexportservice api aputilityservice arr array arrays assist assume assumes based beth big bool boolean capitalized choices column comment comments concatenated config console console-save convenience convert converts counter csv custom customdelimiter data dataset datetime default defining definition definitions delim delimiter description development document download downloaded dump easily enddate entities eventtype field fielddefinition fields file function generatecsv getval github identified int integer io joe js json label local located location logic lookup lookupid lookupmulti lookupvalue machine members membersasstring method model multichoice multiple myfile myobject named names normal number object objects optional optionally original overrides parse parsed parsedcsv parsing pass project prop property representation representing return returns row save savecsv savejson savexml selected separate service set settings simple single split start startdate str string stringified stringify strings subsequent super supported target text title tools type types user usermulti users valid values var viewed work xml"
+      "keywords": "angularpoint apexportservice api aputilityservice array arrays assist assume based big capitalized column comment comments concatenated config console console-save convenience convert converts csv custom customdelimiter data dataset default defining definition delim delimiter description development document download downloaded dump easily enddate entities eventtype field fielddefinition fields file function generatecsv getval github io js json label local located location logic lookupid machine method multiple myfile myobject named names object objects optional optionally original overrides parse parsed parsedcsv parsing pass project property representing return row save savecsv savejson savexml separate service settings simple start startdate str string stringify strings subsequent text title tools type user users valid values var viewed work xml"
     },
     {
       "section": "api",
@@ -82,7 +82,16 @@ NG_DOCS={
       "type": "service",
       "moduleName": "angularPoint",
       "shortDescription": "Handles the mapping of the various types of fields used within a SharePoint list",
-      "keywords": "addlistitems allows angularpoint apfieldservice api appropriate approveitems aputilityservice array based build chancejs coded combine container creates data decorates default defaults defined defines definition deletelistitems dynamic dynamically editlistitems empty expected field fields fieldtype full fullmask function generate generates handles hard https included levels list lists main mapping mask mock mockdata model modelservice obj object optional options param params permask permission permissionlevel populates produce query read reference requested resolvepermissions return returns service sharepoint simulation specific staticvalue string takes type types values viewfields viewlistitems xml"
+      "keywords": "addlistitems allows angularpoint apdefaultfields apfieldservice api appropriate approveitems aputilityservice array based build chancejs coded combine container creates data decorates default defaults defined defines definition deletelistitems dynamic dynamically editlistitems empty expected field fields fieldtype full fullmask function generate generates handles hard https included levels list lists main mapping mask mock mockdata model modelservice obj object optional options param params permask permission permissionlevel populates produce query read reference requested resolvepermissions return returns service sharepoint simulation specific staticvalue string takes type types values viewfields viewlistitems xml"
+    },
+    {
+      "section": "api",
+      "id": "angularPoint.apFormattedFieldValueService",
+      "shortName": "angularPoint.apFormattedFieldValueService",
+      "type": "service",
+      "moduleName": "angularPoint",
+      "shortDescription": "Returns the formatted string value for a field based on field type.",
+      "keywords": "angular angularpoint apformattedfieldvalueservice api array assumes based beth boolean choices concatenated config converts counter currency custom dateformat datetime default definitions delim delimiter field filter formatted function identified integer iso8601 joe json lookup lookupid lookupmulti lookupvalue mask members membersasstring model multichoice normal number numeric object objects optional options parse project prop property representation returns selected service set short single split string stringified stringify strings super supported target title type types user usermulti values var"
     },
     {
       "section": "api",
@@ -173,6 +182,24 @@ NG_DOCS={
       "moduleName": "angularPoint",
       "shortDescription": "Provides shared utility functionality across the application.",
       "keywords": "$q actual addandcustomizepages adddelprivatewebparts addlistitems admin angularpoint apconfig api application applystylesheets applythemeandborder approveitems aputilityservice array article aspx assigned attribute based batches batchprocess bit break browsedirectories browser browseuserinfo buildprojectsummary camel cancelcheckout capitalized case change chunks codeplex comparison complete context convert converts cooresponding create createalerts creategroups createsscsite current cuts dates datetocheck defaults defer deferred delay deletelistitems deleteversions delimited desired determine directly don dvwps easier easily editlistitems editmyuserinfo effectivepermmask element enddate entities enumeratepermissions evaluate evaluates event example executed extendprojectsummary fall falls false fictitious firebase flags formatted fullmask function functionality getalllistitems getlistitemssincetoken group hang humanized identifying info int integer intensive ints item iterate iterating javascript js length letter level list listitem lock long managealerts managelists managepermissions managesubwebs manageweb mask masks maximum microsoft milliseconds model module names nczonline net notify null number object online open openitems operation pausing performing perm permission permissionmask permissionsmask permmask permmaskname personalviews portion problem process processed processing projectmodel projects projectsmodel promise properties provided range reference remove resolve resolvepermissions return returned returns rights running security service set shared sharepoint simple site source space specifies splookupaddnew spservices startdate starting string stringified stuff sufficient summary summaryobject sync thread time trimming typically ui unnecessary unsigned updatepersonalwebparts usable user useremoteapis users utility var version viewformpages viewlistitems viewpages viewusagedata viewversions whitespace word wss xml yyyymmdd"
+    },
+    {
+      "section": "api",
+      "id": "angularPoint.apXMLListAttributeTypes",
+      "shortName": "angularPoint.apXMLListAttributeTypes",
+      "type": "object",
+      "moduleName": "angularPoint",
+      "shortDescription": "Constant object map which contains many common XML attributes found on a field definition with their",
+      "keywords": "angularpoint api apxmllistattributetypes attributes common constant corresponding definition field map object type xml"
+    },
+    {
+      "section": "api",
+      "id": "angularPoint.apXMLListAttributeTypes",
+      "shortName": "angularPoint.apXMLListAttributeTypes",
+      "type": "object",
+      "moduleName": "angularPoint",
+      "shortDescription": "Constant object map which contains many common XML attributes found on a list definition with their",
+      "keywords": "angularpoint api apxmllistattributetypes attributes common constant corresponding definition list map object type xml"
     },
     {
       "section": "api",
@@ -497,6 +524,15 @@ NG_DOCS={
       "moduleName": "ListItem",
       "shortDescription": "Takes an array of field names, finds the version history for field, and returns a snapshot of the object at each",
       "keywords": "$scope api array assuming build changes combining definitions display field fields finds form function getfieldversionhistory history independently interested item list listitem modal model mygenericlistitem names non-readonly object project promise provided pull requests responses returns server snapshot takes title ve version versionhistory working"
+    },
+    {
+      "section": "api",
+      "id": "ListItem.getFormattedValue",
+      "shortName": "ListItem.getFormattedValue",
+      "type": "function",
+      "moduleName": "ListItem",
+      "shortDescription": "Given the attribute name on an entity, we can lookup the field type and from there return a formatted",
+      "keywords": "apformattedfieldvalueservice api attribute entity field fieldname formatted function getformattedfieldvalue getformattedvalue listitem lookup object pass representation representing return string stringify type"
     },
     {
       "section": "api",

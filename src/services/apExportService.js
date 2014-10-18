@@ -8,7 +8,16 @@
  * @requires angularPoint.apUtilityService
  */
 angular.module('angularPoint')
-    .service('apExportService', function (_, apUtilityService) {
+    .factory('apExportService', function (_, apUtilityService, apFormattedFieldValueService) {
+
+        return {
+            generateCSV: generateCSV,
+            saveCSV: saveCSV,
+            saveFile: saveFile,
+            saveJSON: saveJSON,
+            saveXML: saveXML
+        };
+
 
         /**
          * @ngdoc function
@@ -28,7 +37,7 @@ angular.module('angularPoint')
          * </pre>
          *
          */
-        var saveFile = function (data, type, filename) {
+        function saveFile (data, type, filename) {
             if (!data) {
                 console.error('apExportService.save' + type.toUpperCase() + ': No data');
                 return;
@@ -54,7 +63,7 @@ angular.module('angularPoint')
             a.dataset.downloadurl = ['text/' + type, a.download, a.href].join(':');
             e.initMouseEvent('click', true, false, window, 0, 0, 0, 0, 0, false, false, false, false, 0, null);
             a.dispatchEvent(e);
-        };
+        }
 
         /**
          * @ngdoc function
@@ -72,9 +81,9 @@ angular.module('angularPoint')
          * </pre>
          *
          */
-        var saveJSON = function (data, filename) {
+        function saveJSON(data, filename) {
             saveFile(data, 'json', filename);
-        };
+        }
 
         /**
          * @ngdoc function
@@ -92,9 +101,9 @@ angular.module('angularPoint')
          * </pre>
          *
          */
-        var saveXML = function (data, filename) {
+        function saveXML(data, filename) {
             saveFile(data, 'xml', filename);
-        };
+        }
 
         /**
          * @description Replaces commonly-used Windows 1252 encoded chars that do not exist in ASCII or
@@ -102,7 +111,7 @@ angular.module('angularPoint')
          * @param {string} text Text to be validated and cleaned.
          * @returns {string}
          */
-        var replaceWordChars = function (text) {
+        function replaceWordChars(text) {
             var s = text;
             // smart single quotes and apostrophe
             s = s.replace(/[\u2018|\u2019|\u201A]/g, "\'");
@@ -121,7 +130,7 @@ angular.module('angularPoint')
             // spaces
             s = s.replace(/[\u02DC|\u00A0]/g, " ");
             return s;
-        };
+        }
 
 
         /**
@@ -141,7 +150,7 @@ angular.module('angularPoint')
          * </pre>
          *
          */
-        var saveCSV = function (data, filename) {
+        function saveCSV(data, filename) {
             var csvString = '';
             _.each(data, function (row) {
                 _.each(row, function (column, columnIndex) {
@@ -158,7 +167,7 @@ angular.module('angularPoint')
                 csvString += '\n';
             });
             saveFile(csvString, 'csv;charset=utf-8;', filename);
-        };
+        }
 
         /**
          * @ngdoc function
@@ -210,8 +219,12 @@ angular.module('angularPoint')
          * </pre>
          *
          */
-        var generateCSV = function (entities, fields, options) {
-            var defaults = {delim: '; '},
+        function generateCSV(entities, fields, options) {
+            var defaults = {
+                    dateFormat: 'json', //Format as JSON date rather than a formal date string
+                    delim: '; ',
+                    includeTitleRow: true
+                },
                 opts = _.extend({}, defaults, options),
                 entitiesArray = [
                     []
@@ -231,7 +244,7 @@ angular.module('angularPoint')
                     var propertyName = fieldComponents[0];
 
                     /** First array has the field names */
-                    if (entityIndex === 0) {
+                    if (entityIndex === 0 && opts.includeTitleRow) {
                         /** Take a best guess if a column label isn't specified by capitalizing and inserting spaces between camel humps*/
                         var label = fieldDefinition.label ?
                             fieldDefinition.label : apUtilityService.fromCamelCase(propertyName);
@@ -251,7 +264,11 @@ angular.module('angularPoint')
                     } else {
                         /** Get the value based on field type defined in the model for the entity*/
                         var modelDefinition = entity.getFieldDefinition(propertyName);
-                        val = stringifyProperty(entity[fieldDefinition.field], modelDefinition.objectType, opts.delim)
+                        val = apFormattedFieldValueService.getFormattedFieldValue(
+                            entity[fieldDefinition.field],
+                            modelDefinition.objectType,
+                            opts
+                        )
                     }
                     /** Add string to column */
                     entityArray.push(val);
@@ -260,210 +277,6 @@ angular.module('angularPoint')
                 entitiesArray.push(entityArray);
             });
             return entitiesArray;
-        };
+        }
 
-        /**
-         * @ngdoc function
-         * @name angularPoint.apExportService:stringifyProperty
-         * @methodOf angularPoint.apExportService
-         * @param {object|array|string|integer|boolean} prop Target that we'd like to stringify.
-         * @param {string} [propertyType='String'] Assumes by default that it's already a string.  Most of the normal field
-         * types identified in the model field definitions are supported.
-         *
-         * - Lookup
-         * - User
-         * - Boolean
-         * - DateTime
-         * - Integer
-         * - Number
-         * - Counter
-         * - MultiChoice
-         * - UserMulti
-         * - LookupMulti
-         *
-         * @param {string} [delim='; '] Optional delimiter to split concatenated strings.
-         * @example
-         * <pre>
-         *  var project = {
-     *    title: 'Super Project',
-      *   members: [
-      *     { lookupId: 12, lookupValue: 'Joe' },
-      *     { lookupId: 19, lookupValue: 'Beth' },
-      *   ]
-      * };
-         *
-         * var membersAsString = apExportService:stringifyProperty({
-     *    project.members,
-     *    'UserMulti',
-     *    ' | ' //Custom Delimiter
-     * });
-         *
-         * // membersAsString = 'Joe | Beth';
-         *
-         * </pre>
-         * @returns {string} Stringified property on the object based on the field type.
-         */
-        var stringifyProperty = function (prop, propertyType, delim) {
-            var str = '';
-            /** Only process if prop is defined */
-            if (prop) {
-                switch (propertyType) {
-                    case 'Lookup':
-                    case 'User':
-                        str = parseLookup(prop);
-                        break;
-                    case 'Boolean':
-                        str = parseBoolean(prop);
-                        break;
-                    case 'DateTime':
-                        str = parseDate(prop);
-                        break;
-                    case 'Integer':
-                    case 'Number':
-                    case 'Counter':
-                        str = parseNumber(prop);
-                        break;
-                    case 'MultiChoice':
-                        str = parseMultiChoice(prop, delim);
-                        break;
-                    case 'UserMulti':
-                    case 'LookupMulti':
-                        str = parseMultiLookup(prop, delim);
-                        break;
-                    default:
-                        str = prop;
-                }
-            }
-            return str;
-        };
-
-        /**
-         * @ngdoc function
-         * @name angularPoint.apExportService:parseNumber
-         * @methodOf angularPoint.apExportService
-         * @param {number} int Property on object to parse.
-         * @description
-         * Converts a number to a string representation.
-         * @returns {string} Stringified number.
-         */
-        var parseNumber = function (int) {
-            var str = '';
-            if (_.isNumber(int)) {
-                str = int.toString();
-            }
-            return str;
-        };
-
-        /**
-         * @ngdoc function
-         * @name angularPoint.apExportService:parseLookup
-         * @methodOf angularPoint.apExportService
-         * @param {obj} prop Property on object to parse.
-         * @description
-         * Returns the property.lookupValue if present.
-         * @returns {string} Property.lookupValue.
-         */
-        var parseLookup = function (prop) {
-            var str = '';
-            if (prop && prop.lookupValue) {
-                str = prop.lookupValue;
-            }
-            return str;
-        };
-
-        /**
-         * @ngdoc function
-         * @name angularPoint.apExportService:parseBoolean
-         * @methodOf angularPoint.apExportService
-         * @param {boolean} bool Boolean to stringify.
-         * @description
-         * Returns the stringified boolean if it is set.
-         * @returns {string} Stringified boolean.
-         */
-        var parseBoolean = function (bool) {
-            var str = '';
-            if (_.isBoolean(bool)) {
-                str = bool.toString();
-            }
-            return str;
-        };
-
-        /**
-         * @ngdoc function
-         * @name angularPoint.apExportService:parseDate
-         * @methodOf angularPoint.apExportService
-         * @param {date} date Date that if set converts to JSON representation.
-         * @description
-         * Returns JSON date.
-         * @returns {string} JSON date.
-         */
-        var parseDate = function (date) {
-            var str = '';
-            if (_.isDate(date)) {
-                str = date.toJSON();
-            }
-            return str;
-        };
-
-        /**
-         * @ngdoc function
-         * @name angularPoint.apExportService:parseMultiChoice
-         * @methodOf angularPoint.apExportService
-         * @param {string[]} arr Array of selected choices.
-         * @param {string} [delim='; '] Custom delimiter used between the concatenated values.
-         * @description
-         * Converts an array of strings into a single concatenated string.
-         * @returns {string} Concatenated string representation.
-         */
-        var parseMultiChoice = function (arr, delim) {
-            var str = '',
-                d = delim || '; ';
-            _.each(arr, function (choice, i) {
-                if (i > 0) {
-                    str += d;
-                }
-                str += choice;
-            });
-            return str;
-        };
-
-        /**
-         * @ngdoc function
-         * @name angularPoint.apExportService:parseMultiLookup
-         * @methodOf angularPoint.apExportService
-         * @param {object[]} arr Array of lookup objects.
-         * @param {string} [delim='; '] Custom delimiter used between the concatenated values.
-         * @description
-         * Converts an array of selected lookup values into a single concatenated string.
-         * @returns {string} Concatenated string representation.
-         */
-        var parseMultiLookup = function (arr, delim) {
-            var str = '',
-                d = delim || '; ';
-            _.each(arr, function (val, valIndex) {
-
-                /** Add artificial delim */
-                if (valIndex > 0) {
-                    str += d;
-                }
-
-                str += parseLookup(val);
-            });
-            return str;
-        };
-
-        return {
-            generateCSV: generateCSV,
-            parseMultiLookup: parseMultiLookup,
-            parseBoolean: parseBoolean,
-            parseDate: parseDate,
-            parseLookup: parseLookup,
-            parseMultiChoice: parseMultiChoice,
-            parseNumber: parseNumber,
-            saveCSV: saveCSV,
-            saveFile: saveFile,
-            saveJSON: saveJSON,
-            saveXML: saveXML,
-            stringifyProperty: stringifyProperty
-        };
     });

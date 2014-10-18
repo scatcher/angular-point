@@ -16,7 +16,7 @@
  // *  @requires apFieldService
  */
 angular.module('angularPoint')
-    .service('apDataService', function ($q, $timeout, $http, _, apQueueService, apConfig, apUtilityService,
+    .factory('apDataService', function ($q, $timeout, $http, _, apQueueService, apConfig, apUtilityService,
                                         apCacheService, apDecodeService, apEncodeService, apFieldService,
                                         apIndexedCacheFactory, toastr, SPServices,
                                         apWebServiceOperationConstants, apXMLToJSONService) {
