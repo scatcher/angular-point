@@ -58,44 +58,6 @@ var saveCSV = function() {
 </div></div>
 </div>
 </li>
-<li><h3 id="methods_parseboolean">parseBoolean(bool)</h3>
-<div class="parseboolean"><div class="angularpoint-apexportservice-page angularpoint-apexportservice-parseboolean-page"><p>Returns the stringified boolean if it is set.</p>
-</div><h5 id="methods_parseboolean_parameters">Parameters</h5><table class="variables-matrix table table-bordered table-striped"><thead><tr><th>Param</th><th>Type</th><th>Details</th></tr></thead><tbody><tr><td>bool</td><td><a href="" class="label type-hint type-hint-boolean">boolean</a></td><td><div class="angularpoint-apexportservice-page angularpoint-apexportservice-parseboolean-page"><p>Boolean to stringify.</p>
-</div></td></tr></tbody></table><h5 id="methods_parseboolean_returns">Returns</h5><table class="variables-matrix"><tr><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="angularpoint-apexportservice-page angularpoint-apexportservice-parseboolean-page"><p>Stringified boolean.</p>
-</div></td></tr></table></div>
-</li>
-<li><h3 id="methods_parsedate">parseDate(date)</h3>
-<div class="parsedate"><div class="angularpoint-apexportservice-page angularpoint-apexportservice-parsedate-page"><p>Returns JSON date.</p>
-</div><h5 id="methods_parsedate_parameters">Parameters</h5><table class="variables-matrix table table-bordered table-striped"><thead><tr><th>Param</th><th>Type</th><th>Details</th></tr></thead><tbody><tr><td>date</td><td><a href="" class="label type-hint type-hint-date">date</a></td><td><div class="angularpoint-apexportservice-page angularpoint-apexportservice-parsedate-page"><p>Date that if set converts to JSON representation.</p>
-</div></td></tr></tbody></table><h5 id="methods_parsedate_returns">Returns</h5><table class="variables-matrix"><tr><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="angularpoint-apexportservice-page angularpoint-apexportservice-parsedate-page"><p>JSON date.</p>
-</div></td></tr></table></div>
-</li>
-<li><h3 id="methods_parselookup">parseLookup(prop)</h3>
-<div class="parselookup"><div class="angularpoint-apexportservice-page angularpoint-apexportservice-parselookup-page"><p>Returns the property.lookupValue if present.</p>
-</div><h5 id="methods_parselookup_parameters">Parameters</h5><table class="variables-matrix table table-bordered table-striped"><thead><tr><th>Param</th><th>Type</th><th>Details</th></tr></thead><tbody><tr><td>prop</td><td><a href="" class="label type-hint type-hint-obj">obj</a></td><td><div class="angularpoint-apexportservice-page angularpoint-apexportservice-parselookup-page"><p>Property on object to parse.</p>
-</div></td></tr></tbody></table><h5 id="methods_parselookup_returns">Returns</h5><table class="variables-matrix"><tr><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="angularpoint-apexportservice-page angularpoint-apexportservice-parselookup-page"><p>Property.lookupValue.</p>
-</div></td></tr></table></div>
-</li>
-<li><h3 id="methods_parsemultichoice">parseMultiChoice(arr, delim)</h3>
-<div class="parsemultichoice"><div class="angularpoint-apexportservice-page angularpoint-apexportservice-parsemultichoice-page"><p>Converts an array of strings into a single concatenated string.</p>
-</div><h5 id="methods_parsemultichoice_parameters">Parameters</h5><table class="variables-matrix table table-bordered table-striped"><thead><tr><th>Param</th><th>Type</th><th>Details</th></tr></thead><tbody><tr><td>arr</td><td><a href="" class="label type-hint type-hint-string">string[]</a></td><td><div class="angularpoint-apexportservice-page angularpoint-apexportservice-parsemultichoice-page"><p>Array of selected choices.</p>
-</div></td></tr><tr><td>delim</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="angularpoint-apexportservice-page angularpoint-apexportservice-parsemultichoice-page"><p>Custom delimiter used between the concatenated values.</p>
-</div> <p><em>(default: '; ')</em></p></td></tr></tbody></table><h5 id="methods_parsemultichoice_returns">Returns</h5><table class="variables-matrix"><tr><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="angularpoint-apexportservice-page angularpoint-apexportservice-parsemultichoice-page"><p>Concatenated string representation.</p>
-</div></td></tr></table></div>
-</li>
-<li><h3 id="methods_parsemultilookup">parseMultiLookup(arr, delim)</h3>
-<div class="parsemultilookup"><div class="angularpoint-apexportservice-page angularpoint-apexportservice-parsemultilookup-page"><p>Converts an array of selected lookup values into a single concatenated string.</p>
-</div><h5 id="methods_parsemultilookup_parameters">Parameters</h5><table class="variables-matrix table table-bordered table-striped"><thead><tr><th>Param</th><th>Type</th><th>Details</th></tr></thead><tbody><tr><td>arr</td><td><a href="" class="label type-hint type-hint-object">object[]</a></td><td><div class="angularpoint-apexportservice-page angularpoint-apexportservice-parsemultilookup-page"><p>Array of lookup objects.</p>
-</div></td></tr><tr><td>delim</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="angularpoint-apexportservice-page angularpoint-apexportservice-parsemultilookup-page"><p>Custom delimiter used between the concatenated values.</p>
-</div> <p><em>(default: '; ')</em></p></td></tr></tbody></table><h5 id="methods_parsemultilookup_returns">Returns</h5><table class="variables-matrix"><tr><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="angularpoint-apexportservice-page angularpoint-apexportservice-parsemultilookup-page"><p>Concatenated string representation.</p>
-</div></td></tr></table></div>
-</li>
-<li><h3 id="methods_parsenumber">parseNumber(int)</h3>
-<div class="parsenumber"><div class="angularpoint-apexportservice-page angularpoint-apexportservice-parsenumber-page"><p>Converts a number to a string representation.</p>
-</div><h5 id="methods_parsenumber_parameters">Parameters</h5><table class="variables-matrix table table-bordered table-striped"><thead><tr><th>Param</th><th>Type</th><th>Details</th></tr></thead><tbody><tr><td>int</td><td><a href="" class="label type-hint type-hint-number">number</a></td><td><div class="angularpoint-apexportservice-page angularpoint-apexportservice-parsenumber-page"><p>Property on object to parse.</p>
-</div></td></tr></tbody></table><h5 id="methods_parsenumber_returns">Returns</h5><table class="variables-matrix"><tr><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="angularpoint-apexportservice-page angularpoint-apexportservice-parsenumber-page"><p>Stringified number.</p>
-</div></td></tr></table></div>
-</li>
 <li><h3 id="methods_savecsv">saveCSV(data, filename)</h3>
 <div class="savecsv"><div class="angularpoint-apexportservice-page angularpoint-apexportservice-savecsv-page"><p>Converts an array of arrays into a valid CSV file that is then downloaded to the users machine</p>
 </div><h5 id="methods_savecsv_parameters">Parameters</h5><table class="variables-matrix table table-bordered table-striped"><thead><tr><th>Param</th><th>Type</th><th>Details</th></tr></thead><tbody><tr><td>data</td><td><a href="" class="label type-hint type-hint-array">array[]</a></td><td><div class="angularpoint-apexportservice-page angularpoint-apexportservice-savecsv-page"><p>Array of arrays that we&#39;d like to dump to a CSV file and save to the local machine.</p>
@@ -144,46 +106,6 @@ apExportService.saveJSON(objectToSave, 'myobject.json');
 <div class="example"><div class="angularpoint-apexportservice-page angularpoint-apexportservice-savexml-page"><pre class="prettyprint linenums">
 //Lets assume we want to looks at an object that is too big to be easily viewed in the console.
 apExportService.saveXML(objectToSave, 'myobject.xml');
-</pre>
-</div></div>
-</div>
-</li>
-<li><h3 id="methods_stringifyproperty">stringifyProperty(prop, propertyType, delim)</h3>
-<div class="stringifyproperty"><h5 id="methods_stringifyproperty_parameters">Parameters</h5><table class="variables-matrix table table-bordered table-striped"><thead><tr><th>Param</th><th>Type</th><th>Details</th></tr></thead><tbody><tr><td>prop</td><td><a href="" class="label type-hint type-hint-object">object</a><a href="" class="label type-hint type-hint-array">array</a><a href="" class="label type-hint type-hint-string">string</a><a href="" class="label type-hint type-hint-integer">integer</a><a href="" class="label type-hint type-hint-boolean">boolean</a></td><td><div class="angularpoint-apexportservice-page angularpoint-apexportservice-stringifyproperty-page"><p>Target that we&#39;d like to stringify.</p>
-</div></td></tr><tr><td>propertyType</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="angularpoint-apexportservice-page angularpoint-apexportservice-stringifyproperty-page"><p>Assumes by default that it&#39;s already a string.  Most of the normal field
-types identified in the model field definitions are supported.</p>
-<ul>
-<li>Lookup</li>
-<li>User</li>
-<li>Boolean</li>
-<li>DateTime</li>
-<li>Integer</li>
-<li>Number</li>
-<li>Counter</li>
-<li>MultiChoice</li>
-<li>UserMulti</li>
-<li>LookupMulti</li>
-</ul>
-</div> <p><em>(default: 'String')</em></p></td></tr><tr><td>delim</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="angularpoint-apexportservice-page angularpoint-apexportservice-stringifyproperty-page"><p>Optional delimiter to split concatenated strings.</p>
-</div> <p><em>(default: '; ')</em></p></td></tr></tbody></table><h5 id="methods_stringifyproperty_returns">Returns</h5><table class="variables-matrix"><tr><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="angularpoint-apexportservice-page angularpoint-apexportservice-stringifyproperty-page"><p>Stringified property on the object based on the field type.</p>
-</div></td></tr></table><h4 id="methods_stringifyproperty_example">Example</h4>
-<div class="example"><div class="angularpoint-apexportservice-page angularpoint-apexportservice-stringifyproperty-page"><pre class="prettyprint linenums">
-var project = {
-  title: 'Super Project',
- members: [
-   { lookupId: 12, lookupValue: 'Joe' },
-   { lookupId: 19, lookupValue: 'Beth' },
- ]
-};
-
-var membersAsString = apExportService:stringifyProperty({
-  project.members,
-  'UserMulti',
-  ' | ' //Custom Delimiter
-});
-
-// membersAsString = 'Joe | Beth';
-
 </pre>
 </div></div>
 </div>

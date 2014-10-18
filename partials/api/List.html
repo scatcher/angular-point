@@ -51,4 +51,20 @@ See <a href="#/api/List.FieldDefinition">List.customFields</a> for additional in
 ]
 </pre>
 </div></td></tr></tbody></table></div>
+<div class="member method"><h2 id="methods">Methods</h2>
+<ul class="methods"><li><h3 id="methods_getlistid">getListId()</h3>
+<div class="getlistid"><div class="list-page list-getlistid-page"><p>Defaults to list.guid.  For a multi-environment setup, we accept a list.environments object with a property for each named
+environment with a corresponding value of the list guid.  The active environment can be selected
+by setting apConfig.environment to the string name of the desired environment.</p>
+</div><h5 id="methods_getlistid_returns">Returns</h5><table class="variables-matrix"><tr><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="list-page list-getlistid-page"><p>List ID.</p>
+</div></td></tr></table></div>
+</li>
+<li><h3 id="methods_identifyweburl">identifyWebURL()</h3>
+<div class="identifyweburl"><div class="list-page list-identifyweburl-page"><p>If a list is extended, use the provided webURL, otherwise use list.webURL.  If never set it will default
+to apConfig.defaultUrl.</p>
+</div><h5 id="methods_identifyweburl_returns">Returns</h5><table class="variables-matrix"><tr><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="list-page list-identifyweburl-page"><p>webURL param.</p>
+</div></td></tr></table></div>
+</li>
+</ul>
+</div>
 </div>

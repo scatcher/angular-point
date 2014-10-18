@@ -1,0 +1,101 @@
+<h1><code ng:non-bindable="">apFormattedFieldValueService</code>
+<div><span class="hint">service in module <code ng:non-bindable="">angularPoint</code>
+</span>
+</div>
+</h1>
+<div><h2 id="description">Description</h2>
+<div class="description"><div class="angularpoint-apformattedfieldvalueservice-page"><p>Returns the formatted string value for a field based on field type.</p>
+</div></div>
+<div class="member method"><h2 id="methods">Methods</h2>
+<ul class="methods"><li><h3 id="methods_getformattedfieldvalue">getFormattedFieldValue(prop, propertyType, options)</h3>
+<div class="getformattedfieldvalue"><h5 id="methods_getformattedfieldvalue_parameters">Parameters</h5><table class="variables-matrix table table-bordered table-striped"><thead><tr><th>Param</th><th>Type</th><th>Details</th></tr></thead><tbody><tr><td>prop</td><td><a href="" class="label type-hint type-hint-object">object</a><a href="" class="label type-hint type-hint-array">array</a><a href="" class="label type-hint type-hint-string">string</a><a href="" class="label type-hint type-hint-integer">integer</a><a href="" class="label type-hint type-hint-boolean">boolean</a></td><td><div class="angularpoint-apformattedfieldvalueservice-page angularpoint-apformattedfieldvalueservice-getformattedfieldvalue-page"><p>Target that we&#39;d like to stringify.</p>
+</div></td></tr><tr><td>propertyType</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="angularpoint-apformattedfieldvalueservice-page angularpoint-apformattedfieldvalueservice-getformattedfieldvalue-page"><p>Assumes by default that it&#39;s already a string.  Most of the normal field
+types identified in the model field definitions are supported.</p>
+<ul>
+<li>Lookup</li>
+<li>User</li>
+<li>Boolean</li>
+<li>DateTime</li>
+<li>Integer</li>
+<li>Number</li>
+<li>Counter</li>
+<li>MultiChoice</li>
+<li>UserMulti</li>
+<li>LookupMulti</li>
+</ul>
+</div> <p><em>(default: 'String')</em></p></td></tr><tr><td>options</td><td><a href="" class="label type-hint type-hint-object">object</a></td><td><div class="angularpoint-apformattedfieldvalueservice-page angularpoint-apformattedfieldvalueservice-getformattedfieldvalue-page"><p>Optional config.</p>
+</div></td></tr><tr><td>options.delim</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="angularpoint-apformattedfieldvalueservice-page angularpoint-apformattedfieldvalueservice-getformattedfieldvalue-page"><p>Optional delimiter to split concatenated strings.</p>
+</div> <p><em>(default: ', ')</em></p></td></tr><tr><td>options.dateFormat</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="angularpoint-apformattedfieldvalueservice-page angularpoint-apformattedfieldvalueservice-getformattedfieldvalue-page"><p>Either &#39;json&#39; which converts a date into ISO8601 date string
+or a mask for the angular date filter.</p>
+</div> <p><em>(default: 'short')</em></p></td></tr></tbody></table><h5 id="methods_getformattedfieldvalue_returns">Returns</h5><table class="variables-matrix"><tr><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="angularpoint-apformattedfieldvalueservice-page angularpoint-apformattedfieldvalueservice-getformattedfieldvalue-page"><p>Stringified property on the object based on the field type.</p>
+</div></td></tr></table><h4 id="methods_getformattedfieldvalue_example">Example</h4>
+<div class="example"><div class="angularpoint-apformattedfieldvalueservice-page angularpoint-apformattedfieldvalueservice-getformattedfieldvalue-page"><pre class="prettyprint linenums">
+var project = {
+  title: 'Super Project',
+ members: [
+   { lookupId: 12, lookupValue: 'Joe' },
+   { lookupId: 19, lookupValue: 'Beth' }
+ ]
+};
+
+var membersAsString = apFormattedFieldValueService:getFormattedFieldValue({
+  project.members,
+  'UserMulti',
+  { delim: ' | '} //Custom Delimiter
+});
+
+// membersAsString = 'Joe | Beth';
+
+</pre>
+</div></div>
+</div>
+</li>
+<li><h3 id="methods_stringifyboolean">stringifyBoolean(prop)</h3>
+<div class="stringifyboolean"><div class="angularpoint-apformattedfieldvalueservice-page angularpoint-apformattedfieldvalueservice-stringifyboolean-page"><p>Returns the stringified boolean if it is set.</p>
+</div><h5 id="methods_stringifyboolean_parameters">Parameters</h5><table class="variables-matrix table table-bordered table-striped"><thead><tr><th>Param</th><th>Type</th><th>Details</th></tr></thead><tbody><tr><td>prop</td><td><a href="" class="label type-hint type-hint-boolean">boolean</a></td><td><div class="angularpoint-apformattedfieldvalueservice-page angularpoint-apformattedfieldvalueservice-stringifyboolean-page"><p>Boolean to stringify.</p>
+</div></td></tr></tbody></table><h5 id="methods_stringifyboolean_returns">Returns</h5><table class="variables-matrix"><tr><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="angularpoint-apformattedfieldvalueservice-page angularpoint-apformattedfieldvalueservice-stringifyboolean-page"><p>Stringified boolean.</p>
+</div></td></tr></table></div>
+</li>
+<li><h3 id="methods_stringifycurrency">stringifyCurrency(prop)</h3>
+<div class="stringifycurrency"><div class="angularpoint-apformattedfieldvalueservice-page angularpoint-apformattedfieldvalueservice-stringifycurrency-page"><p>Converts a numeric value into a formatted currency string.</p>
+</div><h5 id="methods_stringifycurrency_parameters">Parameters</h5><table class="variables-matrix table table-bordered table-striped"><thead><tr><th>Param</th><th>Type</th><th>Details</th></tr></thead><tbody><tr><td>prop</td><td><a href="" class="label type-hint type-hint-number">number</a></td><td><div class="angularpoint-apformattedfieldvalueservice-page angularpoint-apformattedfieldvalueservice-stringifycurrency-page"><p>Property on object to parse.</p>
+</div></td></tr></tbody></table><h5 id="methods_stringifycurrency_returns">Returns</h5><table class="variables-matrix"><tr><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="angularpoint-apformattedfieldvalueservice-page angularpoint-apformattedfieldvalueservice-stringifycurrency-page"><p>Stringified currency.</p>
+</div></td></tr></table></div>
+</li>
+<li><h3 id="methods_stringifydate">stringifyDate(prop, dateFormat)</h3>
+<div class="stringifydate"><div class="angularpoint-apformattedfieldvalueservice-page angularpoint-apformattedfieldvalueservice-stringifydate-page"><p>Returns JSON date.</p>
+</div><h5 id="methods_stringifydate_parameters">Parameters</h5><table class="variables-matrix table table-bordered table-striped"><thead><tr><th>Param</th><th>Type</th><th>Details</th></tr></thead><tbody><tr><td>prop</td><td><a href="" class="label type-hint type-hint-date">date</a></td><td><div class="angularpoint-apformattedfieldvalueservice-page angularpoint-apformattedfieldvalueservice-stringifydate-page"><p>Date object.</p>
+</div></td></tr><tr><td>dateFormat</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="angularpoint-apformattedfieldvalueservice-page angularpoint-apformattedfieldvalueservice-stringifydate-page"><p>Either &#39;json&#39; which converts a date into ISO8601 date string or a mask for
+the angular date filter.</p>
+</div></td></tr></tbody></table><h5 id="methods_stringifydate_returns">Returns</h5><table class="variables-matrix"><tr><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="angularpoint-apformattedfieldvalueservice-page angularpoint-apformattedfieldvalueservice-stringifydate-page"><p>JSON date.</p>
+</div></td></tr></table></div>
+</li>
+<li><h3 id="methods_stringifylookup">stringifyLookup(prop)</h3>
+<div class="stringifylookup"><div class="angularpoint-apformattedfieldvalueservice-page angularpoint-apformattedfieldvalueservice-stringifylookup-page"><p>Returns the property.lookupValue if present.</p>
+</div><h5 id="methods_stringifylookup_parameters">Parameters</h5><table class="variables-matrix table table-bordered table-striped"><thead><tr><th>Param</th><th>Type</th><th>Details</th></tr></thead><tbody><tr><td>prop</td><td><a href="" class="label type-hint type-hint-obj">obj</a></td><td><div class="angularpoint-apformattedfieldvalueservice-page angularpoint-apformattedfieldvalueservice-stringifylookup-page"><p>Property on object to parse.</p>
+</div></td></tr></tbody></table><h5 id="methods_stringifylookup_returns">Returns</h5><table class="variables-matrix"><tr><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="angularpoint-apformattedfieldvalueservice-page angularpoint-apformattedfieldvalueservice-stringifylookup-page"><p>Property.lookupValue.</p>
+</div></td></tr></table></div>
+</li>
+<li><h3 id="methods_stringifymultichoice">stringifyMultiChoice(prop, delim)</h3>
+<div class="stringifymultichoice"><div class="angularpoint-apformattedfieldvalueservice-page angularpoint-apformattedfieldvalueservice-stringifymultichoice-page"><p>Converts an array of strings into a single concatenated string.</p>
+</div><h5 id="methods_stringifymultichoice_parameters">Parameters</h5><table class="variables-matrix table table-bordered table-striped"><thead><tr><th>Param</th><th>Type</th><th>Details</th></tr></thead><tbody><tr><td>prop</td><td><a href="" class="label type-hint type-hint-string">string[]</a></td><td><div class="angularpoint-apformattedfieldvalueservice-page angularpoint-apformattedfieldvalueservice-stringifymultichoice-page"><p>Array of selected choices.</p>
+</div></td></tr><tr><td>delim</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="angularpoint-apformattedfieldvalueservice-page angularpoint-apformattedfieldvalueservice-stringifymultichoice-page"><p>Custom delimiter used between the concatenated values.</p>
+</div> <p><em>(default: '; ')</em></p></td></tr></tbody></table><h5 id="methods_stringifymultichoice_returns">Returns</h5><table class="variables-matrix"><tr><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="angularpoint-apformattedfieldvalueservice-page angularpoint-apformattedfieldvalueservice-stringifymultichoice-page"><p>Concatenated string representation.</p>
+</div></td></tr></table></div>
+</li>
+<li><h3 id="methods_stringifymultilookup">stringifyMultiLookup(prop, delim)</h3>
+<div class="stringifymultilookup"><div class="angularpoint-apformattedfieldvalueservice-page angularpoint-apformattedfieldvalueservice-stringifymultilookup-page"><p>Converts an array of selected lookup values into a single concatenated string.</p>
+</div><h5 id="methods_stringifymultilookup_parameters">Parameters</h5><table class="variables-matrix table table-bordered table-striped"><thead><tr><th>Param</th><th>Type</th><th>Details</th></tr></thead><tbody><tr><td>prop</td><td><a href="" class="label type-hint type-hint-object">object[]</a></td><td><div class="angularpoint-apformattedfieldvalueservice-page angularpoint-apformattedfieldvalueservice-stringifymultilookup-page"><p>Array of lookup objects.</p>
+</div></td></tr><tr><td>delim</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="angularpoint-apformattedfieldvalueservice-page angularpoint-apformattedfieldvalueservice-stringifymultilookup-page"><p>Custom delimiter used between the concatenated values.</p>
+</div> <p><em>(default: '; ')</em></p></td></tr></tbody></table><h5 id="methods_stringifymultilookup_returns">Returns</h5><table class="variables-matrix"><tr><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="angularpoint-apformattedfieldvalueservice-page angularpoint-apformattedfieldvalueservice-stringifymultilookup-page"><p>Concatenated string representation.</p>
+</div></td></tr></table></div>
+</li>
+<li><h3 id="methods_stringifynumber">stringifyNumber(prop)</h3>
+<div class="stringifynumber"><div class="angularpoint-apformattedfieldvalueservice-page angularpoint-apformattedfieldvalueservice-stringifynumber-page"><p>Converts a number to a string representation.</p>
+</div><h5 id="methods_stringifynumber_parameters">Parameters</h5><table class="variables-matrix table table-bordered table-striped"><thead><tr><th>Param</th><th>Type</th><th>Details</th></tr></thead><tbody><tr><td>prop</td><td><a href="" class="label type-hint type-hint-number">number</a></td><td><div class="angularpoint-apformattedfieldvalueservice-page angularpoint-apformattedfieldvalueservice-stringifynumber-page"><p>Property on object to parse.</p>
+</div></td></tr></tbody></table><h5 id="methods_stringifynumber_returns">Returns</h5><table class="variables-matrix"><tr><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="angularpoint-apformattedfieldvalueservice-page angularpoint-apformattedfieldvalueservice-stringifynumber-page"><p>Stringified number.</p>
+</div></td></tr></table></div>
+</li>
+</ul>
+</div>
+</div>
