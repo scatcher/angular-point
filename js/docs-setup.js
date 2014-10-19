@@ -527,6 +527,15 @@ NG_DOCS={
     },
     {
       "section": "api",
+      "id": "ListItem.getFormattedValue",
+      "shortName": "ListItem.getFormattedValue",
+      "type": "function",
+      "moduleName": "ListItem",
+      "shortDescription": "Given the attribute name on an entity, we can lookup the field type and from there return a formatted",
+      "keywords": "apformattedfieldvalueservice api attribute entity field fieldname formatted function getformattedfieldvalue getformattedvalue listitem lookup object pass representation representing return string stringify type"
+    },
+    {
+      "section": "api",
       "id": "ListItem.getLookupReference",
       "shortName": "ListItem.getLookupReference",
       "type": "function",
