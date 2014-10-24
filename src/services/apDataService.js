@@ -18,7 +18,7 @@
 angular.module('angularPoint')
     .factory('apDataService', function ($q, $timeout, $http, _, apQueueService, apConfig, apUtilityService,
                                         apCacheService, apDecodeService, apEncodeService, apFieldService,
-                                        apIndexedCacheFactory, toastr, SPServices,
+                                        apIndexedCacheFactory, toastr, SPServices, apDefaultListItemQueryOptions,
                                         apWebServiceOperationConstants, apXMLToJSONService) {
 
         /** Exposed functionality */
@@ -518,6 +518,7 @@ angular.module('angularPoint')
                 '   </Eq>' +
                 ' </Where>' +
                 '</Query>',
+                CAMLQueryOptions: apDefaultListItemQueryOptions,
                 /** Create a temporary cache to store response */
                 listName: model.list.getListId(),
                 target: apIndexedCacheFactory.create()

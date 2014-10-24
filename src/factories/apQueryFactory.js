@@ -11,7 +11,8 @@
  * @requires angularPoint.apConfig
  */
 angular.module('angularPoint')
-    .factory('apQueryFactory', function (_, apCacheService, apIndexedCacheFactory, apDataService, apConfig, $q) {
+    .factory('apQueryFactory', function (_, apCacheService, apIndexedCacheFactory, apDataService, apConfig, $q,
+                                         apDefaultListItemQueryOptions) {
 
 
         /**
@@ -102,13 +103,7 @@ angular.module('angularPoint')
                 '       <FieldRef Name="ID" Ascending="TRUE"/>' +
                 '   </OrderBy>' +
                 '</Query>',
-                queryOptions: '' +
-                '<QueryOptions>' +
-                '   <IncludeMandatoryColumns>FALSE</IncludeMandatoryColumns>' +
-                '   <IncludeAttachmentUrls>TRUE</IncludeAttachmentUrls>' +
-                '   <IncludeAttachmentVersion>FALSE</IncludeAttachmentVersion>' +
-                '   <ExpandUserField>FALSE</ExpandUserField>' +
-                '</QueryOptions>',
+                queryOptions: apDefaultListItemQueryOptions,
                 viewFields: model.list.viewFields
             };
 
@@ -120,21 +115,21 @@ angular.module('angularPoint')
             _.extend(query, defaults, config);
 
 
-            /** Key/Value mapping of SharePoint properties to SPServices properties */
-            var mapping = [
-                ['query', 'CAMLQuery'],
-                ['viewFields', 'CAMLViewFields'],
-                ['rowLimit', 'CAMLRowLimit'],
-                ['queryOptions', 'CAMLQueryOptions'],
-                ['listItemID', 'ID']
-            ];
-
-            _.each(mapping, function (map) {
-                if (query[map[0]] && !query[map[1]]) {
-                    /** Ensure SPServices properties are added in the event the true property name is used */
-                    query[map[1]] = query[map[0]];
-                }
-            });
+            ///** Key/Value mapping of SharePoint properties to SPServices properties */
+            //var mapping = [
+            //    ['query', 'CAMLQuery'],
+            //    ['viewFields', 'CAMLViewFields'],
+            //    ['rowLimit', 'CAMLRowLimit'],
+            //    ['queryOptions', 'CAMLQueryOptions'],
+            //    ['listItemID', 'ID']
+            //];
+            //
+            //_.each(mapping, function (map) {
+            //    if (query[map[0]] && !query[map[1]]) {
+            //        /** Ensure SPServices properties are added in the event the true property name is used */
+            //        query[map[1]] = query[map[0]];
+            //    }
+            //});
 
             /** Allow the model to be referenced at a later time */
             query.getModel = function () {

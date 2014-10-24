@@ -59,6 +59,20 @@ angular.module('angularPoint', [
         ]);
 
 })();
+;(function () {
+    'use strict';
+
+    angular
+        .module('angularPoint')
+        .constant('apDefaultListItemQueryOptions', '' +
+        '<QueryOptions>' +
+        '   <IncludeMandatoryColumns>FALSE</IncludeMandatoryColumns>' +
+        '   <IncludeAttachmentUrls>TRUE</IncludeAttachmentUrls>' +
+        '   <IncludeAttachmentVersion>FALSE</IncludeAttachmentVersion>' +
+        '   <ExpandUserField>FALSE</ExpandUserField>' +
+        '</QueryOptions>');
+
+})();
 ;//  apWebServiceOperationConstants.OpName = [WebService, needs_SOAPAction];
 //      OpName              The name of the Web Service operation -> These names are unique
 //      WebService          The name of the WebService this operation belongs to
@@ -838,9 +852,9 @@ angular.module('angularPoint')
  // *  @requires apFieldService
  */
 angular.module('angularPoint')
-    .factory('apDataService', ["$q", "$timeout", "$http", "_", "apQueueService", "apConfig", "apUtilityService", "apCacheService", "apDecodeService", "apEncodeService", "apFieldService", "apIndexedCacheFactory", "toastr", "SPServices", "apWebServiceOperationConstants", "apXMLToJSONService", function ($q, $timeout, $http, _, apQueueService, apConfig, apUtilityService,
+    .factory('apDataService', ["$q", "$timeout", "$http", "_", "apQueueService", "apConfig", "apUtilityService", "apCacheService", "apDecodeService", "apEncodeService", "apFieldService", "apIndexedCacheFactory", "toastr", "SPServices", "apDefaultListItemQueryOptions", "apWebServiceOperationConstants", "apXMLToJSONService", function ($q, $timeout, $http, _, apQueueService, apConfig, apUtilityService,
                                         apCacheService, apDecodeService, apEncodeService, apFieldService,
-                                        apIndexedCacheFactory, toastr, SPServices,
+                                        apIndexedCacheFactory, toastr, SPServices, apDefaultListItemQueryOptions,
                                         apWebServiceOperationConstants, apXMLToJSONService) {
 
         /** Exposed functionality */
@@ -1340,6 +1354,7 @@ angular.module('angularPoint')
                 '   </Eq>' +
                 ' </Where>' +
                 '</Query>',
+                CAMLQueryOptions: apDefaultListItemQueryOptions,
                 /** Create a temporary cache to store response */
                 listName: model.list.getListId(),
                 target: apIndexedCacheFactory.create()
@@ -3780,6 +3795,23 @@ angular.module('angularPoint')
         };
 
         function generateXMLComponents(options) {
+
+            /** Key/Value mapping of SharePoint properties to SPServices properties */
+            var mapping = [
+                ['query', 'CAMLQuery'],
+                ['viewFields', 'CAMLViewFields'],
+                ['rowLimit', 'CAMLRowLimit'],
+                ['queryOptions', 'CAMLQueryOptions'],
+                ['listItemID', 'ID']
+            ];
+
+            /** Ensure the SharePoint properties are available prior to extending with defaults */
+            _.each(mapping, function (map) {
+                if (options[map[0]] && !options[map[1]]) {
+                    /** Ensure SPServices properties are added in the event the true property name is used */
+                    options[map[1]] = options[map[0]];
+                }
+            });
 
             var soapEnvelope = new SOAPEnvelope();
             var SOAPAction;
@@ -8435,7 +8467,8 @@ angular.module('angularPoint')
  * @requires angularPoint.apConfig
  */
 angular.module('angularPoint')
-    .factory('apQueryFactory', ["_", "apCacheService", "apIndexedCacheFactory", "apDataService", "apConfig", "$q", function (_, apCacheService, apIndexedCacheFactory, apDataService, apConfig, $q) {
+    .factory('apQueryFactory', ["_", "apCacheService", "apIndexedCacheFactory", "apDataService", "apConfig", "$q", "apDefaultListItemQueryOptions", function (_, apCacheService, apIndexedCacheFactory, apDataService, apConfig, $q,
+                                         apDefaultListItemQueryOptions) {
 
 
         /**
@@ -8526,13 +8559,7 @@ angular.module('angularPoint')
                 '       <FieldRef Name="ID" Ascending="TRUE"/>' +
                 '   </OrderBy>' +
                 '</Query>',
-                queryOptions: '' +
-                '<QueryOptions>' +
-                '   <IncludeMandatoryColumns>FALSE</IncludeMandatoryColumns>' +
-                '   <IncludeAttachmentUrls>TRUE</IncludeAttachmentUrls>' +
-                '   <IncludeAttachmentVersion>FALSE</IncludeAttachmentVersion>' +
-                '   <ExpandUserField>FALSE</ExpandUserField>' +
-                '</QueryOptions>',
+                queryOptions: apDefaultListItemQueryOptions,
                 viewFields: model.list.viewFields
             };
 
@@ -8544,21 +8571,21 @@ angular.module('angularPoint')
             _.extend(query, defaults, config);
 
 
-            /** Key/Value mapping of SharePoint properties to SPServices properties */
-            var mapping = [
-                ['query', 'CAMLQuery'],
-                ['viewFields', 'CAMLViewFields'],
-                ['rowLimit', 'CAMLRowLimit'],
-                ['queryOptions', 'CAMLQueryOptions'],
-                ['listItemID', 'ID']
-            ];
-
-            _.each(mapping, function (map) {
-                if (query[map[0]] && !query[map[1]]) {
-                    /** Ensure SPServices properties are added in the event the true property name is used */
-                    query[map[1]] = query[map[0]];
-                }
-            });
+            ///** Key/Value mapping of SharePoint properties to SPServices properties */
+            //var mapping = [
+            //    ['query', 'CAMLQuery'],
+            //    ['viewFields', 'CAMLViewFields'],
+            //    ['rowLimit', 'CAMLRowLimit'],
+            //    ['queryOptions', 'CAMLQueryOptions'],
+            //    ['listItemID', 'ID']
+            //];
+            //
+            //_.each(mapping, function (map) {
+            //    if (query[map[0]] && !query[map[1]]) {
+            //        /** Ensure SPServices properties are added in the event the true property name is used */
+            //        query[map[1]] = query[map[0]];
+            //    }
+            //});
 
             /** Allow the model to be referenced at a later time */
             query.getModel = function () {
