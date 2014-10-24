@@ -2096,6 +2096,9 @@ angular.module('angularPoint')
             var colValue;
 
             switch (objectType) {
+                case 'Attachments':
+                    colValue = jsAttachments(unescapedValue);
+                    break;
                 case 'Boolean':
                     colValue = jsBoolean(unescapedValue);
                     break;
@@ -2144,6 +2147,53 @@ angular.module('angularPoint')
                     break;
             }
             return colValue;
+        }
+
+        function jsAttachments(s) {
+            /* Depending on CAMLQueryOptions Config an attachment can be formatted in 1 of the below 3 ways:
+             1. {number} The number of attachments for a given list item.
+             CAMLQueryOptions
+             <IncludeAttachmentUrls>FALSE</IncludeAttachmentUrls>
+             <IncludeAttachmentVersion>FALSE</IncludeAttachmentVersion>
+
+             Example
+             ows_Attachments="2"
+
+             2. {string}
+             CAMLQueryOptions
+             <IncludeAttachmentUrls>TRUE</IncludeAttachmentUrls>
+             <IncludeAttachmentVersion>FALSE</IncludeAttachmentVersion>
+
+             Format
+             ;#[ListUrl]/Attachments/[ListItemId]/[FileName];#
+
+             Example:
+             ows_Attachments=";#https://SharePointSite.com/Lists/Widgets/Attachments/4/DocumentName.xlsx;#"
+
+             //Todo Check to see if there is any value in this option
+             3. {string} NOTE: We don't currently handle this format.
+             CAMLQueryOptions
+             <IncludeAttachmentUrls>TRUE</IncludeAttachmentUrls>
+             <IncludeAttachmentVersion>TRUE</IncludeAttachmentVersion>
+
+             Format
+             ;#[ListUrl]/Attachments/[ListItemId]/[FileName];#[AttachmentGUID],[Version Number];#
+
+             Example:
+             ows_Attachments=";#https://SharePointSite.com/Lists/Widgets/Attachments/4/DocumentName.xlsx;#{4378D394-8601-480D-ABD0-0A0505E726FB},1;#"
+             */
+            if(!isNaN(s)) {
+                /** Value is a number current stored as a string */
+                var int = parseInt(s);
+                if(int > 0) {
+                    return int;
+                } else {
+                    return '';
+                }
+            } else {
+                /** Split into an array of attachment URLs */
+                return jsChoiceMulti(s);
+            }
         }
 
         function jsObject(s) {
@@ -3859,7 +3909,9 @@ angular.module('angularPoint')
                     addToPayload(opt, ["listName"]);
                     break;
                 case "GetListItems":
-                    addToPayload(opt, ["listName", "viewName", ["query", "CAMLQuery"],
+                    addToPayload(opt,
+                        ["listName", "viewName",
+                        ["query", "CAMLQuery"],
                         ["viewFields", "CAMLViewFields"],
                         ["rowLimit", "CAMLRowLimit"],
                         ["queryOptions", "CAMLQueryOptions"]
@@ -3869,17 +3921,21 @@ angular.module('angularPoint')
                     addToPayload(opt, ["listName", "viewFields", "since", "contains"]);
                     break;
                 case "GetListItemChangesSinceToken":
-                    addToPayload(opt, ["listName", "viewName", ["query", "CAMLQuery"],
-                        ["viewFields", "CAMLViewFields"],
-                        ["rowLimit", "CAMLRowLimit"],
-                        ["queryOptions", "CAMLQueryOptions"], {
-                            name: "changeToken",
-                            sendNull: false
-                        }, {
-                            name: "contains",
-                            sendNull: false
-                        }
-                    ]);
+                    addToPayload(opt,
+                        ["listName", "viewName",
+                            ["query", "CAMLQuery"],
+                            ["viewFields", "CAMLViewFields"],
+                            ["rowLimit", "CAMLRowLimit"],
+                            ["queryOptions", "CAMLQueryOptions"],
+                            {
+                                name: "changeToken",
+                                sendNull: false
+                            },
+                            {
+                                name: "contains",
+                                sendNull: false
+                            }
+                        ]);
                     break;
                 case "GetVersionCollection":
                     addToPayload(opt, ["strlistID", "strlistItemID", "strFieldName"]);

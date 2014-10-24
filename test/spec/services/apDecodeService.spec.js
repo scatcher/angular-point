@@ -20,6 +20,26 @@ describe("Factory: apDecodeService", function () {
 
 
     describe('parseStringValue', function () {
+        //Attachments
+        describe('Attachments', function () {
+            it('handles an item with no attachments', function () {
+                expect(service.parseStringValue('0', 'Attachments'))
+                    .toEqual('');
+            });
+            it('handles an item with an attachment count', function () {
+                expect(service.parseStringValue('2', 'Attachments'))
+                    .toEqual(2);
+            });
+            it('handles an item with an attachment url', function () {
+                expect(service.parseStringValue(';#https://SharePointSite.com/Lists/Widgets/Attachments/4/DocumentName.xlsx;#', 'Attachments'))
+                    .toEqual(['https://SharePointSite.com/Lists/Widgets/Attachments/4/DocumentName.xlsx']);
+            });
+            it('handles an item with an attachment with multiple attachment urls', function () {
+                expect(service.parseStringValue(';#https://SharePointSite.com/Lists/Widgets/Attachments/4/Document1.xlsx;#https://SharePointSite.com/Lists/Widgets/Attachments/4/Document2.xlsx;#', 'Attachments'))
+                    .toEqual(['https://SharePointSite.com/Lists/Widgets/Attachments/4/Document1.xlsx', 'https://SharePointSite.com/Lists/Widgets/Attachments/4/Document2.xlsx']);
+            });
+        });
+
         //Boolean
         describe('Boolean', function () {
             it('evaluates "1" as true', function () {

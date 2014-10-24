@@ -233,7 +233,9 @@ angular.module('angularPoint')
                     addToPayload(opt, ["listName"]);
                     break;
                 case "GetListItems":
-                    addToPayload(opt, ["listName", "viewName", ["query", "CAMLQuery"],
+                    addToPayload(opt,
+                        ["listName", "viewName",
+                        ["query", "CAMLQuery"],
                         ["viewFields", "CAMLViewFields"],
                         ["rowLimit", "CAMLRowLimit"],
                         ["queryOptions", "CAMLQueryOptions"]
@@ -243,17 +245,21 @@ angular.module('angularPoint')
                     addToPayload(opt, ["listName", "viewFields", "since", "contains"]);
                     break;
                 case "GetListItemChangesSinceToken":
-                    addToPayload(opt, ["listName", "viewName", ["query", "CAMLQuery"],
-                        ["viewFields", "CAMLViewFields"],
-                        ["rowLimit", "CAMLRowLimit"],
-                        ["queryOptions", "CAMLQueryOptions"], {
-                            name: "changeToken",
-                            sendNull: false
-                        }, {
-                            name: "contains",
-                            sendNull: false
-                        }
-                    ]);
+                    addToPayload(opt,
+                        ["listName", "viewName",
+                            ["query", "CAMLQuery"],
+                            ["viewFields", "CAMLViewFields"],
+                            ["rowLimit", "CAMLRowLimit"],
+                            ["queryOptions", "CAMLQueryOptions"],
+                            {
+                                name: "changeToken",
+                                sendNull: false
+                            },
+                            {
+                                name: "contains",
+                                sendNull: false
+                            }
+                        ]);
                     break;
                 case "GetVersionCollection":
                     addToPayload(opt, ["strlistID", "strlistItemID", "strFieldName"]);
