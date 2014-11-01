@@ -99,7 +99,8 @@ angular.module('angularPoint')
                     case 'Lookup':
                     case 'User':
                         if (value.lookupId) {
-                            str = value.lookupId + ';#' + value.lookupValue;
+                            /** Only include lookupValue if defined */
+                            str = value.lookupId + ';#' + (value.lookupValue || '');
                         }
                         break;
                     case 'LookupMulti':
@@ -200,7 +201,7 @@ angular.module('angularPoint')
             var valProp = valueProperty || 'lookupValue';
             _.each(multiSelectValue, function (lookupObject, iteration) {
                 /** Need to format string of id's in following format [ID0];#[VAL0];#[ID1];#[VAL1];# */
-                stringifiedValues += lookupObject[idProp] + ';#' + lookupObject[valProp];
+                stringifiedValues += lookupObject[idProp] + ';#' + (lookupObject[valProp] || '');
                 if (iteration < multiSelectValue.length) {
                     stringifiedValues += ';#';
                 }
