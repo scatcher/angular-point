@@ -527,6 +527,24 @@ NG_DOCS={
     },
     {
       "section": "api",
+      "id": "ListItem.getList",
+      "shortName": "ListItem.getList",
+      "type": "function",
+      "moduleName": "ListItem",
+      "shortDescription": "Allows us to reference the list definition directly from the list item.  This is added to the",
+      "keywords": "allows api apmodelfactory definition directly factory function getlist item list listitem model prototype reference"
+    },
+    {
+      "section": "api",
+      "id": "ListItem.getListId",
+      "shortName": "ListItem.getListId",
+      "type": "function",
+      "moduleName": "ListItem",
+      "shortDescription": "Allows us to reference the list ID directly from the list item.  This is added to the",
+      "keywords": "allows api apmodelfactory directly factory function getlistid item list listitem model prototype reference"
+    },
+    {
+      "section": "api",
       "id": "ListItem.getLookupReference",
       "shortName": "ListItem.getLookupReference",
       "type": "function",
