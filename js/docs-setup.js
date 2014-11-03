@@ -532,7 +532,7 @@ NG_DOCS={
       "type": "function",
       "moduleName": "ListItem",
       "shortDescription": "Allows us to reference the list definition directly from the list item.  This is added to the",
-      "keywords": "allows api apmodelfactory definition directly factory function getlist item list listitem model prototype reference"
+      "keywords": "allows api apmodelfactory definition directly documentation factory function getlist info item list listitem model prototype reference"
     },
     {
       "section": "api",
