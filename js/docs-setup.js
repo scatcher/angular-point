@@ -460,7 +460,7 @@ NG_DOCS={
       "type": "object",
       "moduleName": "ListItem",
       "shortDescription": "Base prototype which all list items inherit from.  All methods can be accessed through this prototype so all CRUD",
-      "keywords": "accessed allows api apmodelfactory base called crud directly factory function functionality inherit item items list listitem methods model object parent prototype reference"
+      "keywords": "accessed api base called crud directly functionality inherit item items list listitem methods object prototype"
     },
     {
       "section": "api",
@@ -533,6 +533,15 @@ NG_DOCS={
       "moduleName": "ListItem",
       "shortDescription": "Allows us to retrieve the entity being referenced in a given lookup field.",
       "keywords": "allows api building cache entity field fieldname function getlookupreference item iterating list listitem location logic lookup lookupid lookups lookupvalue multi-select object project property referenced references referencing retrieve title undefined var"
+    },
+    {
+      "section": "api",
+      "id": "ListItem.getModel",
+      "shortName": "ListItem.getModel",
+      "type": "function",
+      "moduleName": "ListItem",
+      "shortDescription": "Allows us to reference the parent model directly from the list item.  This is added to the",
+      "keywords": "allows api apmodelfactory directly factory function getmodel item list listitem model parent prototype reference"
     },
     {
       "section": "api",
