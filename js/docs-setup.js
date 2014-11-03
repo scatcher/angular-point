@@ -189,8 +189,8 @@ NG_DOCS={
       "shortName": "angularPoint.apXMLListAttributeTypes",
       "type": "object",
       "moduleName": "angularPoint",
-      "shortDescription": "Constant object map which contains many common XML attributes found on a field definition with their",
-      "keywords": "angularpoint api apxmllistattributetypes attributes common constant corresponding definition field map object type xml"
+      "shortDescription": "Constant object map which contains many common XML attributes found on a list definition with their",
+      "keywords": "angularpoint api apxmllistattributetypes attributes common constant corresponding definition list map object type xml"
     },
     {
       "section": "api",
@@ -198,8 +198,8 @@ NG_DOCS={
       "shortName": "angularPoint.apXMLListAttributeTypes",
       "type": "object",
       "moduleName": "angularPoint",
-      "shortDescription": "Constant object map which contains many common XML attributes found on a list definition with their",
-      "keywords": "angularpoint api apxmllistattributetypes attributes common constant corresponding definition list map object type xml"
+      "shortDescription": "Constant object map which contains many common XML attributes found on a field definition with their",
+      "keywords": "angularpoint api apxmllistattributetypes attributes common constant corresponding definition field map object type xml"
     },
     {
       "section": "api",
@@ -209,15 +209,6 @@ NG_DOCS={
       "moduleName": "angularPoint",
       "shortDescription": "This function converts an XML node set into an array of JS objects.",
       "keywords": "allow anderson angular angularpoint api apxmltojsonservice array codeplex converts essentially function js marc modular node objects service set spxmltojson testing wrapped xml"
-    },
-    {
-      "section": "api",
-      "id": "angularPoint.directive:apAttachments",
-      "shortName": "apAttachments",
-      "type": "directive",
-      "moduleName": "angularPoint",
-      "shortDescription": "Uses an iFrame to hijack the portions of the upload attachment form that we would like to show to the user. Adds",
-      "keywords": "adds allow angularpoint api attachment attachments callback complete data-ap-attachments data-change-event data-list-item delete directive disassociate display event fetchattachments form functionality hijack iframe item linked list listed listeners listitem opening portions provide queries resets span updated upload user verification view waits"
     },
     {
       "section": "api",
@@ -469,7 +460,7 @@ NG_DOCS={
       "type": "object",
       "moduleName": "ListItem",
       "shortDescription": "Base prototype which all list items inherit from.  All methods can be accessed through this prototype so all CRUD",
-      "keywords": "accessed api base called crud directly functionality inherit item items list listitem methods object prototype"
+      "keywords": "accessed allows api apmodelfactory base called crud directly factory function functionality inherit item items list listitem methods model object parent prototype reference"
     },
     {
       "section": "api",
