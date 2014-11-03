@@ -124,15 +124,15 @@ describe("Service: apDataService", function () {
         });
     });
 
-    describe('Function: getListItemById', function () {
-        it('returns a single list item', function () {
-            service.getListItemById(1, mockModel)
-                .then(function (response) {
-                    expect(response.id).toEqual(1);
-                });
-            $httpBackend.flush();
-        });
-    });
+    //describe('Function: getListItemById', function () {
+    //    it('returns a single list item', function () {
+    //        service.getListItemById(1, mockModel)
+    //            .then(function (response) {
+    //                expect(response.id).toEqual(1);
+    //            });
+    //        $httpBackend.flush();
+    //    });
+    //});
 
     describe('Function: getUserProfileByName', function () {
         it('returns a user profile object', function () {

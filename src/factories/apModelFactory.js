@@ -414,20 +414,48 @@ angular.module('angularPoint')
          * @example
          * <pre>
          * //Taken from a fictitious projectsModel.js
-         * projectModel.getListItemById().then(function(entity) {
+         * projectModel.getListItemById(12).then(function(entity) {
          *     //Do something with the located entity
          *     $scope.project = entity;
          * };
          * </pre>
          */
         function getListItemById(entityId, options) {
-            var model = this,
-                /** Only required option for apDataService is listName which is available on model */
-                defaults = {listName: model.list.getListId()},
-                opts = _.extend({}, defaults, options);
+            var deferred = $q.defer(),
+                model = this,
+                /** Unique Query Name */
+                queryKey = 'GetListItemById-' + entityId;
 
-            /** Fetch from the server */
-            return apDataService.getListItemById(entityId, model, opts);
+            /** Register a new Query if it doesn't already exist */
+            if (!model.getQuery(queryKey)) {
+                var defaults = {
+                    name: queryKey,
+                    operation: 'GetListItems',
+                    CAMLRowLimit: 1,
+                    CAMLQuery: '' +
+                    '<Query>' +
+                    ' <Where>' +
+                    '   <Eq>' +
+                    '     <FieldRef Name="ID"/>' +
+                    '     <Value Type="Number">' + entityId + '</Value>' +
+                    '   </Eq>' +
+                    ' </Where>' +
+                    '</Query>'
+                };
+                /** Allows us to override defaults */
+                var opts = _.extend({}, defaults, options);
+                model.registerQuery(opts);
+            }
+
+            model.executeQuery(queryKey)
+                .then(function (indexedCache) {
+                    /** Should return an indexed cache object with a single entity so just return the requested entity */
+                    deferred.resolve(indexedCache.first());
+                }, function (err) {
+                    deferred.reject(err);
+                });
+
+            return deferred.promise;
         }
 
         /**
@@ -962,22 +990,22 @@ angular.module('angularPoint')
 
 
         /**
-        * @ngdoc function
-        * @name Model.resolvePermissions
-        * @module Model
-        * @description
-        * See apModelFactory.resolvePermissions for details on what we expect to have returned.
-        * @returns {Object} Contains properties for each permission level evaluated for current user.
-        * @example
-        * Lets assume we're checking to see if a user has edit rights for a given list.
-        * <pre>
-        * var userPermissions = tasksModel.resolvePermissions();
-        * var userCanEdit = userPermissions.EditListItems;
-        * </pre>
-        * Example of what the returned object would look like
-        * for a site admin.
-        * <pre>
-        * perm = {
+         * @ngdoc function
+         * @name Model.resolvePermissions
+         * @module Model
+         * @description
+         * See apModelFactory.resolvePermissions for details on what we expect to have returned.
+         * @returns {Object} Contains properties for each permission level evaluated for current user.
+         * @example
+         * Lets assume we're checking to see if a user has edit rights for a given list.
+         * <pre>
+         * var userPermissions = tasksModel.resolvePermissions();
+         * var userCanEdit = userPermissions.EditListItems;
+         * </pre>
+         * Example of what the returned object would look like
+         * for a site admin.
+         * <pre>
+         * perm = {
         *    "ViewListItems":true,
         *    "AddListItems":true,
         *    "EditListItems":true,
@@ -1012,8 +1040,8 @@ angular.module('angularPoint')
         *    "EnumeratePermissions":true,
         *    "FullMask":true
         * }
-        * </pre>
-        */
+         * </pre>
+         */
         function resolvePermissions() {
             var model = this;
             if (model.list && model.list.effectivePermMask) {

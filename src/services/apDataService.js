@@ -35,7 +35,7 @@ angular.module('angularPoint')
             getGroupCollectionFromUser: getGroupCollectionFromUser,
             getList: getList,
             getListFields: getListFields,
-            getListItemById: getListItemById,
+            //getListItemById: getListItemById,
             getUserProfileByName: getUserProfileByName,
             //getView: getView,
             processChangeTokenXML: processChangeTokenXML,
@@ -492,49 +492,49 @@ angular.module('angularPoint')
             return deferred.promise;
         }
 
-        /**
-         * @ngdoc function
-         * @name apDataService.getListItemById
-         * @description
-         * Returns a single list item with the provided id.
-         * @param {number} entityId Id of the item being requested.
-         * @param {object} model Model this entity belongs to.
-         * @param {object} options Configuration parameters.
-         * @param {string} options.listName GUID of the list.
-         * @returns {object} Promise which resolves with the requested entity if found.
-         */
-        function getListItemById(entityId, model, options) {
-            var deferred = $q.defer();
-
-            var defaults = {
-                operation: 'GetListItems',
-                CAMLRowLimit: 1,
-                CAMLQuery: '' +
-                '<Query>' +
-                ' <Where>' +
-                '   <Eq>' +
-                '     <FieldRef Name="ID"/>' +
-                '     <Value Type="Number">' + entityId + '</Value>' +
-                '   </Eq>' +
-                ' </Where>' +
-                '</Query>',
-                CAMLQueryOptions: apDefaultListItemQueryOptions,
-                /** Create a temporary cache to store response */
-                listName: model.list.getListId(),
-                target: apIndexedCacheFactory.create()
-            };
-
-            var opts = _.extend({}, defaults, options);
-
-            serviceWrapper(opts).then(function (responseXML) {
-                var parsedEntities = apDecodeService.processListItems(model, null, responseXML, opts);
-
-                /** Should return an indexed object with a single entity so just return that entity */
-                deferred.resolve(parsedEntities.first());
-            });
-
-            return deferred.promise;
-        }
+        ///**
+        // * @ngdoc function
+        // * @name apDataService.getListItemById
+        // * @description
+        // * Returns a single list item with the provided id.
+        // * @param {number} entityId Id of the item being requested.
+        // * @param {object} model Model this entity belongs to.
+        // * @param {object} options Configuration parameters.
+        // * @param {string} options.listName GUID of the list.
+        // * @returns {object} Promise which resolves with the requested entity if found.
+        // */
+        //function getListItemById(entityId, model, options) {
+        //    var deferred = $q.defer();
+        //
+        //    var defaults = {
+        //        operation: 'GetListItems',
+        //        CAMLRowLimit: 1,
+        //        CAMLQuery: '' +
+        //        '<Query>' +
+        //        ' <Where>' +
+        //        '   <Eq>' +
+        //        '     <FieldRef Name="ID"/>' +
+        //        '     <Value Type="Number">' + entityId + '</Value>' +
+        //        '   </Eq>' +
+        //        ' </Where>' +
+        //        '</Query>',
+        //        CAMLQueryOptions: apDefaultListItemQueryOptions,
+        //        /** Create a temporary cache to store response */
+        //        listName: model.list.getListId(),
+        //        target: apIndexedCacheFactory.create()
+        //    };
+        //
+        //    var opts = _.extend({}, defaults, options);
+        //
+        //    serviceWrapper(opts).then(function (responseXML) {
+        //        var parsedEntities = apDecodeService.processListItems(model, null, responseXML, opts);
+        //
+        //        /** Should return an indexed object with a single entity so just return that entity */
+        //        deferred.resolve(parsedEntities.first());
+        //    });
+        //
+        //    return deferred.promise;
+        //}
 
         /**
          * @ngdoc function
