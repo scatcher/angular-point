@@ -527,12 +527,39 @@ NG_DOCS={
     },
     {
       "section": "api",
+      "id": "ListItem.getList",
+      "shortName": "ListItem.getList",
+      "type": "function",
+      "moduleName": "ListItem",
+      "shortDescription": "Allows us to reference the list definition directly from the list item.  This is added to the",
+      "keywords": "allows api apmodelfactory definition directly documentation factory function getlist info item list listitem model prototype reference"
+    },
+    {
+      "section": "api",
+      "id": "ListItem.getListId",
+      "shortName": "ListItem.getListId",
+      "type": "function",
+      "moduleName": "ListItem",
+      "shortDescription": "Allows us to reference the list ID directly from the list item.  This is added to the",
+      "keywords": "allows api apmodelfactory directly factory function getlistid item list listitem model prototype reference"
+    },
+    {
+      "section": "api",
       "id": "ListItem.getLookupReference",
       "shortName": "ListItem.getLookupReference",
       "type": "function",
       "moduleName": "ListItem",
       "shortDescription": "Allows us to retrieve the entity being referenced in a given lookup field.",
       "keywords": "allows api building cache entity field fieldname function getlookupreference item iterating list listitem location logic lookup lookupid lookups lookupvalue multi-select object project property referenced references referencing retrieve title undefined var"
+    },
+    {
+      "section": "api",
+      "id": "ListItem.getModel",
+      "shortName": "ListItem.getModel",
+      "type": "function",
+      "moduleName": "ListItem",
+      "shortDescription": "Allows us to reference the parent model directly from the list item.  This is added to the",
+      "keywords": "allows api apmodelfactory directly documentation factory function getmodel info item list listitem model parent prototype reference"
     },
     {
       "section": "api",

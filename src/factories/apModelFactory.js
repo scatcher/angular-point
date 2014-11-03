@@ -135,12 +135,44 @@ angular.module('angularPoint')
 
             /** Set the constructor's prototype to inherit from ListItem so we can inherit functionality */
             model.factory.prototype = apListItemFactory.create();
+
             /** Constructor for ListItem is Object so ensure we update to properly reference ListItem */
             model.factory.constructor = apListItemFactory.ListItem;
 
-            /** Make the model directly accessible from the list item */
+            /**
+             * @ngdoc function
+             * @name ListItem.getModel
+             * @description
+             * Allows us to reference the parent model directly from the list item.  This is added to the
+             * model.factory prototype in apModelFactory.  See the [List](#/api/List) documentation for more info.
+             * @returns {object} Model for the list item.
+             */
             model.factory.prototype.getModel = function () {
                 return model;
+            };
+
+            /**
+             * @ngdoc function
+             * @name ListItem.getList
+             * @description
+             * Allows us to reference the list definition directly from the list item.  This is added to the
+             * model.factory prototype in apModelFactory.  See the [List](#/api/List) documentation for more info.
+             * @returns {object} List for the list item.
+             */
+            model.factory.prototype.getList = function () {
+                return model.list;
+            };
+
+            /**
+             * @ngdoc function
+             * @name ListItem.getListId
+             * @description
+             * Allows us to reference the list ID directly from the list item.  This is added to the
+             * model.factory prototype in apModelFactory.
+             * @returns {string} List ID.
+             */
+            model.factory.prototype.getList = function () {
+                return model.list.getListId();
             };
 
             /** Register cache name with cache service so we can map factory name with list GUID */
