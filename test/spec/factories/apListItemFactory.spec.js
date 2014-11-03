@@ -78,7 +78,8 @@ describe("Factory: apListItemFactory", function () {
 
         it('returns a stringified json date with params', function () {
             expect(mockListItem.getFormattedValue('date', {dateFormat: 'json'}))
-                .toEqual('2014-08-19T' + utils.getTimezoneOffsetString() + ':00.000Z');
+                .toEqual('2014-08-19T07:00:00.000Z');
+                //.toEqual('2014-08-19T' + utils.getTimezoneOffsetString() + ':00.000Z');
         });
     });
 
