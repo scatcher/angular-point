@@ -347,15 +347,6 @@ NG_DOCS={
     },
     {
       "section": "api",
-      "id": "apDataService.getListItemById",
-      "shortName": "apDataService.getListItemById",
-      "type": "function",
-      "moduleName": "apDataService",
-      "shortDescription": "Returns a single list item with the provided id.",
-      "keywords": "apdataservice api belongs configuration entity entityid function getlistitembyid guid item list listname model options parameters promise provided requested resolves returns single"
-    },
-    {
-      "section": "api",
       "id": "apDataService.getUserProfile",
       "shortName": "apDataService.getUserProfile",
       "type": "function",
