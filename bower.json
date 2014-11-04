@@ -11,7 +11,7 @@
   "main": "./dist/angular-point.min.js",
   "dependencies": {
     "angular": "~1.2.23",
-    "angular-toastr": "^0.4.0",
+    "angular-toastr": "^0.5.1",
     "jquery": "~1.11",
     "lodash": "^2.4.1",
     "lodash-deep": "^1.4.2"
