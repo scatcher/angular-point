@@ -3,6 +3,11 @@
 angular.module('angularPoint')
     .run(function (_, $httpBackend, apCachedXML, apCacheService, apWebServiceService, apUtilityService, apEncodeService) {
 
+        var mockId = 10000;
+        function getMockId() {
+            return mockId++;
+        }
+
         /** Listen for each of the standard services being called and try to return a cached XML response for the
          * operation */
         _.each(apWebServiceService.webServices, function (service) {
@@ -153,9 +158,8 @@ angular.module('angularPoint')
                     var model = getListModel(request);
                     /** Need to create an id so find set it 1 higher than the id of the most recent entity */
                     var lastEntity = model.getCachedEntities().last();
-                    if(lastEntity) {
-                        zrow = convertUpdateRequestToResponse(request, {ID: lastEntity.id + 1});
-                    }
+                    var mockId = lastEntity ? lastEntity.id + 1 : getMockId();
+                    zrow = convertUpdateRequestToResponse(request, {ID: mockId});
                     registerUpdate(request, zrow);
                     break;
                 case 'Update':
