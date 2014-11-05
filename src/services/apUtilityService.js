@@ -433,15 +433,13 @@ angular.module('angularPoint')
         }
 
         function xmlToString(xmlData) {
-
             var xmlString;
-            //IE
-            if (window.ActiveXObject){
-                xmlString = xmlData.xml;
-            }
-            // code for Mozilla, Firefox, Opera, etc.
-            else{
+            if(typeof XMLSerializer !== 'undefined') {
+                /** Modern Browsers */
                 xmlString = (new XMLSerializer()).serializeToString(xmlData);
+            } else {
+                /** Old versions of IE */
+                xmlString = xmlData.xml;
             }
             return xmlString;
         }
