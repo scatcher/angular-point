@@ -46,48 +46,103 @@ angular.module('angularPoint')
             return getMockData(this.objectType, options);
         };
 
-        /** Field types used on the models to create a field definition */
-        var fieldTypes = {
-            Text: {defaultValue: '', staticMock: 'Test String', dynamicMock: randomString},
-            Note: {defaultValue: '', staticMock: 'This is a sentence.', dynamicMock: randomParagraph},
-            Boolean: {defaultValue: null, staticMock: true, dynamicMock: randomBoolean},
-            Calculated: {defaultValue: null, staticMock: 'float;#123.45', dynamicMock: randomCalc},
-            Choice: {defaultValue: '', staticMock: 'My Choice', dynamicMock: randomString},
-            Counter: {defaultValue: null, staticMock: getUniqueCounter(), dynamicMock: getUniqueCounter},
-            Currency: {defaultValue: null, staticMock: 120.50, dynamicMock: randomCurrency},
-            DateTime: {defaultValue: null, staticMock: new Date(2014, 5, 4, 11, 33, 25), dynamicMock: randomDate},
-            Integer: {defaultValue: null, staticMock: 14, dynamicMock: randomInteger},
-            JSON: {
-                defaultValue: '', staticMock: [
-                    {id: 1, title: 'test'},
-                    {id: 2}
-                ], dynamicMock: randomString
-            },
-            Lookup: {
-                defaultValue: '',
-                staticMock: {lookupId: 49, lookupValue: 'Static Lookup'},
-                dynamicMock: randomLookup
-            },
-            LookupMulti: {
-                defaultValue: [], staticMock: [
-                    {lookupId: 50, lookupValue: 'Static Multi 1'},
-                    {lookupId: 51, lookupValue: 'Static Multi 2'}
-                ], dynamicMock: randomLookupMulti
-            },
-            Mask: {defaultValue: mockPermMask(), staticMock: mockPermMask(), dynamicMock: mockPermMask},
-            MultiChoice: {
-                defaultValue: [],
-                staticMock: ['A Good Choice', 'A Bad Choice'],
-                dynamicMock: randomStringArray
-            },
-            User: {defaultValue: '', staticMock: {lookupId: 52, lookupValue: 'Static User'}, dynamicMock: randomUser},
-            UserMulti: {
-                defaultValue: [], staticMock: [
-                    {lookupId: 53, lookupValue: 'Static User 1'},
-                    {lookupId: 54, lookupValue: 'Static User 2'}
-                ], dynamicMock: randomUserMulti
-            }
-        };
+        /** Store as a function to ensure we instantiate new objects for default values instead
+         *  of having all blank field that have an array for a default value share the same array */
+        function getFieldTypes() {
+            /** Field types used on the models to create a field definition */
+            return {
+                Text: {
+                    defaultValue: '',
+                    staticMock: 'Test String',
+                    dynamicMock: randomString
+                },
+                Note: {
+                    defaultValue: '',
+                    staticMock: 'This is a sentence.',
+                    dynamicMock: randomParagraph
+                },
+                Boolean: {
+                    defaultValue: null,
+                    staticMock: true,
+                    dynamicMock: randomBoolean
+                },
+                Calculated: {
+                    defaultValue: null,
+                    staticMock: 'float;#123.45',
+                    dynamicMock: randomCalc
+                },
+                Choice: {
+                    defaultValue: '',
+                    staticMock: 'My Choice',
+                    dynamicMock: randomString
+                },
+                Counter: {
+                    defaultValue: null,
+                    staticMock: getUniqueCounter(),
+                    dynamicMock: getUniqueCounter
+                },
+                Currency: {
+                    defaultValue: null,
+                    staticMock: 120.50,
+                    dynamicMock: randomCurrency
+                },
+                DateTime: {
+                    defaultValue: null,
+                    staticMock: new Date(2014, 5, 4, 11, 33, 25),
+                    dynamicMock: randomDate
+                },
+                Integer: {
+                    defaultValue: null,
+                    staticMock: 14,
+                    dynamicMock: randomInteger
+                },
+                JSON: {
+                    defaultValue: '',
+                    staticMock: [
+                        {id: 1, title: 'test'},
+                        {id: 2}
+                    ],
+                    dynamicMock: randomString
+                },
+                Lookup: {
+                    defaultValue: '',
+                    staticMock: {lookupId: 49, lookupValue: 'Static Lookup'},
+                    dynamicMock: randomLookup
+                },
+                LookupMulti: {
+                    defaultValue: [],
+                    staticMock: [
+                        {lookupId: 50, lookupValue: 'Static Multi 1'},
+                        {lookupId: 51, lookupValue: 'Static Multi 2'}
+                    ],
+                    dynamicMock: randomLookupMulti
+                },
+                Mask: {
+                    defaultValue: mockPermMask(),
+                    staticMock: mockPermMask(),
+                    dynamicMock: mockPermMask
+                },
+                MultiChoice: {
+                    defaultValue: [],
+                    staticMock: ['A Good Choice', 'A Bad Choice'],
+                    dynamicMock: randomStringArray
+                },
+                User: {
+                    defaultValue: '',
+                    staticMock: {lookupId: 52, lookupValue: 'Static User'},
+                    dynamicMock: randomUser
+                },
+                UserMulti: {
+                    defaultValue: [],
+                    staticMock: [
+                        {lookupId: 53, lookupValue: 'Static User 1'},
+                        {lookupId: 54, lookupValue: 'Static User 2'}
+                    ],
+                    dynamicMock: randomUserMulti
+                }
+            };
+        }
+
 
         return {
             extendFieldDefinitions: extendFieldDefinitions,
@@ -99,10 +154,9 @@ angular.module('angularPoint')
         };
 
 
-
         /**=================PRIVATE===================*/
 
-        function getUniqueCounter () {
+        function getUniqueCounter() {
             uniqueCount++;
             return uniqueCount;
         }
@@ -241,6 +295,7 @@ angular.module('angularPoint')
          * @returns {object} fieldTypeDefinition
          */
         function getDefinition(fieldType) {
+            var fieldTypes = getFieldTypes();
             return fieldTypes[fieldType] ? fieldTypes[fieldType] : fieldTypes['Text'];
         }
 
@@ -254,7 +309,9 @@ angular.module('angularPoint')
          * @returns {*} Default value based on field type.
          */
         function getDefaultValueForType(fieldType) {
-            var fieldDefinition = getDefinition(fieldType), defaultValue;
+            var fieldDefinition = getDefinition(fieldType),
+                defaultValue;
+
             if (fieldDefinition) {
                 defaultValue = fieldDefinition.defaultValue;
             }
@@ -335,9 +392,6 @@ angular.module('angularPoint')
             /** Close viewFields */
             list.viewFields += '</ViewFields>';
         }
-
-
-
 
 
     });
