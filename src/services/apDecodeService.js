@@ -400,8 +400,16 @@ angular.module('angularPoint')
         }
 
         function jsDate(s) {
-            /** Replace dashes with slashes and the "T" deliminator with a space if found */
-            return new Date(s.replace(/-/g, '/').replace(/Z/i, '').replace(/T/i, ' '));
+            if(!s) {
+                return null;
+            } else {
+                /** Replace dashes with slashes and the "T" deliminator with a space if found */
+                var dt = s.split("T")[0] !== s ? s.split("T") : s.split(" ");
+                var d = dt[0].split("-");
+                var t = dt[1].split(":");
+                var t3 = t[2].split("Z");
+                return new Date(d[0], (d[1] - 1), d[2], t[0], t[1], t3[0]);
+            }
         }
 
         function jsUser(s) {
