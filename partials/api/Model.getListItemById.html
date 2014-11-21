@@ -16,7 +16,7 @@ Attempts to retrieve the requested list item from the server.</p>
 <h2 id="example">Example</h2>
 <div class="example"><div class="model-getlistitembyid-page"><pre class="prettyprint linenums">
 //Taken from a fictitious projectsModel.js
-projectModel.getListItemById().then(function(entity) {
+projectModel.getListItemById(12).then(function(entity) {
     //Do something with the located entity
     $scope.project = entity;
 };

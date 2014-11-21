@@ -347,15 +347,6 @@ NG_DOCS={
     },
     {
       "section": "api",
-      "id": "apDataService.getListItemById",
-      "shortName": "apDataService.getListItemById",
-      "type": "function",
-      "moduleName": "apDataService",
-      "shortDescription": "Returns a single list item with the provided id.",
-      "keywords": "apdataservice api belongs configuration entity entityid function getlistitembyid guid item list listname model options parameters promise provided requested resolves returns single"
-    },
-    {
-      "section": "api",
       "id": "apDataService.getUserProfile",
       "shortName": "apDataService.getUserProfile",
       "type": "function",
@@ -500,12 +491,39 @@ NG_DOCS={
     },
     {
       "section": "api",
+      "id": "ListItem.getFieldChoices",
+      "shortName": "ListItem.getFieldChoices",
+      "type": "function",
+      "moduleName": "ListItem",
+      "shortDescription": "Uses the field definition defined in the model to attempt to find the choices array for a given Lookup or",
+      "keywords": "api array attempt check choice choices default defined definition empty extendlistmetadata field fielddefinition fieldname finally find function getfieldchoices getlistitemssincetoken internal isn listitem lookup model multichoice multilookup operation optionally populated return type"
+    },
+    {
+      "section": "api",
       "id": "ListItem.getFieldDefinition",
       "shortName": "ListItem.getFieldDefinition",
       "type": "function",
       "moduleName": "ListItem",
       "shortDescription": "Returns the field definition from the definitions defined in the custom fields array within a model.",
       "keywords": "api array building custom defined definition definitions field fieldname fields function getfielddefinition internal listitem location locationdefinition lookupid lookupvalue metadata model project returns title var"
+    },
+    {
+      "section": "api",
+      "id": "ListItem.getFieldDescription",
+      "shortName": "ListItem.getFieldDescription",
+      "type": "function",
+      "moduleName": "ListItem",
+      "shortDescription": "Uses the field definition defined in the model to attempt to find the description for a given field.  The default",
+      "keywords": "api attempt attribute default defined definition description empty extendlistmetadata field fielddefinition fieldname finally find function getfielddescription getlistitemssincetoken internal isn listitem model object operation optional populated returns string"
+    },
+    {
+      "section": "api",
+      "id": "ListItem.getFieldLabel",
+      "shortName": "ListItem.getFieldLabel",
+      "type": "function",
+      "moduleName": "ListItem",
+      "shortDescription": "Uses the field definition defined in the model to attempt to find the label for a given field.  The default",
+      "keywords": "api aputilityservice attempt best caml case converting default defined definition displayname extendlistmetadata fallback field fielddefinition fieldname find fromcamelcase function getfieldlabel getlistitemssincetoken guess internal isn label listitem mapped model object operation populated version"
     },
     {
       "section": "api",
@@ -559,7 +577,7 @@ NG_DOCS={
       "type": "function",
       "moduleName": "ListItem",
       "shortDescription": "Allows us to reference the parent model directly from the list item.  This is added to the",
-      "keywords": "allows api apmodelfactory directly factory function getmodel item list listitem model parent prototype reference"
+      "keywords": "allows api apmodelfactory directly documentation factory function getmodel info item list listitem model parent prototype reference"
     },
     {
       "section": "api",
