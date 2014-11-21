@@ -36,7 +36,10 @@ angular.module('angularPoint')
             deleteItem: deleteItem,
             getAttachmentCollection: getAttachmentCollection,
             getAvailableWorkflows: getAvailableWorkflows,
+            getFieldChoices: getFieldChoices,
             getFieldDefinition: getFieldDefinition,
+            getFieldDescription: getFieldDescription,
+            getFieldLabel: getFieldLabel,
             getFieldVersionHistory: getFieldVersionHistory,
             getFormattedValue: getFormattedValue,
             getLookupReference: getLookupReference,
@@ -298,6 +301,59 @@ angular.module('angularPoint')
         function getFieldDefinition(fieldName) {
             var listItem = this;
             return listItem.getModel().getFieldDefinition(fieldName);
+        }
+
+        /**
+         * @ngdoc function
+         * @name ListItem.getFieldLabel
+         * @param {string} fieldName Internal field name.
+         * @description
+         * Uses the field definition defined in the model to attempt to find the label for a given field.  The default
+         * value is fieldDefinition.label.  If not available it will then use fieldDefinition.DisplayName which is
+         * populated after a GetListItemsSinceToken operation or a Model.extendListMetadata operation.  If this isn't
+         * available it will fallback to the the fieldDefinition.DisplayName which is a best guess at converting the
+         * caml case version of the mapped name using apUtilityService.fromCamelCase.
+         * @returns {string} The label for a given field object.
+         */
+        function getFieldLabel(fieldName) {
+            var listItem = this;
+            var fieldDefinition = listItem.getFieldDefinition(fieldName);
+            return fieldDefinition.label || fieldDefinition.DisplayName || fieldDefinition.displayName;
+        }
+
+        /**
+         * @ngdoc function
+         * @name ListItem.getFieldDescription
+         * @param {string} fieldName Internal field name.
+         * @description
+         * Uses the field definition defined in the model to attempt to find the description for a given field.  The default
+         * value is fieldDefinition.Description which is populated after a GetListItemsSinceToken operation or a
+         * Model.extendListMetadata operation.  If this isn't available we look for an optional attribute of a field
+         * fieldDefinition.description.  Finally if that have anything it returns an empty string.
+         * @returns {string} The description for a given field object.
+         */
+        function getFieldDescription(fieldName) {
+            var listItem = this;
+            var fieldDefinition = listItem.getFieldDefinition(fieldName);
+            return fieldDefinition.description || fieldDefinition.Description || '';
+        }
+
+        /**
+         * @ngdoc function
+         * @name ListItem.getFieldChoices
+         * @param {string} fieldName Internal field name.
+         * @description
+         * Uses the field definition defined in the model to attempt to find the choices array for a given Lookup or
+         * MultiLookup type field.  The default value is fieldDefinition.choices which can optionally be added to a
+         * given field definition.  If this isn't found, we check fieldDefinition.Choices which is populated after a
+         * GetListItemsSinceToken operation or a Model.extendListMetadata operation.  Finally if that isn't available
+         * we return an empty array.
+         * @returns {string[]} An array of choices for a Choice or MultiChoice type field.
+         */
+        function getFieldChoices(fieldName) {
+            var listItem = this;
+            var fieldDefinition = listItem.getFieldDefinition(fieldName);
+            return fieldDefinition.choices || fieldDefinition.Choices || [];
         }
 
 

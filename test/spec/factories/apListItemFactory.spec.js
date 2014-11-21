@@ -65,6 +65,65 @@ describe("Factory: apListItemFactory", function () {
 
     });
 
+    describe('Method: getFieldLabel', function () {
+        it('defaults to title case.', function () {
+            expect(mockListItem.getFieldLabel('dateTime')).toEqual('DateTime');
+        });
+        it('uses the DisplayName from the server if available', function () {
+            var fieldDefinition = mockListItem.getFieldDefinition('dateTime');
+            fieldDefinition.DisplayName = 'My Date Field';
+            expect(mockListItem.getFieldLabel('dateTime')).toEqual('My Date Field');
+        });
+        it('uses the label attribute to override anything else', function () {
+            var fieldDefinition = mockListItem.getFieldDefinition('dateTime');
+            fieldDefinition.DisplayName = 'My Date Field';
+            fieldDefinition.label = 'My Manually Set Field Label';
+            expect(mockListItem.getFieldLabel('dateTime')).toEqual('My Manually Set Field Label');
+        });
+
+    });
+
+    describe('Method: getFieldDescription', function () {
+        it('defaults to an empty string', function () {
+            expect(mockListItem.getFieldDescription('title')).toEqual('');
+        });
+        it('uses the Description from the server if available', function () {
+            var fieldDefinition = mockListItem.getFieldDefinition('title');
+            fieldDefinition.Description = 'My server description.';
+            expect(mockListItem.getFieldDescription('title')).toEqual('My server description.');
+        });
+        it('uses the description attribute to override anything else', function () {
+            var fieldDefinition = mockListItem.getFieldDefinition('title');
+            fieldDefinition.Description = 'My Title Field';
+            fieldDefinition.description = 'My Manually Set Title Label';
+            expect(mockListItem.getFieldDescription('title')).toEqual('My Manually Set Title Label');
+        });
+
+    });
+
+    describe('Method: getFieldChoices', function () {
+        var fakeDefinition = {
+            Choices: ['one', 'two', 'three'],
+            choices: ['four', 'five']
+        };
+        it('defaults to an empty array', function () {
+            var fieldDefinition = mockListItem.getFieldDefinition('choice');
+            delete fieldDefinition.Choices;
+            expect(mockListItem.getFieldChoices('choice')).toEqual([]);
+        });
+        it('uses the Choices from the server if available', function () {
+            var fieldDefinition = mockListItem.getFieldDefinition('choice');
+            fieldDefinition.Choices = fakeDefinition.Choices;
+            expect(mockListItem.getFieldChoices('choice')).toEqual(fakeDefinition.Choices);
+        });
+        it('uses the choices attribute to override anything else', function () {
+            var fieldDefinition = mockListItem.getFieldDefinition('choice');
+            fieldDefinition.choices = fakeDefinition.choices;
+            fieldDefinition.Choices = fakeDefinition.Choices;
+            expect(mockListItem.getFieldChoices('choice')).toEqual(fakeDefinition.choices);
+        });
+    });
+
     describe('Method: getFormattedValue', function () {
         it('throws an error if the provided field name isn\'t valid', function () {
             expect(function () {
