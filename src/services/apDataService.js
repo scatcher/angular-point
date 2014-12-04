@@ -10,13 +10,12 @@
  * [SPServices](http://spservices.codeplex.com/documentation) documentation.
  *
  *
- // *  @requires apQueueService
  // *  @requires apConfig
  // *  @requires apUtilityService
  // *  @requires apFieldService
  */
 angular.module('angularPoint')
-    .factory('apDataService', function ($q, $timeout, $http, _, apQueueService, apConfig, apUtilityService,
+    .factory('apDataService', function ($q, $timeout, $http, _, apConfig, apUtilityService,
                                         apCacheService, apDecodeService, apEncodeService, apFieldService,
                                         apIndexedCacheFactory, toastr, SPServices, apDefaultListItemQueryOptions,
                                         apWebServiceOperationConstants, apXMLToJSONService) {
@@ -147,19 +146,14 @@ angular.module('angularPoint')
                 }
             }
 
-            /** Display any async animations listening */
-            apQueueService.increase();
-
             apDataService.requestData(opts)
                 .then(function (response) {
                     /** Failure */
                     var data = opts.postProcess(response);
-                    apQueueService.decrease();
                     deferred.resolve(data);
                 }, function (response) {
                     /** Failure */
                     toastr.error('Failed to complete the requested ' + opts.operation + ' operation.');
-                    apQueueService.decrease();
                     deferred.reject(response);
                 });
 

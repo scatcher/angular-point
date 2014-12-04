@@ -46,7 +46,7 @@ NG_DOCS={
       "type": "service",
       "moduleName": "angularPoint",
       "shortDescription": "Handles all interaction with SharePoint&#39;s SOAP web services.  Mostly a wrapper for SPServices functionality.",
-      "keywords": "additional anderson angularpoint apconfig apdataservice apfieldservice api apqueueservice aputilityservice calls codeplex documentation functionality handles interaction marc service services sharepoint soap spservices web wrapper"
+      "keywords": "additional anderson angularpoint apconfig apdataservice apfieldservice api aputilityservice calls codeplex documentation functionality handles interaction marc service services sharepoint soap spservices web wrapper"
     },
     {
       "section": "api",
@@ -55,7 +55,7 @@ NG_DOCS={
       "type": "service",
       "moduleName": "angularPoint",
       "shortDescription": "Processes the XML received from SharePoint and converts it into JavaScript objects based on predefined field types.",
-      "keywords": "additional allow allows anderson angularpoint apcacheservice apconfig apdecodeservice api apqueueservice aputilityservice array attributes attributetypes based batch build cached call camlcase capital change checks child code codeplex coming configuration constructors container conversions convert converts copies correctly corresponding customfields data define defined definition definitions directly don element elements empty entities entity error errors errorstring exists extend extended extends factory fetch field fielddefinition fielddefinitions fields filter find formatted function future getcache getlistitems includeallattrs incredible indexedcache info initial instantiated instantiates item items iterate javascript js keeping key large leading letter list listitemprovider lists ll location majority mappedname mapping marc metadata minor model modified needed newly node note null object objects objecttype optional optionally options opts ows_ parent parse parsed pass post predefined prevent processed processes processing project promise properties property propertyname provided push pushing query received reference references registers removeows representation representing requesting resolved resolves response responsexml responsible retrieve return returned returning returns rows scope server service set sharepoint simple slowdowns spservices spxmltojson start stored str string stripped takes target text throw true tweaking type typed types typically ui update updating val values version versions web webservice work xhr xml xmlentities xmlentity xmlobject"
+      "keywords": "additional allow allows anderson angularpoint apcacheservice apconfig apdecodeservice api aputilityservice array attributes attributetypes based batch build cached call camlcase capital change checks child code codeplex coming configuration constructors container conversions convert converts copies correctly corresponding customfields data define defined definition definitions directly don element elements empty entities entity error errors errorstring exists extend extended extends factory fetch field fielddefinition fielddefinitions fields filter find formatted function future getcache getlistitems includeallattrs incredible indexedcache info initial instantiated instantiates item items iterate javascript js keeping key large leading letter list listitemprovider lists ll location majority mappedname mapping marc metadata minor model modified needed newly node note null object objects objecttype optional optionally options opts ows_ parent parse parsed pass post predefined prevent processed processes processing project promise properties property propertyname provided push pushing query received reference references registers removeows representation representing requesting resolved resolves response responsexml responsible retrieve return returned returning returns rows scope server service set sharepoint simple slowdowns spservices spxmltojson start stored str string stripped takes target text throw true tweaking type typed types typically ui update updating val values version versions web webservice work xhr xml xmlentities xmlentity xmlobject"
     },
     {
       "section": "api",
@@ -146,15 +146,6 @@ NG_DOCS={
       "moduleName": "angularPoint",
       "shortDescription": "Exposes the Query prototype and a constructor to instantiate a new Query.",
       "keywords": "angularpoint apcacheservice apconfig apdataservice api apqueryfactory config exposes function instantiate instantiates model object options prototype query reference returns"
-    },
-    {
-      "section": "api",
-      "id": "angularPoint.apQueueService",
-      "shortName": "angularPoint.apQueueService",
-      "type": "service",
-      "moduleName": "angularPoint",
-      "shortDescription": "Simple service to monitor the number of active requests we have open with SharePoint",
-      "keywords": "active angularpoint animation api apqueueservice call callback change count current decrease decrementing display function increase incrementing loading monitor number observer open register requests reset service sharepoint simple sort typical"
     },
     {
       "section": "api",

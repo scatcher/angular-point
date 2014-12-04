@@ -7,12 +7,11 @@
  * Processes the XML received from SharePoint and converts it into JavaScript objects based on predefined field types.
  *
  * @requires angularPoint.apUtilityService
- * @requires angularPoint.apQueueService
  * @requires angularPoint.apConfig
  * @requires angularPoint.apCacheService
  */
 angular.module('angularPoint')
-    .factory('apDecodeService', function ($q, _, apUtilityService, apQueueService, apConfig, apCacheService,
+    .factory('apDecodeService', function ($q, _, apUtilityService, apConfig, apCacheService,
                                           apLookupFactory, apUserFactory, apFieldService, apXMLListAttributeTypes,
                                           apXMLFieldAttributeTypes) {
 

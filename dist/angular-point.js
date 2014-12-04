@@ -846,13 +846,12 @@ angular.module('angularPoint')
  * [SPServices](http://spservices.codeplex.com/documentation) documentation.
  *
  *
- // *  @requires apQueueService
  // *  @requires apConfig
  // *  @requires apUtilityService
  // *  @requires apFieldService
  */
 angular.module('angularPoint')
-    .factory('apDataService', ["$q", "$timeout", "$http", "_", "apQueueService", "apConfig", "apUtilityService", "apCacheService", "apDecodeService", "apEncodeService", "apFieldService", "apIndexedCacheFactory", "toastr", "SPServices", "apDefaultListItemQueryOptions", "apWebServiceOperationConstants", "apXMLToJSONService", function ($q, $timeout, $http, _, apQueueService, apConfig, apUtilityService,
+    .factory('apDataService', ["$q", "$timeout", "$http", "_", "apConfig", "apUtilityService", "apCacheService", "apDecodeService", "apEncodeService", "apFieldService", "apIndexedCacheFactory", "toastr", "SPServices", "apDefaultListItemQueryOptions", "apWebServiceOperationConstants", "apXMLToJSONService", function ($q, $timeout, $http, _, apConfig, apUtilityService,
                                         apCacheService, apDecodeService, apEncodeService, apFieldService,
                                         apIndexedCacheFactory, toastr, SPServices, apDefaultListItemQueryOptions,
                                         apWebServiceOperationConstants, apXMLToJSONService) {
@@ -983,19 +982,14 @@ angular.module('angularPoint')
                 }
             }
 
-            /** Display any async animations listening */
-            apQueueService.increase();
-
             apDataService.requestData(opts)
                 .then(function (response) {
                     /** Failure */
                     var data = opts.postProcess(response);
-                    apQueueService.decrease();
                     deferred.resolve(data);
                 }, function (response) {
                     /** Failure */
                     toastr.error('Failed to complete the requested ' + opts.operation + ' operation.');
-                    apQueueService.decrease();
                     deferred.reject(response);
                 });
 
@@ -1860,12 +1854,11 @@ angular.module('angularPoint')
  * Processes the XML received from SharePoint and converts it into JavaScript objects based on predefined field types.
  *
  * @requires angularPoint.apUtilityService
- * @requires angularPoint.apQueueService
  * @requires angularPoint.apConfig
  * @requires angularPoint.apCacheService
  */
 angular.module('angularPoint')
-    .factory('apDecodeService', ["$q", "_", "apUtilityService", "apQueueService", "apConfig", "apCacheService", "apLookupFactory", "apUserFactory", "apFieldService", "apXMLListAttributeTypes", "apXMLFieldAttributeTypes", function ($q, _, apUtilityService, apQueueService, apConfig, apCacheService,
+    .factory('apDecodeService', ["$q", "_", "apUtilityService", "apConfig", "apCacheService", "apLookupFactory", "apUserFactory", "apFieldService", "apXMLListAttributeTypes", "apXMLFieldAttributeTypes", function ($q, _, apUtilityService, apConfig, apCacheService,
                                           apLookupFactory, apUserFactory, apFieldService, apXMLListAttributeTypes,
                                           apXMLFieldAttributeTypes) {
 
@@ -3661,97 +3654,6 @@ angular.module('angularPoint')
     }
     apFormattedFieldValueService.$inject = ["$filter"];
 })();
-;'use strict';
-
-/**
- * @ngdoc service
- * @name angularPoint.apQueueService
- * @description
- * Simple service to monitor the number of active requests we have open with SharePoint
- * Typical use is to display a loading animation of some sort
- */
-angular.module('angularPoint')
-    .factory('apQueueService', function () {
-
-        var observerCallbacks = [],
-            apQueueService = {
-                count: 0,
-                decrease: decrease,
-                increase: increase,
-                notifyObservers: notifyObservers,
-                registerObserverCallback: registerObserverCallback,
-                reset: reset
-            };
-
-        return apQueueService;
-
-
-        /*********************** Private ****************************/
-
-
-        /**
-         * @ngdoc function
-         * @name angularPoint.apQueueService:increase
-         * @methodOf angularPoint.apQueueService
-         * @description
-         * Increase the apQueueService.count by 1.
-         */
-        function increase() {
-            apQueueService.count++;
-            notifyObservers();
-            return apQueueService.count;
-        }
-
-        /**
-         * @ngdoc function
-         * @name angularPoint.apQueueService:decrease
-         * @methodOf angularPoint.apQueueService
-         * @description
-         * Decrease the apQueueService.count by 1.
-         * @returns {number} Current count after decrementing.
-         */
-        function decrease() {
-            if (apQueueService.count > 0) {
-                apQueueService.count--;
-                notifyObservers();
-                return apQueueService.count;
-            }
-        }
-
-        /**
-         * @ngdoc function
-         * @name angularPoint.apQueueService:reset
-         * @methodOf angularPoint.apQueueService
-         * @description
-         * Reset apQueueService.count to 0.
-         * @returns {number} Current count after incrementing.
-         */
-        function reset() {
-            apQueueService.count = 0;
-            notifyObservers();
-            return apQueueService.count;
-        }
-
-        /**
-         * @ngdoc function
-         * @name angularPoint.apQueueService:registerObserverCallback
-         * @methodOf angularPoint.apQueueService
-         * @description
-         * Register an observer
-         * @param {function} callback Function to call when a change is made.
-         */
-        function registerObserverCallback(callback) {
-            observerCallbacks.push(callback);
-        }
-
-        /** call this when queue changes */
-        function notifyObservers() {
-            _.each(observerCallbacks, function (callback) {
-                callback(apQueueService.count);
-            });
-        }
-
-    });
 ;'use strict';
 
 /**
