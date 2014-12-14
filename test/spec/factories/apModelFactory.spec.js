@@ -164,15 +164,15 @@ describe('Factory: apModelFactory', function () {
 
     describe('Method: extendListMetadata', function () {
         it('extends the list information from xml', function () {
-            mockModel.fieldDefinitionsExtended = false;
+            mockModel.deferredListDefinition = null;
             mockModel.extendListMetadata();
             $httpBackend.flush();
-            expect(mockModel.fieldDefinitionsExtended).toBe(true);
+            expect(mockModel.deferredListDefinition).not.toBeNull();
         });
 
         it('only fetches the list definition once although it\'s requested multiple times', function () {
             spyOn(apDataService, 'getList').and.callThrough();
-            mockModel.fieldDefinitionsExtended = false;
+            mockModel.deferredListDefinition = null;
             mockModel.extendListMetadata();
             mockModel.extendListMetadata();
             $httpBackend.flush();

@@ -20,6 +20,7 @@ angular.module('angularPoint')
             checkResponseForErrors: checkResponseForErrors,
             extendFieldDefinitionsFromXML: extendFieldDefinitionsFromXML,
             extendListDefinitionFromXML: extendListDefinitionsFromXML,
+            extendListMetadata: extendListMetadata,
             jsBoolean: jsBoolean,
             jsCalc: jsCalc,
             jsChoiceMulti: jsChoiceMulti,
@@ -513,6 +514,21 @@ angular.module('angularPoint')
                 }
             });
             return objectToExtend;
+        }
+
+        /**
+         * @ngdoc function
+         * @name angularPoint.apDecodeService:extendListMetadata
+         * @methodOf angularPoint.apDecodeService
+         * @description
+         * Convenience method that extends the list definition and the field definitions from an xml list response
+         * from the server.  Can be used specifically with GetListItemsSinceToken and GetList operations.
+         * @param {object} model Model for a given list.
+         * @param {object} responseXML XML response from the server.
+         */
+        function extendListMetadata(model, responseXML) {
+            extendListDefinitionsFromXML(model.list, responseXML);
+            extendFieldDefinitionsFromXML(model.list.fields, responseXML);
         }
 
         /**

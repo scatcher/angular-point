@@ -125,7 +125,8 @@ angular.module('angularPoint')
                 fieldDefinitionsExtended: false,
                 /** Date/Time of last communication with server */
                 lastServerUpdate: null,
-                queries: {}
+                queries: {},
+                requestForFieldDefinitions: null
             };
 
             _.extend(model, defaults, config);
@@ -816,14 +817,14 @@ angular.module('angularPoint')
                 defaults = {listName: model.list.getListId()};
 
             /** Only request information if the list hasn't already been extended and is not currently being requested */
-            if (!model.fieldDefinitionsExtended && !model.deferredListDefinition) {
+            if (!model.deferredListDefinition) {
+                /** All Future Requests get this */
                 model.deferredListDefinition = deferred.promise;
+
                 var opts = _.extend({}, defaults, options);
                 apDataService.getList(opts)
                     .then(function (responseXML) {
-                        apDecodeService.extendListDefinitionFromXML(model.list, responseXML);
-                        apDecodeService.extendFieldDefinitionsFromXML(model.list.fields, responseXML);
-                        model.fieldDefinitionsExtended = true;
+                        apDecodeService.extendListMetadata(model, responseXML);
                         deferred.resolve(model);
                     });
             }

@@ -622,10 +622,11 @@ angular.module('angularPoint')
          * @param {object} opts Config options built up along the way.
          */
         function processChangeTokenXML(model, query, responseXML, opts) {
-            if (!model.fieldDefinitionsExtended) {
-                apDecodeService.extendListDefinitionFromXML(model.list, responseXML);
-                apDecodeService.extendFieldDefinitionsFromXML(model.list.fields, responseXML);
-                model.fieldDefinitionsExtended = true;
+            if (!model.deferredListDefinition) {
+                /** Replace the null placeholder with this promise so we don't have to process in the future and also
+                 * don't have to query again if we run Model.extendListMetadata. */
+                model.deferredListDefinition = query.initialized.promise;
+                apDecodeService.extendListMetadata(model, responseXML);
             }
 
             /** Store token for future web service calls to return changes */

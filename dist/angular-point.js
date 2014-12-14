@@ -35,6 +35,69 @@ angular.module('angularPoint', [
         /** Add a convenience flag, inverse of offline */
         apConfig.online = !apConfig.offline;
     }]);
+;/**
+ * @ngdoc object
+ * @name angularPoint.apConfig
+ * @description
+ * Basic config for the application (unique for each environment).  Update to change for your environment.
+ *
+ * @param {string} appTitle Name of the application in case you need to reference.
+ * @param {boolean} debug Determines if we should show debug code.
+ * @param {string} defaultUrl Automatically sets the defaultUrl for web service calls so we don't need to make the
+ * initial blocking call by SPServices.
+ * @param {string} [defaultQueryName='primary'] The name that a query is registered with on a model if a name isn't specified.
+ * @param {string} [firebaseUrl] Necessary if you're using apSyncService.  Look there for more details.
+ * @param {boolean} [offline] Automatically set based on the URL of the site.  Pulls offline XML when hosted locally.
+ * @param {string} [offlineXML='dev/'] The location to look for offline xml files.
+ * @example
+ * <h4>Default Configuration</h4>
+ * <pre>
+ * .constant('apConfig', {
+ *     appTitle: 'Angular-Point',
+ *     debugEnabled: true,
+ *     firebaseURL: "The optional url of your firebase source",
+ *     offline: window.location.href.indexOf('localhost') > -1 ||
+ *         window.location.href.indexOf('http://0.') > -1 ||
+ *         window.location.href.indexOf('http://10.') > -1 ||
+ *         window.location.href.indexOf('http://192.') > -1
+ * })
+ * </pre>
+ *
+ * <h4>To Override</h4>
+ * <pre>
+ * angular.module('MyApp', ['my dependencies'])
+ *      .config(function ($stateProvider, $urlRouterProvider) {
+ *          //My routes
+ *      })
+ *      .run(function(apConfig) {
+ *          //To set the default site root
+ *          apConfig.defaultUrl =
+ *            '//sharepoint.myserver.com/siteRoot';
+ *
+ *          //To set the default location to look for
+ *          //offline xml files.
+ *          apConfig.offlineXML = 'myCachedQueries/';
+ *      });
+ * </pre>
+ */
+(function () {
+    'use strict';
+    angular
+        .module('angularPoint')
+        .constant('apConfig',{
+            appTitle: 'Angular-Point',
+            debug: false,
+            defaultQueryName: 'primary',
+            defaultUrl: '',
+            environment: 'production',
+            firebaseURL: "The optional url of your firebase source",
+            offline: window.location.href.indexOf('localhost') > -1 ||
+                window.location.href.indexOf('http://0.') > -1 ||
+                window.location.href.indexOf('http://10.') > -1 ||
+                window.location.href.indexOf('http://192.') > -1,
+            offlineXML: 'dev/'
+        });
+})();
 ;(function () {
     'use strict';
 
@@ -73,6 +136,15 @@ angular.module('angularPoint', [
         '</QueryOptions>');
 
 })();
+;/**
+ * Provides a way to inject vendor libraries that otherwise are globals.
+ * This improves code testability by allowing you to more easily know what
+ * the dependencies of your components are (avoids leaky abstractions).
+ * It also allows you to mock these dependencies, where it makes sense.
+ */
+angular.module('angularPoint')
+/** lodash */
+    .constant('_', _);
 ;//  apWebServiceOperationConstants.OpName = [WebService, needs_SOAPAction];
 //      OpName              The name of the Web Service operation -> These names are unique
 //      WebService          The name of the WebService this operation belongs to
@@ -387,75 +459,6 @@ angular.module('angularPoint')
         });
 
 })();
-;/**
- * Provides a way to inject vendor libraries that otherwise are globals.
- * This improves code testability by allowing you to more easily know what
- * the dependencies of your components are (avoids leaky abstractions).
- * It also allows you to mock these dependencies, where it makes sense.
- */
-angular.module('angularPoint')
-/** lodash */
-    .constant('_', _)
-    //.constant('SPServices', $().SPServices)
-
-/**
- * @ngdoc object
- * @name angularPoint.apConfig
- * @description
- * Basic config for the application (unique for each environment).  Update to change for your environment.
- *
- * @param {string} appTitle Name of the application in case you need to reference.
- * @param {boolean} debug Determines if we should show debug code.
- * @param {string} defaultUrl Automatically sets the defaultUrl for web service calls so we don't need to make the
- * initial blocking call by SPServices.
- * @param {string} [defaultQueryName='primary'] The name that a query is registered with on a model if a name isn't specified.
- * @param {string} [firebaseUrl] Necessary if you're using apSyncService.  Look there for more details.
- * @param {boolean} [offline] Automatically set based on the URL of the site.  Pulls offline XML when hosted locally.
- * @param {string} [offlineXML='dev/'] The location to look for offline xml files.
- * @example
- * <h4>Default Configuration</h4>
- * <pre>
- * .constant('apConfig', {
- *     appTitle: 'Angular-Point',
- *     debugEnabled: true,
- *     firebaseURL: "The optional url of your firebase source",
- *     offline: window.location.href.indexOf('localhost') > -1 ||
- *         window.location.href.indexOf('http://0.') > -1 ||
- *         window.location.href.indexOf('http://10.') > -1 ||
- *         window.location.href.indexOf('http://192.') > -1
- * })
- * </pre>
- *
- * <h4>To Override</h4>
- * <pre>
- * angular.module('MyApp', ['my dependencies'])
- *      .config(function ($stateProvider, $urlRouterProvider) {
- *          //My routes
- *      })
- *      .run(function(apConfig) {
- *          //To set the default site root
- *          apConfig.defaultUrl =
- *            '//sharepoint.myserver.com/siteRoot';
- *
- *          //To set the default location to look for
- *          //offline xml files.
- *          apConfig.offlineXML = 'myCachedQueries/';
- *      });
- * </pre>
- */
-    .constant('apConfig', {
-        appTitle: 'Angular-Point',
-        debug: false,
-        defaultQueryName: 'primary',
-        defaultUrl: '',
-        environment: 'production',
-        firebaseURL: "The optional url of your firebase source",
-        offline: window.location.href.indexOf('localhost') > -1 ||
-        window.location.href.indexOf('http://0.') > -1 ||
-        window.location.href.indexOf('http://10.') > -1 ||
-        window.location.href.indexOf('http://192.') > -1,
-        offlineXML: 'dev/'
-    });
 ;'use strict';
 
 /**
@@ -1458,10 +1461,11 @@ angular.module('angularPoint')
          * @param {object} opts Config options built up along the way.
          */
         function processChangeTokenXML(model, query, responseXML, opts) {
-            if (!model.fieldDefinitionsExtended) {
-                apDecodeService.extendListDefinitionFromXML(model.list, responseXML);
-                apDecodeService.extendFieldDefinitionsFromXML(model.list.fields, responseXML);
-                model.fieldDefinitionsExtended = true;
+            if (!model.deferredListDefinition) {
+                /** Replace the null placeholder with this promise so we don't have to process in the future and also
+                 * don't have to query again if we run Model.extendListMetadata. */
+                model.deferredListDefinition = query.initialized.promise;
+                apDecodeService.extendListMetadata(model, responseXML);
             }
 
             /** Store token for future web service calls to return changes */
@@ -1867,6 +1871,7 @@ angular.module('angularPoint')
             checkResponseForErrors: checkResponseForErrors,
             extendFieldDefinitionsFromXML: extendFieldDefinitionsFromXML,
             extendListDefinitionFromXML: extendListDefinitionsFromXML,
+            extendListMetadata: extendListMetadata,
             jsBoolean: jsBoolean,
             jsCalc: jsCalc,
             jsChoiceMulti: jsChoiceMulti,
@@ -2360,6 +2365,21 @@ angular.module('angularPoint')
                 }
             });
             return objectToExtend;
+        }
+
+        /**
+         * @ngdoc function
+         * @name angularPoint.apDecodeService:extendListMetadata
+         * @methodOf angularPoint.apDecodeService
+         * @description
+         * Convenience method that extends the list definition and the field definitions from an xml list response
+         * from the server.  Can be used specifically with GetListItemsSinceToken and GetList operations.
+         * @param {object} model Model for a given list.
+         * @param {object} responseXML XML response from the server.
+         */
+        function extendListMetadata(model, responseXML) {
+            extendListDefinitionsFromXML(model.list, responseXML);
+            extendFieldDefinitionsFromXML(model.list.fields, responseXML);
         }
 
         /**
@@ -7568,7 +7588,8 @@ angular.module('angularPoint')
                 fieldDefinitionsExtended: false,
                 /** Date/Time of last communication with server */
                 lastServerUpdate: null,
-                queries: {}
+                queries: {},
+                requestForFieldDefinitions: null
             };
 
             _.extend(model, defaults, config);
@@ -8259,14 +8280,14 @@ angular.module('angularPoint')
                 defaults = {listName: model.list.getListId()};
 
             /** Only request information if the list hasn't already been extended and is not currently being requested */
-            if (!model.fieldDefinitionsExtended && !model.deferredListDefinition) {
+            if (!model.deferredListDefinition) {
+                /** All Future Requests get this */
                 model.deferredListDefinition = deferred.promise;
+
                 var opts = _.extend({}, defaults, options);
                 apDataService.getList(opts)
                     .then(function (responseXML) {
-                        apDecodeService.extendListDefinitionFromXML(model.list, responseXML);
-                        apDecodeService.extendFieldDefinitionsFromXML(model.list.fields, responseXML);
-                        model.fieldDefinitionsExtended = true;
+                        apDecodeService.extendListMetadata(model, responseXML);
                         deferred.resolve(model);
                     });
             }
@@ -8960,149 +8981,4 @@ angular.module('angularPoint')
         }
 
     }]);
-;'use strict';
-
-/**
- * @ngdoc directive
- * @name angularPoint.directive:apSelect
- * @element span
- * @function
- *
- * @description
- * A SharePoint lookup value is represented as an object containing a lookupId and lookupValue.
- * ```
- * Lookup = {
- *     lookupId: 1,
- *     lookupValue: 'Typically the Title of the Item we're referencing'
- * }
- * ```
- * With that in mind, we know that the list providing lookup options is made up of SharePoint list items.  This
- * directive attempts to create a select using the array of lookup options and once selected, sets field referencing
- * the target object with the applicable `lookupValue` and `lookupId`.
- *
- *
- * @param {object} target Reference to the target attribute on the list item.
- * @param {object[]} arr Array of list items used to populate the options for the select.
- * @param {string} [lookupValue='title'] Name of the attribute to use as the display value for each item
- * in `arr` array.
- * @param {boolean} [multi=false] Allows us to use a multi-select using Select2.
- *
- * @example
- * Form field below allows us to display a multi-select with options coming
- * from a taskCategories array.  Each item selected pushes an object into
- * the activeTask.categories array.  Each of these objects will have a
- * lookupId = category.id and lookupValue = category.acronym.
- * <pre>
- * <div class="form-group">
- *      <label class="control-label">Task Categories</label>
- *      <span data-ap-select data-multi="true"
- *          data-arr="taskCategories"
- *          data-target="activeTask.categories"
- *          data-lookup-value="'acronym'"></span>
- *  </div>
- * </pre>
- */
-angular.module('angularPoint')
-    .directive('apSelect', ["_", function (_) {
-        return {
-            restrict: 'A',
-            replace: true,
-            templateUrl: 'src/directives/ap_select/ap_select_tmpl.html',
-            scope: {
-                target: '=',   //The field on the model to bind to
-                bindedField: '=',   //Deprecated....why did I use binded instead of bound?
-                multi: '=',         //Single select if not set or set to false
-                arr: '=',           //Array of lookup options
-                lookupValue: '=',   //Field name to map the lookupValue to (default: 'title')
-                ngDisabled: '='     //Pass through to disable control using ng-disabled on element if set
-            },
-            link: function (scope) {
-                if (scope.bindedField && !scope.target) {
-                    //Todo remove all references to "bindedField" and change to target
-                    scope.target = scope.bindedField;
-                }
-                scope.state = {
-                    multiSelectIDs: [],
-                    singleSelectID: ''
-                };
-
-                /** Default to title field if not provided */
-                scope.state.lookupField = scope.lookupValue || 'title';
-
-                var buildLookupObject = function (stringId) {
-                    var intID = parseInt(stringId, 10);
-                    var match = _.findWhere(scope.arr, {id: intID});
-                    return {lookupId: intID, lookupValue: match[scope.state.lookupField]};
-                };
-
-                //Todo: Get this hooked up to allow custom function to be passed in instead of property name
-                scope.generateDisplayText = function (item) {
-                    if (_.isFunction(scope.state.lookupField)) {
-                        //Passed in a reference to a function to generate the select display text
-                        return scope.state.lookupField(item);
-                    } else if (_.isString(scope.state.lookupField)) {
-                        //Passed in a property name on the item to use
-                        return item[scope.state.lookupField];
-                    } else {
-                        //Default to the title property of the object
-                        return item.title;
-                    }
-                };
-
-                scope.updateMultiModel = function () {
-                    /** Ensure field being binded against is array */
-                    if (!_.isArray(scope.target)) {
-                        scope.target = [];
-                    }
-                    /** Clear out existing contents */
-                    scope.target.length = 0;
-                    /** Push formatted lookup object back */
-                    _.each(scope.state.multiSelectIDs, function (stringId) {
-                        scope.target.push(buildLookupObject(stringId));
-                    });
-                };
-
-                scope.updateSingleModel = function () {
-                    /** Create an object with expected lookupId/lookupValue properties */
-                    scope.target = buildLookupObject(scope.state.singleSelectID);
-                };
-
-                /** Process initially and whenever the underlying value is changed */
-                scope.$watch('target', function () {
-                    if (scope.multi) {
-                        /** Multi Select Mode
-                         *  Set the string version of id's to allow multi-select control to work properly */
-                        _.each(scope.target, function (selectedLookup) {
-                            /** Push id as a string to match what Select2 is expecting */
-                            scope.state.multiSelectIDs.push(selectedLookup.lookupId.toString());
-                        });
-                    } else {
-                        /** Single Select Mode */
-                        if (_.isObject(scope.target) && scope.target.lookupId) {
-                            /** Set the selected id as string */
-                            scope.state.singleSelectID = scope.target.lookupId;
-                        }
-                    }
-                });
-
-            }
-        };
-    }]);
-;angular.module('angularPoint').run(['$templateCache', function($templateCache) {
-  'use strict';
-
-  $templateCache.put('src/directives/ap_comments/ap_comments_tmpl.html',
-    "<div><div class=pull-right><button class=\"btn btn-primary btn-xs\" ng-click=createNewComment() title=\"Create a new comment\" ng-show=\"state.tempComment.length > 0\">Save</button> <button class=\"btn btn-default btn-xs\" ng-click=clearTempVars() title=\"Cancel comment\" ng-show=\"state.tempComment.length > 0\">Cancel</button>    </div><div style=\"min-height: 150px\"><div class=newComment><div class=form-group><h4><small>New Comment</small></h4><textarea class=form-control rows=2 ng-model=state.tempComment placeholder=\"Create a new comment...\"></textarea></div></div><div class=\"alert text-center\" style=\"margin-top: 30px\" ng-show=!state.ready><h4><small>loading...</small></h4></div><div class=grey style=\"margin-top: 30px\" ng-show=\"!comments && !state.newCommentVisible && state.ready\">No comments have been made. Create one using the input box above.</div><div ng-if=\"comments && comments.thread.length > 0\" class=comments-container><span ng-include=\"'src/directives/ap_comments/ap_recursive_comment.html'\" ng-init=\"comment = comments;\"></span></div></div></div>"
-  );
-
-
-  $templateCache.put('src/directives/ap_comments/ap_recursive_comment.html',
-    "<ul class=comments><li class=comment ng-repeat=\"response in comment.thread\" style=\"border-top-width: 1px;border-top-color: grey\"><div class=comment-content><div class=content><h5><small><span class=author>{{ response.author.lookupValue }}</span> <span>{{ response.modified | date:'short' }}</span> <button class=\"btn btn-link btn-xs\" ng-click=\"state.respondingTo = response\"><i class=\"fa fa-mail-reply\"></i> Reply</button> <button class=\"btn btn-link btn-xs\" ng-click=deleteComment(response)><i class=\"fa fa-trash-o\"></i> Delete</button></small></h5><p class=comment-text>{{ response.comment }}</p></div></div><div ng-if=\"state.respondingTo === response\"><div class=row><div class=col-xs-12><form><div class=form-group><h5><small>Response<label class=pull-right><button class=\"btn btn-link btn-xs\" ng-click=createResponse(response)><i class=\"fa fa-save\"></i> Save</button> <button class=\"btn btn-link btn-xs\" ng-click=clearTempVars()><i class=\"fa fa-undo\"></i> Cancel</button></label></small></h5><textarea class=form-control rows=2 ng-model=state.tempResponse></textarea></div></form></div></div></div><div ng-if=\"response.thread.length !== -1\"><span ng-include=\"'src/directives/ap_comments/ap_recursive_comment.html'\" ng-init=\"comment = response;\"></span></div></li></ul>"
-  );
-
-
-  $templateCache.put('src/directives/ap_select/ap_select_tmpl.html',
-    "<span class=ng-cloak><span ng-if=!multi><select class=form-control ng-model=state.singleSelectID ng-change=updateSingleModel() style=\"width: 100%\" ng-disabled=ngDisabled ng-options=\"lookup.id as lookup[state.lookupField] for lookup in arr\"></select></span> <span ng-if=multi><select multiple ui-select2 ng-model=state.multiSelectIDs ng-change=updateMultiModel() style=\"width: 100%\" ng-disabled=ngDisabled><option></option><option ng-repeat=\"lookup in arr\" value=\"{{ lookup.id }}\" ng-bind=lookup[state.lookupField]>&nbsp;</option></select></span></span>"
-  );
-
-}]);
+;
