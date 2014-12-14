@@ -55,7 +55,7 @@ NG_DOCS={
       "type": "service",
       "moduleName": "angularPoint",
       "shortDescription": "Processes the XML received from SharePoint and converts it into JavaScript objects based on predefined field types.",
-      "keywords": "additional allow allows anderson angularpoint apcacheservice apconfig apdecodeservice api aputilityservice array attributes attributetypes based batch build cached call camlcase capital change checks child code codeplex coming configuration constructors container conversions convert converts copies correctly corresponding customfields data define defined definition definitions directly don element elements empty entities entity error errors errorstring exists extend extended extends factory fetch field fielddefinition fielddefinitions fields filter find formatted function future getcache getlistitems includeallattrs incredible indexedcache info initial instantiated instantiates item items iterate javascript js keeping key large leading letter list listitemprovider lists ll location majority mappedname mapping marc metadata minor model modified needed newly node note null object objects objecttype optional optionally options opts ows_ parent parse parsed pass post predefined prevent processed processes processing project promise properties property propertyname provided push pushing query received reference references registers removeows representation representing requesting resolved resolves response responsexml responsible retrieve return returned returning returns rows scope server service set sharepoint simple slowdowns spservices spxmltojson start stored str string stripped takes target text throw true tweaking type typed types typically ui update updating val values version versions web webservice work xhr xml xmlentities xmlentity xmlobject"
+      "keywords": "additional allow allows anderson angularpoint apcacheservice apconfig apdecodeservice api aputilityservice array attributes attributetypes based batch build cached call camlcase capital change checks child code codeplex coming configuration constructors container convenience conversions convert converts copies correctly corresponding customfields data define defined definition definitions directly don element elements empty entities entity error errors errorstring exists extend extended extends factory fetch field fielddefinition fielddefinitions fields filter find formatted function future getcache getlist getlistitems getlistitemssincetoken includeallattrs incredible indexedcache info initial instantiated instantiates item items iterate javascript js keeping key large leading letter list listitemprovider lists ll location majority mappedname mapping marc metadata method minor model modified needed newly node note null object objects objecttype operations optional optionally options opts ows_ parent parse parsed pass post predefined prevent processed processes processing project promise properties property propertyname provided push pushing query received reference references registers removeows representation representing requesting resolved resolves response responsexml responsible retrieve return returned returning returns rows scope server service set sharepoint simple slowdowns spservices spxmltojson start stored str string stripped takes target text throw true tweaking type typed types typically ui update updating val values version versions web webservice work xhr xml xmlentities xmlentity xmlobject"
     },
     {
       "section": "api",
@@ -200,15 +200,6 @@ NG_DOCS={
       "moduleName": "angularPoint",
       "shortDescription": "This function converts an XML node set into an array of JS objects.",
       "keywords": "allow anderson angular angularpoint api apxmltojsonservice array codeplex converts essentially function js marc modular node objects service set spxmltojson testing wrapped xml"
-    },
-    {
-      "section": "api",
-      "id": "angularPoint.directive:apSelect",
-      "shortName": "apSelect",
-      "type": "directive",
-      "moduleName": "angularPoint",
-      "shortDescription": "A SharePoint lookup value is represented as an object containing a lookupId and lookupValue.",
-      "keywords": "acronym activetask allows angularpoint api applicable arr array attempts attribute categories category class coming control-label create data-ap-select data-arr data-lookup-value data-multi data-target directive display field form form-group item items list lookup lookupid lookupvalue mind multi-select object objects options populate providing pushes reference referencing represented select select2 selected sets sharepoint span target taskcategories title true typically"
     },
     {
       "section": "api",

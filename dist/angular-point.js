@@ -2453,6 +2453,20 @@ angular.module('angularPoint')
             return fieldDefinitions;
         }
 
+        /** Converts UTC date to a localized date
+         * Taken from: http://stackoverflow.com/questions/6525538/convert-utc-date-time-to-local-date-time-using-javascript
+         * */
+        function convertUTCDateToLocalDate(date) {
+            var newDate = new Date(date.getTime()+date.getTimezoneOffset()*60*1000);
+
+            var offset = date.getTimezoneOffset() / 60;
+            var hours = date.getHours();
+
+            newDate.setHours(hours - offset);
+
+            return newDate;
+        }
+
 
         /**
          * @ngdoc function
@@ -2471,13 +2485,18 @@ angular.module('angularPoint')
             var xmlVersions = $(responseXML).find('Version');
             var versionCount = xmlVersions.length;
 
-
             _.each(xmlVersions, function (xmlVersion, index) {
+
+                /** Bug in SOAP Web Service returns time in UTC time for version history
+                 *  Details: https://spservices.codeplex.com/discussions/391879
+                 */
+                var utcDate = parseStringValue($(xmlVersion).attr('Modified'), 'DateTime');
+
                 /** Parse the xml and create a representation of the version as a js object */
                 var version = {
                     editor: parseStringValue($(xmlVersion).attr('Editor'), 'User'),
                     /** Turn the SharePoint formatted date into a valid date object */
-                    modified: parseStringValue($(xmlVersion).attr('Modified'), 'DateTime'),
+                    modified: convertUTCDateToLocalDate(utcDate),
                     /** Returns records in desc order so compute the version number from index */
                     version: versionCount - index
                 };
