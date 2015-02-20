@@ -42,8 +42,12 @@ angular.module('angularPoint')
 
 
         /**
-         * Add a leading zero if a number/string only contains a single character
-         * @param {number|string} val
+         * @ngdoc function
+         * @name angularPoint.apUtilityService:doubleDigit
+         * @methodOf angularPoint.apUtilityService
+         * @description Add a leading zero if a number/string only contains a single character.  So in the case
+         * where the number 9 is passed in the string '09' is returned.
+         * @param {(number|string)} val A number or string to evaluate.
          * @returns {string} Two digit string.
          */
         function doubleDigit(val) {
@@ -266,42 +270,43 @@ angular.module('angularPoint')
          * </pre>
          */
         function resolvePermissions(permissionsMask) {
-            var permissionSet = {};
-            permissionSet.ViewListItems = (1 & permissionsMask) > 0;
-            permissionSet.AddListItems = (2 & permissionsMask) > 0;
-            permissionSet.EditListItems = (4 & permissionsMask) > 0;
-            permissionSet.DeleteListItems = (8 & permissionsMask) > 0;
-            permissionSet.ApproveItems = (16 & permissionsMask) > 0;
-            permissionSet.OpenItems = (32 & permissionsMask) > 0;
-            permissionSet.ViewVersions = (64 & permissionsMask) > 0;
-            permissionSet.DeleteVersions = (128 & permissionsMask) > 0;
-            permissionSet.CancelCheckout = (256 & permissionsMask) > 0;
-            permissionSet.PersonalViews = (512 & permissionsMask) > 0;
+            var permissionSet = {
+                ViewListItems: (1 & permissionsMask) > 0,
+                AddListItems: (2 & permissionsMask) > 0,
+                EditListItems: (4 & permissionsMask) > 0,
+                DeleteListItems: (8 & permissionsMask) > 0,
+                ApproveItems: (16 & permissionsMask) > 0,
+                OpenItems: (32 & permissionsMask) > 0,
+                ViewVersions: (64 & permissionsMask) > 0,
+                DeleteVersions: (128 & permissionsMask) > 0,
+                CancelCheckout: (256 & permissionsMask) > 0,
+                PersonalViews: (512 & permissionsMask) > 0,
 
-            permissionSet.ManageLists = (2048 & permissionsMask) > 0;
-            permissionSet.ViewFormPages = (4096 & permissionsMask) > 0;
+                ManageLists: (2048 & permissionsMask) > 0,
+                ViewFormPages: (4096 & permissionsMask) > 0,
 
-            permissionSet.Open = (permissionsMask & 65536) > 0;
-            permissionSet.ViewPages = (permissionsMask & 131072) > 0;
-            permissionSet.AddAndCustomizePages = (permissionsMask & 262144) > 0;
-            permissionSet.ApplyThemeAndBorder = (permissionsMask & 524288) > 0;
-            permissionSet.ApplyStyleSheets = (1048576 & permissionsMask) > 0;
-            permissionSet.ViewUsageData = (permissionsMask & 2097152) > 0;
-            permissionSet.CreateSSCSite = (permissionsMask & 4194314) > 0;
-            permissionSet.ManageSubwebs = (permissionsMask & 8388608) > 0;
-            permissionSet.CreateGroups = (permissionsMask & 16777216) > 0;
-            permissionSet.ManagePermissions = (permissionsMask & 33554432) > 0;
-            permissionSet.BrowseDirectories = (permissionsMask & 67108864) > 0;
-            permissionSet.BrowseUserInfo = (permissionsMask & 134217728) > 0;
-            permissionSet.AddDelPrivateWebParts = (permissionsMask & 268435456) > 0;
-            permissionSet.UpdatePersonalWebParts = (permissionsMask & 536870912) > 0;
-            permissionSet.ManageWeb = (permissionsMask & 1073741824) > 0;
-            permissionSet.UseRemoteAPIs = (permissionsMask & 137438953472) > 0;
-            permissionSet.ManageAlerts = (permissionsMask & 274877906944) > 0;
-            permissionSet.CreateAlerts = (permissionsMask & 549755813888) > 0;
-            permissionSet.EditMyUserInfo = (permissionsMask & 1099511627776) > 0;
-            permissionSet.EnumeratePermissions = (permissionsMask & 4611686018427387904) > 0;
-            permissionSet.FullMask = (permissionsMask == 9223372036854775807);
+                Open: (permissionsMask & 65536) > 0,
+                ViewPages: (permissionsMask & 131072) > 0,
+                AddAndCustomizePages: (permissionsMask & 262144) > 0,
+                ApplyThemeAndBorder: (permissionsMask & 524288) > 0,
+                ApplyStyleSheets: (1048576 & permissionsMask) > 0,
+                ViewUsageData: (permissionsMask & 2097152) > 0,
+                CreateSSCSite: (permissionsMask & 4194314) > 0,
+                ManageSubwebs: (permissionsMask & 8388608) > 0,
+                CreateGroups: (permissionsMask & 16777216) > 0,
+                ManagePermissions: (permissionsMask & 33554432) > 0,
+                BrowseDirectories: (permissionsMask & 67108864) > 0,
+                BrowseUserInfo: (permissionsMask & 134217728) > 0,
+                AddDelPrivateWebParts: (permissionsMask & 268435456) > 0,
+                UpdatePersonalWebParts: (permissionsMask & 536870912) > 0,
+                ManageWeb: (permissionsMask & 1073741824) > 0,
+                UseRemoteAPIs: (permissionsMask & 137438953472) > 0,
+                ManageAlerts: (permissionsMask & 274877906944) > 0,
+                CreateAlerts: (permissionsMask & 549755813888) > 0,
+                EditMyUserInfo: (permissionsMask & 1099511627776) > 0,
+                EnumeratePermissions: (permissionsMask & 4611686018427387904) > 0,
+                FullMask: (permissionsMask == 9223372036854775807)
+            };
 
             /**
              * Full Mask only resolves correctly for the Full Mask level
