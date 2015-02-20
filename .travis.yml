@@ -3,7 +3,7 @@ node_js:
   - "0.10"
 before_install:
 - export DISPLAY=:99.0
-- npm install -qg bower grunt-cli
+- npm install -qg bower gulp
 - npm install -q
 - bower install --force
 before_script:
