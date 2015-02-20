@@ -1,6 +1,8 @@
 // Karma configuration
 // http://karma-runner.github.io/0.10/config/configuration-file.html
 
+var appConfig = require('./gulp.config')();
+
 module.exports = function (config) {
     config.set({
         // base path, that will be used to resolve files and exclude
@@ -10,30 +12,13 @@ module.exports = function (config) {
         frameworks: ['jasmine'],
 
         // list of files / patterns to load in the browser
-        files: [
-            // Third Party
-            'bower_components/jquery/dist/jquery.js',
-            'bower_components/angular/angular.js',
-            'bower_components/angular-mocks/angular-mocks.js',
-            'bower_components/angular-sanitize/angular-sanitize.js',
-            'bower_components/chance/chance.js',
-            'bower_components/lodash/lodash.js',
-            'bower_components/lodash-deep/lodash-deep.js',
-            'bower_components/angular-toastr/dist/angular-toastr.js',
-
-            // Angular Point
-            'test/mock/app.mock.js',
-            'src/constants/*.js',
-            'src/config.js',
-            'src/services/*.js',
-            'src/factories/*.js',
-            'src/models/*.js',
-            'test/mock/*.js',
-            'test/mock/data/*.js',
-            'test/mock/models/*.js',
-            'test/spec/factories/*.js',
-            'test/spec/services/*.js'
-        ],
+        files: [].concat(
+            appConfig.vendorjs,
+            appConfig.mockModule,
+            appConfig.projectjs,
+            appConfig.mocks,
+            appConfig.specs
+        ),
 
         // list of files / patterns to exclude
         exclude: [],
