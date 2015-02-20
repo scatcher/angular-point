@@ -171,8 +171,8 @@ NG_DOCS={
       "shortName": "angularPoint.apXMLListAttributeTypes",
       "type": "object",
       "moduleName": "angularPoint",
-      "shortDescription": "Constant object map which contains many common XML attributes found on a list definition with their",
-      "keywords": "angularpoint api apxmllistattributetypes attributes common constant corresponding definition list map object type xml"
+      "shortDescription": "Constant object map which contains many common XML attributes found on a field definition with their",
+      "keywords": "angularpoint api apxmllistattributetypes attributes common constant corresponding definition field map object type xml"
     },
     {
       "section": "api",
@@ -180,8 +180,8 @@ NG_DOCS={
       "shortName": "angularPoint.apXMLListAttributeTypes",
       "type": "object",
       "moduleName": "angularPoint",
-      "shortDescription": "Constant object map which contains many common XML attributes found on a field definition with their",
-      "keywords": "angularpoint api apxmllistattributetypes attributes common constant corresponding definition field map object type xml"
+      "shortDescription": "Constant object map which contains many common XML attributes found on a list definition with their",
+      "keywords": "angularpoint api apxmllistattributetypes attributes common constant corresponding definition list map object type xml"
     },
     {
       "section": "api",
