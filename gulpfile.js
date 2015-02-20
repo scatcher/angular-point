@@ -1,111 +1,71 @@
-'use strict';
-
-/* jshint camelcase:false */
-var gulp = require('gulp');
-//var $ = require('gulp-load-plugins')();
-var $ = require('gulp-load-plugins')({
-    pattern: ['gulp-*', 'main-bower-files']
-});
+var args = require('yargs').argv;
+var config = require('./gulp.config')();
+var del = require('del');
 var fs = require('fs');
-
-
-var karma = require('karma').server;
-var merge = require('merge-stream');
-var paths = require('./gulp.config.json');
-
-var env = $.util.env;
-var log = $.util.log;
-var port = process.env.PORT || 7203;
-var pkg = require('./package.json');
+var gulp = require('gulp');
 var _ = require('lodash');
+var path = require('path');
+var pkg = require('./package.json');
+var $ = require('gulp-load-plugins')({lazy: true});
+
 
 /**
  * List the available gulp tasks
  */
 gulp.task('help', $.taskListing);
+gulp.task('default', ['help']);
 
 /**
- * Lint the code, create coverage report, and a visualizer
+ * vet the code and create coverage report
  * @return {Stream}
  */
-gulp.task('analyze', function () {
-    log('Analyzing source with JSHint, JSCS, and Plato');
-
-    var jshint = analyzejshint([].concat(paths.projectjs, paths.specs));
-    var jscs = analyzejscs([].concat(paths.projectjs));
-
-    startPlatoVisualizer();
-
-    return merge(jshint, jscs);
-});
-
-gulp.task('build', [
-    'templatecache',
-    'html',
-    'bump'
-]);
-
-
-/**
- * Create $templateCache from the html templates
- * @return {Stream}
- */
-gulp.task('templatecache', function () {
-    log('Creating an AngularJS $templateCache');
+gulp.task('vet', function() {
+    log('Analyzing source with JSHint and JSCS');
 
     return gulp
-        .src(paths.htmltemplates)
-        .pipe($.bytediff.start())
-        .pipe($.minifyHtml({empty: true}))
-        .pipe($.angularTemplatecache('scripts/templates.js', {
-            module: pkg.module,
-            standalone: false,
-            root: ''
-        }))
-        .pipe($.bytediff.stop(bytediffFormatter))
-        .pipe(gulp.dest(paths.build));
+        .src(config.projectjs)
+        .pipe($.if(args.verbose, $.print()))
+        .pipe($.jshint())
+        .pipe($.jshint.reporter('jshint-stylish', {verbose: true}))
+        .pipe($.jshint.reporter('fail'))
+        .pipe($.jscs());
 });
 
-gulp.task('html', ['inject-dist'], function () {
-    var jsFilter = $.filter('**/*.js');
-    var cssFilter = $.filter('**/*.css');
-    var assets;
-
-    return gulp.src(paths.index)
-        .pipe(assets = $.useref.assets({searchPath: '.'}))
-
-        .pipe(jsFilter)
+gulp.task('concat', ['clean'], function () {
+    return gulp
+        .src([].concat(config.distModule, config.projectjs))
+        .pipe($.plumber())
+        .pipe($.concat(pkg.name + '.js'))
         .pipe($.ngAnnotate({add: true, single_quotes: true}))
-        //.pipe($.stripDebug())
-        //.pipe($.bytediff.start())
-        //.pipe($.uglify({mangle: true}))
-        //.pipe($.bytediff.stop(bytediffFormatter))
-        .pipe(jsFilter.restore())
-
-        .pipe(cssFilter)
-        //TODO Create a regexp to replace all font in ui-grid
-        .pipe($.bytediff.start())
-        .pipe($.csso())
-        .pipe($.replace('ui-grid.svg', '../fonts/ui-grid.svg'))
-        .pipe($.replace('ui-grid.woff', '../fonts/ui-grid.woff'))
-        .pipe($.replace('styles/fonts', 'fonts'))
-        //.pipe($.replace('bower_components/font-awesome/fonts', 'fonts'))
-        .pipe($.replace('bower_components/bootstrap/fonts', '../fonts'))
-        //.pipe($.replace('bower_components/font-awesome/fonts', 'fonts'))
-        .pipe($.bytediff.stop(bytediffFormatter))
-        .pipe(cssFilter.restore())
-
-        .pipe(assets.restore())
-        .pipe($.useref())
-        .pipe(gulp.dest(paths.build))
-        .pipe($.size());
+        .pipe(getHeader())
+        .pipe(gulp.dest(config.build));
 });
 
-
-gulp.task('clean', function () {
-    var del = require('del');
-    return del(['.tmp/', 'dist/']);
+/**
+ * Create concatenated and minified scripts.
+ */
+gulp.task('build', ['concat'], function() {
+    return gulp
+        .src(config.build + pkg.name + '.js')
+        .pipe($.plumber())
+        .pipe($.concat(pkg.name + '.min.js'))
+        .pipe($.uglify())
+        .pipe(getHeader())
+        .pipe(gulp.dest(config.build));
 });
+
+/**
+ * Remove all files from the build and temp folders
+ * @param  {Function} done - callback when complete
+ */
+gulp.task('clean', function(done) {
+    var files = [].concat(
+        config.temp,
+        config.build
+    );
+    clean(files, done);
+});
+
 
 /**
  * Run specs once and exit
@@ -113,8 +73,8 @@ gulp.task('clean', function () {
  *    gulp test --startServers
  * @return {Stream}
  */
-gulp.task('test', function (done) {
-    startTests(true /*singleRun*/, done);
+gulp.task('test', function(done) {
+    startTests({} , done);
 });
 
 /**
@@ -123,82 +83,94 @@ gulp.task('test', function (done) {
  * To start servers and run midway specs as well:
  *    gulp autotest --startServers
  */
-gulp.task('autotest', function (done) {
-    startTests(false /*singleRun*/, done);
+gulp.task('autotest', function(done) {
+    startTests({autoWatch: true, singleRun: false}, done);
+});
+
+/**
+ * Run specs and wait.
+ * Watch for file changes and re-run tests on each change
+ * To start servers and run midway specs as well:
+ *    gulp autotest --startServers
+ */
+gulp.task('debugtest', function(done) {
+    startTests({
+        autoWatch: true,
+        browsers: ['Chrome'],
+        singleRun: false
+    } , done);
 });
 
 
-gulp.task('ngdocs', [], function () {
+////////////////
+
+
+/**
+ * Format and return the header for files
+ * @return {String}           Formatted file header
+ */
+function getHeader() {
+    var template = ['/**',
+        ' * <%= pkg.name %> - <%= pkg.description %>',
+        ' * @authors <%= pkg.authors %>',
+        ' * @version v<%= pkg.version %>',
+        ' * @link <%= pkg.homepage %>',
+        ' * @license <%= pkg.license %>',
+        ' */',
+        ''
+    ].join('\n');
+    return $.header(template, {
+        pkg: pkg
+    });
+}
+
+/**
+ * Log a message or series of messages using chalk's blue color.
+ * Can pass in a string, object or array.
+ */
+function log(msg) {
+    if (typeof(msg) === 'object') {
+        for (var item in msg) {
+            if (msg.hasOwnProperty(item)) {
+                $.util.log($.util.colors.blue(msg[item]));
+            }
+        }
+    } else {
+        $.util.log($.util.colors.blue(msg));
+    }
+}
+
+/**
+ * Generate docs from code in docs folder.
+ */
+gulp.task('ngdocs', function () {
     var gulpDocs = require('gulp-ngdocs');
     var options = {
-        //scripts: ['../app.min.js'],
         html5Mode: false,
-        //startPage: '/api',
         title: pkg.name,
         titleLink: '/api'
     };
-    return gulp.src(paths.projectjs)
-        .pipe(gulpDocs.process())
-        .pipe(gulp.dest(paths.docs));
+    return gulp.src([].concat(config.distModule, config.projectjs))
+        .pipe(gulpDocs.process(options))
+        .pipe(gulp.dest(config.docs));
 });
 
-// Update bower, component, npm at once:
+/**
+ * Update bower, component, npm at once:
+ */
 gulp.task('bump', function () {
     gulp.src(['./bower.json', './package.json'])
         .pipe($.bump())
         .pipe(gulp.dest('./'));
 });
 
-
 /**
- * Execute JSHint on given source files
- * @param  {Array} sources
- * @param  {String} overrideRcFile
- * @return {Stream}
+ * Push docs to live site.
  */
-function analyzejshint(sources, overrideRcFile) {
-    var jshintrcFile = overrideRcFile || './.jshintrc';
-    log('Running JSHint');
-    return gulp
-        .src(sources)
-        .pipe($.jshint(jshintrcFile))
-        .pipe($.jshint.reporter('jshint-stylish'));
-}
-
-/**
- * Execute JSCS on given source files
- * @param  {Array} sources
- * @return {Stream}
- */
-function analyzejscs(sources) {
-    log('Running JSCS');
-    return gulp
-        .src(sources)
-        .pipe($.jscs('./.jscsrc'));
-}
-
-/**
- * Start Plato inspector and visualizer
- */
-function startPlatoVisualizer() {
-    log('Running Plato');
-
-    var files = $.glob.sync(paths.projectjs);
-    var excludeFiles = /\app\/.*\.spec\.js/;
-
-    var options = {
-        title: 'Plato Inspections Report',
-        exclude: excludeFiles
-    };
-    var outputDir = paths.report + 'plato';
-
-    $.plato.inspect(files, outputDir, options, platoCompleted);
-
-    function platoCompleted(report) {
-        var overview = $.plato.getOverviewReport(report);
-        log(overview.summary);
-    }
-}
+gulp.task('ghpages', ['ngdocs'], function() {
+    gulp.src(config.docs + '**/*')
+        .pipe($.ghPages());
+});
 
 /**
  * Start the tests using karma.
@@ -206,76 +178,85 @@ function startPlatoVisualizer() {
  * @param  {Function} done - Callback to fire when karma is done
  * @return {undefined}
  */
-function startTests(singleRun, done) {
-    var child;
-    var excludeFiles = ['./app/**/*spaghetti.js'];
-    var fork = require('child_process').fork;
-
-    if (env.startServers) {
-        log('Starting servers');
-        var savedEnv = process.env;
-        savedEnv.NODE_ENV = 'dev';
-        savedEnv.PORT = 8888;
-        child = fork('src/server/app.js', childProcessCompleted);
-    } else {
-        excludeFiles.push('./test/midway/**/*.spec.js');
-    }
-
-    karma.start({
+function startTests(options, done) {
+    var karma = require('karma').server;
+    var defaults = {
+        autoWatch: false,
+        browsers: ['PhantomJS'],
         configFile: __dirname + '/karma.conf.js',
-        exclude: excludeFiles,
-        singleRun: !!singleRun
-    }, karmaCompleted);
+        singleRun: true
+    };
+    var opts = _.extend(defaults, options);
+
+    karma.start(opts, karmaCompleted);
 
     ////////////////
 
-    function childProcessCompleted(error, stdout, stderr) {
-        log('stdout: ' + stdout);
-        log('stderr: ' + stderr);
-        if (error !== null) {
-            log('exec error: ' + error);
-        }
-    }
+    function karmaCompleted(karmaResult) {
+        log('Karma completed');
 
-    function karmaCompleted() {
-        if (child) {
-            child.kill();
+        if (karmaResult === 1) {
+            done('karma: tests failed with code ' + karmaResult);
+        } else {
+            done();
         }
-        done();
     }
 }
 
 /**
- * Formatter for bytediff to display the size changes after processing
- * @param  {Object} data - byte data
- * @return {String}      Difference in bytes, formatted
+ * Delete all files in a given path
+ * @param  {Array}   path - array of paths to delete
+ * @param  {Function} done - callback when complete
  */
-function bytediffFormatter(data) {
-    var difference = (data.savings > 0) ? ' smaller.' : ' larger.';
-    return data.fileName + ' went from ' +
-        (data.startSize / 1000).toFixed(2) + ' kB to ' + (data.endSize / 1000).toFixed(2) + ' kB' +
-        ' and is ' + formatPercent(1 - data.percent, 2) + '%' + difference;
+function clean(path, done) {
+    log('Cleaning: ' + $.util.colors.blue(path));
+    del(path, done);
 }
 
+
 /**
- * Format a number as a percentage
- * @param  {Number} num       Number to format as a percent
- * @param  {Number} precision Precision of the decimal
- * @return {Number}           Formatted perentage
+ * Bumping version number and tagging the repository with it.
+ * Please read http://semver.org/
+ *
+ * You can use the commands
+ *
+ *     gulp patch     # makes v0.1.0 → v0.1.1
+ *     gulp feature   # makes v0.1.1 → v0.2.0
+ *     gulp release   # makes v0.2.1 → v1.0.0
+ *
+ * To bump the version numbers accordingly after you did a patch,
+ * introduced a feature or made a backwards-incompatible release.
  */
-function formatPercent(num, precision) {
-    return (num * 100).toFixed(precision);
+
+function incrementVersion(importance) {
+    // get all the files to bump version in
+    return gulp.src(['./package.json', './bower.json'])
+        // bump the version number in those files
+        .pipe($.bump({type: importance}))
+        // save it back to filesystem
+        .pipe(gulp.dest('./'))
+        // commit the changed version number
+        .pipe($.git.commit('bumps package version'))
+
+        // read only one file to get the version number
+        .pipe($.filter('package.json'))
+        // **tag it in the repository**
+        .pipe($.tagVersion());
 }
+
+gulp.task('patch', function() { return incrementVersion('patch'); });
+gulp.task('feature', function() { return incrementVersion('minor'); });
+gulp.task('release', function() { return incrementVersion('major'); });
 
 //TODO Make cacheXML logic use gulp.src and process as a stream instead of use the current sync approach
-gulp.task('cacheXML', function () {
-    createJSON({
+gulp.task('cacheXML', function (done) {
+    return createJSON({
         moduleName: pkg.module,
         constantName: 'apCachedXML',
-        fileName: 'offlineXML.js',
-        dest: 'test/mocks/',
+        fileName: 'parsedXML.js',
+        dest: 'test/mock/data',
         src: [ 'test/mock/xml/']
-    });
+    }, done);
 });
 
 /**
@@ -289,7 +270,7 @@ gulp.task('cacheXML', function () {
  * @param {string} [options.moduleName='angularPoint']
  * @param {string[]} [options.src] Folders containing XML files to process.
  */
-function createJSON(options) {
+function createJSON(options, done) {
     var defaults = {
             moduleName: 'angularPoint',
             constantName: 'apCachedXML',
@@ -328,7 +309,9 @@ function createJSON(options) {
     fileContents += JSON.stringify(offlineXML, null, 4) + ');';
 
     /** Write file to dest */
-    return fs.writeFileSync(opts.dest + '/' + opts.fileName, fileContents, {encoding: 'utf8'});
+    fs.writeFileSync(opts.dest + '/' + opts.fileName, fileContents, {encoding: 'utf8'});
+
+    return done();
 }
 
 /** Used to expose gulp tasks to gulp-devtools

@@ -8,7 +8,7 @@
 
 //var Dgeni = require('dgeni');
 
-var xmlUtil = require('./node_modules/angular-point-xml-parser/index.js');
+var xmlUtil = require('./../node_modules/angular-point-xml-parser/index.js');
 
 module.exports = function (grunt) {
 
