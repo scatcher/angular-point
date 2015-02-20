@@ -17,7 +17,7 @@ module.exports = function (config) {
             'bower_components/angular-mocks/angular-mocks.js',
             'bower_components/angular-sanitize/angular-sanitize.js',
             'bower_components/chance/chance.js',
-            'bower_components/lodash/dist/lodash.js',
+            'bower_components/lodash/lodash.js',
             'bower_components/lodash-deep/lodash-deep.js',
             'bower_components/angular-toastr/dist/angular-toastr.js',
 
@@ -28,7 +28,6 @@ module.exports = function (config) {
             'src/services/*.js',
             'src/factories/*.js',
             'src/models/*.js',
-            'src/directives/**/*.js',
             'test/mock/*.js',
             'test/mock/data/*.js',
             'test/mock/models/*.js',

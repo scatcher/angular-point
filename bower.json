@@ -12,14 +12,14 @@
   "dependencies": {
     "angular": "^1.2.26",
     "angular-toastr": "^0.4.0",
-    "jquery": "~1.11",
-    "lodash": "^2.4.1",
-    "lodash-deep": "^1.4.2"
+    "jquery": "~1.11.1",
+    "lodash": "^3.3.0",
+    "lodash-deep": "^1.5.3"
   },
   "devDependencies": {
     "angular-mocks": "^1.2.26",
-    "angular-bootstrap": "^0.11",
-    "chance": "^0.6.1"
+    "angular-bootstrap": "^0.12",
+    "chance": "^0.7.3"
   },
   "ignore": [
     "**/.*",
