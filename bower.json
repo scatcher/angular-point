@@ -1,9 +1,9 @@
 {
   "name": "angular-point",
-  "version": "1.2.3",
+  "version": "1.2.4",
   "homepage": "https://github.com/scatcher/angular-point",
   "authors": [
-    "Scott <github@scotthatcher.com>"
+    "Scott <angular-point@scotthatcher.com>"
   ],
   "distPath": "dist",
   "description": "Shared components of AngularPoint.",
