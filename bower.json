@@ -10,7 +10,7 @@
   "license": "MIT",
   "main": "./dist/angular-point.min.js",
   "dependencies": {
-    "angular": "^1.2.26",
+    "angular": "^1.2.28",
     "angular-toastr": "^0.4.0",
     "jquery": "~1.11.1",
     "lodash": "^3.3.0",
@@ -25,5 +25,8 @@
     "**/.*",
     "node_modules",
     "bower_components"
-  ]
+  ],
+  "resolutions": {
+    "angular": "^1.2.28"
+  }
 }
