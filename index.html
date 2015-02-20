@@ -11,7 +11,7 @@
                  Declarative templates with data-binding, MVC, dependency injection and great
                  testability story all implemented with pure client-side JavaScript!">
   <meta name="fragment" content="!">
-  <title ng-bind-template="Angular-Point API Docs: {{partialTitle}}">Docs</title>
+  <title ng-bind-template="angular-point: {{partialTitle}}">Docs</title>
   <script type="text/javascript">
     // dynamically add base tag as well as css and javascript files.
     // we can't add css/js the usual way, because some browsers (FF) eagerly prefetch resources
@@ -33,13 +33,14 @@
 
       
 
-      addTag('script', {src: 'js/google-code-prettify.js'}, sync);
-      addTag('script', {src: 'js/marked.js'}, sync);
-
       
-        addTag('script', {src: '//ajax.googleapis.com/ajax/libs/angularjs/1.2.19/angular.js'}, sync);
+        addTag('script', {src: 'js/angular.min.js'}, sync);
       
-        addTag('script', {src: '//ajax.googleapis.com/ajax/libs/angularjs/1.2.19/angular-animate.min.js'}, sync);
+        addTag('script', {src: 'js/angular-animate.min.js'}, sync);
+      
+        addTag('script', {src: 'js/marked.js'}, sync);
+      
+        addTag('script', {src: 'js/prettify.js'}, sync);
       
       
       addTag('script', {src: 'js/angular-bootstrap.js'}, sync);
@@ -71,17 +72,6 @@
       }
     })();
 
-    // GA asynchronous tracker
-    var _gaq = _gaq || [];
-    _gaq.push(['_setAccount', 'UA-51195298-1']);
-    _gaq.push(['_setDomainName', 'scatcher.github.io']);
-
-    (function() {
-      var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
-      ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
-      var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
-    })();
-
   </script>
 </head>
 
@@ -92,7 +82,7 @@
         <div class="container">
           
           
-            <a  class="brand">Angular-Point API Docs</a>
+            <a  href="/api"  class="brand">angular-point</a>
           
           <ul class="nav">
             <li ng-repeat="(url, name) in sections" ng-class="{active: isActivePath(url)}">

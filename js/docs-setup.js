@@ -1,17 +1,8 @@
 NG_DOCS={
   "sections": {
-    "api": "API Documentation"
+    "api": "angular-point"
   },
   "pages": [
-    {
-      "section": "api",
-      "id": "angularPoint",
-      "shortName": "angularPoint",
-      "type": "overview",
-      "moduleName": "angularPoint",
-      "shortDescription": "This is the primary angularPoint module and needs to be listed in your app.js dependencies to gain use of AngularPoint",
-      "keywords": "angularpoint api app dependencies functionality gain js listed module overview primary project"
-    },
     {
       "section": "api",
       "id": "angularPoint.apCacheService",
@@ -46,7 +37,7 @@ NG_DOCS={
       "type": "service",
       "moduleName": "angularPoint",
       "shortDescription": "Handles all interaction with SharePoint&#39;s SOAP web services.  Mostly a wrapper for SPServices functionality.",
-      "keywords": "additional anderson angularpoint apconfig apdataservice apfieldservice api apqueueservice aputilityservice calls codeplex documentation functionality handles interaction marc service services sharepoint soap spservices web wrapper"
+      "keywords": "additional anderson angularpoint apconfig apdataservice apfieldservice api aputilityservice calls codeplex documentation functionality handles interaction marc service services sharepoint soap spservices web wrapper"
     },
     {
       "section": "api",
@@ -55,7 +46,7 @@ NG_DOCS={
       "type": "service",
       "moduleName": "angularPoint",
       "shortDescription": "Processes the XML received from SharePoint and converts it into JavaScript objects based on predefined field types.",
-      "keywords": "additional allow allows anderson angularpoint apcacheservice apconfig apdecodeservice api apqueueservice aputilityservice array attributes attributetypes based batch build cached call camlcase capital change checks child code codeplex coming configuration constructors container conversions convert converts copies correctly corresponding customfields data define defined definition definitions directly don element elements empty entities entity error errors errorstring exists extend extended extends factory fetch field fielddefinition fielddefinitions fields filter find formatted function future getcache getlistitems includeallattrs incredible indexedcache info initial instantiated instantiates item items iterate javascript js keeping key large leading letter list listitemprovider lists ll location majority mappedname mapping marc metadata minor model modified needed newly node note null object objects objecttype optional optionally options opts ows_ parent parse parsed pass post predefined prevent processed processes processing project promise properties property propertyname provided push pushing query received reference references registers removeows representation representing requesting resolved resolves response responsexml responsible retrieve return returned returning returns rows scope server service set sharepoint simple slowdowns spservices spxmltojson start stored str string stripped takes target text throw true tweaking type typed types typically ui update updating val values version versions web webservice work xhr xml xmlentities xmlentity xmlobject"
+      "keywords": "additional allow allows anderson angularpoint apcacheservice apconfig apdecodeservice api aputilityservice array attributes attributetypes based batch build cached call camlcase capital change checks child code codeplex coming configuration constructors container convenience conversions convert converts copies correctly corresponding customfields data define defined definition definitions directly don element elements empty entities entity error errors errorstring exists extend extended extends factory fetch field fielddefinition fielddefinitions fields filter find formatted function future getcache getlist getlistitems getlistitemssincetoken includeallattrs incredible indexedcache info initial instantiated instantiates item items iterate javascript js keeping key large leading letter list listitemprovider lists ll location majority mappedname mapping marc metadata method minor model modified needed newly node note null object objects objecttype operations optional optionally options opts ows_ parent parse parsed pass post predefined prevent processed processes processing project promise properties property propertyname provided push pushing query received reference references registers removeows representation representing requesting resolved resolves response responsexml responsible retrieve return returned returning returns rows scope server service set sharepoint simple slowdowns spservices spxmltojson start stored str string stripped takes target text throw true tweaking type typed types typically ui update updating val values version versions web webservice work xhr xml xmlentities xmlentity xmlobject"
     },
     {
       "section": "api",
@@ -149,15 +140,6 @@ NG_DOCS={
     },
     {
       "section": "api",
-      "id": "angularPoint.apQueueService",
-      "shortName": "angularPoint.apQueueService",
-      "type": "service",
-      "moduleName": "angularPoint",
-      "shortDescription": "Simple service to monitor the number of active requests we have open with SharePoint",
-      "keywords": "active angularpoint animation api apqueueservice call callback change count current decrease decrementing display function increase incrementing loading monitor number observer open register requests reset service sharepoint simple sort typical"
-    },
-    {
-      "section": "api",
       "id": "angularPoint.apUserFactory",
       "shortName": "angularPoint.apUserFactory",
       "type": "function",
@@ -181,7 +163,7 @@ NG_DOCS={
       "type": "service",
       "moduleName": "angularPoint",
       "shortDescription": "Provides shared utility functionality across the application.",
-      "keywords": "$q actual addandcustomizepages adddelprivatewebparts addlistitems admin angularpoint apconfig api application applystylesheets applythemeandborder approveitems aputilityservice array article aspx assigned attribute based batches batchprocess bit break browsedirectories browser browseuserinfo buildprojectsummary camel cancelcheckout capitalized case change chunks codeplex comparison complete context convert converts cooresponding create createalerts creategroups createsscsite current cuts dates datetocheck defaults defer deferred delay deletelistitems deleteversions delimited desired determine directly don dvwps easier easily editlistitems editmyuserinfo effectivepermmask element enddate entities enumeratepermissions evaluate evaluates event example executed extendprojectsummary fall falls false fictitious firebase flags formatted fullmask function functionality getalllistitems getlistitemssincetoken group hang humanized identifying info int integer intensive ints item iterate iterating javascript js length letter level list listitem lock long managealerts managelists managepermissions managesubwebs manageweb mask masks maximum microsoft milliseconds model module names nczonline net notify null number object online open openitems operation pausing performing perm permission permissionmask permissionsmask permmask permmaskname personalviews portion problem process processed processing projectmodel projects projectsmodel promise properties provided range reference remove resolve resolvepermissions return returned returns rights running security service set shared sharepoint simple site source space specifies splookupaddnew spservices startdate starting string stringified stuff sufficient summary summaryobject sync thread time trimming typically ui unnecessary unsigned updatepersonalwebparts usable user useremoteapis users utility var version viewformpages viewlistitems viewpages viewusagedata viewversions whitespace word wss xml yyyymmdd"
+      "keywords": "$q actual add addandcustomizepages adddelprivatewebparts addlistitems admin angularpoint apconfig api application applystylesheets applythemeandborder approveitems aputilityservice array article aspx assigned attribute based batches batchprocess bit break browsedirectories browser browseuserinfo buildprojectsummary camel cancelcheckout capitalized case change character chunks codeplex comparison complete context convert converts cooresponding create createalerts creategroups createsscsite current cuts dates datetocheck defaults defer deferred delay deletelistitems deleteversions delimited desired determine digit directly don dvwps easier easily editlistitems editmyuserinfo effectivepermmask element enddate entities enumeratepermissions evaluate evaluates event example executed extendprojectsummary fall falls false fictitious firebase flags formatted fullmask function functionality getalllistitems getlistitemssincetoken group hang humanized identifying info int integer intensive ints item iterate iterating javascript js leading length letter level list listitem lock long managealerts managelists managepermissions managesubwebs manageweb mask masks maximum microsoft milliseconds model module names nczonline net notify null number object online open openitems operation passed pausing performing perm permission permissionmask permissionsmask permmask permmaskname personalviews portion problem process processed processing projectmodel projects projectsmodel promise properties provided range reference remove resolve resolvepermissions return returned returns rights running security service set shared sharepoint simple single site source space specifies splookupaddnew spservices startdate starting string stringified stuff sufficient summary summaryobject sync thread time trimming typically ui unnecessary unsigned updatepersonalwebparts usable user useremoteapis users utility val var version viewformpages viewlistitems viewpages viewusagedata viewversions whitespace word wss xml yyyymmdd"
     },
     {
       "section": "api",
@@ -209,15 +191,6 @@ NG_DOCS={
       "moduleName": "angularPoint",
       "shortDescription": "This function converts an XML node set into an array of JS objects.",
       "keywords": "allow anderson angular angularpoint api apxmltojsonservice array codeplex converts essentially function js marc modular node objects service set spxmltojson testing wrapped xml"
-    },
-    {
-      "section": "api",
-      "id": "angularPoint.directive:apSelect",
-      "shortName": "apSelect",
-      "type": "directive",
-      "moduleName": "angularPoint",
-      "shortDescription": "A SharePoint lookup value is represented as an object containing a lookupId and lookupValue.",
-      "keywords": "acronym activetask allows angularpoint api applicable arr array attempts attribute categories category class coming control-label create data-ap-select data-arr data-lookup-value data-multi data-target directive display field form form-group item items list lookup lookupid lookupvalue mind multi-select object objects options populate providing pushes reference referencing represented select select2 selected sets sharepoint span target taskcategories title true typically"
     },
     {
       "section": "api",
@@ -826,11 +799,37 @@ NG_DOCS={
   "apis": {
     "api": true
   },
+  "__file": "_FAKE_DEST_/js/docs-setup.js",
+  "__options": {
+    "startPage": "/api",
+    "scripts": [
+      "js/angular.min.js",
+      "js/angular-animate.min.js",
+      "js/marked.js",
+      "js/prettify.js"
+    ],
+    "styles": [],
+    "title": "angular-point",
+    "html5Mode": false,
+    "editExample": true,
+    "navTemplate": false,
+    "navContent": "",
+    "navTemplateData": {},
+    "titleLink": "/api",
+    "loadDefaults": {
+      "angular": true,
+      "angularAnimate": true,
+      "marked": true,
+      "prettify": true
+    }
+  },
   "html5Mode": false,
+  "editExample": true,
   "startPage": "/api",
   "scripts": [
-    "angular.js",
-    "angular-animate.min.js"
-  ],
-  "editExample": true
+    "angular.min.js",
+    "angular-animate.min.js",
+    "marked.js",
+    "prettify.js"
+  ]
 };
