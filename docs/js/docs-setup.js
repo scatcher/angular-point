@@ -1,17 +1,8 @@
 NG_DOCS={
   "sections": {
-    "api": "API Documentation"
+    "api": "angular-point"
   },
   "pages": [
-    {
-      "section": "api",
-      "id": "angularPoint",
-      "shortName": "angularPoint",
-      "type": "overview",
-      "moduleName": "angularPoint",
-      "shortDescription": "This is the primary angularPoint module and needs to be listed in your app.js dependencies to gain use of AngularPoint",
-      "keywords": "angularpoint api app dependencies functionality gain js listed module overview primary project"
-    },
     {
       "section": "api",
       "id": "angularPoint.apCacheService",
@@ -172,16 +163,7 @@ NG_DOCS={
       "type": "service",
       "moduleName": "angularPoint",
       "shortDescription": "Provides shared utility functionality across the application.",
-      "keywords": "$q actual addandcustomizepages adddelprivatewebparts addlistitems admin angularpoint apconfig api application applystylesheets applythemeandborder approveitems aputilityservice array article aspx assigned attribute based batches batchprocess bit break browsedirectories browser browseuserinfo buildprojectsummary camel cancelcheckout capitalized case change chunks codeplex comparison complete context convert converts cooresponding create createalerts creategroups createsscsite current cuts dates datetocheck defaults defer deferred delay deletelistitems deleteversions delimited desired determine directly don dvwps easier easily editlistitems editmyuserinfo effectivepermmask element enddate entities enumeratepermissions evaluate evaluates event example executed extendprojectsummary fall falls false fictitious firebase flags formatted fullmask function functionality getalllistitems getlistitemssincetoken group hang humanized identifying info int integer intensive ints item iterate iterating javascript js length letter level list listitem lock long managealerts managelists managepermissions managesubwebs manageweb mask masks maximum microsoft milliseconds model module names nczonline net notify null number object online open openitems operation pausing performing perm permission permissionmask permissionsmask permmask permmaskname personalviews portion problem process processed processing projectmodel projects projectsmodel promise properties provided range reference remove resolve resolvepermissions return returned returns rights running security service set shared sharepoint simple site source space specifies splookupaddnew spservices startdate starting string stringified stuff sufficient summary summaryobject sync thread time trimming typically ui unnecessary unsigned updatepersonalwebparts usable user useremoteapis users utility var version viewformpages viewlistitems viewpages viewusagedata viewversions whitespace word wss xml yyyymmdd"
-    },
-    {
-      "section": "api",
-      "id": "angularPoint.apXMLListAttributeTypes",
-      "shortName": "angularPoint.apXMLListAttributeTypes",
-      "type": "object",
-      "moduleName": "angularPoint",
-      "shortDescription": "Constant object map which contains many common XML attributes found on a list definition with their",
-      "keywords": "angularpoint api apxmllistattributetypes attributes common constant corresponding definition list map object type xml"
+      "keywords": "$q actual add addandcustomizepages adddelprivatewebparts addlistitems admin angularpoint apconfig api application applystylesheets applythemeandborder approveitems aputilityservice array article aspx assigned attribute based batches batchprocess bit break browsedirectories browser browseuserinfo buildprojectsummary camel cancelcheckout capitalized case change character chunks codeplex comparison complete context convert converts cooresponding create createalerts creategroups createsscsite current cuts dates datetocheck defaults defer deferred delay deletelistitems deleteversions delimited desired determine digit directly don dvwps easier easily editlistitems editmyuserinfo effectivepermmask element enddate entities enumeratepermissions evaluate evaluates event example executed extendprojectsummary fall falls false fictitious firebase flags formatted fullmask function functionality getalllistitems getlistitemssincetoken group hang humanized identifying info int integer intensive ints item iterate iterating javascript js leading length letter level list listitem lock long managealerts managelists managepermissions managesubwebs manageweb mask masks maximum microsoft milliseconds model module names nczonline net notify null number object online open openitems operation passed pausing performing perm permission permissionmask permissionsmask permmask permmaskname personalviews portion problem process processed processing projectmodel projects projectsmodel promise properties provided range reference remove resolve resolvepermissions return returned returns rights running security service set shared sharepoint simple single site source space specifies splookupaddnew spservices startdate starting string stringified stuff sufficient summary summaryobject sync thread time trimming typically ui unnecessary unsigned updatepersonalwebparts usable user useremoteapis users utility val var version viewformpages viewlistitems viewpages viewusagedata viewversions whitespace word wss xml yyyymmdd"
     },
     {
       "section": "api",
@@ -191,6 +173,15 @@ NG_DOCS={
       "moduleName": "angularPoint",
       "shortDescription": "Constant object map which contains many common XML attributes found on a field definition with their",
       "keywords": "angularpoint api apxmllistattributetypes attributes common constant corresponding definition field map object type xml"
+    },
+    {
+      "section": "api",
+      "id": "angularPoint.apXMLListAttributeTypes",
+      "shortName": "angularPoint.apXMLListAttributeTypes",
+      "type": "object",
+      "moduleName": "angularPoint",
+      "shortDescription": "Constant object map which contains many common XML attributes found on a list definition with their",
+      "keywords": "angularpoint api apxmllistattributetypes attributes common constant corresponding definition list map object type xml"
     },
     {
       "section": "api",
@@ -808,11 +799,37 @@ NG_DOCS={
   "apis": {
     "api": true
   },
+  "__file": "_FAKE_DEST_/js/docs-setup.js",
+  "__options": {
+    "startPage": "/api",
+    "scripts": [
+      "js/angular.min.js",
+      "js/angular-animate.min.js",
+      "js/marked.js",
+      "js/prettify.js"
+    ],
+    "styles": [],
+    "title": "angular-point",
+    "html5Mode": false,
+    "editExample": true,
+    "navTemplate": false,
+    "navContent": "",
+    "navTemplateData": {},
+    "titleLink": "/api",
+    "loadDefaults": {
+      "angular": true,
+      "angularAnimate": true,
+      "marked": true,
+      "prettify": true
+    }
+  },
   "html5Mode": false,
+  "editExample": true,
   "startPage": "/api",
   "scripts": [
-    "angular.js",
-    "angular-animate.min.js"
-  ],
-  "editExample": true
+    "angular.min.js",
+    "angular-animate.min.js",
+    "marked.js",
+    "prettify.js"
+  ]
 };
