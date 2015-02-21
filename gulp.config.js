@@ -1,12 +1,10 @@
 module.exports = function () {
-    var root = './';
     var temp = './.tmp/';
     var bower = {
         json: require('./bower.json'),
         directory: './bower_components/',
         ignorePath: '../..'
     };
-    var nodeModules = 'node_modules';
 
     var config = {
         projectjs: [

@@ -102,8 +102,50 @@ gulp.task('debugtest', function(done) {
 });
 
 
-////////////////
+/**
+ * Generate docs from code in docs folder.
+ */
+gulp.task('ngdocs', function () {
+    var gulpDocs = require('gulp-ngdocs');
+    var options = {
+        analytics: {
+            account: 'UA-51195298-1',
+            domainName: 'scatcher.github.io'
+        },
+        html5Mode: false,
+        title: pkg.name,
+        titleLink: '/api'
+    };
+    return gulp.src([].concat(config.distModule, config.projectjs))
+        .pipe(gulpDocs.process(options))
+        .pipe(gulp.dest(config.docs));
+});
 
+/**
+ * Push docs to live site.
+ */
+gulp.task('ghpages', ['ngdocs'], function() {
+    gulp.src(config.docs + '**/*')
+        .pipe($.ghPages());
+});
+
+gulp.task('patch', function() { return incrementVersion('patch'); });
+gulp.task('feature', function() { return incrementVersion('minor'); });
+gulp.task('release', function() { return incrementVersion('major'); });
+
+//TODO Make cacheXML logic use gulp.src and process as a stream instead of use the current sync approach
+gulp.task('cacheXML', function (done) {
+    return createJSON({
+        moduleName: pkg.module,
+        constantName: 'apCachedXML',
+        fileName: 'parsedXML.js',
+        dest: 'test/mock/data',
+        src: [ 'test/mock/xml/']
+    }, done);
+});
+
+
+/////////////////////////////////////////////////////////////
 
 /**
  * Format and return the header for files
@@ -141,40 +183,12 @@ function log(msg) {
 }
 
 /**
- * Generate docs from code in docs folder.
- */
-gulp.task('ngdocs', function () {
-    var gulpDocs = require('gulp-ngdocs');
-    var options = {
-        html5Mode: false,
-        title: pkg.name,
-        titleLink: '/api'
-    };
-    return gulp.src([].concat(config.distModule, config.projectjs))
-        .pipe(gulpDocs.process(options))
-        .pipe(gulp.dest(config.docs));
-});
-
-/**
- * Update bower, component, npm at once:
- */
-gulp.task('bump', function () {
-    gulp.src(['./bower.json', './package.json'])
-        .pipe($.bump())
-        .pipe(gulp.dest('./'));
-});
-
-/**
- * Push docs to live site.
- */
-gulp.task('ghpages', ['ngdocs'], function() {
-    gulp.src(config.docs + '**/*')
-        .pipe($.ghPages());
-});
-
-/**
  * Start the tests using karma.
- * @param  {boolean} singleRun - True means run once and end (CI), or keep running (dev)
+ * @param  {object} options - True means run once and end (CI), or keep running (dev)
+ * @param  {boolean} [options.singleRun=true]
+ * @param  {boolean} [options.autoWatch=false]
+ * @param  {string[]} [options.browsers=['PhantomJS']]
+ * @param  {boolean} [options.singleRun=true]
  * @param  {Function} done - Callback to fire when karma is done
  * @return {undefined}
  */
@@ -244,20 +258,6 @@ function incrementVersion(importance) {
         .pipe($.tagVersion());
 }
 
-gulp.task('patch', function() { return incrementVersion('patch'); });
-gulp.task('feature', function() { return incrementVersion('minor'); });
-gulp.task('release', function() { return incrementVersion('major'); });
-
-//TODO Make cacheXML logic use gulp.src and process as a stream instead of use the current sync approach
-gulp.task('cacheXML', function (done) {
-    return createJSON({
-        moduleName: pkg.module,
-        constantName: 'apCachedXML',
-        fileName: 'parsedXML.js',
-        dest: 'test/mock/data',
-        src: [ 'test/mock/xml/']
-    }, done);
-});
 
 /**
  * @description
