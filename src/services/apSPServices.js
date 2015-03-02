@@ -1,5 +1,3 @@
-'use strict';
-
 /**
  * @ngdoc service
  * @name angularPoint.SPServices
@@ -9,8 +7,7 @@
  * communication with the server.
  *
  * */
-angular.module('angularPoint')
-    .factory('SPServices', function (apWebServiceOperationConstants, apWebServiceService) {
+export default function SPServices (apWebServiceOperationConstants, apWebServiceService){
 
         /*
          * SPServices - Work with SharePoint's Web Services using jQuery
@@ -95,13 +92,13 @@ angular.module('angularPoint')
 
 
         // Main function, which calls SharePoint's Web Services directly.
-        var SPServices = {
-            defaults: defaults,
-            encodeXml: encodeXml,
-            generateXMLComponents: generateXMLComponents,
-            SCHEMASharePoint: SCHEMASharePoint,
-            SOAPEnvelope: new SOAPEnvelope()
-        };
+        //var SPServices = {
+        this.defaults = defaults;
+        this.encodeXml = encodeXml;
+        this.generateXMLComponents = generateXMLComponents;
+        this.SCHEMASharePoint = SCHEMASharePoint;
+        this.SOAPEnvelope = new SOAPEnvelope();
+        //};
 
         function generateXMLComponents(options) {
 
@@ -252,11 +249,11 @@ angular.module('angularPoint')
                 case "GetListItems":
                     addToPayload(opt,
                         ["listName", "viewName",
-                        ["query", "CAMLQuery"],
-                        ["viewFields", "CAMLViewFields"],
-                        ["rowLimit", "CAMLRowLimit"],
-                        ["queryOptions", "CAMLQueryOptions"]
-                    ]);
+                            ["query", "CAMLQuery"],
+                            ["viewFields", "CAMLViewFields"],
+                            ["rowLimit", "CAMLRowLimit"],
+                            ["queryOptions", "CAMLQueryOptions"]
+                        ]);
                     break;
                 case "GetListItemChanges":
                     addToPayload(opt, ["listName", "viewFields", "since", "contains"]);
@@ -985,7 +982,7 @@ angular.module('angularPoint')
             } // End of function siteDataFixSOAPEnvelope
 
 
-        }; // End SPServices.generateXMLComponents
+        } // End SPServices.generateXMLComponents
 
 
         //TODO Move this somewhere else, it's too buried down here
@@ -1052,7 +1049,7 @@ angular.module('angularPoint')
             return regex.test(jQuery(elem)[attr.method](attr.property));
         };
 
-        return SPServices;
+        //return SPServices;
 
 
         //// Known list field types
@@ -1730,7 +1727,5 @@ angular.module('angularPoint')
         //        }
         //    });
         //
-        //} // End SPServices.SPUpdateMultipleListItems
-
-
-    });
+        //} // End SPServices.SPUpdateMultipleListItems    }
+}

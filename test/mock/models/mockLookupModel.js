@@ -3,24 +3,26 @@
 /** Angular will instantiate this singleton by calling "new" on this function the first time it's referenced
  /*  State will persist throughout life of session
  */
-angular.module('angularPoint')
-    .service('mockLookupModel', function (apModelFactory, apDecodeService, mockXMLService) {
-
+export default class mockLookupModel extends apModelFactory.Model{
+    constructor(apDecodeService, mockXMLService) {
+        var model = this;
         /**
          * Entity Constructor
          * @param obj
          * @constructor
          */
-        function Mock(obj) {
-            var self = this;
-            _.extend(self, obj);
+        class Mock {
+            constructor(obj){
+                var self = this;
+                _.extend(self, obj);
+            }
         }
 
         /********************* Model Definition ***************************************/
 
         /** Model Constructor
          *  Also passes list to List constructor to build viewFields (XML definition of fields to return) */
-        var model = apModelFactory.create({
+        super({
             factory: Mock,
             list: {
                 title: 'MockLookupList', /**Maps to the offline XML file in dev folder (no spaces) */
@@ -62,5 +64,5 @@ angular.module('angularPoint')
             return primaryCache;
         };
 
-        return model;
-    });
+    }
+}

@@ -1,5 +1,3 @@
-'use strict';
-
 /**
  * @ngdoc service
  * @name angularPoint.apDataService
@@ -11,43 +9,34 @@
  *
  *
  // *  @requires apConfig
- // *  @requires apUtilityService
  // *  @requires apFieldService
  */
-angular.module('angularPoint')
-    .factory('apDataService', function ($q, $timeout, $http, _, apConfig, apUtilityService,
-                                        apCacheService, apDecodeService, apEncodeService, apFieldService,
-                                        apIndexedCacheFactory, toastr, SPServices, apDefaultListItemQueryOptions,
-                                        apWebServiceOperationConstants, apXMLToJSONService) {
+export default function apDataService ($q, $http, _, apConfig, apCacheService, apDecodeService, apEncodeService,
+                                       apIndexedCacheFactory, toastr, SPServices, apWebServiceOperationConstants,
+                                       apXMLToJSONService){
 
         /** Exposed functionality */
-        var apDataService = {
-            createListItem: createListItem,
-            deleteAttachment: deleteAttachment,
-            deleteListItem: deleteListItem,
-            executeQuery: executeQuery,
-            generateWebServiceUrl: generateWebServiceUrl,
-            getAvailableWorkflows: getAvailableWorkflows,
-            getCollection: getCollection,
-            getCurrentSite: getCurrentSite,
-            getFieldVersionHistory: getFieldVersionHistory,
-            getGroupCollectionFromUser: getGroupCollectionFromUser,
-            getList: getList,
-            getListFields: getListFields,
-            //getListItemById: getListItemById,
-            getUserProfileByName: getUserProfileByName,
-            //getView: getView,
-            processChangeTokenXML: processChangeTokenXML,
-            processDeletionsSinceToken: processDeletionsSinceToken,
-            requestData: requestData,
-            retrieveChangeToken: retrieveChangeToken,
-            retrievePermMask: retrievePermMask,
-            serviceWrapper: serviceWrapper,
-            startWorkflow: startWorkflow,
-            updateListItem: updateListItem
-        };
-
-        return apDataService;
+        this.createListItem = createListItem;
+        this.deleteAttachment = deleteAttachment;
+        this.deleteListItem = deleteListItem;
+        this.executeQuery = executeQuery;
+        this.generateWebServiceUrl = generateWebServiceUrl;
+        this.getAvailableWorkflows = getAvailableWorkflows;
+        this.getCollection = getCollection;
+        this.getCurrentSite = getCurrentSite;
+        this.getFieldVersionHistory = getFieldVersionHistory;
+        this.getGroupCollectionFromUser = getGroupCollectionFromUser;
+        this.getList = getList;
+        this.getListFields = getListFields;
+        this.getUserProfileByName = getUserProfileByName;
+        this.processChangeTokenXML = processChangeTokenXML;
+        this.processDeletionsSinceToken = processDeletionsSinceToken;
+        this.requestData = requestData;
+        this.retrieveChangeToken = retrieveChangeToken;
+        this.retrievePermMask = retrievePermMask;
+        this.serviceWrapper = serviceWrapper;
+        this.startWorkflow = startWorkflow;
+        this.updateListItem = updateListItem;
 
         /*********************** Private ****************************/
 
@@ -140,7 +129,7 @@ angular.module('angularPoint')
             function processXML(serverResponse) {
                 if (opts.filterNode) {
                     var nodes = $(serverResponse).SPFilterNode(opts.filterNode);
-                    return apXMLToJSONService(nodes, {includeAllAttrs: true, removeOws: false});
+                    return apXMLToJSONService.convertToJson(nodes, {includeAllAttrs: true, removeOws: false});
                 } else {
                     return serverResponse;
                 }
@@ -254,7 +243,7 @@ angular.module('angularPoint')
                     });
                 } else {
                     var nodes = $(serverResponse).SPFilterNode(filterNode);
-                    convertedItems = apXMLToJSONService(nodes, {includeAllAttrs: true, removeOws: false});
+                    convertedItems = apXMLToJSONService.convertToJson(nodes, {includeAllAttrs: true, removeOws: false});
                 }
                 return convertedItems;
             }
@@ -480,7 +469,7 @@ angular.module('angularPoint')
             getList(options)
                 .then(function (responseXml) {
                     var nodes = $(responseXml).SPFilterNode('Field');
-                    var fields = apXMLToJSONService(nodes, {includeAllAttrs: true, removeOws: false});
+                    var fields = apXMLToJSONService.convertToJson(nodes, {includeAllAttrs: true, removeOws: false});
                     deferred.resolve(fields);
                 });
             return deferred.promise;
@@ -923,90 +912,4 @@ angular.module('angularPoint')
             return serviceWrapper(opts);
 
         }
-
-        //Todo Determine if this has any value.
-     //   /**
-     //    * @ngdoc function
-     //    * @name apDataService.getView
-     //    * @description
-     //    * Returns the schema of the specified view for the specified list.
-     //    * @param {object} options Configuration parameters.
-     //    * @param {string} options.listName GUID of the list.
-     //    * @param {string} [options.viewName] Formatted as a GUID, if not provided returns the default view.
-     //    * <pre>'{37388A98-534C-4A28-BFFA-22429276897B}'</pre>
-     //    * @param {string} [options.webURL] Can override the default web url if desired.
-     //    * @returns {object} {query: '', viewFields: '', rowLimit: ''}
-     //    * Promise that resolves with an object similar to this.
-     //    * @example
-     //    * <pre>
-     //    * apDataService.getView({
-     //*    viewName: '{EE7C652F-9CBF-433F-B376-86B0EE989A06}',
-     //*    listName: '{AA7C652F-44BF-433F-B376-234423234A06}'
-     //* })
-     //    *
-     //    *
-     //    * </pre>
-     //    * <h3>Returned XML</h3>
-     //    * <pre>
-     //    *  <View Name="{EE7C652F-9CBF-433F-B376-86B0EE989A06}"
-     //    *  DefaultView="TRUE" Type="HTML" DisplayName="View_Name"
-     //    *  Url="Lists/Events/File_Name.aspx" BaseViewID="1">
-     //    *  <Query>
-     //    *    <Where>
-     //    *      <Leq>
-     //    *        <FieldRef Name="Created"/>
-     //    *        <Value Type="DateTime">2003-03-03T00:00:00Z</Value>
-     //    *      </Leq>
-     //    *    </Where>
-     //    *  </Query>
-     //    *  <ViewFields>
-     //    *    <FieldRef Name="fRecurrence"/>
-     //    *    <FieldRef Name="Attachments"/>
-     //    *    <FieldRef Name="WorkspaceLink"/>
-     //    *    <FieldRef Name="LinkTitle"/>
-     //    *    <FieldRef Name="Location"/>
-     //    *    <FieldRef Name="EventDate"/>
-     //    *    <FieldRef Name="EndDate"/>
-     //    *  </ViewFields>
-     //    *  <RowLimit Paged="TRUE">100</RowLimit>
-     //    * </View>
-     //    * </pre>
-     //    *
-     //    */
-     //   function getView(options) {
-     //       var defaults = {
-     //           operation: 'GetView'
-     //       };
-     //
-     //       var deferred = $q.defer();
-     //
-     //
-     //       var opts = _.extend({}, defaults, options);
-     //
-     //       serviceWrapper(opts)
-     //           .then(function (response) {
-     //               /** Success */
-     //               var output = {
-     //                   query: '<Query>' + apUtilityService.stringifyXML($(response).find('Query')) + '</Query>',
-     //                   viewFields: [],
-     //                   rowLimit: $(response).find('RowLimit')[0].outerHTML
-     //               };
-     //
-     //               var viewFields = $(response).find('ViewFields');
-     //               _.each(viewFields, function(field) {
-     //                   output.
-     //               });
-     //
-     //               ///** Pass back the lists array */
-     //               deferred.resolve(response);
-     //           }, function (err) {
-     //               /** Failure */
-     //               toastr.error('Failed to fetch view details.');
-     //               deferred.reject(err);
-     //           });
-     //
-     //       return deferred.promise;
-     //   }
-
-    }
-);
+}

@@ -19,7 +19,7 @@ gulp.task('default', ['help']);
  * vet the code and create coverage report
  * @return {Stream}
  */
-gulp.task('vet', function() {
+gulp.task('vet', function () {
     log('Analyzing source with JSHint and JSCS');
 
     return gulp
@@ -44,7 +44,7 @@ gulp.task('concat', ['clean'], function () {
 /**
  * Create concatenated and minified scripts.
  */
-gulp.task('build', ['concat'], function() {
+gulp.task('build', ['concat'], function () {
     return gulp
         .src(config.build + pkg.name + '.js')
         .pipe($.plumber())
@@ -58,12 +58,75 @@ gulp.task('build', ['concat'], function() {
  * Remove all files from the build and temp folders
  * @param  {Function} done - callback when complete
  */
-gulp.task('clean', function(done) {
+gulp.task('clean', function (done) {
     var files = [].concat(
         config.temp,
         config.build
     );
     clean(files, done);
+});
+
+gulp.task('babel', function () {
+
+    //return gulp.src([].concat(config.projectjs, './src/app.module.js'))
+    //.pipe($.sourcemaps.init())
+    //.pipe($.babel())
+    //.pipe($.concat(pkg.name + '.js'))
+    //.pipe($.sourcemaps.write('.'))
+    //.pipe(gulp.dest('.tmp'));
+
+    return gulp.src('./src/**/*')
+        .pipe($.plumber())
+        //.pipe($.concat(pkg.name + '.js'))
+        .pipe($.babel({compact: false}))
+        .pipe($.ngAnnotate({add: true, single_quotes: true}))
+        .pipe(gulp.dest('.tmp/es5/'));
+});
+
+gulp.task('scripts', function () {
+    return gulp.src([].concat(config.mockModule, config.projectjs))
+        .pipe($.jshint())
+        .pipe($.jshint.reporter('jshint-stylish'))
+        .pipe($.babel())
+        .on('error', function handleError(err) {
+            console.error(err.toString());
+            this.emit('end');
+        })
+        .pipe(gulp.dest(config.temp + '/babel-test'));
+});
+
+
+gulp.task('preflight', ['scripts'], function () {
+    //return gulp.src([].concat(config.mockModule, config.projectjs, config.mocks))
+    //$.browserify({debug:true})
+    //.transform($.babelify)
+    //.require('./test/mock/app.module.js', {entry: true})
+    //.bundle()
+    //return gulp.src('./test/mock/app.module.js')
+    return gulp.src(config.temp + '/babel-test/app.module.js', {read: false})
+        .pipe($.browserify())
+        .on('error', function handleError(err) {
+            console.error(err.toString());
+            this.emit('end');
+        })
+        .pipe(gulp.dest(config.temp + '/test'));
+
+        //.pipe($.plumber())
+        ////.pipe($.concat(pkg.name + '.js'))
+        ////.pipe($.babel())
+        ////.pipe($.babel({compact: false}))
+        //.pipe($.browserify({
+        //    transform: ['babelify']
+        //}))
+        ////.transform($.babelify)
+        //.on('error', function handleError(err) {
+        //    console.error(err.toString());
+        //    this.emit('end');
+        //})
+        ////.pipe($.babel({compact: false}))
+        //.pipe($.ngAnnotate({add: true, single_quotes: true}))
+        //.pipe(gulp.dest('.tmp/test/test.js'));
+
 });
 
 
@@ -73,8 +136,8 @@ gulp.task('clean', function(done) {
  *    gulp test --startServers
  * @return {Stream}
  */
-gulp.task('test', function(done) {
-    startTests({} , done);
+gulp.task('test', ['babel'], function (done) {
+    startTests({}, done);
 });
 
 /**
@@ -83,7 +146,7 @@ gulp.task('test', function(done) {
  * To start servers and run midway specs as well:
  *    gulp autotest --startServers
  */
-gulp.task('autotest', function(done) {
+gulp.task('autotest', ['babel'], function (done) {
     startTests({autoWatch: true, singleRun: false}, done);
 });
 
@@ -93,12 +156,12 @@ gulp.task('autotest', function(done) {
  * To start servers and run midway specs as well:
  *    gulp autotest --startServers
  */
-gulp.task('debugtest', function(done) {
+gulp.task('debugtest', ['babel'], function (done) {
     startTests({
         autoWatch: true,
         browsers: ['Chrome'],
         singleRun: false
-    } , done);
+    }, done);
 });
 
 
@@ -124,14 +187,20 @@ gulp.task('ngdocs', function () {
 /**
  * Push docs to live site.
  */
-gulp.task('ghpages', ['ngdocs'], function() {
+gulp.task('ghpages', ['ngdocs'], function () {
     gulp.src(config.docs + '**/*')
         .pipe($.ghPages());
 });
 
-gulp.task('patch', function() { return incrementVersion('patch'); });
-gulp.task('feature', function() { return incrementVersion('minor'); });
-gulp.task('release', function() { return incrementVersion('major'); });
+gulp.task('patch', function () {
+    return incrementVersion('patch');
+});
+gulp.task('feature', function () {
+    return incrementVersion('minor');
+});
+gulp.task('release', function () {
+    return incrementVersion('major');
+});
 
 //TODO Make cacheXML logic use gulp.src and process as a stream instead of use the current sync approach
 gulp.task('cacheXML', function (done) {
@@ -140,7 +209,7 @@ gulp.task('cacheXML', function (done) {
         constantName: 'apCachedXML',
         fileName: 'parsedXML.js',
         dest: 'test/mock/data',
-        src: [ 'test/mock/xml/']
+        src: ['test/mock/xml/']
     }, done);
 });
 

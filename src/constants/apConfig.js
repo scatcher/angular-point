@@ -43,21 +43,19 @@
  *      });
  * </pre>
  */
-(function () {
-    'use strict';
-    angular
-        .module('angularPoint')
-        .constant('apConfig',{
-            appTitle: 'Angular-Point',
-            debug: false,
-            defaultQueryName: 'primary',
-            defaultUrl: '',
-            environment: 'production',
-            firebaseURL: "The optional url of your firebase source",
-            offline: window.location.href.indexOf('localhost') > -1 ||
-                window.location.href.indexOf('http://0.') > -1 ||
-                window.location.href.indexOf('http://10.') > -1 ||
-                window.location.href.indexOf('http://192.') > -1,
-            offlineXML: 'dev/'
-        });
-})();
+
+let apConfig = {
+    appTitle: 'Angular-Point',
+    debug: false,
+    defaultQueryName: 'primary',
+    defaultUrl: '',
+    environment: 'production',
+    firebaseURL: "The optional url of your firebase source",
+    offline: window.location.href.indexOf('localhost') > -1 ||
+    window.location.href.indexOf('http://0.') > -1 ||
+    window.location.href.indexOf('http://10.') > -1 ||
+    window.location.href.indexOf('http://192.') > -1,
+    offlineXML: 'dev/'
+};
+
+export {apConfig};

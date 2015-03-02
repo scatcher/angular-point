@@ -17,7 +17,7 @@ describe("Factory: apIndexedCacheFactory", function () {
 
 
 
-    describe('IndexCache', function () {
+    ddescribe('IndexCache', function () {
         it('the cache to have the correct constructor', function () {
             expect(mockCache instanceof factory.IndexedCache).toBe(true);
         });

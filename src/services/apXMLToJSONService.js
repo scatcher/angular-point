@@ -9,49 +9,50 @@
  * an Angular service to make it more modular and allow for testing.
  *
  */
-angular.module('angularPoint')
-    .service('apXMLToJSONService', function (_, apDecodeService) {
+export default function apXMLToJSONService(_, apDecodeService) {
 
-        // This function converts an XML node set to JSON
-        return function (xmlNodeSet, options) {
+    this.convertToJson = convertToJson;
 
-            var defaults = {
-                mapping: {}, // columnName: mappedName: "mappedName", objectType: "objectType"
-                includeAllAttrs: false, // If true, return all attributes, regardless whether they are in the mapping
-                removeOws: true, // Specifically for GetListItems, if true, the leading ows_ will be stripped off the field name
-                sparse: false // If true, empty ("") values will not be returned
-            };
+    function convertToJson(xmlNodeSet, options) {
 
-            var opts = _.extend({}, defaults, options);
+        var defaults = {
+            mapping: {}, // columnName: mappedName: "mappedName", objectType: "objectType"
+            includeAllAttrs: false, // If true, return all attributes, regardless whether they are in the mapping
+            removeOws: true, // Specifically for GetListItems, if true, the leading ows_ will be stripped off the field name
+            sparse: false // If true, empty ("") values will not be returned
+        };
 
-            var jsonObject = [];
+        var opts = _.extend({}, defaults, options);
 
-            _.each(xmlNodeSet, function (node) {
-                var row = {};
-                var rowAttrs = node.attributes;
+        var jsonObject = [];
 
-                if (!opts.sparse) {
-                    // Bring back all mapped columns, even those with no value
-                    _.each(opts.mapping, function (column) {
-                        row[column.mappedName] = '';
-                    });
-                }
+        _.each(xmlNodeSet, function (node) {
+            var row = {};
+            var rowAttrs = node.attributes;
 
-                _.each(rowAttrs, function (rowAttribute) {
-                    var attributeName = rowAttribute.name;
-                    var columnMapping = opts.mapping[attributeName];
-                    var objectName = typeof columnMapping !== "undefined" ? columnMapping.mappedName : opts.removeOws ? attributeName.split("ows_")[1] : attributeName;
-                    var objectType = typeof columnMapping !== "undefined" ? columnMapping.objectType : undefined;
-                    if (opts.includeAllAttrs || columnMapping !== undefined) {
-                        row[objectName] = apDecodeService.parseStringValue(rowAttribute.value, objectType);
-                    }
+            if (!opts.sparse) {
+                // Bring back all mapped columns, even those with no value
+                _.each(opts.mapping, function (column) {
+                    row[column.mappedName] = '';
                 });
+            }
 
-                // Push this item into the JSON Object
-                jsonObject.push(row);
+            _.each(rowAttrs, function (rowAttribute) {
+                var attributeName = rowAttribute.name;
+                var columnMapping = opts.mapping[attributeName];
+                var objectName = typeof columnMapping !== "undefined" ? columnMapping.mappedName : opts.removeOws ? attributeName.split("ows_")[1] : attributeName;
+                var objectType = typeof columnMapping !== "undefined" ? columnMapping.objectType : undefined;
+                if (opts.includeAllAttrs || columnMapping !== undefined) {
+                    row[objectName] = apDecodeService.parseStringValue(rowAttribute.value, objectType);
+                }
             });
 
-            // Return the JSON object
-            return jsonObject;
-        };
-    });
+            // Push this item into the JSON Object
+            jsonObject.push(row);
+        });
+
+        // Return the JSON object
+        return jsonObject;
+    }
+
+}

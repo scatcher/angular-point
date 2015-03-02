@@ -1,9 +1,11 @@
-'use strict';
+export default apMockBackend;
 
-angular.module('angularPoint')
-    .run(function (_, $httpBackend, apCachedXML, apCacheService, apWebServiceService, apUtilityService, apEncodeService) {
+class apMockBackend {
+    constructor(_, $httpBackend, apCachedXML, apCacheService, apWebServiceService,
+                apUtilityService, apEncodeService) {
 
         var mockId = 10000;
+
         function getMockId() {
             return mockId++;
         }
@@ -76,7 +78,7 @@ angular.module('angularPoint')
             var rowLimit = $(request).find('rowLimit').text();
             if (rowLimit == 1) {
                 var zrow = getListItemById(request);
-                if(!zrow) {
+                if (!zrow) {
                     /** A match wasn't found so return a mock */
                     zrow = generateMockListItems(request, 1)[0];
                 }
@@ -106,8 +108,8 @@ angular.module('angularPoint')
             var rows = getZRows(request);
 
             /** Attempt to find the requested list item in the cached xml */
-            _.each(rows, function(row) {
-                if($(row).attr('ows_ID') == id) {
+            _.each(rows, function (row) {
+                if ($(row).attr('ows_ID') == id) {
                     match = row;
                     /** Break loop */
                     return false;
@@ -169,7 +171,7 @@ angular.module('angularPoint')
                 case 'Delete':
                     /** No z:row element when deleted */
                     zrow = '';
-                    _.each($(request).find('Field'), function(field) {
+                    _.each($(request).find('Field'), function (field) {
                         var fieldId = parseInt($(field).text(), 10);
                         registerDeletion(request, fieldId);
                     });
@@ -228,7 +230,7 @@ angular.module('angularPoint')
         function buildRSDataNode(zrows) {
 
             var rsdata = '<rs:data ItemCount="' + zrows.length + '">';
-            _.each(zrows, function(zrow) {
+            _.each(zrows, function (zrow) {
                 /** Work with zrows that have been parsed to xml as well as those that are still strings */
                 rsdata += typeof zrow === 'object' ? apUtilityService.stringifyXML(zrow) : zrow;
             });
@@ -246,8 +248,8 @@ angular.module('angularPoint')
             /* Build Changes XML node for entities that have been deleted.  There are other valid changes [Restore] but
              at this point we're only concerned with mocking deleted items */
             response.changes = '<Changes LastChangeToken="' + token + '">';
-            if(changesSinceToken.pendingDeletions.length > 0) {
-                _.each(changesSinceToken.pendingDeletions, function(listItemId) {
+            if (changesSinceToken.pendingDeletions.length > 0) {
+                _.each(changesSinceToken.pendingDeletions, function (listItemId) {
                     response.changes += '<Id ChangeType="Delete" UniqueId="">' + listItemId + '</Id>';
                 });
             }
@@ -341,12 +343,12 @@ angular.module('angularPoint')
             var model = getListModel(request);
             var mockRecords = model.generateMockData({quantity: quantity});
             var zrows = [];
-            _.each(mockRecords, function(mockRecord) {
+            _.each(mockRecords, function (mockRecord) {
                 var changeObject = {};
                 /** Generate value pairs for each property on the mock object */
                 var valuePairs = apEncodeService.generateValuePairs(model.list.fields, mockRecord);
                 /** Create a key/val property for each valuePiar */
-                _.each(valuePairs, function(valuePair) {
+                _.each(valuePairs, function (valuePair) {
                     changeObject[valuePair[0]] = valuePair[1];
                 });
                 zrows.push(createZRow(changeObject));
@@ -376,7 +378,7 @@ angular.module('angularPoint')
 
             if (apCachedXML.lists[fileName] && apCachedXML.lists[fileName][operation]) {
                 response = apCachedXML.lists[fileName][operation];
-            } else if(_.keys(apCachedXML.lists[fileName]).length > 0) {
+            } else if (_.keys(apCachedXML.lists[fileName]).length > 0) {
                 /** The exact operation we'd looking for isn't found but there's another there so we'll try that */
                 response = apCachedXML.lists[fileName][_.keys(apCachedXML.lists[fileName])[0]];
             }
@@ -486,5 +488,5 @@ angular.module('angularPoint')
         //function responder(responseXML) {
         //    return [200, responseXML];
         //}
-
-    });
+    }
+}

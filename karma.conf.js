@@ -14,9 +14,10 @@ module.exports = function (config) {
         // list of files / patterns to load in the browser
         files: [].concat(
             appConfig.vendorjs,
-            appConfig.mockModule,
-            appConfig.projectjs,
-            appConfig.mocks,
+            '.tmp/es5/app.module.js',
+            //appConfig.mockModule,
+            //appConfig.projectjs,
+            //appConfig.mocks,
             appConfig.specs
         ),
 

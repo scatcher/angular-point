@@ -11,6 +11,10 @@ module.exports = function () {
             "./src/**/*.js",
             "!./src/**/app.module.js"
         ],
+        es5: [
+            "./.tmp/es5/**/*.js",
+            "!./.tmp/es5/**/app.module.js"
+        ],
         specs: [
             "./test/spec/**/*.spec.js"
         ],
@@ -27,8 +31,7 @@ module.exports = function () {
         ],
         temp: temp,
         mocks: [
-            "./test/mock/**/*.js",
-            "!./test/mock/**/app.module.js"
+            "./test/mock/**/*.js"
         ],
         mockModule: './test/mock/app.module.js',
         distModule: './src/app.module.js',

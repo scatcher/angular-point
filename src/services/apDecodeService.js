@@ -1,5 +1,3 @@
-'use strict';
-
 /**
  * @ngdoc service
  * @name angularPoint.apDecodeService
@@ -10,35 +8,29 @@
  * @requires angularPoint.apConfig
  * @requires angularPoint.apCacheService
  */
-angular.module('angularPoint')
-    .factory('apDecodeService', function ($q, _, apUtilityService, apConfig, apCacheService,
-                                          apLookupFactory, apUserFactory, apFieldService, apXMLListAttributeTypes,
-                                          apXMLFieldAttributeTypes) {
+export default function apDecodeService (_, apCacheService, apLookupFactory, apUserFactory, apFieldService,
+                                         apXMLListAttributeTypes, apXMLFieldAttributeTypes){
 
-
-        return {
-            checkResponseForErrors: checkResponseForErrors,
-            extendFieldDefinitionsFromXML: extendFieldDefinitionsFromXML,
-            extendListDefinitionFromXML: extendListDefinitionsFromXML,
-            extendListMetadata: extendListMetadata,
-            jsBoolean: jsBoolean,
-            jsCalc: jsCalc,
-            jsChoiceMulti: jsChoiceMulti,
-            jsDate: jsDate,
-            jsFloat: jsFloat,
-            jsInt: jsInt,
-            jsLookup: jsLookup,
-            jsLookupMulti: jsLookupMulti,
-            jsObject: jsObject,
-            jsString: jsString,
-            jsUser: jsUser,
-            jsUserMulti: jsUserMulti,
-            parseFieldVersions: parseFieldVersions,
-            parseStringValue: parseStringValue,
-            processListItems: processListItems,
-            //updateLocalCache: updateLocalCache,
-            xmlToJson: xmlToJson
-        };
+        this.checkResponseForErrors = checkResponseForErrors;
+        this.extendFieldDefinitionsFromXML = extendFieldDefinitionsFromXML;
+        this.extendListDefinitionFromXML = extendListDefinitionsFromXML;
+        this.extendListMetadata = extendListMetadata;
+        this.jsBoolean = jsBoolean;
+        this.jsCalc = jsCalc;
+        this.jsChoiceMulti = jsChoiceMulti;
+        this.jsDate = jsDate;
+        this.jsFloat = jsFloat;
+        this.jsInt = jsInt;
+        this.jsLookup = jsLookup;
+        this.jsLookupMulti = jsLookupMulti;
+        this.jsObject = jsObject;
+        this.jsString = jsString;
+        this.jsUser = jsUser;
+        this.jsUserMulti = jsUserMulti;
+        this.parseFieldVersions = parseFieldVersions;
+        this.parseStringValue = parseStringValue;
+        this.processListItems = processListItems;
+        this.xmlToJson = xmlToJson;
 
         /*********************** Private ****************************/
 
@@ -82,7 +74,6 @@ angular.module('angularPoint')
             xmlToJson(filteredNodes, listItemProvider, opts);
 
             return opts.target;
-            //return entities;
         }
 
         /**
@@ -684,4 +675,4 @@ angular.module('angularPoint')
             });
             return error;
         }
-    });
+}
