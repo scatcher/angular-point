@@ -4,7 +4,6 @@
     /**
      * @ngdoc object
      * @name angularPoint.apDefaultFields
-     * @methodOf angularPoint.apFieldService
      * @description
      * Read only fields that should be included in all lists
      */

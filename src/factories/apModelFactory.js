@@ -1,7 +1,7 @@
 'use strict';
 
 /**
- * @ngdoc object
+ * @ngdoc service
  * @name angularPoint.apModelFactory
  * @description
  * Exposes the model prototype and a constructor to instantiate a new Model.
@@ -15,7 +15,9 @@
  * @requires angularPoint.apUtilityService
  */
 angular.module('angularPoint')
-    .factory('apModelFactory', function (_, apCacheService, apDataService, apListFactory, apListItemFactory, apQueryFactory, apUtilityService, apFieldService, apConfig, apIndexedCacheFactory, apDecodeService, $q, toastr) {
+    .factory('apModelFactory', function (_, apCacheService, apDataService, apListFactory, apListItemFactory,
+                                         apQueryFactory, apUtilityService, apFieldService, apConfig,
+                                         apIndexedCacheFactory, apDecodeService, $q, toastr) {
 
         var defaultQueryName = apConfig.defaultQueryName;
 
@@ -32,7 +34,7 @@ angular.module('angularPoint')
          * - adds "getAllListItems" function
          * - adds "addNewItem" function
          * @param {object} config Object containing optional params.
-         * @param {object} [config.factory = apListItemFactory.createGenericFactory()] - Constructor function for
+         * @param {object} [config.factory=apListItemFactory.createGenericFactory()] - Constructor function for
          * individual list items.
          * @param {boolean} [config.fieldDefinitionsExtended=false] Queries using the GetListItemChangesSinceToken
          * operation return the full list definition along with the requested entities.  The first time one of these
@@ -40,82 +42,78 @@ angular.module('angularPoint')
          * information provided from the server.  Examples are options for a Choice field, display name of the field,
          * field description, and any other field information provided for the fields specified in the model.  This
          * flag is set once the first query is complete so we don't process again.
-         * @param {object} config.list - Definition of the list in SharePoint.
-         * be passed to the list constructor to extend further
-         * @param {string} config.list.title - List name, no spaces.  Offline XML file will need to be
-         * named the same (ex: CustomList so xml file would be apConfig.offlineXML + '/CustomList.xml')
-         * @param {string} config.list.getListId() - Unique SharePoint ID (ex: '{3DBEB25A-BEF0-4213-A634-00DAF46E3897}')
-         * @param {object[]} config.list.customFields - Maps SharePoint fields with names we'll use within the
-         * application.  Identifies field types and formats accordingly.  Also denotes if a field is read only.
+         * @param {object} config.list Definition of the list in SharePoint be passed to the list constructor to
+         * extend further.  See the List constructor in "apListFactory" for additional details.
          * @constructor
          *
          * @example
          * <pre>
-         * //Taken from a fictitious projectsModel.js
-         * var model = new apModelFactory.Model({
-         *     factory: Project,
-         *     list: {
-         *         guid: '{PROJECT LIST GUID}',
-         *         title: 'Projects',
-         *         customFields: [
-         *             {
-         *                staticName: 'Title',
-         *                objectType: 'Text',
-         *                mappedName: 'title',
-         *                readOnly: false
-         *             },
-         *             {
-         *                staticName: 'Customer',
-         *                objectType: 'Lookup',
-         *                mappedName: 'customer',
-         *                readOnly: false
-         *             },
-         *             {
-         *                staticName: 'ProjectDescription',
-         *                objectType: 'Text',
-         *                mappedName: 'projectDescription',
-         *                readOnly: false
-         *             },
-         *             {
-         *                staticName: 'Status',
-         *                objectType: 'Text',
-         *                mappedName: 'status',
-         *                readOnly: false
-         *             },
-         *             {
-         *                staticName: 'TaskManager',
-         *                objectType: 'User',
-         *                mappedName: 'taskManager',
-         *                readOnly: false
-         *             },
-         *             {
-         *                staticName: 'ProjectGroup',
-         *                objectType: 'Lookup',
-         *                mappedName: 'group',
-         *                readOnly: false
-         *             },
-         *             {
-         *                staticName: 'CostEstimate',
-         *                objectType: 'Currency',
-         *                mappedName: 'costEstimate',
-         *                readOnly: false
-         *             },
-         *             {
-         *                staticName: 'Active',
-         *                objectType: 'Boolean',
-         *                mappedName: 'active',
-         *                readOnly: false
-         *             },
-         *             {
-         *                staticName: 'Attachments',
-         *                objectType: 'Attachments',
-         *                mappedName: 'attachments',
-         *                readOnly: true
-         *             }
-         *         ]
+         * angular.module('App')
+         *  .service('taskerModel', function (apModelFactory) {
+         *     // Object Constructor (class)
+         *     // All list items are passed to the below constructor which inherits from
+         *     // the ListItem prototype.
+         *     function Task(obj) {
+         *         var self = this;
+         *         _.extend(self, obj);
          *     }
+         *
+         *     // Model Constructor
+         *     var model = apModelFactory.create({
+         *         factory: Task,
+         *         list: {
+         *             // Maps to the offline XML file in dev folder (no spaces)
+         *             name: 'Tasks',
+         *             // List GUID can be found in list properties in SharePoint designer
+         *             guid: '{CB1B965E-D952-4ED5-86FD-FF8DA770F871}',
+         *             customFields: [
+         *                 // Array of objects mapping each SharePoint field to a
+         *                 // property on a list item object
+         *                 {
+         *                  staticName: 'Title',
+         *                  objectType: 'Text',
+         *                  mappedName: 'title',
+         *                  readOnly:false
+         *                 },
+         *                 {
+         *                  staticName: 'Project',
+         *                  objectType: 'Lookup',
+         *                  mappedName: 'project',
+         *                  readOnly:false
+         *                 },
+         *                 {
+         *                  staticName: 'Priority',
+         *                  objectType: 'Choice',
+         *                  mappedName: 'priority',
+         *                  readOnly:false
+          *                },
+         *                 {
+         *                  staticName: 'Description',
+         *                  objectType: 'Text',
+         *                  mappedName: 'description',
+         *                  readOnly:false
+         *                 },
+         *                 {
+         *                  staticName: 'Manager',
+         *                  objectType: 'Lookup',
+         *                  mappedName: 'requirement',
+         *                  readOnly:false
+         *                 }
+         *             ]
+         *         }
+         *     });
+         *
+         *     // Fetch data (pulls local xml if offline named model.list.title + '.xml')
+         *     // Initially pulls all requested data.  Each subsequent call just pulls
+         *     // records that have been changed, updates the model, and returns a reference
+         *    // to the updated data array
+         *     // @returns {Array} Requested list items
+         *     model.registerQuery({name: 'primary'});
+         *
+         *     return model;
          * });
          * </pre>
+         * @requires angularPoint.apModelFactory
          */
         function Model(config) {
             var model = this;
@@ -156,7 +154,7 @@ angular.module('angularPoint')
              * @ngdoc function
              * @name ListItem.getList
              * @description
-             * Allows us to reference the list definition directly from the list item.  This is added to the
+             * Allows us to reference the list definition directly from a given list item.  This is added to the
              * model.factory prototype in apModelFactory.  See the [List](#/api/List) documentation for more info.
              * @returns {object} List for the list item.
              */
@@ -225,7 +223,6 @@ angular.module('angularPoint')
         /**
          * @ngdoc function
          * @name Model.searchLocalCache
-         * @module Model
          * @description
          * Search functionality that allow for deeply searching an array of objects for the first
          * record matching the supplied value.  Additionally it maps indexes to speed up future calls.  It
@@ -315,7 +312,6 @@ angular.module('angularPoint')
         /**
          * @ngdoc function
          * @name Model.deepGroup
-         * @module Model
          * @description
          * Creates an indexed cache of entities using a provided property path string to find the key for the cache.
          * @param {object} object A cached index object.
@@ -462,7 +458,6 @@ angular.module('angularPoint')
         /**
          * @ngdoc function
          * @name Model.addNewItem
-         * @module Model
          * @description
          * Using the definition of a list stored in a model, create a new list item in SharePoint.
          * @param {object} entity An object that will be converted into key/value pairs based on the field definitions
@@ -501,7 +496,6 @@ angular.module('angularPoint')
         /**
          * @ngdoc function
          * @name Model.registerQuery
-         * @module Model
          * @description
          * Constructor that allows us create a static query with the option to build dynamic queries as seen in the
          * third example.  This construct is a passthrough to [SPServices](http://spservices.codeplex.com/)
@@ -648,7 +642,6 @@ angular.module('angularPoint')
         /**
          * @ngdoc function
          * @name Model.getQuery
-         * @module Model
          * @description
          * Helper function that attempts to locate and return a reference to the requested or catchall query.
          * @param {string} [queryName=defaultQueryName] A unique key to identify this query.
@@ -685,7 +678,6 @@ angular.module('angularPoint')
         /**
          * @ngdoc function
          * @name Model.getFieldDefinition
-         * @module Model
          * @description
          * Returns the field definition from the definitions defined in the custom fields array within a model.
          * <pre>
@@ -712,7 +704,6 @@ angular.module('angularPoint')
         /**
          * @ngdoc function
          * @name Model.getCache
-         * @module Model
          * @description
          * Helper function that return the local cache for a named query if provided, otherwise
          * it returns the cache for the primary query for the model.  Useful if you know the query
@@ -747,7 +738,6 @@ angular.module('angularPoint')
         /**
          * @ngdoc function
          * @name Model.getCachedEntity
-         * @module Model
          * @description
          * Attempts to locate a model entity by id.
          * @param {number} entityId The ID of the requested entity.
@@ -761,7 +751,6 @@ angular.module('angularPoint')
         /**
          * @ngdoc function
          * @name Model.getCachedEntities
-         * @module Model
          * @description
          * Returns all entities registered for this model regardless of query.
          * @returns {object[]} All registered entities for this model.
@@ -774,7 +763,6 @@ angular.module('angularPoint')
         /**
          * @ngdoc function
          * @name Model.executeQuery
-         * @module Model
          * @description
          * The primary method for retrieving data from a query registered on a model.  It returns a promise
          * which resolves to the local cache after post processing entities with constructors.
@@ -804,7 +792,6 @@ angular.module('angularPoint')
         /**
          * @ngdoc function
          * @name Model.extendListMetadata
-         * @module Model
          * @description
          * Extends the List and Fields with list information returned from the server.  Only runs once and after that
          * returns the existing promise.
@@ -834,7 +821,6 @@ angular.module('angularPoint')
         /**
          * @ngdoc function
          * @name Model.isInitialised
-         * @module Model
          * @description
          * Methods which allows us to easily determine if we've successfully made any queries this session.
          * @returns {boolean} Returns evaluation.
@@ -847,7 +833,6 @@ angular.module('angularPoint')
         /**
          * @ngdoc function
          * @name Model.createEmptyItem
-         * @module Model
          * @description
          * Creates an object using the editable fields from the model, all attributes are empty based on the field
          * type unless an overrides object is passed in.  The overrides object extends the defaults.  A benefit to this
@@ -875,7 +860,6 @@ angular.module('angularPoint')
         /**
          * @ngdoc function
          * @name Model.generateMockData
-         * @module Model
          * @description
          * Generates 'n' mock records for testing using the field types defined in the model to provide something to visualize.
          *
@@ -915,7 +899,6 @@ angular.module('angularPoint')
         /**
          * @ngdoc function
          * @name Model.validateEntity
-         * @module Model
          * @description
          * Uses the custom fields defined in an model to ensure each field (required = true) is evaluated
          * based on field type
@@ -993,7 +976,6 @@ angular.module('angularPoint')
         /**
          * @ngdoc function
          * @name Model.resolvePermissions
-         * @module Model
          * @description
          * See apModelFactory.resolvePermissions for details on what we expect to have returned.
          * @returns {Object} Contains properties for each permission level evaluated for current user.

@@ -6,6 +6,10 @@
 <div class="description"><div class="list-page"><p>List Object Constructor.  This is handled automatically when creating a new model so there shouldn&#39;t be
 any reason to manually call.</p>
 </div></div>
+<h2 id="dependencies">Dependencies</h2>
+<ul class="dependencies"><li><code ng:non-bindable=""><a href="#/api/angularPoint.apListFactory">apListFactory</a></code>
+</li>
+</ul>
 <h2 id="usage">Usage</h2>
 <div class="usage"><pre class="prettyprint linenums">List(config);</pre>
 <h4 id="usage_parameters">Parameters</h4><table class="variables-matrix table table-bordered table-striped"><thead><tr><th>Param</th><th>Type</th><th>Details</th></tr></thead><tbody><tr><td>config</td><td><a href="" class="label type-hint type-hint-object">object</a></td><td><div class="list-page"><p>Initialization parameters.</p>
@@ -15,7 +19,6 @@ ex:&#39;{4D74831A-42B2-4558-A67F-B0B5ADBC0EAC}&#39;</p>
 ex: &#39;ProjectsList&#39; so the offline XML file would be located at apConfig.offlineXML + &#39;ProjectsList.xml&#39;</p>
 </div></td></tr><tr><td>[config.customFields]</td><td><a href="" class="label type-hint type-hint-object">object[]</a></td><td><div class="list-page"><p>Mapping of SharePoint field names to the internal names we&#39;ll be using
 in our application.  Also contains field type, readonly attribute, and any other non-standard settings.
-See <a href="#/api/List.FieldDefinition">List.customFields</a> for additional info on how to define a field type.
 <pre class="prettyprint linenums">
 [
   {
@@ -64,6 +67,23 @@ by setting apConfig.environment to the string name of the desired environment.</
 to apConfig.defaultUrl.</p>
 </div><h5 id="methods_identifyweburl_returns">Returns</h5><table class="variables-matrix"><tr><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="list-page list-identifyweburl-page"><p>webURL param.</p>
 </div></td></tr></table></div>
+</li>
+</ul>
+</div>
+<div class="member property"><h2 id="properties">Properties</h2>
+<ul class="properties"><li><h3 id="properties_viewfields">viewFields</h3>
+<div class="viewfields"><div class="list-page"><p>XML string defining each of the fields to include in all CRUD requests,
+generated when the Model.List is instantiated.
+<pre class="prettyprint linenums">
+    &lt;ViewFields&gt;...&lt;/ViewFields&gt;
+</pre>
+</div></div>
+</li>
+<li><h3 id="properties_fields">fields</h3>
+<div class="fields"><div class="list-page"><p>Generated when the Model.List is instantiated.  Combines the standard
+default fields for all lists with the fields identified in the config.customFields and instantiates each
+with the Field constructor.</p>
+</div></div>
 </li>
 </ul>
 </div>

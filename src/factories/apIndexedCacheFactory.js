@@ -16,11 +16,12 @@ angular.module('angularPoint')
 
         /**
          * @ngdoc object
-         * @name angularPoint.IndexedCache
+         * @name IndexedCache
          * @description
          * Cache constructor that is extended to make it easier to work with via prototype methods.  Located in
          * apIndexedCacheFactory.
          * @param {object} [object] Optionally extend new cache with provided object.
+         * @requires angularPoint.apIndexedCacheFactory
          * @constructor
          */
         function IndexedCache(object) {
@@ -51,8 +52,8 @@ angular.module('angularPoint')
 
         /**
          * @ngdoc function
-         * @name angularPoint.IndexedCache:addEntity
-         * @methodOf angularPoint.IndexedCache
+         * @name IndexedCache.addEntity
+         * @methodOf IndexedCache
          * @description
          * Adds a new key to the cache if not already there with a value of the new entity.
          * @param {object} entity Entity to add to the cache.
@@ -72,8 +73,8 @@ angular.module('angularPoint')
 
         /**
          * @ngdoc function
-         * @name angularPoint.IndexedCache:clear
-         * @methodOf angularPoint.IndexedCache
+         * @name IndexedCache.clear
+         * @methodOf IndexedCache
          * @description
          * Clears all cached elements from the containing cache object.
          */
@@ -86,8 +87,8 @@ angular.module('angularPoint')
 
         /**
          * @ngdoc function
-         * @name angularPoint.IndexedCache:keys
-         * @methodOf angularPoint.IndexedCache
+         * @name IndexedCache.keys
+         * @methodOf IndexedCache
          * @description
          * Returns the array of keys (entity ID's) for the cache.
          * @returns {string[]} Array of entity id's as strings.
@@ -100,8 +101,8 @@ angular.module('angularPoint')
 
         /**
          * @ngdoc function
-         * @name angularPoint.IndexedCache:nthEntity
-         * @methodOf angularPoint.IndexedCache
+         * @name IndexedCache.nthEntity
+         * @methodOf IndexedCache
          * @description
          * Based on the
          * @param {number} index The index of the item requested.
@@ -116,8 +117,8 @@ angular.module('angularPoint')
 
         /**
          * @ngdoc function
-         * @name angularPoint.IndexedCache:first
-         * @methodOf angularPoint.IndexedCache
+         * @name IndexedCache.first
+         * @methodOf IndexedCache
          * @description
          * Returns the first entity in the index (smallest ID).
          * @returns {object} First entity in cache.
@@ -129,8 +130,8 @@ angular.module('angularPoint')
 
         /**
          * @ngdoc function
-         * @name angularPoint.IndexedCache:last
-         * @methodOf angularPoint.IndexedCache
+         * @name IndexedCache.last
+         * @methodOf IndexedCache
          * @description
          * Returns the last entity in the index (largest ID).
          * @returns {object} Last entity in cache.
@@ -143,8 +144,8 @@ angular.module('angularPoint')
 
         /**
          * @ngdoc function
-         * @name angularPoint.IndexedCache:count
-         * @methodOf angularPoint.IndexedCache
+         * @name IndexedCache.count
+         * @methodOf IndexedCache
          * @description
          * Returns the number of entities in the cache.
          * @returns {number} Number of entities in the cache.
@@ -156,8 +157,8 @@ angular.module('angularPoint')
 
         /**
          * @ngdoc function
-         * @name angularPoint.IndexedCache:removeEntity
-         * @methodOf angularPoint.IndexedCache
+         * @name IndexedCache.removeEntity
+         * @methodOf IndexedCache
          * @description
          * Removes an entity from the cache.
          * @param {object|number} entity Entity to remove or ID of entity to be removed.
@@ -174,8 +175,8 @@ angular.module('angularPoint')
 
         /**
          * @ngdoc function
-         * @name angularPoint.IndexedCache:toArray
-         * @methodOf angularPoint.IndexedCache
+         * @name IndexedCache.toArray
+         * @methodOf IndexedCache
          * @description
          * Turns the cache object into an array of entities.
          * @returns {object[]} Returns the array of entities currently in the cache.

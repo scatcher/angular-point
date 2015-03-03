@@ -5,46 +5,12 @@
  * @name angularPoint.apFieldService
  * @description
  * Handles the mapping of the various types of fields used within a SharePoint list
- * @requires angularPoint.apUtilityService
  */
 angular.module('angularPoint')
-    .factory('apFieldService', function (_, apUtilityService, apDefaultFields) {
+    .factory('apFieldService', function (_) {
 
         var uniqueCount = 0;
 
-        /**
-         * @ngdoc function
-         * @name angularPoint.apFieldService:Field
-         * @methodOf angularPoint.apFieldService
-         * @description
-         * Decorates field with optional defaults
-         * @param {object} obj Field definition.
-         * @returns {object} Field
-         * @constructor
-         */
-        function Field(obj) {
-            var self = this;
-            var defaults = {
-                readOnly: false,
-                objectType: 'Text'
-            };
-            _.extend(self, defaults, obj);
-            self.displayName = self.displayName ? self.displayName : apUtilityService.fromCamelCase(self.mappedName);
-            /** Deprecated internal name and replace with staticName but maintain compatibility */
-            self.staticName = self.staticName || self.internalName;
-        }
-
-        Field.prototype.getDefinition = function () {
-            return getDefinition(this.objectType);
-        };
-
-        Field.prototype.getDefaultValueForType = function () {
-            return getDefaultValueForType(this.objectType);
-        };
-
-        Field.prototype.getMockData = function (options) {
-            return getMockData(this.objectType, options);
-        };
 
         /** Store as a function to ensure we instantiate new objects for default values instead
          *  of having all blank field that have an array for a default value share the same array */
@@ -145,7 +111,6 @@ angular.module('angularPoint')
 
 
         return {
-            extendFieldDefinitions: extendFieldDefinitions,
             getDefaultValueForType: getDefaultValueForType,
             getMockData: getMockData,
             getDefinition: getDefinition,
@@ -346,51 +311,6 @@ angular.module('angularPoint')
                 }
             }
             return mock;
-        }
-
-        /**
-         * @ngdoc function
-         * @name angularPoint.apFieldService:extendFieldDefinitions
-         * @methodOf angularPoint.apFieldService
-         * @description
-         * 1. Populates the fields array which uses the Field constructor to combine the default
-         * SharePoint fields with those defined in the list definition on the model
-         * 2. Creates the list.viewFields XML string that defines the fields to be requested on a query
-         *
-         * @param {object} list Reference to the list within a model.
-         */
-        function extendFieldDefinitions(list) {
-            /**
-             * Constructs the field
-             * - adds to viewField
-             * - create ows_ mapping
-             * @param fieldDefinition
-             */
-            var buildField = function (fieldDefinition) {
-                var field = new Field(fieldDefinition);
-                list.fields.push(field);
-                list.viewFields += '<FieldRef Name="' + field.staticName + '"/>';
-                list.mapping['ows_' + field.staticName] = {
-                    mappedName: field.mappedName,
-                    objectType: field.objectType
-                };
-            };
-
-            /** Open viewFields */
-            list.viewFields += '<ViewFields>';
-
-            /** Add the default fields */
-            _.each(apDefaultFields, function (field) {
-                buildField(field);
-            });
-
-            /** Add each of the fields defined in the model */
-            _.each(list.customFields, function (field) {
-                buildField(field);
-            });
-
-            /** Close viewFields */
-            list.viewFields += '</ViewFields>';
         }
 
 
