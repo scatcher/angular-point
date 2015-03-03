@@ -1,18 +1,20 @@
-let $injector = angular.injector();
-let _ = $injector.get('_');
+var _ = window._;
+
 let toastr = $injector.get('toastr');
 let $q = $injector.get('$q');
 
+let apConfig = $injector.get('apConfig');
+
 let apCacheService = $injector.get('apCacheService');
 let apDataService = $injector.get('apDataService');
+let apUtilityService = $injector.get('apUtilityService');
+let apFieldService = $injector.get('apFieldService');
+let apDecodeService = $injector.get('apDecodeService');
+
 let apListFactory = $injector.get('apListFactory');
 let apListItemFactory = $injector.get('apListItemFactory');
 let apQueryFactory = $injector.get('apQueryFactory');
-let apUtilityService = $injector.get('apUtilityService');
-let apFieldService = $injector.get('apFieldService');
-let apConfig = $injector.get('apConfig');
 let apIndexedCacheFactory = $injector.get('apIndexedCacheFactory');
-let apDecodeService = $injector.get('apDecodeService');
 
 let defaultQueryName = apConfig.defaultQueryName;
 
@@ -30,7 +32,7 @@ let defaultQueryName = apConfig.defaultQueryName;
  * @requires apQueryFactory
  * @requires apUtilityService
  */
-export default class apModelFactory{
+export class apModelFactory{
     /**
      * @ngdoc function
      * @name Model.searchLocalCache

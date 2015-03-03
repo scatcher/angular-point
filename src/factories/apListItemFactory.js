@@ -10,7 +10,7 @@ let apUtilityService = $injector.get('apUtilityService');
 let apFormattedFieldValueService = $injector.get('apFormattedFieldValueService');
 let apConfig = $injector.get('apConfig');
 
-
+export {apListItemFactory};
 /**
  * @ngdoc object
  * @name apListItemFactory
@@ -24,7 +24,7 @@ let apConfig = $injector.get('apConfig');
  * @requires apUtilityService
  */
 
-export default class apListItemFactory{
+class apListItemFactory{
     /**
      * @ngdoc function
      * @name apListItemFactory:create

@@ -1,3 +1,4 @@
+var _ = window._;
 export {apCamlFactory};
 
 /**

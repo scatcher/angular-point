@@ -44,7 +44,7 @@
  * </pre>
  */
 
-let apConfig = {
+export var apConfig = {
     appTitle: 'Angular-Point',
     debug: false,
     defaultQueryName: 'primary',
@@ -57,5 +57,3 @@ let apConfig = {
     window.location.href.indexOf('http://192.') > -1,
     offlineXML: 'dev/'
 };
-
-export {apConfig};

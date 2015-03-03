@@ -1,4 +1,4 @@
-var dependencies = {};
+var _ = window._;
 
 export {apIndexedCacheFactory, IndexedCache}
 
@@ -10,10 +10,6 @@ export {apIndexedCacheFactory, IndexedCache}
  *
  */
 class apIndexedCacheFactory {
-    constructor(_) {
-        dependencies['_'] = _;
-    }
-
     /**
      * @ngdoc function
      * @name apIndexedCacheFactory:create
@@ -40,7 +36,7 @@ class IndexedCache {
     constructor(object) {
         var self = this;
         if (object) {
-            dependencies['_'].extend(self, object);
+            _.extend(self, object);
         }
     }
 
@@ -55,7 +51,7 @@ class IndexedCache {
     addEntity(entity) {
         var cache = this;
 
-        if (dependencies['_'].isObject(entity) && !!entity.id) {
+        if (_.isObject(entity) && !!entity.id) {
             /** Only add the entity to the cache if it's not already there */
             if (!cache[entity.id]) {
                 cache[entity.id] = entity;
@@ -74,7 +70,7 @@ class IndexedCache {
      */
     clear() {
         var cache = this;
-        dependencies['_'].each(cache, function (entity, key) {
+        _.each(cache, function (entity, key) {
             delete cache[key];
         });
     }
@@ -89,7 +85,7 @@ class IndexedCache {
      */
     keys() {
         var cache = this;
-        return dependencies['_'].keys(cache);
+        return _.keys(cache);
     }
 
     /**
@@ -157,9 +153,9 @@ class IndexedCache {
      */
     removeEntity(entity) {
         var cache = this;
-        if (dependencies['_'].isObject && entity.id && cache[entity.id]) {
+        if (_.isObject && entity.id && cache[entity.id]) {
             delete cache[entity.id];
-        } else if (dependencies['_'].isNumber(entity)) {
+        } else if (_.isNumber(entity)) {
             /** Allow entity ID to be used instead of then entity */
             delete cache[entity];
         }
@@ -175,7 +171,7 @@ class IndexedCache {
      */
     toArray() {
         var cache = this;
-        return dependencies['_'].toArray(cache);
+        return _.toArray(cache);
     }
 
 

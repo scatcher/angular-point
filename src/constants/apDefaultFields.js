@@ -5,8 +5,7 @@
  * @description
  * Read only fields that should be included in all lists
  */
-
-let apDefaultFields = [
+export var apDefaultFields = [
     {staticName: 'ID', objectType: 'Counter', mappedName: 'id', readOnly: true},
     {staticName: 'Modified', objectType: 'DateTime', mappedName: 'modified', readOnly: true},
     {staticName: 'Created', objectType: 'DateTime', mappedName: 'created', readOnly: true},
@@ -16,6 +15,3 @@ let apDefaultFields = [
     {staticName: 'UniqueId', objectType: 'String', mappedName: 'uniqueId', readOnly: true},
     {staticName: 'FileRef', objectType: 'Lookup', mappedName: 'fileRef', readOnly: true}
 ];
-
-export {apDefaultFields};
-

@@ -11,10 +11,12 @@
  // *  @requires apConfig
  // *  @requires apFieldService
  */
-export default function apDataService ($q, $http, _, apConfig, apCacheService, apDecodeService, apEncodeService,
-                                       apIndexedCacheFactory, toastr, SPServices, apWebServiceOperationConstants,
-                                       apXMLToJSONService){
+export {apDataService};
 
+class apDataService{
+    constructor($q, $http, _, apConfig, apCacheService, apDecodeService, apEncodeService,
+                apIndexedCacheFactory, toastr, SPServices, apWebServiceOperationConstants,
+                apXMLToJSONService) {
         /** Exposed functionality */
         this.createListItem = createListItem;
         this.deleteAttachment = deleteAttachment;
@@ -912,4 +914,11 @@ export default function apDataService ($q, $http, _, apConfig, apCacheService, a
             return serviceWrapper(opts);
 
         }
+    }
+}
+export default function apDataService ($q, $http, _, apConfig, apCacheService, apDecodeService, apEncodeService,
+                                       apIndexedCacheFactory, toastr, SPServices, apWebServiceOperationConstants,
+                                       apXMLToJSONService){
+
+
 }
