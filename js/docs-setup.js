@@ -50,6 +50,15 @@ NG_DOCS={
     },
     {
       "section": "api",
+      "id": "angularPoint.apDefaultFields",
+      "shortName": "angularPoint.apDefaultFields",
+      "type": "object",
+      "moduleName": "angularPoint",
+      "shortDescription": "Read only fields that should be included in all lists",
+      "keywords": "angularpoint apdefaultfields api fields included lists object read"
+    },
+    {
+      "section": "api",
       "id": "angularPoint.apEncodeService",
       "shortName": "angularPoint.apEncodeService",
       "type": "service",
@@ -68,12 +77,21 @@ NG_DOCS={
     },
     {
       "section": "api",
+      "id": "angularPoint.apFieldFactory",
+      "shortName": "angularPoint.apFieldFactory",
+      "type": "service",
+      "moduleName": "angularPoint",
+      "shortDescription": "Contains the Field constructor and prototype definitions.",
+      "keywords": "angularpoint angularpoint-apfieldfactory-page apfieldfactory apfieldservice api aputilityservice class definitions field prototype service"
+    },
+    {
+      "section": "api",
       "id": "angularPoint.apFieldService",
       "shortName": "angularPoint.apFieldService",
       "type": "service",
       "moduleName": "angularPoint",
       "shortDescription": "Handles the mapping of the various types of fields used within a SharePoint list",
-      "keywords": "addlistitems allows angularpoint apdefaultfields apfieldservice api appropriate approveitems aputilityservice array based build chancejs coded combine container creates data decorates default defaults defined defines definition deletelistitems dynamic dynamically editlistitems empty expected field fields fieldtype full fullmask function generate generates handles hard https included levels list lists main mapping mask mock mockdata model modelservice obj object optional options param params permask permission permissionlevel populates produce query read reference requested resolvepermissions return returns service sharepoint simulation specific staticvalue string takes type types values viewfields viewlistitems xml"
+      "keywords": "addlistitems allows angularpoint apfieldservice api appropriate approveitems based build chancejs coded container data default defaults definition deletelistitems dynamic dynamically editlistitems empty expected field fields fieldtype full fullmask function generate generates handles hard https levels list main mapping mask mock mockdata modelservice object optional options param params permask permission permissionlevel produce resolvepermissions return returns service sharepoint simulation specific staticvalue takes type types values viewlistitems"
     },
     {
       "section": "api",
@@ -97,10 +115,10 @@ NG_DOCS={
       "section": "api",
       "id": "angularPoint.apListFactory",
       "shortName": "angularPoint.apListFactory",
-      "type": "object",
+      "type": "service",
       "moduleName": "angularPoint",
       "shortDescription": "Exposes the List prototype and a constructor to instantiate a new List.",
-      "keywords": "angularpoint apconfig apfieldservice api aplistfactory config exposes function instantiate instantiates list object options prototype returns"
+      "keywords": "angularpoint angularpoint-aplistfactory-page apconfig apdefaultfields apfieldfactory api aplistfactory class config exposes function instantiate instantiates list object options prototype returns service"
     },
     {
       "section": "api",
@@ -124,10 +142,10 @@ NG_DOCS={
       "section": "api",
       "id": "angularPoint.apModelFactory",
       "shortName": "angularPoint.apModelFactory",
-      "type": "object",
+      "type": "service",
       "moduleName": "angularPoint",
       "shortDescription": "Exposes the model prototype and a constructor to instantiate a new Model.",
-      "keywords": "angularpoint apcacheservice apdataservice api aplistfactory aplistitemfactory apmodalservice apmodelfactory apqueryfactory aputilityservice array assignedto config create customfields description designer dev estimatedeffort exposes factory false field file folder function guid instantiate instantiates integer item list mappedname mapping model object objects objecttype offline options percentcomplete priority properties property prototype readonly requestedby returns sharepoint spaces status task tasks text title user var xml"
+      "keywords": "angularpoint apcacheservice apdataservice api aplistfactory aplistitemfactory apmodalservice apmodelfactory apqueryfactory aputilityservice array assignedto config create customfields description designer dev estimatedeffort exposes factory false field file folder function guid instantiate instantiates integer item list mappedname mapping model object objects objecttype offline options percentcomplete priority properties property prototype readonly requestedby returns service sharepoint spaces status task tasks text title user var xml"
     },
     {
       "section": "api",
@@ -171,8 +189,8 @@ NG_DOCS={
       "shortName": "angularPoint.apXMLListAttributeTypes",
       "type": "object",
       "moduleName": "angularPoint",
-      "shortDescription": "Constant object map which contains many common XML attributes found on a list definition with their",
-      "keywords": "angularpoint api apxmllistattributetypes attributes common constant corresponding definition list map object type xml"
+      "shortDescription": "Constant object map which contains many common XML attributes found on a field definition with their",
+      "keywords": "angularpoint api apxmllistattributetypes attributes common constant corresponding definition field map object type xml"
     },
     {
       "section": "api",
@@ -180,8 +198,8 @@ NG_DOCS={
       "shortName": "angularPoint.apXMLListAttributeTypes",
       "type": "object",
       "moduleName": "angularPoint",
-      "shortDescription": "Constant object map which contains many common XML attributes found on a field definition with their",
-      "keywords": "angularpoint api apxmllistattributetypes attributes common constant corresponding definition field map object type xml"
+      "shortDescription": "Constant object map which contains many common XML attributes found on a list definition with their",
+      "keywords": "angularpoint api apxmllistattributetypes attributes common constant corresponding definition list map object type xml"
     },
     {
       "section": "api",
@@ -191,15 +209,6 @@ NG_DOCS={
       "moduleName": "angularPoint",
       "shortDescription": "This function converts an XML node set into an array of JS objects.",
       "keywords": "allow anderson angular angularpoint api apxmltojsonservice array codeplex converts essentially function js marc modular node objects service set spxmltojson testing wrapped xml"
-    },
-    {
-      "section": "api",
-      "id": "angularPoint.IndexedCache",
-      "shortName": "angularPoint.IndexedCache",
-      "type": "object",
-      "moduleName": "angularPoint",
-      "shortDescription": "Cache constructor that is extended to make it easier to work with via prototype methods.  Located in",
-      "keywords": "add adds angularpoint api apindexedcachefactory array based cache cached clears currently easier elements entities entity extend extended function indexedcache item key located methods number object optionally prototype provided remove removed removes requested returns strings turns work"
     },
     {
       "section": "api",
@@ -401,21 +410,30 @@ NG_DOCS={
     },
     {
       "section": "api",
+      "id": "Field",
+      "shortName": "Field",
+      "type": "object",
+      "moduleName": "Field",
+      "shortDescription": "Defined in the MODEL.list.fieldDefinitions array.  Each field definition object maps an internal field",
+      "keywords": "actual add additional allows angularpoint apfieldfactory apfieldservice api appropriate array attribute attributes automatically base based broken build calculated call choice choice_field_name choices coded collection column convert converts counter created current dashes data default defaultvalue defined defining definition deliminator delimited desired display dynamically dynamicmock element ensure error field fielddefinition fielddefinitions fields float form function generally generates getfielddefinition getmockdata hard ignore info inherits initial int integer internal invalid item javascript js json list listitem lookup lookupid lookupvalue mapped mappedname maps methods mock mockdata model modelname multiple newly number obj object objects objecttype optional param params parsed passed point post processing property prototype push read read-only readonly reference representing required respect retrieve return returned returns saving second selected set sharepoint single site slashes space specific staticmock staticname staticvalue store stored string strings text thrown true type typically unescape unique usage user valid validate var xml"
+    },
+    {
+      "section": "api",
+      "id": "IndexedCache",
+      "shortName": "IndexedCache",
+      "type": "object",
+      "moduleName": "IndexedCache",
+      "shortDescription": "Cache constructor that is extended to make it easier to work with via prototype methods.  Located in",
+      "keywords": "add addentity adds angularpoint api apindexedcachefactory array based cache cached clear clears count currently easier elements entities entity extend extended function indexedcache item key located methods nthentity number object optionally prototype provided remove removed removeentity removes requested returns strings toarray turns work"
+    },
+    {
+      "section": "api",
       "id": "List",
       "shortName": "List",
       "type": "object",
       "moduleName": "List",
       "shortDescription": "List Object Constructor.  This is handled automatically when creating a new model so there shouldn&#39;t be",
-      "keywords": "accept account active additional apconfig api application attribute automatically basing call config corresponding creating customfields default defaults defaulturl define desired details dev environment environments extended field fielddefinition file firstname folder function guid handled info initialization internal lastname list ll located lookup manually mappedname mapping maps model multi-environment named names non-standard object objecttype offline offlinexml organization param parameters projectslist property provided readonly reason selected set setting settings setup sharepoint shouldn spaces staticname string text title type unique user weburl xml"
-    },
-    {
-      "section": "api",
-      "id": "List.FieldDefinition",
-      "shortName": "List.FieldDefinition",
-      "type": "object",
-      "moduleName": "List",
-      "shortDescription": "Defined in the MODEL.list.fieldDefinitions array.  Each field definition object maps an internal field",
-      "keywords": "actual add additional allows angular api apmodelfactory app array attribute attributes automatically base based broken calculated call changed choice choice_field_name choices class collection column convert converts counter create created current customfields dashes data defined definition deliminator delimited description designer desired dev display element ensure error extend factory fetch field fielddefinition fielddefinitions fields file float folder form function generally getfielddefinition guid href ignore info inherits initial initially int integer internal invalid item items javascript js json list list-fielddefinition-page listitem local lookup lookupid lookupvalue manager mapped mappedname mapping maps methods model modelname module multiple named newly number obj object objects objecttype offline parsed passed point post primary priority processing project properties property prototype pulls push read read-only readonly records reference registerquery representing requested requirement respect retrieve return returned returns saving second selected service set sharepoint single site slashes space spaces staticname store stored string strings subsequent task taskermodel tasks text thrown title true type typically unescape unique updated updates usage user valid validate var xml"
+      "keywords": "accept account active angularpoint apconfig api aplistfactory application attribute automatically basing call class combines config corresponding creating crud customfields default defaults defaulturl defining desired details dev environment environments extended field fields file firstname folder function generated guid handled identified include initialization instantiated instantiates internal lastname linenums list list-page lists ll located lookup manually mappedname mapping maps model multi-environment named names non-standard object objecttype offline offlinexml organization param parameters prettyprint projectslist property provided readonly reason requests selected set setting settings setup sharepoint shouldn spaces standard staticname string text title type unique user viewfields weburl xml"
     },
     {
       "section": "api",
@@ -522,7 +540,7 @@ NG_DOCS={
       "shortName": "ListItem.getList",
       "type": "function",
       "moduleName": "ListItem",
-      "shortDescription": "Allows us to reference the list definition directly from the list item.  This is added to the",
+      "shortDescription": "Allows us to reference the list definition directly from a given list item.  This is added to the",
       "keywords": "allows api apmodelfactory definition directly documentation factory function getlist info item list listitem model prototype reference"
     },
     {
@@ -613,7 +631,7 @@ NG_DOCS={
       "type": "function",
       "moduleName": "Model",
       "shortDescription": "Model Constructor",
-      "keywords": "active additional addnewitem adds apconfig api aplistitemfactory apmodelfactory application array attachments boolean builds choice complete config costestimate creategenericfactory currency customer customfields customlist data deferred defined definition definitions denotes description display don empty entities examples executed extend factory false fictitious field fielddefinitionsextended fields file flag formats full function getalllistitems getlistid getlistitemchangessincetoken group guid identifies individual items js list ll lookup mappedname maps model named names obj object objecttype offline offlinexml operation optional options params passed process project projectdescription projectgroup projects projectsmodel provided queries query read readonly ready requested return server set sharepoint spaces staticname status taskmanager text time title true types unique user var xml"
+      "keywords": "additional addnewitem adds angular angularpoint api aplistfactory apmodelfactory app array builds call changed choice complete config create creategenericfactory customfields data deferred defined definition definitions description designer details dev display don empty entities examples executed extend factory fetch field fielddefinitionsextended fields file flag folder full function getalllistitems getlistitemchangessincetoken guid individual inherits initially item items list listitem local lookup manager mappedname mapping maps model module named obj object objects objecttype offline operation optional options params passed primary priority process project properties property prototype provided pulls queries query readonly ready records reference registerquery requested requirement return returns server service set sharepoint spaces staticname subsequent task taskermodel tasks text time title updated updates var xml"
     },
     {
       "section": "api",
