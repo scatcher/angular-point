@@ -77,12 +77,12 @@ describe("Factory: apEncodeService", function () {
         it('correctly handles a DateTime field', function () {
             var validDate = new Date(2014, 5, 10, 3, 25, 30);
             expect(service.createValuePair(mockDefinition('DateTime'), validDate))
-                .toEqual([ 'DateTime', '2014-06-10T03:25:30Z-08:00']);
+                .toEqual([ 'DateTime', '2014-06-10T03:25:30Z-07:00']);
         });
 
         it('handles a DateTime value as a string', function () {
             expect(service.createValuePair(mockDefinition('DateTime'), '2014-05-06'))
-                .toEqual([ 'DateTime', '2014-05-06T00:00:00Z-08:00' ]);
+                .toEqual([ 'DateTime', '2014-05-06T00:00:00Z-07:00' ]);
                 //.toEqual([ 'DateTime', '2014-05-06T00:00:00Z-' + utils.getTimezoneOffsetString() ]);
         });
 
