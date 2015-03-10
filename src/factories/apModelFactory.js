@@ -170,7 +170,7 @@ angular.module('angularPoint')
              * model.factory prototype in apModelFactory.
              * @returns {string} List ID.
              */
-            model.factory.prototype.getList = function () {
+            model.factory.prototype.getListId = function () {
                 return model.list.getListId();
             };
 
