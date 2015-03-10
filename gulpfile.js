@@ -33,7 +33,7 @@ gulp.task('vet', function() {
 
 gulp.task('concat', ['clean'], function () {
     return gulp
-        .src([].concat(config.distModule, config.projectjs))
+        .src([].concat(config.js))
         .pipe($.plumber())
         .pipe($.concat(pkg.name + '.js'))
         .pipe($.ngAnnotate({add: true, single_quotes: true}))

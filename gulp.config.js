@@ -1,5 +1,6 @@
 module.exports = function () {
     var temp = './.tmp/';
+    var src = './src/';
     var bower = {
         json: require('./bower.json'),
         directory: './bower_components/',
@@ -8,8 +9,14 @@ module.exports = function () {
 
     var config = {
         projectjs: [
-            "./src/**/*.js",
-            "!./src/**/app.module.js"
+            src + "**/*.js",
+            "!" + src + "app.module.js"
+        ],
+        // app js, with no specs
+        js: [
+            src + '**/*.module.js',
+            src + '**/*.js',
+            '!' + src + '**/*.spec.js'
         ],
         specs: [
             "./test/spec/**/*.spec.js"
