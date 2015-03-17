@@ -152,7 +152,7 @@ angular.module('angularPoint')
             var mockUser = {lookupId: 100, lookupValue: 'Joe User'};
 
             try{
-                mockUser = $injector().get('mockUser4');
+                mockUser = $injector.get('mockUser');
             } catch(err){
                 //Oh well, we tried to see if a default mock user was specified.
             }
