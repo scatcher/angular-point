@@ -21,4 +21,4 @@ catch (e) {
 angular.module('angularPoint', [
     'toastr',
     'ngMock'
-]);
+]).constant('mockUser', {lookupId: 100, lookupValue: 'Joe User'});
