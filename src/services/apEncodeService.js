@@ -15,6 +15,7 @@ angular.module('angularPoint')
         return {
             choiceMultiToString: choiceMultiToString,
             createValuePair: createValuePair,
+            encodeValue: encodeValue,
             generateValuePairs: generateValuePairs,
             stringifySharePointDate: stringifySharePointDate,
             stringifySharePointMultiSelect: stringifySharePointMultiSelect
@@ -91,6 +92,14 @@ angular.module('angularPoint')
             return [fieldDefinition.staticName, encodedValue];
         }
 
+        /**
+         * @ngdoc function
+         * @name angularPoint.apEncodeService:encodeValue
+         * @methodOf angularPoint.apEncodeService
+         * @param {string} fieldType One of the valid field types.
+         * @param {*} value Value to be encoded.
+         * @returns {string} Encoded value ready to be sent to the server.
+         */
         function encodeValue(fieldType, value) {
             var str = '';
             /** Only process if note empty, undefined, or null.  Allow false. */
