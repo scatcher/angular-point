@@ -1,9 +1,11 @@
 'use strict';
 
 angular.module('angularPoint')
-    .run(function (_, $httpBackend, apCachedXML, apCacheService, apWebServiceService, apUtilityService, apEncodeService) {
+    .run(function (_, $httpBackend, apCachedXML, apCacheService, apWebServiceService, apUtilityService, $injector,
+                   apEncodeService) {
 
         var mockId = 10000;
+
         function getMockId() {
             return mockId++;
         }
@@ -13,9 +15,9 @@ angular.module('angularPoint')
         _.each(apWebServiceService.webServices, function (service) {
             /** Lists has many special cases so don't create generic backend for it */
             if (service !== 'Lists') {
-                /** Simple regex to check if the requested endpoint matches the one for this service */
-                var regExp = new RegExp('_vti_bin/' + service + '.asmx', 'g');
-                $httpBackend.when('POST', regExp)
+                $httpBackend.whenPOST(function routeMatcher(url) {
+                    return url.indexOf('bin/' + service + '.asmx') > -1;
+                })
                     .respond(function (method, url, data) {
                         var requestXML = $.parseXML(data);
                         /** Get the xml namespace for the current service */
@@ -76,7 +78,7 @@ angular.module('angularPoint')
             var rowLimit = $(request).find('rowLimit').text();
             if (rowLimit == 1) {
                 var zrow = getListItemById(request);
-                if(!zrow) {
+                if (!zrow) {
                     /** A match wasn't found so return a mock */
                     zrow = generateMockListItems(request, 1)[0];
                 }
@@ -106,8 +108,8 @@ angular.module('angularPoint')
             var rows = getZRows(request);
 
             /** Attempt to find the requested list item in the cached xml */
-            _.each(rows, function(row) {
-                if($(row).attr('ows_ID') == id) {
+            _.each(rows, function (row) {
+                if ($(row).attr('ows_ID') == id) {
                     match = row;
                     /** Break loop */
                     return false;
@@ -146,6 +148,17 @@ angular.module('angularPoint')
             return zrow;
         }
 
+        function getMockUser() {
+            var mockUser = {lookupId: 100, lookupValue: 'Joe User'};
+
+            try{
+                mockUser = $injector().get('mockUser4');
+            } catch(err){
+                //Oh well, we tried to see if a default mock user was specified.
+            }
+            return mockUser;
+        }
+
         function updateListItem(request) {
 
             var zrow,
@@ -159,17 +172,29 @@ angular.module('angularPoint')
                     /** Need to create an id so find set it 1 higher than the id of the most recent entity */
                     var lastEntity = model.getCachedEntities().last();
                     var mockId = lastEntity ? lastEntity.id + 1 : getMockId();
-                    zrow = convertUpdateRequestToResponse(request, {ID: mockId});
+                    zrow = convertUpdateRequestToResponse(request, {
+                        ID: mockId,
+                        Modified: apEncodeService.encodeValue('DateTime', new Date()),
+                        Created: apEncodeService.encodeValue('DateTime', new Date()),
+                        Author: apEncodeService.encodeValue('User', getMockUser()),
+                        Editor: apEncodeService.encodeValue('User', getMockUser()),
+                        PermMask: '0x7fffffffffffffff',
+                        UniqueId: mockId + ';#{11FF840D-9CE1-4961-B7FD-51B9DF07706B}',
+                        FileRef: mockId + ';#sitecollection/site/ListName/' + mockId + '_.000'
+                    });
                     registerUpdate(request, zrow);
                     break;
                 case 'Update':
-                    zrow = convertUpdateRequestToResponse(request);
+                    zrow = convertUpdateRequestToResponse(request, {
+                        Modified: apEncodeService.encodeValue('DateTime', new Date()),
+                        Editor: apEncodeService.encodeValue('User', getMockUser())
+                    });
                     registerUpdate(request, zrow);
                     break;
                 case 'Delete':
                     /** No z:row element when deleted */
                     zrow = '';
-                    _.each($(request).find('Field'), function(field) {
+                    _.each($(request).find('Field'), function (field) {
                         var fieldId = parseInt($(field).text(), 10);
                         registerDeletion(request, fieldId);
                     });
@@ -228,7 +253,7 @@ angular.module('angularPoint')
         function buildRSDataNode(zrows) {
 
             var rsdata = '<rs:data ItemCount="' + zrows.length + '">';
-            _.each(zrows, function(zrow) {
+            _.each(zrows, function (zrow) {
                 /** Work with zrows that have been parsed to xml as well as those that are still strings */
                 rsdata += typeof zrow === 'object' ? apUtilityService.stringifyXML(zrow) : zrow;
             });
@@ -246,8 +271,8 @@ angular.module('angularPoint')
             /* Build Changes XML node for entities that have been deleted.  There are other valid changes [Restore] but
              at this point we're only concerned with mocking deleted items */
             response.changes = '<Changes LastChangeToken="' + token + '">';
-            if(changesSinceToken.pendingDeletions.length > 0) {
-                _.each(changesSinceToken.pendingDeletions, function(listItemId) {
+            if (changesSinceToken.pendingDeletions.length > 0) {
+                _.each(changesSinceToken.pendingDeletions, function (listItemId) {
                     response.changes += '<Id ChangeType="Delete" UniqueId="">' + listItemId + '</Id>';
                 });
             }
@@ -341,12 +366,12 @@ angular.module('angularPoint')
             var model = getListModel(request);
             var mockRecords = model.generateMockData({quantity: quantity});
             var zrows = [];
-            _.each(mockRecords, function(mockRecord) {
+            _.each(mockRecords, function (mockRecord) {
                 var changeObject = {};
                 /** Generate value pairs for each property on the mock object */
                 var valuePairs = apEncodeService.generateValuePairs(model.list.fields, mockRecord);
                 /** Create a key/val property for each valuePiar */
-                _.each(valuePairs, function(valuePair) {
+                _.each(valuePairs, function (valuePair) {
                     changeObject[valuePair[0]] = valuePair[1];
                 });
                 zrows.push(createZRow(changeObject));
@@ -376,7 +401,7 @@ angular.module('angularPoint')
 
             if (apCachedXML.lists[fileName] && apCachedXML.lists[fileName][operation]) {
                 response = apCachedXML.lists[fileName][operation];
-            } else if(_.keys(apCachedXML.lists[fileName]).length > 0) {
+            } else if (_.keys(apCachedXML.lists[fileName]).length > 0) {
                 /** The exact operation we'd looking for isn't found but there's another there so we'll try that */
                 response = apCachedXML.lists[fileName][_.keys(apCachedXML.lists[fileName])[0]];
             }
