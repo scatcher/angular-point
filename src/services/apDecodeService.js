@@ -450,8 +450,11 @@ angular.module('angularPoint')
                 var thisLookupMultiObject = [];
                 var thisLookupMulti = s.split(';#');
                 for (var i = 0; i < thisLookupMulti.length; i = i + 2) {
-                    var thisLookup = jsLookup(thisLookupMulti[i] + ';#' + thisLookupMulti[i + 1], options);
-                    thisLookupMultiObject.push(thisLookup);
+                    /** Ensure a lookup id is present before attempting to push a new lookup */
+                    if(thisLookupMulti[i]) {
+                        var thisLookup = jsLookup(thisLookupMulti[i] + ';#' + thisLookupMulti[i + 1], options);
+                        thisLookupMultiObject.push(thisLookup);
+                    }
                 }
                 return thisLookupMultiObject;
             }

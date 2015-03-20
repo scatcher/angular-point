@@ -1,7 +1,7 @@
 /**
  * angular-point - A library designed to allow Angular to work with SharePoint lists using SOAP web services.
  * @authors Scott <angular-point@scotthatcher.com>
- * @version v1.2.5
+ * @version v1.2.7
  * @link https://github.com/scatcher/angular-point
  * @license MIT
  */
@@ -5319,8 +5319,11 @@ angular.module('angularPoint')
                 var thisLookupMultiObject = [];
                 var thisLookupMulti = s.split(';#');
                 for (var i = 0; i < thisLookupMulti.length; i = i + 2) {
-                    var thisLookup = jsLookup(thisLookupMulti[i] + ';#' + thisLookupMulti[i + 1], options);
-                    thisLookupMultiObject.push(thisLookup);
+                    /** Ensure a lookup id is present before attempting to push a new lookup */
+                    if(thisLookupMulti[i]) {
+                        var thisLookup = jsLookup(thisLookupMulti[i] + ';#' + thisLookupMulti[i + 1], options);
+                        thisLookupMultiObject.push(thisLookup);
+                    }
                 }
                 return thisLookupMultiObject;
             }
