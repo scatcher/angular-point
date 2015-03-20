@@ -15,39 +15,34 @@
  // *  @requires apFieldService
  */
 angular.module('angularPoint')
-    .factory('apDataService', function ($q, $timeout, $http, _, apConfig, apUtilityService,
+    .service('apDataService', function ($q, $timeout, $http, _, apConfig, apUtilityService,
                                         apCacheService, apDecodeService, apEncodeService, apFieldService,
                                         apIndexedCacheFactory, toastr, SPServices, apDefaultListItemQueryOptions,
-                                        apWebServiceOperationConstants, apXMLToJSONService) {
+                                        apWebServiceOperationConstants, apXMLToJSONService, apChangeService) {
 
         /** Exposed functionality */
-        var apDataService = {
-            createListItem: createListItem,
-            deleteAttachment: deleteAttachment,
-            deleteListItem: deleteListItem,
-            executeQuery: executeQuery,
-            generateWebServiceUrl: generateWebServiceUrl,
-            getAvailableWorkflows: getAvailableWorkflows,
-            getCollection: getCollection,
-            getCurrentSite: getCurrentSite,
-            getFieldVersionHistory: getFieldVersionHistory,
-            getGroupCollectionFromUser: getGroupCollectionFromUser,
-            getList: getList,
-            getListFields: getListFields,
-            //getListItemById: getListItemById,
-            getUserProfileByName: getUserProfileByName,
-            //getView: getView,
-            processChangeTokenXML: processChangeTokenXML,
-            processDeletionsSinceToken: processDeletionsSinceToken,
-            requestData: requestData,
-            retrieveChangeToken: retrieveChangeToken,
-            retrievePermMask: retrievePermMask,
-            serviceWrapper: serviceWrapper,
-            startWorkflow: startWorkflow,
-            updateListItem: updateListItem
-        };
+        this.createListItem = createListItem;
+        this.deleteAttachment = deleteAttachment;
+        this.deleteListItem = deleteListItem;
+        this.executeQuery = executeQuery;
+        this.generateWebServiceUrl = generateWebServiceUrl;
+        this.getAvailableWorkflows = getAvailableWorkflows;
+        this.getCollection = getCollection;
+        this.getCurrentSite = getCurrentSite;
+        this.getFieldVersionHistory = getFieldVersionHistory;
+        this.getGroupCollectionFromUser = getGroupCollectionFromUser;
+        this.getList = getList;
+        this.getListFields = getListFields;
+        this.getUserProfileByName = getUserProfileByName;
+        this.processChangeTokenXML = processChangeTokenXML;
+        this.processDeletionsSinceToken = processDeletionsSinceToken;
+        this.requestData = requestData;
+        this.retrieveChangeToken = retrieveChangeToken;
+        this.retrievePermMask = retrievePermMask;
+        this.serviceWrapper = serviceWrapper;
+        this.startWorkflow = startWorkflow;
+        this.updateListItem = updateListItem;
 
-        return apDataService;
 
         /*********************** Private ****************************/
 
@@ -67,20 +62,13 @@ angular.module('angularPoint')
             var service = apWebServiceOperationConstants[opts.operation][0];
             generateWebServiceUrl(service, opts.webURL)
                 .then(function (url) {
-                    $http({
-                        method: 'POST',
-                        url: url,
-                        data: soapData.msg,
+                    $http.post(url, soapData.msg, {
                         responseType: "document",
                         headers: {
-                            "Content-Type": "text/xml;charset='utf-8'"
-                        },
-                        transformRequest: function (data, headersGetter) {
-                            if (soapData.SOAPAction) {
-                                var headers = headersGetter();
-                                headers["SOAPAction"] = soapData.SOAPAction;
+                            "Content-Type": "text/xml;charset='utf-8'",
+                            SOAPAction: function() {
+                                return soapData.SOAPAction ? soapData.SOAPAction : null
                             }
-                            return data;
                         },
                         transformResponse: function (data, headersGetter) {
                             if (_.isString(data)) {
@@ -146,7 +134,7 @@ angular.module('angularPoint')
                 }
             }
 
-            apDataService.requestData(opts)
+            requestData(opts)
                 .then(function (response) {
                     /** Failure */
                     var data = opts.postProcess(response);
@@ -368,7 +356,7 @@ angular.module('angularPoint')
             return deferred.promise;
 
             function getGroupCollection(userLoginName) {
-                apDataService.serviceWrapper({
+                serviceWrapper({
                     operation: 'GetGroupCollectionFromUser',
                     userLoginName: userLoginName,
                     filterNode: 'Group'
@@ -775,6 +763,9 @@ angular.module('angularPoint')
                 opts.webURL = model.list.webURL;
             }
 
+            /** Notify any listeners to expect a change */
+            apChangeService.registerListItemUpdate(entity, opts, deferred.promise);
+
             /** Overload the function then pass anything past the first parameter to the supporting methods */
             serviceWrapper(opts, entity, model)
                 .then(function (response) {
@@ -784,6 +775,7 @@ angular.module('angularPoint')
                 }, function (err) {
                     deferred.reject(err);
                 });
+
             return deferred.promise;
         }
 

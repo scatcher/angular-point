@@ -2,7 +2,7 @@
 
 angular.module('angularPoint')
     .run(function (_, $httpBackend, apCachedXML, apCacheService, apWebServiceService, apUtilityService, $injector,
-                   apEncodeService) {
+                   apEncodeService, apChangeService) {
 
         var mockId = 10000;
 
@@ -71,6 +71,11 @@ angular.module('angularPoint')
             soap: 'xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" ' +
             'xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema"'
         };
+
+        var activeEntity;
+        apChangeService.subscribeToUpdates(function(entity, options, promise) {
+            activeEntity = entity;
+        });
 
 
         function getListItems(request) {
@@ -185,9 +190,16 @@ angular.module('angularPoint')
                     registerUpdate(request, zrow);
                     break;
                 case 'Update':
+                    var id = activeEntity.id;
                     zrow = convertUpdateRequestToResponse(request, {
                         Modified: apEncodeService.encodeValue('DateTime', new Date()),
-                        Editor: apEncodeService.encodeValue('User', getMockUser())
+                        Editor: apEncodeService.encodeValue('User', getMockUser()),
+                        Created: apEncodeService.encodeValue('DateTime', activeEntity.created),
+                        Author: apEncodeService.encodeValue('User', activeEntity.author),
+                        PermMask: activeEntity.permMask,
+                        UniqueId: id + ';#{11FF840D-9CE1-4961-B7FD-51B9DF07706B}',
+                        FileRef: id + ';#sitecollection/site/ListName/' + id + '_.000',
+                        Version: activeEntity.version ? activeEntity.version + 1 : 2
                     });
                     registerUpdate(request, zrow);
                     break;
