@@ -6,7 +6,7 @@
   ],
   "license": "MIT",
   "homepage": "https://github.com/scatcher/angular-point",
-  "version": "1.2.7",
+  "version": "1.2.8",
   "module": "angularPoint",
   "dependencies": {},
   "devDependencies": {
