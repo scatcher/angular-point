@@ -72,9 +72,9 @@ angular.module('angularPoint')
             'xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema"'
         };
 
-        var activeEntity;
+        var activeEntities = {};
         apChangeService.subscribeToUpdates(function(entity, options, promise) {
-            activeEntity = entity;
+            activeEntities[entity.id] = entity;
         });
 
 
@@ -190,18 +190,29 @@ angular.module('angularPoint')
                     registerUpdate(request, zrow);
                     break;
                 case 'Update':
-                    var id = activeEntity.id;
-                    zrow = convertUpdateRequestToResponse(request, {
+                    var listItemStrId = $(request).find('Field[Name="ID"]').text();
+                    var activeEntity = activeEntities[listItemStrId];
+
+                    var overrides = {
                         Modified: apEncodeService.encodeValue('DateTime', new Date()),
                         Editor: apEncodeService.encodeValue('User', getMockUser()),
-                        Created: apEncodeService.encodeValue('DateTime', activeEntity.created),
-                        Author: apEncodeService.encodeValue('User', activeEntity.author),
-                        PermMask: activeEntity.permMask,
-                        UniqueId: id + ';#{11FF840D-9CE1-4961-B7FD-51B9DF07706B}',
-                        FileRef: id + ';#sitecollection/site/ListName/' + id + '_.000',
                         Version: activeEntity.version ? activeEntity.version + 1 : 2
+                    };
+
+                    var fieldDefinitions = activeEntity.getList().customFields;
+                    var valuePairs = apEncodeService.generateValuePairs(fieldDefinitions, activeEntity);
+                    var encodedValues = {};
+                    _.each(valuePairs, function(pair) {
+                        encodedValues[pair[0]] = pair[1];
                     });
+
+                    var opts = _.extend({}, encodedValues, overrides);
+
+                    zrow = convertUpdateRequestToResponse(request, opts);
                     registerUpdate(request, zrow);
+
+                    //Cleanup
+                    delete activeEntities[listItemStrId];
                     break;
                 case 'Delete':
                     /** No z:row element when deleted */
