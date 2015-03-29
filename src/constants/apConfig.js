@@ -57,6 +57,7 @@
             offline: window.location.href.indexOf('localhost') > -1 ||
                 window.location.href.indexOf('http://0.') > -1 ||
                 window.location.href.indexOf('http://10.') > -1 ||
+                window.location.href.indexOf('http://127.') > -1 ||
                 window.location.href.indexOf('http://192.') > -1,
             offlineXML: 'dev/'
         });

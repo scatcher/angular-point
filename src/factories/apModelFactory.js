@@ -485,10 +485,10 @@ angular.module('angularPoint')
                 deferred = $q.defer();
 
             apDataService.createListItem(model, entity, options)
-                .then(function (response) {
-                    deferred.resolve(response);
+                .then(function (listItem) {
+                    deferred.resolve(listItem);
                     /** Optionally broadcast change event */
-                    apUtilityService.registerChange(model);
+                    apUtilityService.registerChange(model, 'create', listItem.id);
                 });
             return deferred.promise;
         }

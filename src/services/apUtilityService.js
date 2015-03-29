@@ -458,11 +458,11 @@ angular.module('angularPoint')
          * //Todo Break this functionality into FireBase module that can be used if desired.
          * @param {object} model event
          */
-        function registerChange(model) {
+        function registerChange(model, changeType, listItemId) {
             /** Disabled this functionality until I can spend the necessary time to test */
-            //if (!apConfig.offline && model.sync && _.isFunction(model.sync.registerChange)) {
-            //    /** Register change after successful update */
-            //    model.sync.registerChange();
-            //}
+            if (model.sync && _.isFunction(model.sync.registerChange)) {
+                /** Register change after successful update */
+                model.sync.registerChange(changeType, listItemId);
+            }
         }
     });

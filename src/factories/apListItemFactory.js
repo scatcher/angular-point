@@ -89,10 +89,10 @@ angular.module('angularPoint')
             }
 
             apDataService.updateListItem(model, listItem, options)
-                .then(function (response) {
-                    deferred.resolve(response);
+                .then(function (updatedListItem) {
+                    deferred.resolve(updatedListItem);
                     /** Optionally broadcast change event */
-                    apUtilityService.registerChange(model);
+                    apUtilityService.registerChange(model, 'update', updatedListItem.id);
                 });
 
             return deferred.promise;
@@ -106,9 +106,9 @@ angular.module('angularPoint')
          * @param {array|string} fieldArray Array of internal field names that should be saved to SharePoint or a single
          * string to save an individual field.
          * @param {object} [options] Optionally pass params to the data service.
-         * @param {boolean} [options.updateAllCaches=false] Search through the cache for each query to ensure entity is
-         * updated everywhere.  This is more process intensive so by default we only update the cached entity in the
-         * cache where this entity is currently stored.
+         * @param {boolean} [options.updateAllCaches=false] Search through the cache for each query to ensure listItem is
+         * updated everywhere.  This is more process intensive so by default we only update the cached listItem in the
+         * cache where this listItem is currently stored.
          * @returns {object} Promise which resolves with the updated list item from the server.
          * @example
          * <pre>
@@ -153,10 +153,10 @@ angular.module('angularPoint')
             var opts = _.extend({}, defaults, options);
 
             apDataService.updateListItem(model, listItem, opts)
-                .then(function (response) {
-                    deferred.resolve(response);
+                .then(function (updatedListItem) {
+                    deferred.resolve(updatedListItem);
                     /** Optionally broadcast change event */
-                    apUtilityService.registerChange(model);
+                    apUtilityService.registerChange(model, 'update', updatedListItem.id);
                 });
 
             return deferred.promise;
@@ -168,9 +168,9 @@ angular.module('angularPoint')
          * @description
          * Deletes record directly from the object and removes record from user cache.
          * @param {object} [options] Optionally pass params to the dataService.
-         * @param {boolean} [options.updateAllCaches=false] Iterate over each of the query cache's and ensure the entity is
-         * removed everywhere.  This is more process intensive so by default we only remove the cached entity in the
-         * cache where this entity is currently stored.
+         * @param {boolean} [options.updateAllCaches=false] Iterate over each of the query cache's and ensure the listItem is
+         * removed everywhere.  This is more process intensive so by default we only remove the cached listItem in the
+         * cache where this listItem is currently stored.
          * @returns {object} Promise which really only lets us know the request is complete.
          * @example
          * ```
@@ -191,7 +191,7 @@ angular.module('angularPoint')
             apDataService.deleteListItem(model, listItem, options).then(function (response) {
                 deferred.resolve(response);
                 /** Optionally broadcast change event */
-                apUtilityService.registerChange(model);
+                apUtilityService.registerChange(model, 'delete', listItem.id);
             });
 
             return deferred.promise;
@@ -202,8 +202,8 @@ angular.module('angularPoint')
          * @ngdoc function
          * @name ListItem.getLookupReference
          * @description
-         * Allows us to retrieve the entity being referenced in a given lookup field.
-         * @param {string} fieldName Name of the lookup property on the list item that references an entity.
+         * Allows us to retrieve the listItem being referenced in a given lookup field.
+         * @param {string} fieldName Name of the lookup property on the list item that references a listItem.
          * @param {number} [lookupId=listItem.fieldName.lookupId] The listItem.lookupId of the lookup object.  This allows us to also use this logic
          * on a multi-select by iterating over each of the lookups.
          * @example
@@ -216,10 +216,10 @@ angular.module('angularPoint')
          *    }
          * };
          *
-         * //To get the location entity
-         * var entity = project.getLookupReference('location');
+         * //To get the location listItem
+         * var listItem = project.getLookupReference('location');
          * </pre>
-         * @returns {object} The entity the lookup is referencing or undefined if not in the cache.
+         * @returns {object} The listItem the lookup is referencing or undefined if not in the cache.
          */
         function getLookupReference(fieldName, lookupId) {
             var listItem = this;
@@ -246,7 +246,7 @@ angular.module('angularPoint')
          * @ngdoc function
          * @name ListItem.getFormattedValue
          * @description
-         * Given the attribute name on an entity, we can lookup the field type and from there return a formatted
+         * Given the attribute name on a listItem, we can lookup the field type and from there return a formatted
          * string representation of that value.
          * @param {string} fieldName Attribute name on the object that contains the value to stringify.
          * @param {object} [options] Pass through to apFormattedFieldValueService.getFormattedFieldValue.
