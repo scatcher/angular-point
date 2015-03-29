@@ -1,7 +1,7 @@
 /**
  * angular-point - A library designed to allow Angular to work with SharePoint lists using SOAP web services.
  * @authors Scott <angular-point@scotthatcher.com>
- * @version v2.0.0
+ * @version v2.0.1
  * @link https://github.com/scatcher/angular-point
  * @license MIT
  */
@@ -103,6 +103,7 @@ angular.module('angularPoint')
             offline: window.location.href.indexOf('localhost') > -1 ||
                 window.location.href.indexOf('http://0.') > -1 ||
                 window.location.href.indexOf('http://10.') > -1 ||
+                window.location.href.indexOf('http://127.') > -1 ||
                 window.location.href.indexOf('http://192.') > -1,
             offlineXML: 'dev/'
         });
@@ -1255,10 +1256,10 @@ angular.module('angularPoint')
             }
 
             apDataService.updateListItem(model, listItem, options)
-                .then(function (response) {
-                    deferred.resolve(response);
+                .then(function (updatedListItem) {
+                    deferred.resolve(updatedListItem);
                     /** Optionally broadcast change event */
-                    apUtilityService.registerChange(model);
+                    apUtilityService.registerChange(model, 'update', updatedListItem.id);
                 });
 
             return deferred.promise;
@@ -1272,9 +1273,9 @@ angular.module('angularPoint')
          * @param {array|string} fieldArray Array of internal field names that should be saved to SharePoint or a single
          * string to save an individual field.
          * @param {object} [options] Optionally pass params to the data service.
-         * @param {boolean} [options.updateAllCaches=false] Search through the cache for each query to ensure entity is
-         * updated everywhere.  This is more process intensive so by default we only update the cached entity in the
-         * cache where this entity is currently stored.
+         * @param {boolean} [options.updateAllCaches=false] Search through the cache for each query to ensure listItem is
+         * updated everywhere.  This is more process intensive so by default we only update the cached listItem in the
+         * cache where this listItem is currently stored.
          * @returns {object} Promise which resolves with the updated list item from the server.
          * @example
          * <pre>
@@ -1319,10 +1320,10 @@ angular.module('angularPoint')
             var opts = _.extend({}, defaults, options);
 
             apDataService.updateListItem(model, listItem, opts)
-                .then(function (response) {
-                    deferred.resolve(response);
+                .then(function (updatedListItem) {
+                    deferred.resolve(updatedListItem);
                     /** Optionally broadcast change event */
-                    apUtilityService.registerChange(model);
+                    apUtilityService.registerChange(model, 'update', updatedListItem.id);
                 });
 
             return deferred.promise;
@@ -1334,9 +1335,9 @@ angular.module('angularPoint')
          * @description
          * Deletes record directly from the object and removes record from user cache.
          * @param {object} [options] Optionally pass params to the dataService.
-         * @param {boolean} [options.updateAllCaches=false] Iterate over each of the query cache's and ensure the entity is
-         * removed everywhere.  This is more process intensive so by default we only remove the cached entity in the
-         * cache where this entity is currently stored.
+         * @param {boolean} [options.updateAllCaches=false] Iterate over each of the query cache's and ensure the listItem is
+         * removed everywhere.  This is more process intensive so by default we only remove the cached listItem in the
+         * cache where this listItem is currently stored.
          * @returns {object} Promise which really only lets us know the request is complete.
          * @example
          * ```
@@ -1357,7 +1358,7 @@ angular.module('angularPoint')
             apDataService.deleteListItem(model, listItem, options).then(function (response) {
                 deferred.resolve(response);
                 /** Optionally broadcast change event */
-                apUtilityService.registerChange(model);
+                apUtilityService.registerChange(model, 'delete', listItem.id);
             });
 
             return deferred.promise;
@@ -1368,8 +1369,8 @@ angular.module('angularPoint')
          * @ngdoc function
          * @name ListItem.getLookupReference
          * @description
-         * Allows us to retrieve the entity being referenced in a given lookup field.
-         * @param {string} fieldName Name of the lookup property on the list item that references an entity.
+         * Allows us to retrieve the listItem being referenced in a given lookup field.
+         * @param {string} fieldName Name of the lookup property on the list item that references a listItem.
          * @param {number} [lookupId=listItem.fieldName.lookupId] The listItem.lookupId of the lookup object.  This allows us to also use this logic
          * on a multi-select by iterating over each of the lookups.
          * @example
@@ -1382,10 +1383,10 @@ angular.module('angularPoint')
          *    }
          * };
          *
-         * //To get the location entity
-         * var entity = project.getLookupReference('location');
+         * //To get the location listItem
+         * var listItem = project.getLookupReference('location');
          * </pre>
-         * @returns {object} The entity the lookup is referencing or undefined if not in the cache.
+         * @returns {object} The listItem the lookup is referencing or undefined if not in the cache.
          */
         function getLookupReference(fieldName, lookupId) {
             var listItem = this;
@@ -1412,7 +1413,7 @@ angular.module('angularPoint')
          * @ngdoc function
          * @name ListItem.getFormattedValue
          * @description
-         * Given the attribute name on an entity, we can lookup the field type and from there return a formatted
+         * Given the attribute name on a listItem, we can lookup the field type and from there return a formatted
          * string representation of that value.
          * @param {string} fieldName Attribute name on the object that contains the value to stringify.
          * @param {object} [options] Pass through to apFormattedFieldValueService.getFormattedFieldValue.
@@ -2456,10 +2457,10 @@ angular.module('angularPoint')
                 deferred = $q.defer();
 
             apDataService.createListItem(model, entity, options)
-                .then(function (response) {
-                    deferred.resolve(response);
+                .then(function (listItem) {
+                    deferred.resolve(listItem);
                     /** Optionally broadcast change event */
-                    apUtilityService.registerChange(model);
+                    apUtilityService.registerChange(model, 'create', listItem.id);
                 });
             return deferred.promise;
         }
@@ -3371,110 +3372,6 @@ angular.module('angularPoint')
             User: User
         }
     }]);
-'use strict';
-
-/**
- * @ngdoc service
- * @name angularPoint.apUserModel
- * @description
- * Simple service that allows us to request and cache both the current user and their group memberships.
- *
- * @requires apDataService
- *
- */
-angular.module('angularPoint')
-    .service('apUserModel', ['$q', '_', 'apDataService', function ($q, _, apDataService) {
-
-        var model = {
-                checkIfMember: checkIfMember,
-                getGroupCollection: getGroupCollection,
-                getUserProfile: getUserProfile
-            },
-            /** Local references to cached promises */
-            _getGroupCollection,
-            _getUserProfile;
-
-        return model;
-
-
-        /**
-         * @ngdoc function
-         * @name angularPoint.apUserModel:getUserProfile
-         * @methodOf angularPoint.apUserModel
-         * @description
-         * Returns the user profile for the current user and caches results.
-         * Pull user profile info and parse into a profile object
-         * http://spservices.codeplex.com/wikipage?title=GetUserProfileByName
-         * @param {boolean} [force=false] Ignore any cached value.
-         * @returns {object} Promise which resolves with the requested user profile.
-         */
-        function getUserProfile(force) {
-            if (!_getUserProfile || force) {
-                /** Create a new deferred object if not already defined */
-                _getUserProfile = apDataService.getUserProfileByName();
-            }
-            return _getUserProfile;
-        }
-
-
-        /**
-         * @ngdoc function
-         * @name angularPoint.apUserModel:getGroupCollection
-         * @methodOf angularPoint.apUserModel
-         * @description
-         * Returns the group names for the current user and caches results.
-         * @param {boolean} [force=false] Ignore any cached value.
-         * @returns {string[]} Promise which resolves with the array of groups the user belongs to.
-         */
-        function getGroupCollection(force) {
-            if (!_getGroupCollection || force) {
-                /** Create a new deferred object if not already defined */
-                var deferred = $q.defer();
-                getUserProfile(force).then(function (userProfile) {
-                    apDataService.getGroupCollectionFromUser(userProfile.userLoginName)
-                        .then(function (groupCollection) {
-                            deferred.resolve(groupCollection);
-                        });
-                });
-                _getGroupCollection = deferred.promise;
-            }
-            return _getGroupCollection;
-        }
-
-
-        /**
-         * @ngdoc function
-         * @name angularPoint.apUserModel:checkIfMember
-         * @methodOf angularPoint.apUserModel
-         * @description
-         * Checks to see if current user is a member of the specified group.
-         * @param {string} groupName Name of the group.
-         * @param {boolean} [force=false] Ignore any cached value.
-         * @returns {boolean} Is the user a member of the group?
-         */
-        function checkIfMember(groupName, force) {
-            //Allow function to be called before group collection is ready
-            var deferred = $q.defer();
-            var self = this;
-
-            //Initially ensure groups are ready, any future calls will receive the return
-            model.getGroupCollection(force).then(function (groupCollection) {
-                //Data is ready
-                //Map the group names to cache results for future calls, rebuild if data has changed
-                if (!self.groupMap || self.groupMap.length !== groupCollection.length) {
-                    self.groupMap = [];
-                    _.each(groupCollection, function (group) {
-                        self.groupMap.push(group.Name);
-                    });
-                }
-                deferred.resolve(_.isObject(groupCollection[self.groupMap.indexOf(groupName)]));
-            });
-
-            return deferred.promise;
-        }
-
-    }]);
-
 'use strict';
 
 /**
@@ -8878,12 +8775,12 @@ angular.module('angularPoint')
          * //Todo Break this functionality into FireBase module that can be used if desired.
          * @param {object} model event
          */
-        function registerChange(model) {
+        function registerChange(model, changeType, listItemId) {
             /** Disabled this functionality until I can spend the necessary time to test */
-            //if (!apConfig.offline && model.sync && _.isFunction(model.sync.registerChange)) {
-            //    /** Register change after successful update */
-            //    model.sync.registerChange();
-            //}
+            if (model.sync && _.isFunction(model.sync.registerChange)) {
+                /** Register change after successful update */
+                model.sync.registerChange(changeType, listItemId);
+            }
         }
     }]);
 
@@ -9050,4 +8947,108 @@ angular.module('angularPoint')
             // Return the JSON object
             return jsonObject;
         };
+    }]);
+
+'use strict';
+
+/**
+ * @ngdoc service
+ * @name angularPoint.apUserModel
+ * @description
+ * Simple service that allows us to request and cache both the current user and their group memberships.
+ *
+ * @requires apDataService
+ *
+ */
+angular.module('angularPoint')
+    .service('apUserModel', ['$q', '_', 'apDataService', function ($q, _, apDataService) {
+
+        var model = {
+                checkIfMember: checkIfMember,
+                getGroupCollection: getGroupCollection,
+                getUserProfile: getUserProfile
+            },
+            /** Local references to cached promises */
+            _getGroupCollection,
+            _getUserProfile;
+
+        return model;
+
+
+        /**
+         * @ngdoc function
+         * @name angularPoint.apUserModel:getUserProfile
+         * @methodOf angularPoint.apUserModel
+         * @description
+         * Returns the user profile for the current user and caches results.
+         * Pull user profile info and parse into a profile object
+         * http://spservices.codeplex.com/wikipage?title=GetUserProfileByName
+         * @param {boolean} [force=false] Ignore any cached value.
+         * @returns {object} Promise which resolves with the requested user profile.
+         */
+        function getUserProfile(force) {
+            if (!_getUserProfile || force) {
+                /** Create a new deferred object if not already defined */
+                _getUserProfile = apDataService.getUserProfileByName();
+            }
+            return _getUserProfile;
+        }
+
+
+        /**
+         * @ngdoc function
+         * @name angularPoint.apUserModel:getGroupCollection
+         * @methodOf angularPoint.apUserModel
+         * @description
+         * Returns the group names for the current user and caches results.
+         * @param {boolean} [force=false] Ignore any cached value.
+         * @returns {string[]} Promise which resolves with the array of groups the user belongs to.
+         */
+        function getGroupCollection(force) {
+            if (!_getGroupCollection || force) {
+                /** Create a new deferred object if not already defined */
+                var deferred = $q.defer();
+                getUserProfile(force).then(function (userProfile) {
+                    apDataService.getGroupCollectionFromUser(userProfile.userLoginName)
+                        .then(function (groupCollection) {
+                            deferred.resolve(groupCollection);
+                        });
+                });
+                _getGroupCollection = deferred.promise;
+            }
+            return _getGroupCollection;
+        }
+
+
+        /**
+         * @ngdoc function
+         * @name angularPoint.apUserModel:checkIfMember
+         * @methodOf angularPoint.apUserModel
+         * @description
+         * Checks to see if current user is a member of the specified group.
+         * @param {string} groupName Name of the group.
+         * @param {boolean} [force=false] Ignore any cached value.
+         * @returns {boolean} Is the user a member of the group?
+         */
+        function checkIfMember(groupName, force) {
+            //Allow function to be called before group collection is ready
+            var deferred = $q.defer();
+            var self = this;
+
+            //Initially ensure groups are ready, any future calls will receive the return
+            model.getGroupCollection(force).then(function (groupCollection) {
+                //Data is ready
+                //Map the group names to cache results for future calls, rebuild if data has changed
+                if (!self.groupMap || self.groupMap.length !== groupCollection.length) {
+                    self.groupMap = [];
+                    _.each(groupCollection, function (group) {
+                        self.groupMap.push(group.Name);
+                    });
+                }
+                deferred.resolve(_.isObject(groupCollection[self.groupMap.indexOf(groupName)]));
+            });
+
+            return deferred.promise;
+        }
+
     }]);
