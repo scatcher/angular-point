@@ -10,7 +10,7 @@
   "module": "angularPoint",
   "dependencies": {},
   "devDependencies": {
-    "angular-point-tools": "^2.0.0",
+    "angular-point-tools": "^2.0.1",
     "gulp": "^3.8.11",
       "gulp-concat": "^2.5.2",
     "gulp-sourcemaps": "^1.5.2",
