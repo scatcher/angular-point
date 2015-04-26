@@ -15,8 +15,8 @@ describe('Service: apCacheService', function () {
         mockEntityCache,
         mockModel,
         updatedMock = {
-            "id": 1,
-            "title": "Updated Mock"
+            id: 1,
+            title: "Updated Mock"
         },
         newMock = {
             id: 3,
@@ -26,11 +26,14 @@ describe('Service: apCacheService', function () {
         resolvedEntityCache,
         $rootScope;
 
-    beforeEach(inject(function (_apCacheService_, _mockModel_, _$rootScope_) {
-        service = _apCacheService_;
-        $rootScope = _$rootScope_;
-        mockModel = _mockModel_;
+    beforeEach(inject(function ($injector, _apCacheService_, _mockModel_, _$rootScope_) {
+        service = $injector.get('apCacheService');
+        $rootScope = $injector.get('$rootScope');
+        mockModel = $injector.get('mockModel');
         mockEntityCache = mockModel.getCache();
+
+        updatedMock.getModel = function() { return mockModel };
+        newMock.getModel = function() { return mockModel };
     }));
 
     describe('getEntityTypeKey', function () {
@@ -52,22 +55,21 @@ describe('Service: apCacheService', function () {
     describe('registerEntity', function () {
         beforeEach(function () {
             mockModel.importMocks();
-
-            service.registerEntity(new mockModel.factory(updatedMock), mockEntityCache);
-            service.registerEntity(new mockModel.factory(newMock), mockEntityCache);
         });
 
         it('extends the existing record', function () {
+            service.registerEntity(new mockModel.factory(updatedMock), mockEntityCache);
             expect(mockEntityCache.first().title).toEqual('Updated Mock');
         });
 
         it('adds a entity when a new mock is registered', function () {
+            service.registerEntity(new mockModel.factory(newMock), mockEntityCache);
             expect(mockEntityCache.count()).toEqual(3);
         });
     });
 
     describe('Function: getCachedEntity', function () {
-        it('finds the correct entity via the cache service istead of the model', function () {
+        it('finds the correct entity via the cache service instead of the model', function () {
             mockModel.importMocks();
             var entity = service.getCachedEntity(mockModel.list.guid, 1);
             expect(entity.title).toEqual('Mock 1');
@@ -77,8 +79,8 @@ describe('Service: apCacheService', function () {
     describe('Function: getCachedEntities', function () {
         it('returns all entities for a given model', function () {
             mockModel.importMocks();
-            var entity = service.getCachedEntities(mockModel.list.guid, 1);
-            expect(entity.count()).toEqual(2);
+            var indexedCache = service.getCachedEntities(mockModel.list.guid, 1);
+            expect(indexedCache.count()).toEqual(2);
         });
     });
 

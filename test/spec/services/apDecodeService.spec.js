@@ -10,11 +10,10 @@ describe("Factory: apDecodeService", function () {
         mockModel,
         mockXMLService;
 
-    beforeEach(inject(function (_apDecodeService_, _mockXMLService_, _mockModel_) {
-        service = _apDecodeService_;
-        mockXMLService = _mockXMLService_;
-        mockModel = _mockModel_;
-
+    beforeEach(inject(function ($injector) {
+        service = $injector.get('apDecodeService');
+        mockXMLService = $injector.get('mockXMLService');
+        mockModel = $injector.get('mockModel');
         mockChangeTokenXML = mockXMLService.GetListItemChangesSinceToken;
     }));
 
@@ -223,13 +222,10 @@ describe("Factory: apDecodeService", function () {
 
     describe('extendListDefinitionFromXML', function () {
 
-        beforeEach(function () {
+        it('extends list definition from XML', function () {
             /** Extend the list with XML */
             service.extendListDefinitionFromXML(mockModel.list, mockChangeTokenXML);
-        });
 
-
-        it('extends list definition from XML', function () {
             expect(mockModel.list.Description).toEqual('Just a mock list to use for prototyping.');
         });
 
