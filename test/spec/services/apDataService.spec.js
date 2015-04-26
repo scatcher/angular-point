@@ -65,15 +65,13 @@ describe("Service: apDataService", function () {
             service.createListItem(mockModel, {integer: 11})
                 .then(function (response) {
                     expect(response.integer).toEqual(11);
-                    expect(response.id).toEqual(3);
                 });
             $httpBackend.flush();
         });
         it('doesn\'t add it to existing caches', function () {
             service.createListItem(mockModel, {integer: 11})
                 .then(function (response) {
-                    expect(response.id).toEqual(3);
-                    expect(secondaryQueryCache[3]).toBeUndefined()
+                    expect(secondaryQueryCache[response.id]).toBeUndefined();
                 });
             $httpBackend.flush();
         });

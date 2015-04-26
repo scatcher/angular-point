@@ -20,7 +20,7 @@ describe("Factory: apListItemFactory", function () {
         $httpBackend = _$httpBackend_;
         apCachedXML = _apCachedXML_;
         mockModel.importMocks();
-        mockListItem = mockModel.getCache()[1];
+        mockListItem = mockModel.getCache('primary')[1];
         utils = apMockUtils;
 
     }));
@@ -248,10 +248,9 @@ describe("Factory: apListItemFactory", function () {
             mockListItem.integer = 41;
             mockListItem.saveFields('integer')
                 .then(function (response) {
-
+                    expect(mockModel.getCache('secondary')[1].integer).toEqual(41);
                 });
             $httpBackend.flush();
-            expect(mockModel.getCache('secondary')[1].integer).toEqual(41);
         });
         //it('resolves the promise with the updated entity', function () {
         //    mockXMLService.xhrStub('UpdateListItem');

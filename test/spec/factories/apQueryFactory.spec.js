@@ -28,12 +28,6 @@ describe('Factory: apQueryFactory', function () {
         });
     });
 
-    describe('Method: searchLocalCache', function () {
-        it('should return the cached entity with matching id', function () {
-            expect(mockQuery.searchLocalCache(2)).toBe(mockQuery.getCache()[2]);
-        });
-    });
-
     describe('Method: execute', function () {
         var firstPromise, secondPromise, thirdPromise;
         beforeEach(function () {
