@@ -6,57 +6,6 @@ module ap {
     var $q, toastr, apCacheService: CacheService, apDataService: DataService, apEncodeService: EncodeService,
         apUtilityService: UtilityService, apFormattedFieldValueService: FormattedFieldValueService, apConfig: IAPConfig;
 
-    /**
-     * @ngdoc object
-     * @name apListItemFactory
-     * @description
-     * Exposes the ListItem prototype and a constructor to instantiate a new ListItem.
-     * See [ListItem](#/api/ListItem) for details of the methods available on the prototype.
-     *
-     * @requires ListItem
-     * @requires apCacheService
-     * @requires apDataService
-     * @requires apUtilityService
-     */
-
-    export class ListItemFactory {
-        constructor($injector) {
-            $q = $injector.get("$q");
-            apCacheService = $injector.get("apCacheService");
-            apConfig = $injector.get("apConfig");
-            apDataService = $injector.get("apDataService");
-            apEncodeService = $injector.get("apEncodeService");
-            apFormattedFieldValueService = $injector.get("apFormattedFieldValueService");
-            apUtilityService = $injector.get("apUtilityService");
-            toastr = $injector.get("toastr");
-        }
-
-        /**
-         * @ngdoc function
-         * @name apListItemFactory: create
-         * @methodOf apListItemFactory
-         * @description
-         * Instantiates and returns a new ListItem.
-         */
-        create() {
-            return new ListItem();
-        }
-
-        /**
-         * @ngdoc function
-         * @name apListItemFactory: createGenericFactory
-         * @methodOf apListItemFactory
-         * @description
-         * In the event that a factory isn't specified, just use a
-         * standard constructor to allow it to inherit from ListItem
-         */
-        createGenericFactory() {
-            return new StandardListItem();
-        }
-        ListItem = ListItem;
-
-    }
-
     export interface IListItem {
         author?: IUser;
         created?: Date;
@@ -737,12 +686,64 @@ module ap {
         }
     }
 
+
     /** In the event that a factory isn't specified, just use a
      * standard constructor to allow it to inherit from ListItem */
     export class StandardListItem {
         constructor(obj?: Object) {
             _.assign(this, obj);
         }
+    }
+
+    /**
+     * @ngdoc object
+     * @name apListItemFactory
+     * @description
+     * Exposes the ListItem prototype and a constructor to instantiate a new ListItem.
+     * See [ListItem](#/api/ListItem) for details of the methods available on the prototype.
+     *
+     * @requires ListItem
+     * @requires apCacheService
+     * @requires apDataService
+     * @requires apUtilityService
+     */
+
+    export class ListItemFactory {
+        ListItem = ListItem;
+        constructor($injector) {
+            $q = $injector.get("$q");
+            apCacheService = $injector.get("apCacheService");
+            apConfig = $injector.get("apConfig");
+            apDataService = $injector.get("apDataService");
+            apEncodeService = $injector.get("apEncodeService");
+            apFormattedFieldValueService = $injector.get("apFormattedFieldValueService");
+            apUtilityService = $injector.get("apUtilityService");
+            toastr = $injector.get("toastr");
+        }
+
+        /**
+         * @ngdoc function
+         * @name apListItemFactory: create
+         * @methodOf apListItemFactory
+         * @description
+         * Instantiates and returns a new ListItem.
+         */
+        create() {
+            return new ListItem();
+        }
+
+        /**
+         * @ngdoc function
+         * @name apListItemFactory: createGenericFactory
+         * @methodOf apListItemFactory
+         * @description
+         * In the event that a factory isn't specified, just use a
+         * standard constructor to allow it to inherit from ListItem
+         */
+        createGenericFactory() {
+            return new StandardListItem();
+        }
+
     }
 
     angular

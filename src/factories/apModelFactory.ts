@@ -7,29 +7,6 @@ module ap {
         apQueryFactory, apUtilityService, apFieldService, apConfig,
         apIndexedCacheFactory, apDecodeService, $q, toastr;
 
-    class ModelFactory {
-        Model = Model;
-        constructor($injector) {
-            $q = $injector.get('$q');
-            apCacheService = $injector.get('apCacheService');
-            apConfig = $injector.get('apConfig');
-            apDataService = $injector.get('apDataService');
-            apDecodeService = $injector.get('apDecodeService');
-            apFieldService = $injector.get('apFieldService');
-            apIndexedCacheFactory = $injector.get('apIndexedCacheFactory');
-            apListFactory = $injector.get('apListFactory');
-            apQueryFactory = $injector.get('apQueryFactory');
-            apUtilityService = $injector.get('apUtilityService');
-            ListItemFactory = $injector.get('apListItemFactory');
-            toastr = $injector.get('toastr');
-        }
-
-        create(config) {
-            return new Model(config);
-        }
-
-    }
-
     export interface IModel {
         addNewItem(entity: Object, options?: Object): ng.IPromise<IListItem>;
         createEmptyItem(overrides?: Object): IListItem;
@@ -901,6 +878,30 @@ module ap {
             return valid;
         }
     }
+
+    class ModelFactory {
+        Model = Model;
+        constructor($injector) {
+            $q = $injector.get('$q');
+            apCacheService = $injector.get('apCacheService');
+            apConfig = $injector.get('apConfig');
+            apDataService = $injector.get('apDataService');
+            apDecodeService = $injector.get('apDecodeService');
+            apFieldService = $injector.get('apFieldService');
+            apIndexedCacheFactory = $injector.get('apIndexedCacheFactory');
+            apListFactory = $injector.get('apListFactory');
+            apQueryFactory = $injector.get('apQueryFactory');
+            apUtilityService = $injector.get('apUtilityService');
+            ListItemFactory = $injector.get('apListItemFactory');
+            toastr = $injector.get('toastr');
+        }
+
+        create(config) {
+            return new Model(config);
+        }
+
+    }
+
 
 
     angular
