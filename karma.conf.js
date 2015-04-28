@@ -1,6 +1,4 @@
 'use strict';
-var log = require('gulp-util').log;
-
 module.exports = function(config) {
 
     var configuration = {
