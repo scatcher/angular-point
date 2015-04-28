@@ -205,6 +205,7 @@ module ap {
 
 
     export class QueryFactory {
+        Query = Query;
         constructor($injector) {
             $q = $injector.get('$q');
             apConfig = $injector.get('apConfig');
