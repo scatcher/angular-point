@@ -555,9 +555,14 @@ module ap {
          */
         processChangeTokenXML(model: IModel, query: IQuery, responseXML: XMLDocument, opts) {
             if (!model.deferredListDefinition) {
+                var deferred = $q.defer();
+
                 /** Replace the null placeholder with this promise so we don't have to process in the future and also
                  * don't have to query again if we run Model.extendListMetadata. */
-                model.deferredListDefinition = query.initialized.promise;
+                model.deferredListDefinition = deferred.promise;
+
+                /** Immediately resolve because there's no need to perform any async actions */
+                deferred.resolve(model);
                 apDecodeService.extendListMetadata(model, responseXML);
             }
 
