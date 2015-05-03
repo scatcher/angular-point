@@ -879,7 +879,7 @@ module ap {
         }
     }
 
-    class ModelFactory {
+    export class ModelFactory {
         Model = Model;
         constructor($injector) {
             $q = $injector.get('$q');
