@@ -150,6 +150,20 @@ module ap {
 
             var opts = _.extend({}, defaults, options);
 
+            /** Check to see if list item or document because documents need the FileRef as well as id to delete */
+            if(listItem.fileRef  && listItem.fileRef.lookupValue) {
+                var fileExtension = listItem.fileRef.lookupValue.split('.').pop();
+                if(isNaN(fileExtension)) {
+                    /** File extension instead of numeric extension so it's a document
+                     * @Example
+                     * Document: "Site/library/file.csv"
+                     * List Item: "Site/List/5_.000"
+                     * */
+                    opts.valuePairs = [['FileRef', listItem.fileRef.lookupValue ]];
+
+                }
+            }
+
             var deferred = $q.defer();
 
             this.serviceWrapper(opts)
