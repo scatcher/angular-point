@@ -14,7 +14,7 @@ module ap {
         createItemUrlFromFileRef(fileRefString: string): string;
         deleteAttachment(options: { listItemID: number; url: string; listName: string; }): ng.IPromise<any>;
         deleteListItem(model: Model, listItem: ListItem<any>, options?: { target: IIndexedCache<any> }): ng.IPromise<any>;
-        executeQuery<T>(model: Model, query: IQuery, options?: { target: IIndexedCache<T>; }): ng.IPromise<IIndexedCache<T>>;
+        executeQuery<T>(model: Model, query: IQuery<T>, options?: { target: IIndexedCache<T>; }): ng.IPromise<IIndexedCache<T>>;
         generateWebServiceUrl(service: string, webURL?: string): ng.IPromise<string>;
         getAvailableWorkflows(fileRefString: string): ng.IPromise<IWorkflowDefinition[]>;
         getCollection(options: { operation: string; userLoginName?: string; groupName?: string; listName?: string; filterNode: string; }): ng.IPromise<Object[]>;
@@ -24,7 +24,7 @@ module ap {
         getList(options: { listName: string }): ng.IPromise<Object>;
         getListFields(options: { listName: string; }): ng.IPromise<IXMLFieldDefinition[]>;
         getUserProfileByName(login?: string): ng.IPromise<IUserProfile>;
-        processChangeTokenXML(model: Model, query: IQuery, responseXML: XMLDocument, opts): void;
+        processChangeTokenXML<T>(model: Model, query: IQuery<T>, responseXML: XMLDocument, opts): void;
         processDeletionsSinceToken(responseXML: XMLDocument, indexedCache: IIndexedCache<any>): void;
         requestData(opts): ng.IPromise<XMLDocument>;
         retrieveChangeToken(responseXML: XMLDocument): string;
@@ -217,7 +217,7 @@ module ap {
          * @param {Array} [options.target=model.getCache()] The target destination for returned entities
          * @returns {object} - Key value hash containing all list item id's as keys with the listItem as the value.
          */
-        executeQuery<T>(model: Model, query: IQuery, options?: { target: IIndexedCache<T>; }): ng.IPromise<IIndexedCache<T>> {
+        executeQuery<T>(model: Model, query: IQuery<T>, options?: { target: IIndexedCache<T>; }): ng.IPromise<IIndexedCache<T>> {
 
             var defaults = {
                 target: model.getCache()
@@ -231,7 +231,7 @@ module ap {
             this.serviceWrapper(query)
                 .then((response) => {
                 if (query.operation === 'GetListItemChangesSinceToken') {
-                    this.processChangeTokenXML(model, query, response, opts);
+                    this.processChangeTokenXML<T>(model, query, response, opts);
                 }
 
                 /** Convert the XML into JS objects */
@@ -593,7 +593,7 @@ module ap {
          * @param {XMLDocument} responseXML XML response from the server.
          * @param {object} opts Config options built up along the way.
          */
-        processChangeTokenXML(model: Model, query: IQuery, responseXML: XMLDocument, opts): void {
+        processChangeTokenXML<T>(model: Model, query: IQuery<T>, responseXML: XMLDocument, opts): void {
             if (!model.deferredListDefinition) {
                 var deferred = $q.defer();
 

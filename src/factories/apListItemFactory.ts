@@ -30,7 +30,6 @@ module ap {
         getList(): IList;
         getListId(): string;
         getLookupReference(fieldName: string, lookupId?: number): IListItem<any>;
-
         resolvePermissions(): IUserPermissionsObject;
         saveChanges(options?: IListItemCrudOptions<T>): ng.IPromise<IListItem<T>>;
         saveFields(fieldArray: string[], options?: IListItemCrudOptions<T>): ng.IPromise<IListItem<T>>;
@@ -39,14 +38,14 @@ module ap {
 
         //Added by Model Instantiation
         getModel?(): Model;
-        getQuery?(): IQuery;
+        getQuery?(): IQuery<T>;
 
     }
-    
-    export interface IUninitializedListItem<T>{
+
+    export interface IUninitializedListItem {
         [key: string]: any;
-        getCache(): IIndexedCache<T>;
-        getQuery(): IQuery;
+        getCache(): IIndexedCache<any>;
+        getQuery(): IQuery<any>;
     }
 
 
@@ -65,128 +64,44 @@ module ap {
         fileRef: ILookup;
         getCache(): IIndexedCache<T>;
         getModel(): Model;
-//        getQuery(): IQuery;
+        //        getQuery(): IQuery;
         id: number;
         modified: Date;
         permMask: string;
         uniqueId: string;
         constructor() {
         }
-
+        
         /**
          * @ngdoc function
-         * @name ListItem.saveChanges
+         * @name ListItem.deleteAttachment
          * @methodOf ListItem
          * @description
-         * Updates record directly from the object
-         * @param {object} [options] Optionally pass params to the data service.
-         * @param {boolean} [options.updateAllCaches=false] Search through the cache for each query to ensure listItem is
-         * updated everywhere.  This is more process intensive so by default we only update the cached listItem in the
-         * cache where this listItem is currently stored.
-         * @returns {object} Promise which resolved with the updated list item from the server.
+         * Delete an attachment from a list item.
+         * @param {string} url Requires the URL for the attachment we want to delete.
+         * @returns {object} Promise which resolves with the updated attachment collection.
          * @example
          * <pre>
-         * // Example of save function on a fictitious
-         * // app/modules/tasks/TaskDetailsCtrl.js modal form.
-         * $scope.saveChanges = function(task) {
-         *      task.saveChanges().then(function() {
-         *          // Successfully saved so we can do something
-         *          // like close form
-         *
-         *          }, function() {
-         *          // Failure
-         *
-         *          });
-         * }
+         * $scope.deleteAttachment = function (attachment) {
+             *     var confirmation = window.confirm("Are you sure you want to delete this file?");
+             *     if (confirmation) {
+             *         scope.listItem.deleteAttachment(attachment).then(function () {
+             *             alert("Attachment successfully deleted");
+             *         });
+             *     }
+             * };
          * </pre>
          */
-        saveChanges(options?: IListItemCrudOptions<T>): ng.IPromise<IListItem<T>> {
+        deleteAttachment(url: string): ng.IPromise<any> {
             var listItem = this;
-            var model = listItem.getModel();
-            var deferred = $q.defer();
-
-            /** Redirect if the request is actually creating a new list item.  This can occur if we create
-             * an empty item that is instantiated from the model and then attempt to save instead of using
-             * model.addNewItem */
-            if (!listItem.id) {
-                return model.addNewItem(listItem, options);
-            }
-
-            apDataService.updateListItem<T>(model, listItem, options)
-                .then((updatedListItem) => {
-                deferred.resolve(updatedListItem);
-                /** Optionally broadcast change event */
-                apUtilityService.registerChange(model, 'update', updatedListItem.id);
+            return apDataService.deleteAttachment({
+                listItemID: listItem.id,
+                url: url,
+                listName: listItem.getModel().list.getListId()
             });
-
-            return deferred.promise;
         }
-
-        /**
-         * @ngdoc function
-         * @name ListItem.saveFields
-         * @methodOf ListItem
-         * @description
-         * Saves a named subset of fields back to SharePoint.  This is an alternative to saving all fields.
-         * @param {array|string} fieldArray Array of internal field names that should be saved to SharePoint or a single
-         * string to save an individual field.
-         * @param {object} [options] Optionally pass params to the data service.
-         * @param {boolean} [options.updateAllCaches=false] Search through the cache for each query to ensure listItem is
-         * updated everywhere.  This is more process intensive so by default we only update the cached listItem in the
-         * cache where this listItem is currently stored.
-         * @returns {object} Promise which resolves with the updated list item from the server.
-         * @example
-         * <pre>
-         * // Example of saveFields function on a fictitious
-         * // app/modules/tasks/TaskDetailsCtrl.js modal form.
-         * // Similar to saveChanges but instead we only save
-         * // specified fields instead of pushing everything.
-         * $scope.updateStatus = function(task) {
-         *      task.saveFields(['status', 'notes']).then(function() {
-         *          // Successfully updated the status and
-         *          // notes fields for the given task
-         *
-         *          }, function() {
-         *          // Failure to update the field
-         *
-         *          });
-         * }
-         * </pre>
-         */
-        saveFields(fieldArray: string[], options?: IListItemCrudOptions<T>): ng.IPromise<IListItem<T>> {
-
-            var listItem = this;
-            var model = listItem.getModel();
-            var deferred = $q.defer();
-            var definitions = [];
-            /** Allow a string to be passed in to save a single field */
-            var fieldNames = _.isString(fieldArray) ? [fieldArray] : fieldArray;
-            /** Find the field definition for each of the requested fields */
-            _.each(fieldNames, (field) => {
-                var match = _.find(model.list.customFields, { mappedName: field });
-                if (match) {
-                    definitions.push(match);
-                }
-            });
-
-            /** Generate value pairs for specified fields */
-            var valuePairs = apEncodeService.generateValuePairs(definitions, listItem);
-
-            var defaults = { buildValuePairs: false, valuePairs: valuePairs };
-
-            /** Extend defaults with any provided options */
-            var opts = _.extend({}, defaults, options);
-
-            apDataService.updateListItem<T>(model, listItem, opts)
-                .then((updatedListItem) => {
-                deferred.resolve(updatedListItem);
-                /** Optionally broadcast change event */
-                apUtilityService.registerChange(model, 'update', updatedListItem.id);
-            });
-
-            return deferred.promise;
-        }
-
+        
+        
         /**
          * @ngdoc function
          * @name ListItem.deleteItem
@@ -222,262 +137,8 @@ module ap {
 
             return deferred.promise;
         }
-
-
-        /**
-         * @ngdoc function
-         * @name ListItem.getLookupReference
-         * @methodOf ListItem
-         * @description
-         * Allows us to retrieve the listItem being referenced in a given lookup field.
-         * @param {string} fieldName Name of the lookup property on the list item that references a listItem.
-         * @param {number} [lookupId=listItem.fieldName.lookupId] The listItem.lookupId of the lookup object.  This allows us to also use this logic
-         * on a multi-select by iterating over each of the lookups.
-         * @example
-         * <pre>
-         * var project = {
-             *    title: 'Project 1',
-             *    location: {
-             *        lookupId: 5,
-             *        lookupValue: 'Some Building'
-             *    }
-             * };
-         *
-         * //To get the location listItem
-         * var listItem = project.getLookupReference('location');
-         * </pre>
-         * @returns {object} The listItem the lookup is referencing or undefined if not in the cache.
-         */
-        getLookupReference(fieldName: string, lookupId?: number): IListItem<any> {
-            var listItem = this;
-            var lookupReference;
-            if (_.isUndefined(fieldName)) {
-                throw new Error('A field name is required.');
-            } else if (_.isEmpty(listItem[fieldName])) {
-                lookupReference = '';
-            } else {
-                var model = listItem.getModel();
-                var fieldDefinition = model.getFieldDefinition(fieldName);
-                /** Ensure the field definition has the List attribute which contains the GUID of the list
-                 *  that a lookup is referencing. */
-                if (fieldDefinition && fieldDefinition.List) {
-                    var targetId = lookupId || listItem[fieldName].lookupId;
-                    lookupReference = apCacheService.getCachedEntity(fieldDefinition.List, targetId);
-                } else {
-                    throw new Error('This isn\'t a valid Lookup field or the field definitions need to be extended ' +
-                        'before we can complete this request.');
-                }
-            }
-            return lookupReference;
-        }
-
-        /**
-         * @ngdoc function
-         * @name ListItem.getFormattedValue
-         * @methodOf ListItem
-         * @description
-         * Given the attribute name on a listItem, we can lookup the field type and from there return a formatted
-         * string representation of that value.
-         * @param {string} fieldName Attribute name on the object that contains the value to stringify.
-         * @param {object} [options] Pass through to apFormattedFieldValueService.getFormattedFieldValue.
-         * @returns {string} Formatted string representing the field value.
-         */
-        getFormattedValue(fieldName: string, options?: Object): string {
-            var listItem = this;
-            var fieldDefinition = listItem.getFieldDefinition(fieldName);
-            if (!fieldDefinition) {
-                throw 'A field definition for a field named ' + fieldName + ' wasn\'t found.';
-            }
-            return apFormattedFieldValueService
-                .getFormattedFieldValue(listItem[fieldName], fieldDefinition.objectType, options);
-        }
-
-        /**
-         * @ngdoc function
-         * @name ListItem.validateEntity
-         * @methodOf ListItem
-         * @description
-         * Helper function that passes the current item to Model.validateEntity
-         * @param {object} [options] Optionally pass params to the dataService.
-         * @param {boolean} [options.toast=true] Set to false to prevent toastr messages from being displayed.
-         * @returns {boolean} Evaluation of validity.
-         */
-        validateEntity(options?: Object): boolean {
-            var listItem = this,
-                model = listItem.getModel();
-            return model.validateEntity(listItem, options);
-        }
-
-        /**
-         * @ngdoc function
-         * @name ListItem.getFieldDefinition
-         * @methodOf ListItem
-         * @description
-         * Returns the field definition from the definitions defined in the custom fields array within a model.
-         * @example
-         * <pre>
-         * var project = {
-             *    title: 'Project 1',
-             *    location: {
-             *        lookupId: 5,
-             *        lookupValue: 'Some Building'
-             *    }
-             * };
-         *
-         * //To get field metadata
-         * var locationDefinition = project.getFieldDefinition('location');
-         * </pre>
-         * @param {string} fieldName Internal field name.
-         * @returns {object} Field definition.
-         */
-        getFieldDefinition(fieldName: string): IFieldDefinition {
-            var listItem = this;
-            return listItem.getModel().getFieldDefinition(fieldName);
-        }
-
-        /**
-         * @ngdoc function
-         * @name ListItem.getFieldLabel
-         * @methodOf ListItem
-         * @param {string} fieldName Internal field name.
-         * @description
-         * Uses the field definition defined in the model to attempt to find the label for a given field.  The default
-         * value is fieldDefinition.label.  If not available it will then use fieldDefinition.DisplayName which is
-         * populated after a GetListItemsSinceToken operation or a Model.extendListMetadata operation.  If this isn't
-         * available it will fallback to the the fieldDefinition.DisplayName which is a best guess at converting the
-         * caml case version of the mapped name using apUtilityService.fromCamelCase.
-         * @returns {string} The label for a given field object.
-         */
-        getFieldLabel(fieldName: string): string {
-            var listItem = this;
-            var fieldDefinition = listItem.getFieldDefinition(fieldName);
-            return fieldDefinition.label || fieldDefinition.DisplayName || fieldDefinition.displayName;
-        }
-
-        /**
-         * @ngdoc function
-         * @name ListItem.getFieldDescription
-         * @methodOf ListItem
-         * @param {string} fieldName Internal field name.
-         * @description
-         * Uses the field definition defined in the model to attempt to find the description for a given field.  The default
-         * value is fieldDefinition.Description which is populated after a GetListItemsSinceToken operation or a
-         * Model.extendListMetadata operation.  If this isn't available we look for an optional attribute of a field
-         * fieldDefinition.description.  Finally if that have anything it returns an empty string.
-         * @returns {string} The description for a given field object.
-         */
-        getFieldDescription(fieldName: string): string {
-            var listItem = this;
-            var fieldDefinition = listItem.getFieldDefinition(fieldName);
-            return fieldDefinition.description || fieldDefinition.Description || '';
-        }
-
-        /**
-         * @ngdoc function
-         * @name ListItem.getFieldChoices
-         * @methodOf ListItem
-         * @param {string} fieldName Internal field name.
-         * @description
-         * Uses the field definition defined in the model to attempt to find the choices array for a given Lookup or
-         * MultiLookup type field.  The default value is fieldDefinition.choices which can optionally be added to a
-         * given field definition.  If this isn't found, we check fieldDefinition.Choices which is populated after a
-         * GetListItemsSinceToken operation or a Model.extendListMetadata operation.  Finally if that isn't available
-         * we return an empty array.
-         * @returns {string[]} An array of choices for a Choice or MultiChoice type field.
-         */
-        getFieldChoices(fieldName: string): string[] {
-            var listItem = this;
-            var fieldDefinition = listItem.getFieldDefinition(fieldName);
-            return fieldDefinition.choices || fieldDefinition.Choices || [];
-        }
-
-
-        /**
-         * @ngdoc function
-         * @name ListItem.getAvailableWorkflows
-         * @methodOf ListItem
-         * @description
-         * Wrapper for apDataService.getAvailableWorkflows.  Simply passes the current item in.
-         * @returns {promise} Array of objects defining each of the available workflows.
-         */
-        getAvailableWorkflows(): ng.IPromise<IWorkflowDefinition[]> {
-            var listItem = this;
-            return apDataService.getAvailableWorkflows(listItem.fileRef.lookupValue);
-        }
-
-        /**
-         * @ngdoc function
-         * @name ListItem.getListId
-         * @description
-         * Allows us to reference the list ID directly from the list item.  This is added to the
-         * model.factory prototype in apModelFactory.
-         * @returns {string} List ID.
-         */
-        getListId(): string {
-            var model = this.getModel();
-            return model.getListId();
-        }
-
-        /**
-         * @ngdoc function
-         * @name ListItem.getList
-         * @description
-         * Abstraction to allow logic in model to be used instead of defining the list location in more than one place.
-         * @returns {object} List for the list item.
-         */
-        getList(): IList {
-            var model: Model = this.getModel();
-            return model.getList();
-        }
-
-        /**
-         * @ngdoc function
-         * @name ListItem.startWorkflow
-         * @methodOf ListItem
-         * @description
-         * Given a workflow name or templateId we initiate a given workflow using apDataService.startWorkflow.
-         * @param {object} options Params for method and pass through options to apDataService.startWorkflow.
-         * @param {string} [options.templateId] Used to directly start the workflow without looking up the templateId.
-         * @param {string} [options.workflowName] Use this value to lookup the templateId and then start the workflow.
-         * @returns {promise} Resolves with server response.
-         */
-        startWorkflow(options: IStartWorkflowParams): ng.IPromise<any> {
-            var listItem = this,
-                deferred = $q.defer();
-
-            /** Set the relative file reference */
-            options.fileRef = listItem.fileRef.lookupValue;
-
-            if (!options.templateId && !options.workflowName) {
-                throw 'Either a templateId or workflowName is required to initiate a workflow.';
-            } else if (options.templateId) {
-                /** The templateId is already provided so we don't need to look for it */
-                initiateRequest();
-            } else {
-                /** We first need to get the template GUID for the workflow */
-                listItem.getAvailableWorkflows()
-                    .then((workflows) => {
-                    var targetWorklow = _.findWhere(workflows, { name: options.workflowName });
-                    if (!targetWorklow) {
-                        throw 'A workflow with the specified name wasn\'t found.';
-                    }
-                    /** Create an extended set of options to pass any overrides to apDataService */
-                    options.templateId = targetWorklow.templateId;
-                    initiateRequest();
-                });
-            }
-
-            return deferred.promise;
-
-            function initiateRequest() {
-                apDataService.startWorkflow(options)
-                    .then((xmlResponse) => {
-                    deferred.resolve(xmlResponse);
-                });
-            }
-        }
-
-
+        
+        
         /**
          * @ngdoc function
          * @name ListItem.getAttachmentCollection
@@ -506,96 +167,109 @@ module ap {
                 filterNode: 'Attachment'
             });
         }
-
+        
+        
         /**
          * @ngdoc function
-         * @name ListItem.deleteAttachment
+         * @name ListItem.getAvailableWorkflows
          * @methodOf ListItem
          * @description
-         * Delete an attachment from a list item.
-         * @param {string} url Requires the URL for the attachment we want to delete.
-         * @returns {object} Promise which resolves with the updated attachment collection.
-         * @example
-         * <pre>
-         * $scope.deleteAttachment = function (attachment) {
-             *     var confirmation = window.confirm("Are you sure you want to delete this file?");
-             *     if (confirmation) {
-             *         scope.listItem.deleteAttachment(attachment).then(function () {
-             *             alert("Attachment successfully deleted");
-             *         });
-             *     }
-             * };
-         * </pre>
+         * Wrapper for apDataService.getAvailableWorkflows.  Simply passes the current item in.
+         * @returns {promise} Array of objects defining each of the available workflows.
          */
-        deleteAttachment(url: string): ng.IPromise<any> {
+        getAvailableWorkflows(): ng.IPromise<IWorkflowDefinition[]> {
             var listItem = this;
-            return apDataService.deleteAttachment({
-                listItemID: listItem.id,
-                url: url,
-                listName: listItem.getModel().list.getListId()
-            });
+            return apDataService.getAvailableWorkflows(listItem.fileRef.lookupValue);
         }
-
+        
+        
         /**
          * @ngdoc function
-         * @name ListItem.resolvePermissions
+         * @name ListItem.getFieldChoices
+         * @methodOf ListItem
+         * @param {string} fieldName Internal field name.
+         * @description
+         * Uses the field definition defined in the model to attempt to find the choices array for a given Lookup or
+         * MultiLookup type field.  The default value is fieldDefinition.choices which can optionally be added to a
+         * given field definition.  If this isn't found, we check fieldDefinition.Choices which is populated after a
+         * GetListItemsSinceToken operation or a Model.extendListMetadata operation.  Finally if that isn't available
+         * we return an empty array.
+         * @returns {string[]} An array of choices for a Choice or MultiChoice type field.
+         */
+        getFieldChoices(fieldName: string): string[] {
+            var listItem = this;
+            var fieldDefinition = listItem.getFieldDefinition(fieldName);
+            return fieldDefinition.choices || fieldDefinition.Choices || [];
+        }
+        
+        
+        /**
+         * @ngdoc function
+         * @name ListItem.getFieldDefinition
          * @methodOf ListItem
          * @description
-         * See apModelService.resolvePermissions for details on what we expect to have returned.
-         * @returns {Object} Contains properties for each permission level evaluated for current user.
+         * Returns the field definition from the definitions defined in the custom fields array within a model.
          * @example
-         * Lets assume we're checking to see if a user has edit rights for a given task list item.
          * <pre>
-         * var canUserEdit = function(task) {
-             *      var userPermissions = task.resolvePermissions();
-             *      return userPermissions.EditListItems;
+         * var project = {
+             *    title: 'Project 1',
+             *    location: {
+             *        lookupId: 5,
+             *        lookupValue: 'Some Building'
+             *    }
              * };
+         *
+         * //To get field metadata
+         * var locationDefinition = project.getFieldDefinition('location');
          * </pre>
-         * Example of what the returned object would look like
-         * for a site admin.
-         * <pre>
-         * userPermissions = {
-             *    "ViewListItems": true,
-             *    "AddListItems": true,
-             *    "EditListItems": true,
-             *    "DeleteListItems": true,
-             *    "ApproveItems": true,
-             *    "OpenItems": true,
-             *    "ViewVersions": true,
-             *    "DeleteVersions": true,
-             *    "CancelCheckout": true,
-             *    "PersonalViews": true,
-             *    "ManageLists": true,
-             *    "ViewFormPages": true,
-             *    "Open": true,
-             *    "ViewPages": true,
-             *    "AddAndCustomizePages": true,
-             *    "ApplyThemeAndBorder": true,
-             *    "ApplyStyleSheets": true,
-             *    "ViewUsageData": true,
-             *    "CreateSSCSite": true,
-             *    "ManageSubwebs": true,
-             *    "CreateGroups": true,
-             *    "ManagePermissions": true,
-             *    "BrowseDirectories": true,
-             *    "BrowseUserInfo": true,
-             *    "AddDelPrivateWebParts": true,
-             *    "UpdatePersonalWebParts": true,
-             *    "ManageWeb": true,
-             *    "UseRemoteAPIs": true,
-             *    "ManageAlerts": true,
-             *    "CreateAlerts": true,
-             *    "EditMyUserInfo": true,
-             *    "EnumeratePermissions": true,
-             *    "FullMask": true
-             * }
-         * </pre>
+         * @param {string} fieldName Internal field name.
+         * @returns {object} Field definition.
          */
-        resolvePermissions(): IUserPermissionsObject {
-            return apUtilityService.resolvePermissions(this.permMask);
+        getFieldDefinition(fieldName: string): IFieldDefinition {
+            var listItem = this;
+            return listItem.getModel().getFieldDefinition(fieldName);
         }
-
-
+        
+        
+        /**
+         * @ngdoc function
+         * @name ListItem.getFieldDescription
+         * @methodOf ListItem
+         * @param {string} fieldName Internal field name.
+         * @description
+         * Uses the field definition defined in the model to attempt to find the description for a given field.  The default
+         * value is fieldDefinition.Description which is populated after a GetListItemsSinceToken operation or a
+         * Model.extendListMetadata operation.  If this isn't available we look for an optional attribute of a field
+         * fieldDefinition.description.  Finally if that have anything it returns an empty string.
+         * @returns {string} The description for a given field object.
+         */
+        getFieldDescription(fieldName: string): string {
+            var listItem = this;
+            var fieldDefinition = listItem.getFieldDefinition(fieldName);
+            return fieldDefinition.description || fieldDefinition.Description || '';
+        }
+        
+        
+        /**
+         * @ngdoc function
+         * @name ListItem.getFieldLabel
+         * @methodOf ListItem
+         * @param {string} fieldName Internal field name.
+         * @description
+         * Uses the field definition defined in the model to attempt to find the label for a given field.  The default
+         * value is fieldDefinition.label.  If not available it will then use fieldDefinition.DisplayName which is
+         * populated after a GetListItemsSinceToken operation or a Model.extendListMetadata operation.  If this isn't
+         * available it will fallback to the the fieldDefinition.DisplayName which is a best guess at converting the
+         * caml case version of the mapped name using apUtilityService.fromCamelCase.
+         * @returns {string} The label for a given field object.
+         */
+        getFieldLabel(fieldName: string): string {
+            var listItem = this;
+            var fieldDefinition = listItem.getFieldDefinition(fieldName);
+            return fieldDefinition.label || fieldDefinition.DisplayName || fieldDefinition.displayName;
+        }
+        
+        
         /**
          * @ngdoc function
          * @name ListItem.getFieldVersionHistory
@@ -614,9 +288,9 @@ module ap {
          * <pre>
          * myGenericListItem.getFieldVersionHistory(['title', 'project'])
          *     .then(function(versionHistory) {
-             *            // We now have an array of every version of these fields
-             *            $scope.versionHistory = versionHistory;
-             *      };
+         *            // We now have an array of every version of these fields
+         *            $scope.versionHistory = versionHistory;
+         *      };
          * </pre>
          */
         getFieldVersionHistory(fieldNames: string[]): ng.IPromise<IListItemVersion<T>[]> {
@@ -691,6 +365,345 @@ module ap {
 
             return deferred.promise;
         }
+        
+        
+        /**
+         * @ngdoc function
+         * @name ListItem.getFormattedValue
+         * @methodOf ListItem
+         * @description
+         * Given the attribute name on a listItem, we can lookup the field type and from there return a formatted
+         * string representation of that value.
+         * @param {string} fieldName Attribute name on the object that contains the value to stringify.
+         * @param {object} [options] Pass through to apFormattedFieldValueService.getFormattedFieldValue.
+         * @returns {string} Formatted string representing the field value.
+         */
+        getFormattedValue(fieldName: string, options?: Object): string {
+            var listItem = this;
+            var fieldDefinition = listItem.getFieldDefinition(fieldName);
+            if (!fieldDefinition) {
+                throw 'A field definition for a field named ' + fieldName + ' wasn\'t found.';
+            }
+            return apFormattedFieldValueService
+                .getFormattedFieldValue(listItem[fieldName], fieldDefinition.objectType, options);
+        }
+        
+        
+        /**
+         * @ngdoc function
+         * @name ListItem.getList
+         * @description
+         * Abstraction to allow logic in model to be used instead of defining the list location in more than one place.
+         * @returns {object} List for the list item.
+         */
+        getList(): IList {
+            var model: Model = this.getModel();
+            return model.getList();
+        }
+        
+        
+        /**
+         * @ngdoc function
+         * @name ListItem.getListId
+         * @description
+         * Allows us to reference the list ID directly from the list item.  This is added to the
+         * model.factory prototype in apModelFactory.
+         * @returns {string} List ID.
+         */
+        getListId(): string {
+            var model = this.getModel();
+            return model.getListId();
+        }
+        
+        
+        /**
+         * @ngdoc function
+         * @name ListItem.getLookupReference
+         * @methodOf ListItem
+         * @description
+         * Allows us to retrieve the listItem being referenced in a given lookup field.
+         * @param {string} fieldName Name of the lookup property on the list item that references a listItem.
+         * @param {number} [lookupId=listItem.fieldName.lookupId] The listItem.lookupId of the lookup object.  This allows us to also use this logic
+         * on a multi-select by iterating over each of the lookups.
+         * @example
+         * <pre>
+         * var project = {
+             *    title: 'Project 1',
+             *    location: {
+             *        lookupId: 5,
+             *        lookupValue: 'Some Building'
+             *    }
+             * };
+         *
+         * //To get the location listItem
+         * var listItem = project.getLookupReference('location');
+         * </pre>
+         * @returns {object} The listItem the lookup is referencing or undefined if not in the cache.
+         */
+        getLookupReference(fieldName: string, lookupId?: number): IListItem<any> {
+            var listItem = this;
+            var lookupReference;
+            if (_.isUndefined(fieldName)) {
+                throw new Error('A field name is required.');
+            } else if (_.isEmpty(listItem[fieldName])) {
+                lookupReference = '';
+            } else {
+                var model = listItem.getModel();
+                var fieldDefinition = model.getFieldDefinition(fieldName);
+                /** Ensure the field definition has the List attribute which contains the GUID of the list
+                 *  that a lookup is referencing. */
+                if (fieldDefinition && fieldDefinition.List) {
+                    var targetId = lookupId || listItem[fieldName].lookupId;
+                    lookupReference = apCacheService.getCachedEntity(fieldDefinition.List, targetId);
+                } else {
+                    throw new Error('This isn\'t a valid Lookup field or the field definitions need to be extended ' +
+                        'before we can complete this request.');
+                }
+            }
+            return lookupReference;
+        }
+
+        
+        /**
+         * @ngdoc function
+         * @name ListItem.resolvePermissions
+         * @methodOf ListItem
+         * @description
+         * See apModelService.resolvePermissions for details on what we expect to have returned.
+         * @returns {Object} Contains properties for each permission level evaluated for current user.
+         * @example
+         * Lets assume we're checking to see if a user has edit rights for a given task list item.
+         * <pre>
+         * var canUserEdit = function(task) {
+         *      var userPermissions = task.resolvePermissions();
+         *      return userPermissions.EditListItems;
+         * };
+         * </pre>
+         * Example of what the returned object would look like
+         * for a site admin.
+         * <pre>
+         * userPermissions = {
+         *    "ViewListItems": true,
+         *    "AddListItems": true,
+         *    "EditListItems": true,
+         *    "DeleteListItems": true,
+         *    "ApproveItems": true,
+         *    "OpenItems": true,
+         *    "ViewVersions": true,
+         *    "DeleteVersions": true,
+         *    "CancelCheckout": true,
+         *    "PersonalViews": true,
+         *    "ManageLists": true,
+         *    "ViewFormPages": true,
+         *    "Open": true,
+         *    "ViewPages": true,
+         *    "AddAndCustomizePages": true,
+         *    "ApplyThemeAndBorder": true,
+         *    "ApplyStyleSheets": true,
+         *    "ViewUsageData": true,
+         *    "CreateSSCSite": true,
+         *    "ManageSubwebs": true,
+         *    "CreateGroups": true,
+         *    "ManagePermissions": true,
+         *    "BrowseDirectories": true,
+         *    "BrowseUserInfo": true,
+         *    "AddDelPrivateWebParts": true,
+         *    "UpdatePersonalWebParts": true,
+         *    "ManageWeb": true,
+         *    "UseRemoteAPIs": true,
+         *    "ManageAlerts": true,
+         *    "CreateAlerts": true,
+         *    "EditMyUserInfo": true,
+         *    "EnumeratePermissions": true,
+         *    "FullMask": true
+         * }
+         * </pre>
+         */
+        resolvePermissions(): IUserPermissionsObject {
+            return apUtilityService.resolvePermissions(this.permMask);
+        }
+   
+      
+        /**
+         * @ngdoc function
+         * @name ListItem.saveChanges
+         * @methodOf ListItem
+         * @description
+         * Updates record directly from the object
+         * @param {object} [options] Optionally pass params to the data service.
+         * @param {boolean} [options.updateAllCaches=false] Search through the cache for each query to ensure listItem is
+         * updated everywhere.  This is more process intensive so by default we only update the cached listItem in the
+         * cache where this listItem is currently stored.
+         * @returns {object} Promise which resolved with the updated list item from the server.
+         * @example
+         * <pre>
+         * // Example of save function on a fictitious
+         * // app/modules/tasks/TaskDetailsCtrl.js modal form.
+         * $scope.saveChanges = function(task) {
+         *      task.saveChanges().then(function() {
+         *          // Successfully saved so we can do something
+         *          // like close form
+         *
+         *          }, function() {
+         *          // Failure
+         *
+         *          });
+         * }
+         * </pre>
+         */
+        saveChanges(options?: IListItemCrudOptions<T>): ng.IPromise<IListItem<T>> {
+            var listItem = this;
+            var model = listItem.getModel();
+            var deferred = $q.defer();
+
+            /** Redirect if the request is actually creating a new list item.  This can occur if we create
+             * an empty item that is instantiated from the model and then attempt to save instead of using
+             * model.addNewItem */
+            if (!listItem.id) {
+                return model.addNewItem(listItem, options);
+            }
+
+            apDataService.updateListItem<T>(model, listItem, options)
+                .then((updatedListItem) => {
+                deferred.resolve(updatedListItem);
+                /** Optionally broadcast change event */
+                apUtilityService.registerChange(model, 'update', updatedListItem.id);
+            });
+
+            return deferred.promise;
+        }
+        
+
+        /**
+         * @ngdoc function
+         * @name ListItem.saveFields
+         * @methodOf ListItem
+         * @description
+         * Saves a named subset of fields back to SharePoint.  This is an alternative to saving all fields.
+         * @param {array|string} fieldArray Array of internal field names that should be saved to SharePoint or a single
+         * string to save an individual field.
+         * @param {object} [options] Optionally pass params to the data service.
+         * @param {boolean} [options.updateAllCaches=false] Search through the cache for each query to ensure listItem is
+         * updated everywhere.  This is more process intensive so by default we only update the cached listItem in the
+         * cache where this listItem is currently stored.
+         * @returns {object} Promise which resolves with the updated list item from the server.
+         * @example
+         * <pre>
+         * // Example of saveFields function on a fictitious
+         * // app/modules/tasks/TaskDetailsCtrl.js modal form.
+         * // Similar to saveChanges but instead we only save
+         * // specified fields instead of pushing everything.
+         * $scope.updateStatus = function(task) {
+         *      task.saveFields(['status', 'notes']).then(function() {
+         *          // Successfully updated the status and
+         *          // notes fields for the given task
+         *
+         *          }, function() {
+         *          // Failure to update the field
+         *
+         *          });
+         * }
+         * </pre>
+         */
+        saveFields(fieldArray: string[], options?: IListItemCrudOptions<T>): ng.IPromise<IListItem<T>> {
+
+            var listItem = this;
+            var model = listItem.getModel();
+            var deferred = $q.defer();
+            var definitions = [];
+            /** Allow a string to be passed in to save a single field */
+            var fieldNames = _.isString(fieldArray) ? [fieldArray] : fieldArray;
+            /** Find the field definition for each of the requested fields */
+            _.each(fieldNames, (field) => {
+                var match = _.find(model.list.customFields, { mappedName: field });
+                if (match) {
+                    definitions.push(match);
+                }
+            });
+
+            /** Generate value pairs for specified fields */
+            var valuePairs = apEncodeService.generateValuePairs(definitions, listItem);
+
+            var defaults = { buildValuePairs: false, valuePairs: valuePairs };
+
+            /** Extend defaults with any provided options */
+            var opts = _.extend({}, defaults, options);
+
+            apDataService.updateListItem<T>(model, listItem, opts)
+                .then((updatedListItem) => {
+                deferred.resolve(updatedListItem);
+                /** Optionally broadcast change event */
+                apUtilityService.registerChange(model, 'update', updatedListItem.id);
+            });
+
+            return deferred.promise;
+        }
+
+
+        /**
+         * @ngdoc function
+         * @name ListItem.startWorkflow
+         * @methodOf ListItem
+         * @description
+         * Given a workflow name or templateId we initiate a given workflow using apDataService.startWorkflow.
+         * @param {object} options Params for method and pass through options to apDataService.startWorkflow.
+         * @param {string} [options.templateId] Used to directly start the workflow without looking up the templateId.
+         * @param {string} [options.workflowName] Use this value to lookup the templateId and then start the workflow.
+         * @returns {promise} Resolves with server response.
+         */
+        startWorkflow(options: IStartWorkflowParams): ng.IPromise<any> {
+            var listItem = this,
+                deferred = $q.defer();
+
+            /** Set the relative file reference */
+            options.fileRef = listItem.fileRef.lookupValue;
+
+            if (!options.templateId && !options.workflowName) {
+                throw 'Either a templateId or workflowName is required to initiate a workflow.';
+            } else if (options.templateId) {
+                /** The templateId is already provided so we don't need to look for it */
+                initiateRequest();
+            } else {
+                /** We first need to get the template GUID for the workflow */
+                listItem.getAvailableWorkflows()
+                    .then((workflows) => {
+                    var targetWorklow = _.findWhere(workflows, { name: options.workflowName });
+                    if (!targetWorklow) {
+                        throw 'A workflow with the specified name wasn\'t found.';
+                    }
+                    /** Create an extended set of options to pass any overrides to apDataService */
+                    options.templateId = targetWorklow.templateId;
+                    initiateRequest();
+                });
+            }
+
+            return deferred.promise;
+
+            function initiateRequest() {
+                apDataService.startWorkflow(options)
+                    .then((xmlResponse) => {
+                    deferred.resolve(xmlResponse);
+                });
+            }
+        }
+
+
+        /**
+         * @ngdoc function
+         * @name ListItem.validateEntity
+         * @methodOf ListItem
+         * @description
+         * Helper function that passes the current item to Model.validateEntity
+         * @param {object} [options] Optionally pass params to the dataService.
+         * @param {boolean} [options.toast=true] Set to false to prevent toastr messages from being displayed.
+         * @returns {boolean} Evaluation of validity.
+         */
+        validateEntity(options?: Object): boolean {
+            var listItem = this,
+                model = listItem.getModel();
+            return model.validateEntity(listItem, options);
+        }
+
     }
 
 
@@ -735,8 +748,8 @@ module ap {
          * @description
          * Instantiates and returns a new ListItem.
          */
-        create() {
-            return new ListItem();
+        create<T>(): IListItem<T> {
+            return new ListItem<T>();
         }
 
         /**

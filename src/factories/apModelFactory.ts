@@ -9,12 +9,12 @@ module ap {
         apDecodeService: DecodeService, $q: ng.IQService, toastr: toastr;
 
     export interface IModel {
-        addNewItem<T>(entity: IUninitializedListItem<T>, options?: Object): ng.IPromise<IListItem<T>>;
-        createEmptyItem<T>(overrides?: IUninitializedListItem<T>): IListItem<T>;
+        addNewItem<T>(entity: IUninitializedListItem, options?: Object): ng.IPromise<IListItem<T>>;
+        createEmptyItem<T>(overrides?: IUninitializedListItem): IListItem<T>;
         deferredListDefinition: ng.IPromise<Object>;
         executeQuery<T>(queryName?: string, options?: Object): ng.IPromise<IIndexedCache<T>>;
         extendListMetadata(options?: Object): ng.IPromise<any>;
-        factory<T>(obj: IUninitializedListItem<T>): void;
+        factory(obj: IUninitializedListItem): void;
         generateMockData<T>(options?: Object): IListItem<T>[];
         getAllListItems<T>(): ng.IPromise<IIndexedCache<T>>;
         getCache<T>(queryName?: string): IIndexedCache<T>;
@@ -25,12 +25,12 @@ module ap {
         getListId(): string;
         getListItemById<T>(listItemId: number, options?: Object): ng.IPromise<IListItem<T>>;
         getModel(): Model;
-        getQuery(queryName: string): IQuery;
+        getQuery<T>(queryName: string): IQuery<T>;
         isInitialised(): boolean;
         lastServerUpdate: Date;
         list: IList;
         queries: QueriesContainer;
-        registerQuery(queryOptions: IQueryOptions): IQuery;
+        registerQuery<T>(queryOptions: IQueryOptions): IQuery<T>;
         resolvePermissions(): IUserPermissionsObject;
         validateEntity<T>(listItem: IListItem<T>, options?: Object): boolean;
     }
@@ -136,20 +136,20 @@ module ap {
      */
 
     interface IUninitializedModel {
-        factory<T>(obj: Object): void;
+        factory(obj: IUninitializedListItem): void;
         list: IList;
     }
 
     interface QueriesContainer {
-        getAllListItems?: IQuery;
-        [key: string]: IQuery
+        getAllListItems?: IQuery<any>;
+        [key: string]: IQuery<any>
     }
 
     export class Model implements IModel {
         data = [];
         deferredListDefinition;
         list: IList;
-        factory<T>(obj: IUninitializedListItem<T>): void;
+        factory(obj: IUninitializedListItem): void;
         fieldDefinitionsExtended: boolean = false;
         /** Date/Time of last communication with server */
         lastServerUpdate: Date;
@@ -204,7 +204,7 @@ module ap {
          * </file>
          * </pre>
          */
-        addNewItem<T>(entity: IUninitializedListItem<T>, options?: Object): ng.IPromise<IListItem<T>> {
+        addNewItem<T>(entity: IUninitializedListItem, options?: Object): ng.IPromise<IListItem<T>> {
             var model = this,
                 deferred = $q.defer();
 
@@ -231,7 +231,7 @@ module ap {
          * @param {object} [overrides] - Optionally extend the new empty item with specific values.
          * @returns {object} Newly created list item.
          */
-        createEmptyItem<T>(overrides?: IUninitializedListItem<T>): IListItem<T> {
+        createEmptyItem<T>(overrides?: IUninitializedListItem): IListItem<T> {
             var model = this;
             var newItem = {};
             _.each(model.list.customFields, (fieldDefinition) => {
@@ -243,7 +243,7 @@ module ap {
             });
             /** Extend any values that should override the default empty values */
             var rawObject = _.assign({}, newItem, overrides);
-            return new model.factory<T>(rawObject);
+            return new model.factory(rawObject);
         }
         
         /**
@@ -339,7 +339,7 @@ module ap {
                     id: count + 1
                 };
                 /** Create an attribute with mock data for each field */
-                _.each(model.list.fields, (field: ap.Field) => {
+                _.each(model.list.fields, (field: Field) => {
                     mock[field.mappedName] = field.getMockData(opts);
                 });
 
@@ -577,7 +577,7 @@ module ap {
          * var namedQuery = projectModel.getQuery('customQuery');
          * </pre>
          */
-        getQuery(queryName: string): IQuery {
+        getQuery<T>(queryName: string): IQuery<T> {
             var model = this, query;
             if (_.isObject(model.queries[queryName])) {
                 /** The named query exists */
@@ -738,7 +738,7 @@ module ap {
          * };
          * </pre>
          */
-        registerQuery(queryOptions: IQueryOptions): IQuery {
+        registerQuery<T>(queryOptions: IQueryOptions): IQuery<T> {
             var model = this;
 
             var defaults = {

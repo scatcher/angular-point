@@ -6,7 +6,7 @@ module ap {
     export interface IDecodeService {
         checkResponseForErrors(responseXML: XMLDocument): string;
         convertUTCDateToLocalDate(date: Date): Date;
-        createListItemProvider<T>(model: Model, query: IQuery, indexedCache: IIndexedCache<T>): (Object) => IListItem<T>;
+        createListItemProvider<T>(model: Model, query: IQuery<T>, indexedCache: IIndexedCache<T>): (Object) => IListItem<T>;
         extendFieldDefinitionsFromXML(fieldDefinitions: IFieldDefinition[], responseXML: XMLDocument): IExtendedFieldDefinition[];
         extendListDefinitionFromXML(list: IList, responseXML: XMLDocument): IList;
         extendListMetadata(model: Model, responseXML: XMLDocument): void;
@@ -28,7 +28,7 @@ module ap {
         parseStringValue(str: string, objectType?: string, options?: { entity: Object; propertyName: string; }): any;
         parseXMLEntity<T>(xmlEntity: XMLDocument, listItemProvider: (Object) => IListItem<T>,
             options: { mapping: IFieldDefinition[]; includeAllAttrs?: boolean; listItemProvider?: Function; removeOws?: boolean; target?: IIndexedCache<T> }): IListItem<T>;
-        processListItems<T>(model: Model, query: IQuery, responseXML: XMLDocument,
+        processListItems<T>(model: Model, query: IQuery<T>, responseXML: XMLDocument,
             options?: { factory: Function; filter: string; mapping: IFieldDefinition[]; target: IIndexedCache<T> }): IIndexedCache<T>;
         xmlToJson<T>(xmlEntities: XMLDocument[], listItemProvider: (Object) => IListItem<T>,
             options: { mapping: IFieldDefinition[]; includeAllAttrs?: boolean; listItemProvider?: Function; removeOws?: boolean; target?: IIndexedCache<T> }): IListItem<T>[];
@@ -103,8 +103,8 @@ module ap {
          * @returns {Function} Returns a function that takes the new list item while keeping model, query,
          * and container in scope for future reference.
          */
-        createListItemProvider<T>(model: Model, query: IQuery, indexedCache: IIndexedCache<T>): (Object) => IListItem<T> {
-            return (rawObject: IUninitializedListItem<T>) => {
+        createListItemProvider<T>(model: Model, query: IQuery<T>, indexedCache: IIndexedCache<T>): (Object) => IListItem<T> {
+            return (rawObject: IUninitializedListItem) => {
                 /** Create Reference to the indexed cache */
                 rawObject.getCache = () => indexedCache;
 
@@ -594,7 +594,7 @@ module ap {
          * @param {Array} [options.target=model.getCache()] Optionally pass in array to update after processing.
          * @returns {Object} Inedexed Cache.
          */
-        processListItems<T>(model: Model, query: IQuery, responseXML: XMLDocument,
+        processListItems<T>(model: Model, query: IQuery<T>, responseXML: XMLDocument,
             options?: { factory: Function; filter: string; mapping: IFieldDefinition[]; target: IIndexedCache<T> }): IIndexedCache<T> {
             var defaults = {
                 factory: model.factory,

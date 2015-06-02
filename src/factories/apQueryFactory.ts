@@ -3,27 +3,27 @@
 module ap {
     'use strict';
 
-    var $q, apIndexedCacheFactory:IndexedCacheFactory, apConfig:IAPConfig, apDefaultListItemQueryOptions,
-        apDataService:DataService;
+    var $q, apIndexedCacheFactory: IndexedCacheFactory, apConfig: IAPConfig, apDefaultListItemQueryOptions,
+        apDataService: DataService;
 
-    export interface IQuery {
+    export interface IQuery<T> {
         cacheXML?: boolean;
-        changeToken?:string;
-        execute?<T>(options?:Object): ng.IPromise< IIndexedCache<T> >;
-        getModel():Model;
-        indexedCache:IIndexedCache;
-        initialized:ng.IDeferred<any>
+        changeToken?: string;
+        execute(options?: Object): ng.IPromise<IIndexedCache<T>>;
+        getModel(): Model;
+        indexedCache: IIndexedCache<T>;
+        initialized: ng.IDeferred<IIndexedCache<T>>
         lastRun: Date;
-        listName:string;
-        name:string;
-        negotiatingWithServer:boolean;
+        listName: string;
+        name: string;
+        negotiatingWithServer: boolean;
         offlineXML?: string;
         operation?: string;
-        promise?:ng.IPromise;
+        promise?: ng.IPromise<IIndexedCache<T>>;
         query?: string;
-        queryOptions?:IQueryOptions;
-        viewFields:string;
-        webURL?:string;
+        queryOptions?: IQueryOptions;
+        viewFields: string;
+        webURL?: string;
     }
 
     export interface IQueryOptions {
@@ -91,30 +91,30 @@ module ap {
          * });
      * </pre>
      */
-    export class Query implements IQuery {
+    export class Query<T> implements IQuery<T> {
         /** Very memory intensive to enable cacheXML which is disabled by default*/
-        cacheXML:boolean = false;
+        cacheXML: boolean = false;
         /** Reference to the most recent query when performing GetListItemChangesSinceToken */
         changeToken = undefined;
 
-        getModel():Model;
+        getModel(): Model;
 
         /** Key value hash map with key being the id of the entity */
-        indexedCache:IIndexedCache;
+        indexedCache: IIndexedCache<T>;
         /** Promise resolved after first time query is executed */
-        initialized:ng.IDeferred;
+        initialized: ng.IDeferred<IIndexedCache<T>>;
         /** Date/Time last run */
         lastRun;
         listName;
-        name:string;
+        name: string;
         /** Flag to prevent us from makeing concurrent requests */
-        negotiatingWithServer:boolean = false;
+        negotiatingWithServer: boolean = false;
         /** Every time we run we want to check to update our cached data with
          * any changes made on the server */
         operation = 'GetListItemChangesSinceToken';
         promise;
         /** Default query returns list items in ascending ID order */
-        query:string = `
+        query: string = `
         <Query>
            <OrderBy>
                <FieldRef Name="ID" Ascending="TRUE"/>
@@ -124,7 +124,7 @@ module ap {
         viewFields;
         webURL;
 
-        constructor(config, model:Model) {
+        constructor(config, model: Model) {
             this.indexedCache = apIndexedCacheFactory.create();
             this.initialized = $q.defer();
             this.listName = model.list.getListId();
@@ -153,7 +153,7 @@ module ap {
          * @param {object} [options] Any options that should be passed to dataService.executeQuery.
          * @returns {object[]} Array of list item objects.
          */
-        execute(options) {
+        execute(options): ng.IPromise<IIndexedCache<T>> {
             var query = this;
             var model = query.getModel();
             var deferred = $q.defer();
@@ -198,7 +198,7 @@ module ap {
             }
         }
 
-        getCache() {
+        getCache(): IIndexedCache<T> {
             return this.indexedCache;
         }
     }
@@ -223,8 +223,8 @@ module ap {
          * @description
          * Instantiates and returns a new Query.
          */
-        create(config, model) {
-            return new Query(config, model);
+        create<T>(config, model): IQuery<T> {
+            return new Query<T>(config, model);
         }
     }
 
