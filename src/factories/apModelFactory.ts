@@ -14,7 +14,7 @@ module ap {
         deferredListDefinition: ng.IPromise<Object>;
         executeQuery<T>(queryName?: string, options?: Object): ng.IPromise<IIndexedCache<T>>;
         extendListMetadata(options?: Object): ng.IPromise<any>;
-        factory(obj: IUninitializedListItem): void;
+        factory:Function;
         generateMockData<T>(options?: Object): IListItem<T>[];
         getAllListItems<T>(): ng.IPromise<IIndexedCache<T>>;
         getCache<T>(queryName?: string): IIndexedCache<T>;
@@ -29,10 +29,21 @@ module ap {
         isInitialised(): boolean;
         lastServerUpdate: Date;
         list: IList;
-        queries: QueriesContainer;
+        queries: IQueriesContainer;
         registerQuery<T>(queryOptions: IQueryOptions): IQuery<T>;
         resolvePermissions(): IUserPermissionsObject;
         validateEntity<T>(listItem: IListItem<T>, options?: Object): boolean;
+    }
+    
+    export interface IUninitializedModel {
+        factory:Function;
+        list: IUninstantiatedList;
+        [key: string]: any;
+    }
+
+    export interface IQueriesContainer {
+        getAllListItems?: IQuery<any>;
+        [key: string]: IQuery<any>
     }
 
 
@@ -134,26 +145,15 @@ module ap {
     * });
      * </pre>
      */
-
-    interface IUninitializedModel {
-        factory(obj: IUninitializedListItem): void;
-        list: IList;
-    }
-
-    interface QueriesContainer {
-        getAllListItems?: IQuery<any>;
-        [key: string]: IQuery<any>
-    }
-
     export class Model implements IModel {
         data = [];
         deferredListDefinition;
         list: IList;
-        factory(obj: IUninitializedListItem): void;
+        factory;
         fieldDefinitionsExtended: boolean = false;
         /** Date/Time of last communication with server */
         lastServerUpdate: Date;
-        queries: QueriesContainer = {};
+        queries: IQueriesContainer = {};
         requestForFieldDefinitions;
         constructor(config: IUninitializedModel) {
 

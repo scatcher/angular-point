@@ -4,20 +4,29 @@ module ap {
     'use strict';
 
     var apConfig: IAPConfig, apDefaultFields, apFieldFactory: FieldFactory;
+    
+    export interface IUninstantiatedList{
+        customFields: IFieldDefinition[];
+        environments?: { [key: string]: string };
+        guid?: string;
+        title: string;
+        viewFields?: string;
+        webURL?: string;
+    }
 
-    export interface IList {
+    export interface IList extends IUninstantiatedList {
         customFields: IFieldDefinition[];
         effectivePermMask?: string;
-        environments?: { [key: string]: string };
+        environments: { [key: string]: string };
         fields: IFieldDefinition[];
         getListId(): string;
         guid: string;
         identifyWebURL(): string;
         isReady: boolean;
-        mapping: Object;
+        mapping?: Object;
         title: string;
-        viewFields: string;
-        webURL: string;
+        viewFields?: string;
+        webURL?: string;
         WebFullUrl?: string;
     }
     /**

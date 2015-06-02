@@ -1838,6 +1838,104 @@ var ap;
 (function (ap) {
     'use strict';
     var apCacheService, apDataService, apListFactory, ListItemFactory, apQueryFactory, apUtilityService, apFieldService, apConfig, apIndexedCacheFactory, apDecodeService, $q, toastr;
+    /**
+     * @ngdoc function
+     * @name Model
+     * @description
+     * Model Constructor
+     * Provides the Following
+     * - adds an empty "data" array
+     * - adds an empty "queries" object
+     * - adds a deferred obj "ready"
+     * - builds "model.list" with constructor
+     * - adds "getAllListItems" function
+     * - adds "addNewItem" function
+     * @param {object} config Object containing optional params.
+     * @param {object} [config.factory = apListItemFactory.createGenericFactory()] - Constructor function for
+     * individual list items.
+     * @param {boolean} [config.fieldDefinitionsExtended=false] Queries using the GetListItemChangesSinceToken
+     * operation return the full list definition along with the requested entities.  The first time one of these
+     * queries is executed we will try to extend our field definitions defined in the model with the additional
+     * information provided from the server.  Examples are options for a Choice field, display name of the field,
+     * field description, and any other field information provided for the fields specified in the model.  This
+     * flag is set once the first query is complete so we don't process again.
+     * @param {object} config.list - Definition of the list in SharePoint.
+     * be passed to the list constructor to extend further
+     * @param {string} config.list.title - List name, no spaces.  Offline XML file will need to be
+     * named the same (ex: CustomList so xml file would be apConfig.offlineXML + '/CustomList.xml')
+     * @param {string} config.list.getListId() - Unique SharePoint ID (ex: '{3DBEB25A-BEF0-4213-A634-00DAF46E3897}')
+     * @param {object[]} config.list.customFields - Maps SharePoint fields with names we'll use within the
+     * application.  Identifies field types and formats accordingly.  Also denotes if a field is read only.
+     * @constructor
+     *
+     * @example
+     * <pre>
+     * //Taken from a fictitious projectsModel.js
+     * var model = new apModelFactory.Model({
+    *     factory: Project,
+    *     list: {
+    *         guid: '{PROJECT LIST GUID}',
+    *         title: 'Projects',
+    *         customFields: [
+        *             {
+        *                staticName: 'Title',
+    *                objectType: 'Text',
+    *                mappedName: 'title',
+    *                readOnly: false
+        *             },
+    *             {
+    *                staticName: 'Customer',
+    *                objectType: 'Lookup',
+    *                mappedName: 'customer',
+    *                readOnly: false
+        *             },
+    *             {
+    *                staticName: 'ProjectDescription',
+    *                objectType: 'Text',
+    *                mappedName: 'projectDescription',
+    *                readOnly: false
+        *             },
+    *             {
+    *                staticName: 'Status',
+    *                objectType: 'Text',
+    *                mappedName: 'status',
+    *                readOnly: false
+        *             },
+    *             {
+    *                staticName: 'TaskManager',
+    *                objectType: 'User',
+    *                mappedName: 'taskManager',
+    *                readOnly: false
+        *             },
+    *             {
+    *                staticName: 'ProjectGroup',
+    *                objectType: 'Lookup',
+    *                mappedName: 'group',
+    *                readOnly: false
+        *             },
+    *             {
+    *                staticName: 'CostEstimate',
+    *                objectType: 'Currency',
+    *                mappedName: 'costEstimate',
+    *                readOnly: false
+        *             },
+    *             {
+    *                staticName: 'Active',
+    *                objectType: 'Boolean',
+    *                mappedName: 'active',
+    *                readOnly: false
+        *             },
+    *             {
+    *                staticName: 'Attachments',
+    *                objectType: 'Attachments',
+    *                mappedName: 'attachments',
+    *                readOnly: true
+        *             }
+    *         ]
+    *     }
+    * });
+     * </pre>
+     */
     var Model = (function () {
         function Model(config) {
             var _this = this;
@@ -4898,6 +4996,26 @@ var ap;
 /// <reference path="../app.module.ts" />
 var ap;
 (function (ap) {
+    function exceptionLoggingService($log, $injector) {
+        function error(exception, cause) {
+            /** Need to inject otherwise get circular dependency when using dependency injection */
+            var apLogger = $injector.get('apLogger');
+            // now try to log the error to the server side.
+            apLogger.exception(exception, cause);
+            // preserve the default behaviour which will log the error
+            // to the console, and allow the application to continue running.
+            $log.error.apply($log, arguments);
+        }
+        return error;
+    }
+    angular
+        .module('angularPoint')
+        .factory('$exceptionHandler', exceptionLoggingService);
+})(ap || (ap = {}));
+
+/// <reference path="../app.module.ts" />
+var ap;
+(function (ap) {
     'use strict';
     var ExportService = (function () {
         function ExportService(apUtilityService, apFormattedFieldValueService) {
@@ -5708,6 +5826,183 @@ var ap;
     angular
         .module('angularPoint')
         .service('apFormattedFieldValueService', FormattedFieldValueService);
+})(ap || (ap = {}));
+
+/// <reference path="../app.module.ts" />
+var ap;
+(function (ap) {
+    'use strict';
+    var deferred, registerCallback;
+    var logTypes = ['log', 'error', 'info', 'debug', 'warn'];
+    var Logger = (function () {
+        function Logger($q, $window, $log, $timeout) {
+            var _this = this;
+            this.$window = $window;
+            this.$log = $log;
+            this.$timeout = $timeout;
+            /** Create a deferred object we can use to delay functionality until log model is registered */
+            deferred = $q.defer();
+            registerCallback = deferred.promise;
+            /** Generate a method for each logger call */
+            _.each(logTypes, function (logType) {
+                /**
+                 * @Example
+                 *
+                 * info(message: string, optionsOverride?: ILogEvent): ng.IPromise<IListItem<any>> {
+                 *     var opts = _.assign({}, {
+                 *         message: message,
+                 *         type: 'info'
+                 *         url: $window.location.href,
+                 *     }, optionsOverride);
+                 *
+                 *     return this.notify(opts);
+                 * }
+                 *
+                 */
+                _this[logType] = function (message, optionsOverride) {
+                    var opts = _.assign({}, {
+                        message: message,
+                        type: logType,
+                    }, optionsOverride);
+                    return _this.notify(opts);
+                };
+            });
+        }
+        /**
+         * @ngdoc function
+         * @name apLogger.exception
+         * @methodOf apLogger
+         * @param {Error} exception Error which caused event.
+         * @param {string} [cause] Angular sometimes provides cause.
+         * @param {ILogger} optionsOverride Override any log options.
+         */
+        Logger.prototype.exception = function (exception, cause, optionsOverride) {
+            try {
+                var errorMessage = exception.toString();
+                // generate a stack trace
+                /* global printStackTrace:true */
+                var stackTrace = printStackTrace({ e: exception });
+                this.error(errorMessage, _.assign({}, {
+                    event: 'exception',
+                    stackTrace: stackTrace,
+                    cause: (cause || "")
+                }, optionsOverride));
+            }
+            catch (loggingError) {
+                this.$log.warn("Error server-side logging failed");
+                this.$log.log(loggingError);
+            }
+        };
+        Logger.prototype.notify = function (options) {
+            var _this = this;
+            return this.$timeout(function () {
+                /** Allow navigation to settle before capturing url */
+                return _this.registerEvent(_.assign({}, { url: _this.$window.location.href }, options));
+            }, 0);
+        };
+        Logger.prototype.registerEvent = function (logEvent) {
+            return registerCallback.then(function (callback) {
+                if (_.isFunction(callback)) {
+                    return callback(logEvent);
+                }
+            });
+        };
+        /**
+         * @ngdoc function
+         * @name apLogger.subscribe
+         * @methodOf apLogger
+         * @param {Function} callback
+         * @description Callback fired when log event occurs
+         */
+        Logger.prototype.subscribe = function (callback) {
+            deferred.resolve(callback);
+        };
+        return Logger;
+    })();
+    ap.Logger = Logger;
+    /**
+     * @ngdoc service
+     * @name apLogger
+     * @description
+     * Common definitions used in the application.
+     *
+     * HOW TO USE
+     * 1. Create a logging model for logs to be stored
+     * 2. Ensure everyone has write access to the list
+     * 3. Add the model as one of the dependencies in your .run so it'll be instantiated immediately
+     * 4. Subscribe to change events from on the model
+     *
+     *
+     * @example
+     * <pre>
+     * export class Log extends ap.ListItem{
+     *     cause: string;
+     *     event: string;
+     *     formattedStackTrace: string;
+     *     json: Object;
+     *     message: string;
+     *     stackTrace: string[];
+     *     type: string;
+     *     url: string;
+     *     constructor(obj){
+     *         _.assign(this, obj);
+     *         // Create a formatted representation of the stacktrace to display in email notification
+     *         if(this.stackTrace && !this.formattedStackTrace) {
+     *             this.formattedStackTrace = '';
+     *             _.each(this.stackTrace, (traceEntry) => {
+     *                 this.formattedStackTrace += `${traceEntry}
+     *             `;
+     *             });
+     *         }
+     *     }
+     * }
+     * var logCounter = 0;
+     * var maxLogsPerSesssion = 5;
+     * export class LogsModel extends ap.Model{
+     *     constructor(apLogger: ap.Logger) {
+     *         model = this;
+     *         super({
+     *             factory: Log,
+     *             list: {
+     *                 title: 'Logs',
+     *                 guid: '{LOG LIST GUID...CHANGE ME}',
+     *                 customFields: [
+     *                     {staticName: 'Message', objectType: 'Note', mappedName: 'message', readOnly: false},
+     *                     {staticName: 'Title', objectType: 'Text', mappedName: 'url', readOnly: false},
+     *                     {staticName: 'LogType', objectType: 'Text', mappedName: 'type', readOnly: false},
+     *                     {staticName: 'StackTrace', objectType: 'JSON', mappedName: 'stackTrace', readOnly: false},
+     *                     {staticName: 'Cause', objectType: 'Text', mappedName: 'cause', readOnly: false},
+     *                     {staticName: 'JSON', objectType: 'JSON', mappedName: 'json', readOnly: false},
+     *                     {staticName: 'Event', objectType: 'Text', mappedName: 'event', readOnly: false},
+     *                     {
+     *                         staticName: 'FormattedStackTrace',
+     *                         objectType: 'Note',
+     *                         mappedName: 'formattedStackTrace',
+     *                         readOnly: false,
+     *                         description: 'Trace formatted to be readable in email notification.'
+     *                     }
+     *                 ]
+     *             }
+     *         });
+     *         // Register this model as the list where all logs will be stored
+     *         apLogger.subscribe(function (event: ap.ILogEvent) {
+     *             // Ensure we keep logging under control, prevents spamming server if loop occurs
+     *             if(logCounter < maxLogsPerSesssion) {
+     *                 var newLog = model.createEmptyItem(event);
+     *                 console.log(newLog);
+     *                 newLog.saveChanges();
+     *                 logCounter++;
+     *             }
+     *         });
+     *     }
+     * }
+     *
+     * </pre>
+     *
+     */
+    angular
+        .module('angularPoint')
+        .service('apLogger', Logger);
 })(ap || (ap = {}));
 
 /// <reference path="../app.module.ts" />

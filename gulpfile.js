@@ -16,7 +16,7 @@ require('angular-point-tools')(projectDir, paths);
 
 
 
-gulp.task('build', function () {
+gulp.task('build', ['gen-ts-refs'], function () {
 //    var tsResult = gulp.src(paths.tsFiles)
     var tsResult = gulp.src(['./typings/**/*.d.ts', paths.tsFiles])
         .pipe(sourcemaps.init({loadMaps: true})) // This means sourcemaps will be generated
