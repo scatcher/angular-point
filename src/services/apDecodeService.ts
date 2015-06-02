@@ -1,8 +1,39 @@
-/// <reference path="../../typings/ap.d.ts" />
+/// <reference path="../app.module.ts" />
 
 module ap {
     'use strict';
 
+    export interface IDecodeService {
+        checkResponseForErrors(responseXML: XMLDocument): string;
+        convertUTCDateToLocalDate(date: Date): Date;
+        createListItemProvider<T>(model: Model, query: IQuery, indexedCache: IIndexedCache<T>): (Object) => IListItem<T>;
+        extendFieldDefinitionsFromXML(fieldDefinitions: IFieldDefinition[], responseXML: XMLDocument): IExtendedFieldDefinition[];
+        extendListDefinitionFromXML(list: IList, responseXML: XMLDocument): IList;
+        extendListMetadata(model: Model, responseXML: XMLDocument): void;
+        extendObjectWithXMLAttributes(xmlObject: XMLDocument, jsObject?: Object, attributeTypes?: Object): Object;
+        jsAttachments(str): string[]|number|string;
+        jsBoolean(str: string): boolean;
+        jsCalc(str: string): any;
+        jsChoiceMulti(str: string): string[];
+        jsDate(str: string): Date;
+        jsFloat(str: string): number;
+        jsInt(str: string): number;
+        jsLookup(str: string, options?: Object): ILookup;
+        jsLookupMulti(str: string, options?: Object): ILookup[];
+        jsObject(str: string): Object;
+        jsString(str: string): string;
+        jsUser(str: string): IUser;
+        jsUserMulti(str: string): IUser[];
+        parseFieldVersions(responseXML: XMLDocument, fieldDefinition: IFieldDefinition): IListItemVersion[];
+        parseStringValue(str: string, objectType?: string, options?: { entity: Object; propertyName: string; }): any;
+        parseXMLEntity<T>(xmlEntity: XMLDocument, listItemProvider: (Object) => IListItem<T>,
+            options: { mapping: IFieldDefinition[]; includeAllAttrs?: boolean; listItemProvider?: Function; removeOws?: boolean; target?: IIndexedCache<T> }): IListItem<T>;
+        processListItems<T>(model: Model, query: IQuery, responseXML: XMLDocument,
+            options?: { factory: Function; filter: string; mapping: IFieldDefinition[]; target: IIndexedCache<T> }): IIndexedCache<T>;
+        xmlToJson<T>(xmlEntities: XMLDocument[], listItemProvider: (Object) => IListItem<T>,
+            options: { mapping: IFieldDefinition[]; includeAllAttrs?: boolean; listItemProvider?: Function; removeOws?: boolean; target?: IIndexedCache<T> }): IListItem<T>[];
+    }
+    
     /**
      * @ngdoc service
      * @name angularPoint.apDecodeService
@@ -13,10 +44,10 @@ module ap {
      * @requires angularPoint.apConfig
      * @requires angularPoint.apCacheService
      */
-    export class DecodeService {
-        constructor(private apCacheService:CacheService, private apLookupFactory:LookupFactory,
-                    private apUserFactory:UserFactory, private apFieldService, private apXMLListAttributeTypes,
-                    private apXMLFieldAttributeTypes) {
+    export class DecodeService implements IDecodeService {
+        constructor(private apCacheService: ICacheService, private apLookupFactory: LookupFactory,
+            private apUserFactory: UserFactory, private apFieldService, private apXMLListAttributeTypes,
+            private apXMLFieldAttributeTypes) {
 
         }
 
@@ -30,12 +61,12 @@ module ap {
          * @param {object} responseXML XHR response from the server.
          * @returns {string|null} Returns an error string if present, otherwise returns null.
          */
-        checkResponseForErrors(responseXML:XMLDocument):string {
+        checkResponseForErrors(responseXML: XMLDocument): string {
             var error = null;
             /** Look for <errorstring></errorstring> or <ErrorText></ErrorText> for details on any errors */
             var errorElements = ['ErrorText', 'errorstring'];
             _.each(errorElements, (element) => {
-                $(responseXML).find(element).each(function () {
+                $(responseXML).find(element).each(function() {
                     error = $(this).text();
                     /** Break early if found */
                     return false;
@@ -47,7 +78,7 @@ module ap {
         /** Converts UTC date to a localized date
          * Taken from: http://stackoverflow.com/questions/6525538/convert-utc-date-time-to-local-date-time-using-javascript
          * */
-        convertUTCDateToLocalDate(date:Date):Date {
+        convertUTCDateToLocalDate(date: Date): Date {
             var newDate = new Date(date.getTime() + date.getTimezoneOffset() * 60 * 1000);
 
             var offset = date.getTimezoneOffset() / 60;
@@ -72,8 +103,8 @@ module ap {
          * @returns {Function} Returns a function that takes the new list item while keeping model, query,
          * and container in scope for future reference.
          */
-        createListItemProvider(model:IModel, query:IQuery, indexedCache:IIndexedCache):(Object) => IListItem {
-            return (rawObject:IListItem) => {
+        createListItemProvider<T>(model: Model, query: IQuery, indexedCache: IIndexedCache<T>): (Object) => IListItem<T> {
+            return (rawObject: IUninitializedListItem<T>) => {
                 /** Create Reference to the indexed cache */
                 rawObject.getCache = () => indexedCache;
 
@@ -87,7 +118,7 @@ module ap {
 
                 /** Register in global application listItem cache and extends the existing listItem if it
                  * already exists */
-                return this.apCacheService.registerEntity(listItem, indexedCache);
+                return this.apCacheService.registerEntity<T>(listItem, indexedCache);
             }
         }
 
@@ -102,7 +133,7 @@ module ap {
          * @param {object[]} fieldDefinitions Field definitions from the model.
          * @param {object} responseXML XML response from the server.
          */
-        extendFieldDefinitionsFromXML(fieldDefinitions:IFieldDefinition[], responseXML:XMLDocument):IFieldDefinition[] {
+        extendFieldDefinitionsFromXML(fieldDefinitions: IFieldDefinition[], responseXML: XMLDocument): IExtendedFieldDefinition[] {
             var fieldMap = {};
 
             /** Map all custom fields with keys of the staticName and values = field definition */
@@ -115,7 +146,7 @@ module ap {
             /** Iterate over each of the field nodes */
             var fields = $(responseXML).SPFilterNode('Field');
 
-            _.each(fields, (xmlField) => {
+            _.each(fields, (xmlField: XMLDocument) => {
 
 
                 var staticName = $(xmlField).attr('StaticName');
@@ -154,9 +185,9 @@ module ap {
          * @param {object} responseXML XML response from the server.
          * @returns {object} Extended list object.
          */
-        extendListDefinitionFromXML(list:IList, responseXML:XMLDocument):IList {
+        extendListDefinitionFromXML(list: IList, responseXML: XMLDocument): IList {
             var service = this;
-            $(responseXML).find("List").each(function () {
+            $(responseXML).find("List").each(function() {
                 service.extendObjectWithXMLAttributes(this, list, service.apXMLListAttributeTypes);
             });
             return list;
@@ -172,7 +203,7 @@ module ap {
          * @param {object} model Model for a given list.
          * @param {object} responseXML XML response from the server.
          */
-        extendListMetadata(model:IModel, responseXML:XMLDocument):void {
+        extendListMetadata(model: Model, responseXML: XMLDocument): void {
             this.extendListDefinitionFromXML(model.list, responseXML);
             this.extendFieldDefinitionsFromXML(model.list.fields, responseXML);
         }
@@ -192,7 +223,7 @@ module ap {
          * type of field.
          * @returns {object} JS Object
          */
-        extendObjectWithXMLAttributes(xmlObject:XMLDocument, jsObject?:Object, attributeTypes?:Object):Object {
+        extendObjectWithXMLAttributes(xmlObject: XMLDocument, jsObject?: Object, attributeTypes?: Object): Object {
             var objectToExtend = jsObject || {};
             var attributeMap = attributeTypes || {};
             var xmlAttributes = xmlObject.attributes;
@@ -208,7 +239,7 @@ module ap {
         }
 
 
-        jsAttachments(str):string[]|number|string {
+        jsAttachments(str): string[]|number|string {
             /* Depending on CAMLQueryOptions Config an attachment can be formatted in 1 of the below 3 ways:
              1. {number} The number of attachments for a given list item.
              CAMLQueryOptions
@@ -255,12 +286,12 @@ module ap {
             }
         }
 
-        jsBoolean(str:string):boolean {
+        jsBoolean(str: string): boolean {
             /** SharePoint uses different string representations for booleans in different places so account for each */
             return str === '1' || str === 'True' || str === 'TRUE';
         }
 
-        jsCalc(str:string):any {
+        jsCalc(str: string): any {
             if (str.length === 0) {
                 return null;
             } else {
@@ -270,7 +301,7 @@ module ap {
             }
         }
 
-        jsChoiceMulti(str:string):string[] {
+        jsChoiceMulti(str: string): string[] {
             if (str.length === 0) {
                 return [];
             } else {
@@ -285,7 +316,7 @@ module ap {
             }
         }
 
-        jsDate(str:string):Date {
+        jsDate(str: string): Date {
             if (!str) {
                 return null;
             } else {
@@ -298,7 +329,7 @@ module ap {
             }
         }
 
-        jsFloat(str:string):number {
+        jsFloat(str: string): number {
             if (!str) {
                 return str;
             } else {
@@ -306,7 +337,7 @@ module ap {
             }
         }
 
-        jsInt(str:string):number {
+        jsInt(str: string): number {
             if (!str) {
                 return str;
             } else {
@@ -314,7 +345,7 @@ module ap {
             }
         }
 
-        jsLookup(str:string, options?:Object):ILookup {
+        jsLookup(str: string, options?: Object): ILookup {
             if (str.length === 0) {
                 return null;
             } else {
@@ -323,7 +354,7 @@ module ap {
             }
         }
 
-        jsLookupMulti(str:string, options?:Object):ILookup[] {
+        jsLookupMulti(str: string, options?: Object): ILookup[] {
             if (str.length === 0) {
                 return [];
             } else {
@@ -340,7 +371,7 @@ module ap {
             }
         }
 
-        jsObject(str:string):Object {
+        jsObject(str: string): Object {
             if (!str) {
                 return str;
             } else {
@@ -356,11 +387,11 @@ module ap {
             }
         }
 
-        jsString(str:string):string {
+        jsString(str: string): string {
             return str;
         }
 
-        jsUser(str:string):IUser {
+        jsUser(str: string): IUser {
             if (str.length === 0) {
                 return null;
             }
@@ -368,7 +399,7 @@ module ap {
             return this.apUserFactory.create(str);
         }
 
-        jsUserMulti(str:string):IUser[] {
+        jsUserMulti(str: string): IUser[] {
             if (str.length === 0) {
                 return [];
             } else {
@@ -394,7 +425,7 @@ module ap {
          *
          * @returns {Array} Array objects containing the various version of a field for each change.
          */
-        parseFieldVersions(responseXML:XMLDocument, fieldDefinition:IFieldDefinition):IListItemVersion[] {
+        parseFieldVersions(responseXML: XMLDocument, fieldDefinition: IFieldDefinition): IListItemVersion[] {
             var versions = [];
             var xmlVersions = $(responseXML).find('Version');
             var versionCount = xmlVersions.length;
@@ -417,7 +448,7 @@ module ap {
 
                 /** Properly format field based on definition from model */
                 version[fieldDefinition.mappedName] =
-                    this.parseStringValue($(xmlVersion).attr(fieldDefinition.staticName), fieldDefinition.objectType);
+                this.parseStringValue($(xmlVersion).attr(fieldDefinition.staticName), fieldDefinition.objectType);
 
                 /** Push to beginning of array */
                 versions.unshift(version);
@@ -442,7 +473,7 @@ module ap {
          * @param {object} [options.propertyName] Name of property on the list item.
          * @returns {*} The newly instantiated JavaScript value based on field type.
          */
-        parseStringValue(str:string, objectType?:string, options?:{entity: Object; propertyName: string;}):any {
+        parseStringValue(str: string, objectType?: string, options?: { entity: Object; propertyName: string; }): any {
 
             var unescapedValue = _.unescape(str);
 
@@ -517,8 +548,8 @@ module ap {
          * @param {boolean} [options.removeOws=true] Specifically for GetListItems, if true, the leading ows_ will
          * @returns {object} New entity using the factory on the model.
          */
-        parseXMLEntity(xmlEntity:XMLDocument, listItemProvider:(Object) => IListItem,
-                       options:{mapping: IFieldDefinition[]; includeAllAttrs?: boolean; listItemProvider?:Function;removeOws?:boolean; target?: IIndexedCache}):IListItem {
+        parseXMLEntity<T>(xmlEntity: XMLDocument, listItemProvider: (Object) => IListItem<T>,
+            options: { mapping: IFieldDefinition[]; includeAllAttrs?: boolean; listItemProvider?: Function; removeOws?: boolean; target?: IIndexedCache<T> }): IListItem<T> {
             var entity = {};
             var rowAttrs = xmlEntity.attributes;
 
@@ -563,8 +594,8 @@ module ap {
          * @param {Array} [options.target=model.getCache()] Optionally pass in array to update after processing.
          * @returns {Object} Inedexed Cache.
          */
-        processListItems(model:IModel, query:IQuery, responseXML:XMLDocument,
-                         options?:{factory: Function; filter: string; mapping: IFieldDefinition[]; target: IIndexedCache}):IIndexedCache {
+        processListItems<T>(model: Model, query: IQuery, responseXML: XMLDocument,
+            options?: { factory: Function; filter: string; mapping: IFieldDefinition[]; target: IIndexedCache<T> }): IIndexedCache<T> {
             var defaults = {
                 factory: model.factory,
                 filter: 'z:row',
@@ -607,8 +638,8 @@ module ap {
          * @param {array} [options.target] Optional location to push parsed entities.
          * @returns {object[]} An array of JavaScript objects.
          */
-        xmlToJson(xmlEntities:XMLDocument[], listItemProvider:(Object) => IListItem,
-                  options:{mapping: IFieldDefinition[]; includeAllAttrs?: boolean; listItemProvider?:Function;removeOws?:boolean; target?: IIndexedCache}):Object[] {
+        xmlToJson<T>(xmlEntities: XMLDocument[], listItemProvider: (Object) => IListItem<T>,
+            options: { mapping: IFieldDefinition[]; includeAllAttrs?: boolean; listItemProvider?: Function; removeOws?: boolean; target?: IIndexedCache<T> }): IListItem<T>[] {
 
             var defaults = {
                 mapping: {},

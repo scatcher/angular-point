@@ -1,16 +1,13 @@
-/// <reference path="../../typings/angularjs/angular.d.ts" />
-
+/// <reference path="../app.module.ts" />
 
 declare module ap {
-
-
 
     export interface IListItemCrudOptions<T> {
         target:IIndexedCache<T>;
     }
 
 
-    export interface IListItemVersion extends IListItem {
+    export interface IListItemVersion<T> extends IListItem<T> {
         version: Date;
     }
 
@@ -28,31 +25,31 @@ declare module ap {
         workflowName?: string;
     }
 
-    export interface IDiscussionThread {
-        posts: IDiscussionThreadPost[];
-        nextId: number;
-        getNextId(): number;
-        createPost(parentId: number, content: string): IDiscussionThreadPost;
-        getListItem(): IListItem;
-        prune(): void;
-        saveChanges(): ng.IPromise<IListItem>;
-    }
+//    export interface IDiscussionThread {
+//        posts: IDiscussionThreadPost[];
+//        nextId: number;
+//        getNextId(): number;
+//        createPost(parentId: number, content: string): IDiscussionThreadPost;
+//        getListItem(): IListItem;
+//        prune(): void;
+//        saveChanges(): ng.IPromise<IListItem>;
+//    }
 
-    export interface IDiscussionThreadPost {
-        content: string;
-        id: number;
-        parentId: number;
-        created: Date;
-        user: IUser;
-        removePost(): void;
-        deletePost(): ng.IPromise<IListItem>;
-        savePost(): ng.IPromise<IListItem>;
-        reply(): ng.IPromise<IListItem>;
-    }
+//    export interface IDiscussionThreadPost {
+//        content: string;
+//        id: number;
+//        parentId: number;
+//        created: Date;
+//        user: IUser;
+//        removePost(): void;
+//        deletePost(): ng.IPromise<IListItem>;
+//        savePost(): ng.IPromise<IListItem>;
+//        reply(): ng.IPromise<IListItem>;
+//    }
 
-    export interface ICache<T> extends IIndexedCache<T>{
-        //TODO Populate me!
-    }
+//    export interface ICache<T> extends IIndexedCache<T>{
+//        //TODO Populate me!
+//    }
 
     export interface IUserPermissionsObject {
         ViewListItems: boolean;

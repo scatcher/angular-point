@@ -1,0 +1,165 @@
+<h1><code ng:non-bindable="">FieldDefinition</code>
+<div><span class="hint">service in module <code ng:non-bindable="">List</code>
+</span>
+</div>
+</h1>
+<div><h2 id="description">Description</h2>
+<div class="description"><div class="list-fielddefinition-page"><p>Defined in the MODEL.list.fieldDefinitions array.  Each field definition object maps an internal field
+in a SharePoint list/library to a JavaScript object using the internal SharePoint field name, the field
+type, and the desired JavaScript property name to add onto the parsed list item object. Ignore shown usage,
+each field definition is just an object within the fieldDefinitions array.</p>
+</div></div>
+<div class="member property"><h2 id="properties">Properties</h2>
+<ul class="properties"><li><h3 id="properties_staticname">staticName</h3>
+<div class="staticname"><div class="list-fielddefinition-page"><p>The actual SharePoint field name.</p>
+</div></div>
+</li>
+<li><h3 id="properties_[objecttype=text]">[objectType='Text']</h3>
+<div class="[objecttype=text]"><div class="list-fielddefinition-page"><dl>
+<dt>Boolean</dt>
+<dd>Used to store a TRUE/FALSE value (stored in SharePoint as 0 or 1).</dd>
+<dt>Calc</dt>
+<dd>&quot;;#&quot; Delimited String: The first value will be the calculated column value
+type, the second will be the value</dd>
+<dt>Choice</dt>
+<dd>Simple text string but when processing the initial list definition, we
+look for a Choices XML element within the field definition and store each
+value.  We can then retrieve the valid Choices with one of the following:
+<code>var fieldDefinition = LISTITEM.getFieldDefinition(&#39;CHOICE_FIELD_NAME&#39;);</code>
+                                 or
+<code>var fieldDefinition = MODELNAME.getFieldDefinition(&#39;CHOICE_FIELD_NAME&#39;);</code>
+<code>var choices = fieldDefinition.Choices;</code>
+
+</dd>
+<dt>Counter</dt>
+<dd>Same as Integer. Generally used only for the internal ID field. Its integer
+value is set automatically to be unique with respect to every other item in the
+current list. The Counter type is always read-only and cannot be set through a
+form post.</dd>
+<dt>Currency</dt>
+<dd>Floating point number.</dd>
+<dt>DateTime</dt>
+<dd>Replace dashes with slashes and the &quot;T&quot; deliminator with a space if found.  Then
+converts into a valid JS date object.</dd>
+<dt>Float</dt>
+<dd>Floating point number.</dd>
+<dt>HTML</dt>
+<dd><code>_.unescape(STRING)</code></dd>
+<dt>Integer</dt>
+<dd>Parses the string to a base 10 int.</dd>
+<dt>JSON</dt>
+<dd>Parses JSON if valid and converts into a a JS object.  If not valid, an error is
+thrown with additional info on specifically what is invalid.</dd>
+<dt>Lookup</dt>
+<dd>Passes string to Lookup constructor where it is broken into an object containing
+a &quot;lookupValue&quot; and &quot;lookupId&quot; attribute.  Inherits additional prototype methods from
+Lookup.  See <a href="#/api/Lookup">Lookup</a> for more information.
+</dd>
+<dt>LookupMulti</dt>
+<dd>Converts multiple delimited &quot;;#&quot; strings into an array of Lookup objects.</dd>
+<dt>MultiChoice</dt>
+<dd>Converts delimited &quot;;#&quot; string into an array of strings representing each of the
+selected choices.  Similar to the single &quot;Choice&quot;, the XML Choices are stored in the
+field definition after the initial call is returned from SharePoint so we can reference
+later.
+</dd>
+<dt>Number</dt>
+<dd>Treats as a float.</dd>
+<dt>Text</dt>
+<dd><strong>Default</strong> No processing of the text string from XML.</dd>
+<dt>User</dt>
+<dd>Similar to Lookup but uses the &quot;User&quot; prototype as a constructor to convert into a
+User object with &quot;lookupId&quot; and &quot;lookupValue&quot; attributes.  The lookupId is the site collection
+ID for the user and the lookupValue is typically the display name.
+See <a href="#/api/User">User</a> for more information.
+</dd>
+<dt>UserMulti</dt>
+<dd>Parses delimited string to returns an array of User objects.</dd>
+</dl></div></div>
+</li>
+<li><h3 id="properties_mappedname">mappedName</h3>
+<div class="mappedname"><div class="list-fielddefinition-page"><p>The attribute name we&#39;d like to use
+for this field on the newly created JS object.</p>
+</div></div>
+</li>
+<li><h3 id="properties_[readonly=false]">[readOnly=false]</h3>
+<div class="[readonly=false]"><div class="list-fielddefinition-page"><p>When saving, we only push fields
+that are mapped and not read only.</p>
+</div></div>
+</li>
+<li><h3 id="properties_[required=false]">[required=false]</h3>
+<div class="[required=false]"><div class="list-fielddefinition-page"><p>Allows us to validate the field to ensure it is valid based
+on field type.</p>
+</div></div>
+</li>
+</ul>
+</div>
+<h2 id="example">Example</h2>
+<div class="example"><div class="list-fielddefinition-page"><pre class="prettyprint linenums">
+angular.module('App')
+ .service('taskerModel', function (apModelFactory) {
+    // Object Constructor (class)
+    // All list items are passed to the below constructor which inherits from
+    // the ListItem prototype.
+    function Task(obj) {
+        var self = this;
+        _.extend(self, obj);
+    }
+
+    // Model Constructor
+    var model = apModelFactory.create({
+        factory: Task,
+        list: {
+            // Maps to the offline XML file in dev folder (no spaces)
+            name: 'Tasks',
+            // List GUID can be found in list properties in SharePoint designer
+            guid: '{CB1B965E-D952-4ED5-86FD-FF8DA770F871}',
+            customFields: [
+                // Array of objects mapping each SharePoint field to a
+                // property on a list item object
+                {
+                 staticName: 'Title',
+                 objectType: 'Text',
+                 mappedName: 'title',
+                 readOnly:false
+                },
+                {
+                 staticName: 'Project',
+                 objectType: 'Lookup',
+                 mappedName: 'project',
+                 readOnly:false
+                },
+                {
+                 staticName: 'Priority',
+                 objectType: 'Choice',
+                 mappedName: 'priority',
+                 readOnly:false
+               },
+                {
+                 staticName: 'Description',
+                 objectType: 'Text',
+                 mappedName: 'description',
+                 readOnly:false
+                },
+                {
+                 staticName: 'Manager',
+                 objectType: 'Lookup',
+                 mappedName: 'requirement',
+                 readOnly:false
+                }
+            ]
+        }
+    });
+
+    // Fetch data (pulls local xml if offline named model.list.title + '.xml')
+    // Initially pulls all requested data.  Each subsequent call just pulls
+    // records that have been changed, updates the model, and returns a reference
+   // to the updated data array
+    // @returns {Array} Requested list items
+    model.registerQuery({name: 'primary'});
+
+    return model;
+});
+</pre>
+</div></div>
+</div>

@@ -1,14 +1,14 @@
-/// <reference path="../../typings/ap.d.ts" />
+/// <reference path="../app.module.ts" />
 
 module ap {
     'use strict';
 
-    var apConfig:IAPConfig, apDefaultFields, apFieldFactory:FieldFactory;
+    var apConfig: IAPConfig, apDefaultFields, apFieldFactory: FieldFactory;
 
     export interface IList {
         customFields: IFieldDefinition[];
         effectivePermMask?: string;
-        environments;
+        environments?: { [key: string]: string };
         fields: IFieldDefinition[];
         getListId(): string;
         guid: string;
@@ -18,7 +18,7 @@ module ap {
         title: string;
         viewFields: string;
         webURL: string;
-        WebFullUrl?:string;
+        WebFullUrl?: string;
     }
     /**
      * @ngdoc object
@@ -80,19 +80,19 @@ module ap {
      */
     export class List implements IList {
         customFields = [];
-        environments;
+        environments: { [key: string]: string };
         fields = [];
-        guid = '';
+        guid: string = '';
         isReady = false;
         mapping = {};
         title = '';
         viewFields = '';
         WebFullUrl; //Only appears if extended from list definition
-        webURL:string;
+        webURL: string;
         constructor(config) {
             this.webURL = apConfig.defaultUrl;
             _.extend(this, config);
-            this.environments = this.environments || {production: this.guid};
+            this.environments = this.environments || { production: this.guid };
             this.extendFieldDefinitions();
         }
 
@@ -125,10 +125,10 @@ module ap {
             this.viewFields += '<ViewFields>';
 
             /** Add the default fields */
-            _.each(apDefaultFields, (field) => buildField(field) );
+            _.each(apDefaultFields, (field) => buildField(field));
 
             /** Add each of the fields defined in the model */
-            _.each(this.customFields, (field) => buildField(field) );
+            _.each(this.customFields, (field) => buildField(field));
 
             /** Close viewFields */
             this.viewFields += '</ViewFields>';
@@ -145,7 +145,7 @@ module ap {
          * by setting apConfig.environment to the string name of the desired environment.
          * @returns {string} List ID.
          */
-        getListId() {
+        getListId(): string {
             if (_.isString(this.environments[apConfig.environment])) {
                 /**
                  * For a multi-environment setup, we accept a list.environments object with a property for each named
@@ -168,7 +168,7 @@ module ap {
          * to apConfig.defaultUrl.
          * @returns {string} webURL param.
          */
-        identifyWebURL() {
+        identifyWebURL(): string {
             return this.WebFullUrl ? this.WebFullUrl : this.webURL;
         }
 

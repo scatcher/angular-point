@@ -66,12 +66,12 @@ describe("Factory: apEncodeService", function () {
 
         it('correctly handles a true Boolean field', function () {
             expect(service.createValuePair(mockDefinition('Boolean'), true))
-                .toEqual([ 'Boolean', 1 ]);
+                .toEqual([ 'Boolean', '1' ]);
         });
 
         it('correctly handles a false Boolean field', function () {
             expect(service.createValuePair(mockDefinition('Boolean'), false))
-                .toEqual([ 'Boolean', 0 ]);
+                .toEqual([ 'Boolean', '0' ]);
         });
 
         it('correctly handles a DateTime field', function () {

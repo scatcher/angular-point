@@ -1,4 +1,4 @@
-/// <reference path="../../typings/ap.d.ts" />
+/// <reference path="../app.module.ts" />
 
 module ap {
     'use strict';
@@ -72,14 +72,14 @@ module ap {
      * </pre>
      * @returns {string} Stringified property on the object based on the field type.
      */
-    function getFormattedFieldValue(prop, propertyType = 'String', options?:{delim: string; dateFormat: string}): string {
+    function getFormattedFieldValue(prop: any, propertyType = 'String', options?: { delim: string; dateFormat: string }): string {
         var defaults = {
-                delim: ', ',
-                dateFormat: 'short'
-            },
+            delim: ', ',
+            dateFormat: 'short'
+        },
             opts = _.extend({}, defaults, options);
 
-        var str = '';
+        var str: string = '';
         /** Only process if prop is defined */
         if (prop) {
             switch (propertyType) {
@@ -119,7 +119,7 @@ module ap {
         return str;
     }
 
-    function stringifyCalc(prop): string {
+    function stringifyCalc(prop: any): string {
         if (prop.length === 0) {
             return '';
         } else if (_.isNumber(prop)) {
@@ -141,7 +141,7 @@ module ap {
      * Converts a number to a string representation.
      * @returns {string} Stringified number.
      */
-    function stringifyNumber(prop) {
+    function stringifyNumber(prop: number): string {
         var str = '';
         if (_.isNumber(prop)) {
             str = prop.toString();
@@ -158,7 +158,7 @@ module ap {
      * @param {number} prop Property on object to parse.
      * @returns {string} Stringified currency.
      */
-    function stringifyCurrency(prop) {
+    function stringifyCurrency(prop: number): string {
         return $filter('currency')(prop, '$');
     }
 
@@ -171,7 +171,7 @@ module ap {
      * Returns the property.lookupValue if present.
      * @returns {string} Property.lookupValue.
      */
-    function stringifyLookup(prop) {
+    function stringifyLookup(prop: ILookup): string {
         var str = '';
         if (prop && prop.lookupValue) {
             str = prop.lookupValue;
@@ -188,7 +188,7 @@ module ap {
      * Returns the stringified boolean if it is set.
      * @returns {string} Stringified boolean.
      */
-    function stringifyBoolean(prop) {
+    function stringifyBoolean(prop: boolean): string {
         var str = '';
         if (_.isBoolean(prop)) {
             str = prop.toString();
@@ -207,7 +207,7 @@ module ap {
      * Returns JSON date.
      * @returns {string} JSON date.
      */
-    function stringifyDate(prop, dateFormat) {
+    function stringifyDate(prop: Date, dateFormat: string): string {
         var str = '';
         if (_.isDate(prop)) {
             str = dateFormat === 'json' ? prop.toJSON() : $filter('date')(prop, dateFormat);
@@ -225,12 +225,11 @@ module ap {
      * Converts an array of strings into a single concatenated string.
      * @returns {string} Concatenated string representation.
      */
-    function stringifyMultiChoice(prop, delim) {
-        var str = '',
-            d = delim || '; ';
-        _.each(prop, function (choice, i) {
+    function stringifyMultiChoice(prop: string[], delim = '; '): string {
+        var str = '';
+        _.each(prop, function(choice, i) {
             if (i > 0) {
-                str += d;
+                str += delim;
             }
             str += choice;
         });
@@ -247,14 +246,13 @@ module ap {
      * Converts an array of selected lookup values into a single concatenated string.
      * @returns {string} Concatenated string representation.
      */
-    function stringifyMultiLookup(prop, delim) {
-        var str = '',
-            d = delim || '; ';
-        _.each(prop, function (val, valIndex) {
+    function stringifyMultiLookup(prop: ILookup[], delim = '; '): string {
+        var str = '';
+        _.each(prop, function(val, valIndex) {
 
             /** Add artificial delim */
             if (valIndex > 0) {
-                str += d;
+                str += delim;
             }
 
             str += stringifyLookup(val);

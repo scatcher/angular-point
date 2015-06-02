@@ -1,9 +1,9 @@
-/// <reference path="../../typings/ap.d.ts" />
+/// <reference path="../app.module.ts" />
 
 module ap {
     'use strict';
 
-    export var DefaultListItemQueryOptions:string = '' +
+    export var DefaultListItemQueryOptions: string = '' +
         '<QueryOptions>' +
         '   <IncludeMandatoryColumns>FALSE</IncludeMandatoryColumns>' +
         '   <IncludeAttachmentUrls>TRUE</IncludeAttachmentUrls>' +

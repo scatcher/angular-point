@@ -1,4 +1,4 @@
-/// <reference path="../../typings/ap.d.ts" />
+/// <reference path="../app.module.ts" />
 
 module ap {
     'use strict';
@@ -6,7 +6,7 @@ module ap {
     var $q, toastr, apCacheService: CacheService, apDataService: DataService, apEncodeService: EncodeService,
         apUtilityService: UtilityService, apFormattedFieldValueService: FormattedFieldValueService, apConfig: IAPConfig;
 
-    export interface IListItem {
+    export interface IListItem<T> {
         author?: IUser;
         created?: Date;
         editor?: IUser;
@@ -17,29 +17,36 @@ module ap {
         uniqueId?: string;
 
         deleteAttachment(url: string): ng.IPromise<any>;
-        deleteItem(options?: IListItemCrudOptions): ng.IPromise<any>;
+        deleteItem(options?: IListItemCrudOptions<T>): ng.IPromise<any>;
         getAttachmentCollection(): ng.IPromise<string[]>;
         getAvailableWorkflows(): ng.IPromise<IWorkflowDefinition[]>;
-        getCache?(): ICache;
+        getCache?(): IIndexedCache<T>;
         getFieldChoices(fieldName: string): string[];
         getFieldDefinition(fieldName: string): IFieldDefinition;
         getFieldDescription(fieldName: string): string;
         getFieldLabel(fieldName: string): string;
-        getFieldVersionHistory(fieldNames: string[]): ng.IPromise<IListItemVersion>;
-        getFormattedValue(fieldName: string, options: Object): string;
-        getLookupReference(fieldName: string, lookupId: number): IListItem;
-        getQuery?():IQuery;
+        getFieldVersionHistory(fieldNames: string[]): ng.IPromise<IListItemVersion<T>[]>;
+        getFormattedValue(fieldName: string, options?: Object): string;
+        getList(): IList;
+        getListId(): string;
+        getLookupReference(fieldName: string, lookupId?: number): IListItem<any>;
+
         resolvePermissions(): IUserPermissionsObject;
-        saveChanges(options?: IListItemCrudOptions): ng.IPromise<IListItem>;
-        saveFields(fieldArray: string[], options?: IListItemCrudOptions): ng.IPromise<IListItem>;
+        saveChanges(options?: IListItemCrudOptions<T>): ng.IPromise<IListItem<T>>;
+        saveFields(fieldArray: string[], options?: IListItemCrudOptions<T>): ng.IPromise<IListItem<T>>;
         startWorkflow(options: IStartWorkflowParams): ng.IPromise<any>;
         validateEntity(options?: Object): boolean;
 
         //Added by Model Instantiation
-        getModel(): IModel;
-        getListId(): string;
-        getList?(): IList;
+        getModel?(): Model;
+        getQuery?(): IQuery;
 
+    }
+    
+    export interface IUninitializedListItem<T>{
+        [key: string]: any;
+        getCache(): IIndexedCache<T>;
+        getQuery(): IQuery;
     }
 
 
@@ -51,14 +58,14 @@ module ap {
      * functionality can be called directly from a given list item.
      * @constructor
      */
-    export class ListItem implements IListItem {
+    export class ListItem<T> implements IListItem<T> {
         author: IUser;
         created: Date;
         editor: IUser;
         fileRef: ILookup;
-        getCache:Function;
-        getModel(): IModel;
-        getQuery():IQuery;
+        getCache(): IIndexedCache<T>;
+        getModel(): Model;
+//        getQuery(): IQuery;
         id: number;
         modified: Date;
         permMask: string;
@@ -93,7 +100,7 @@ module ap {
          * }
          * </pre>
          */
-        saveChanges( options?: IListItemCrudOptions ): ng.IPromise<ListItem> {
+        saveChanges(options?: IListItemCrudOptions<T>): ng.IPromise<IListItem<T>> {
             var listItem = this;
             var model = listItem.getModel();
             var deferred = $q.defer();
@@ -105,12 +112,12 @@ module ap {
                 return model.addNewItem(listItem, options);
             }
 
-            apDataService.updateListItem(model, listItem, options)
-                .then( (updatedListItem) => {
-                    deferred.resolve(updatedListItem);
-                    /** Optionally broadcast change event */
-                    apUtilityService.registerChange(model, 'update', updatedListItem.id);
-                });
+            apDataService.updateListItem<T>(model, listItem, options)
+                .then((updatedListItem) => {
+                deferred.resolve(updatedListItem);
+                /** Optionally broadcast change event */
+                apUtilityService.registerChange(model, 'update', updatedListItem.id);
+            });
 
             return deferred.promise;
         }
@@ -146,7 +153,7 @@ module ap {
          * }
          * </pre>
          */
-        saveFields( fieldArray: string[], options?: IListItemCrudOptions ): ng.IPromise<ListItem> {
+        saveFields(fieldArray: string[], options?: IListItemCrudOptions<T>): ng.IPromise<IListItem<T>> {
 
             var listItem = this;
             var model = listItem.getModel();
@@ -156,7 +163,7 @@ module ap {
             var fieldNames = _.isString(fieldArray) ? [fieldArray] : fieldArray;
             /** Find the field definition for each of the requested fields */
             _.each(fieldNames, (field) => {
-                var match = _.find(model.list.customFields, {mappedName: field});
+                var match = _.find(model.list.customFields, { mappedName: field });
                 if (match) {
                     definitions.push(match);
                 }
@@ -165,17 +172,17 @@ module ap {
             /** Generate value pairs for specified fields */
             var valuePairs = apEncodeService.generateValuePairs(definitions, listItem);
 
-            var defaults = {buildValuePairs: false, valuePairs: valuePairs};
+            var defaults = { buildValuePairs: false, valuePairs: valuePairs };
 
             /** Extend defaults with any provided options */
             var opts = _.extend({}, defaults, options);
 
-            apDataService.updateListItem(model, listItem, opts)
-                .then( (updatedListItem) => {
-                    deferred.resolve(updatedListItem);
-                    /** Optionally broadcast change event */
-                    apUtilityService.registerChange(model, 'update', updatedListItem.id);
-                });
+            apDataService.updateListItem<T>(model, listItem, opts)
+                .then((updatedListItem) => {
+                deferred.resolve(updatedListItem);
+                /** Optionally broadcast change event */
+                apUtilityService.registerChange(model, 'update', updatedListItem.id);
+            });
 
             return deferred.promise;
         }
@@ -202,12 +209,12 @@ module ap {
          * List of tasks.  When the delete link is clicked, the list item item is removed from the local cache and
          * the view is updated to no longer show the task.
          */
-        deleteItem( options?: IListItemCrudOptions ): ng.IPromise<any> {
+        deleteItem(options?: IListItemCrudOptions<T>): ng.IPromise<any> {
             var listItem = this;
             var model = listItem.getModel();
             var deferred = $q.defer();
 
-            apDataService.deleteListItem(model, listItem, options).then( (response) => {
+            apDataService.deleteListItem(model, listItem, options).then((response) => {
                 deferred.resolve(response);
                 /** Optionally broadcast change event */
                 apUtilityService.registerChange(model, 'delete', listItem.id);
@@ -241,7 +248,7 @@ module ap {
          * </pre>
          * @returns {object} The listItem the lookup is referencing or undefined if not in the cache.
          */
-        getLookupReference( fieldName: string, lookupId?: number ): ListItem{
+        getLookupReference(fieldName: string, lookupId?: number): IListItem<any> {
             var listItem = this;
             var lookupReference;
             if (_.isUndefined(fieldName)) {
@@ -275,7 +282,7 @@ module ap {
          * @param {object} [options] Pass through to apFormattedFieldValueService.getFormattedFieldValue.
          * @returns {string} Formatted string representing the field value.
          */
-        getFormattedValue( fieldName: string, options?: Object ): string {
+        getFormattedValue(fieldName: string, options?: Object): string {
             var listItem = this;
             var fieldDefinition = listItem.getFieldDefinition(fieldName);
             if (!fieldDefinition) {
@@ -295,7 +302,7 @@ module ap {
          * @param {boolean} [options.toast=true] Set to false to prevent toastr messages from being displayed.
          * @returns {boolean} Evaluation of validity.
          */
-        validateEntity( options?: Object ): boolean {
+        validateEntity(options?: Object): boolean {
             var listItem = this,
                 model = listItem.getModel();
             return model.validateEntity(listItem, options);
@@ -323,7 +330,7 @@ module ap {
          * @param {string} fieldName Internal field name.
          * @returns {object} Field definition.
          */
-        getFieldDefinition( fieldName: string ): IFieldDefinition {
+        getFieldDefinition(fieldName: string): IFieldDefinition {
             var listItem = this;
             return listItem.getModel().getFieldDefinition(fieldName);
         }
@@ -341,7 +348,7 @@ module ap {
          * caml case version of the mapped name using apUtilityService.fromCamelCase.
          * @returns {string} The label for a given field object.
          */
-        getFieldLabel( fieldName: string ): string {
+        getFieldLabel(fieldName: string): string {
             var listItem = this;
             var fieldDefinition = listItem.getFieldDefinition(fieldName);
             return fieldDefinition.label || fieldDefinition.DisplayName || fieldDefinition.displayName;
@@ -419,7 +426,7 @@ module ap {
          * @returns {object} List for the list item.
          */
         getList(): IList {
-            var model: IModel = this.getModel();
+            var model: Model = this.getModel();
             return model.getList();
         }
 
@@ -449,24 +456,24 @@ module ap {
             } else {
                 /** We first need to get the template GUID for the workflow */
                 listItem.getAvailableWorkflows()
-                    .then( (workflows) => {
-                        var targetWorklow = _.findWhere(workflows, {name: options.workflowName});
-                        if (!targetWorklow) {
-                            throw 'A workflow with the specified name wasn\'t found.';
-                        }
-                        /** Create an extended set of options to pass any overrides to apDataService */
-                        options.templateId = targetWorklow.templateId;
-                        initiateRequest();
-                    });
+                    .then((workflows) => {
+                    var targetWorklow = _.findWhere(workflows, { name: options.workflowName });
+                    if (!targetWorklow) {
+                        throw 'A workflow with the specified name wasn\'t found.';
+                    }
+                    /** Create an extended set of options to pass any overrides to apDataService */
+                    options.templateId = targetWorklow.templateId;
+                    initiateRequest();
+                });
             }
 
             return deferred.promise;
 
             function initiateRequest() {
                 apDataService.startWorkflow(options)
-                    .then( (xmlResponse) => {
-                        deferred.resolve(xmlResponse);
-                    });
+                    .then((xmlResponse) => {
+                    deferred.resolve(xmlResponse);
+                });
             }
         }
 
@@ -612,7 +619,7 @@ module ap {
              *      };
          * </pre>
          */
-        getFieldVersionHistory(fieldNames: string[]): ng.IPromise<IListItemVersion[]> {
+        getFieldVersionHistory(fieldNames: string[]): ng.IPromise<IListItemVersion<T>[]> {
             var deferred = $q.defer();
             var promiseArray = [];
             var listItem = this;
@@ -621,7 +628,7 @@ module ap {
             /** Constructor that creates a promise for each field */
             var createPromise = (fieldName) => {
 
-                var fieldDefinition = _.find(model.list.fields, {mappedName: fieldName});
+                var fieldDefinition = _.find(model.list.fields, { mappedName: fieldName });
 
                 var payload = {
                     operation: 'GetVersionCollection',
@@ -641,7 +648,7 @@ module ap {
 
             if (!fieldNames) {
                 /** If fields aren't provided, pull the version history for all NON-readonly fields */
-                var targetFields = _.where(model.list.fields, {readOnly: false});
+                var targetFields = _.where(model.list.fields, { readOnly: false });
                 fieldNames = [];
                 _.each(targetFields, (field) => {
                     fieldNames.push(field.mappedName);
@@ -657,7 +664,7 @@ module ap {
             });
 
             /** Pause until all requests are resolved */
-            $q.all(promiseArray).then( (changes) => {
+            $q.all(promiseArray).then((changes) => {
                 var versionHistory = {};
 
                 /** All fields should have the same number of versions */
@@ -665,7 +672,7 @@ module ap {
 
                     _.each(fieldVersions, (fieldVersion) => {
                         versionHistory[fieldVersion.modified.toJSON()] =
-                            versionHistory[fieldVersion.modified.toJSON()] || {};
+                        versionHistory[fieldVersion.modified.toJSON()] || {};
 
                         /** Add field to the version history for this version */
                         _.extend(versionHistory[fieldVersion.modified.toJSON()], fieldVersion);

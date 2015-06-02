@@ -1,9 +1,15 @@
-/// <reference path="../../typings/ap.d.ts" />
+/// <reference path="../app.module.ts" />
 
 module ap {
     'use strict';
+    
+    export interface ICamlFactory{
+        camlContainsQuery(fieldDefinitionsArray: IFieldDefinition[], searchString: string): string;
+        chainCamlSelects(selectStatements: Object[], joinType: string): string;
+        createCamlContainsSelector(fieldDefinition: IFieldDefinition, searchString: string): string;
+    }
 
-    export class CamlFactory {
+    export class CamlFactory implements ICamlFactory {
 
         /**
          * @ngdoc function
@@ -33,7 +39,7 @@ module ap {
          * </Contains></Or></Or></Or>
          * </pre>
          */
-        camlContainsQuery(fieldDefinitionsArray:IFieldDefinition[], searchString:string):string {
+        camlContainsQuery(fieldDefinitionsArray: IFieldDefinition[], searchString: string): string {
             var selectStatements = [];
 
             /** Create a select statement for each field */
@@ -54,10 +60,10 @@ module ap {
          * @param {string} joinType Valid caml join type ('Or', 'And', ...).
          * @returns {string} CAML query string.
          */
-        chainCamlSelects(selectStatements:Object[], joinType:string):string {
+        chainCamlSelects(selectStatements: Object[], joinType: string): string {
             var camlQuery = '',
                 camlQueryClosure = '';
-            _.each(selectStatements, function (statement, statementIndex) {
+            _.each(selectStatements, function(statement, statementIndex) {
                 /** Add an or clause if we still have additional fields to process */
                 if (statementIndex < selectStatements.length - 1) {
                     camlQuery += '<' + joinType + '>';
@@ -88,24 +94,24 @@ module ap {
          * </Contains>
          * </pre>
          */
-        createCamlContainsSelector(fieldDefinition:IFieldDefinition, searchString:string):string {
+        createCamlContainsSelector(fieldDefinition: IFieldDefinition, searchString: string): string {
             var camlSelector;
             switch (fieldDefinition.objectType) {
                 case 'HTML':
                 case 'JSON':
                     camlSelector = '' +
-                        '<Contains>' +
-                        '<FieldRef Name="' + fieldDefinition.staticName + '" />' +
-                        /** Use CDATA wrapper to escape [&, <, > ] */
-                        '<Value Type="Text"><![CDATA[' + searchString + ']]></Value>' +
-                        '</Contains>';
+                    '<Contains>' +
+                    '<FieldRef Name="' + fieldDefinition.staticName + '" />' +
+                    /** Use CDATA wrapper to escape [&, <, > ] */
+                    '<Value Type="Text"><![CDATA[' + searchString + ']]></Value>' +
+                    '</Contains>';
                     break;
                 default:
                     camlSelector = '' +
-                        '<Contains>' +
-                        '<FieldRef Name="' + fieldDefinition.staticName + '" />' +
-                        '<Value Type="Text">' + searchString + '</Value>' +
-                        '</Contains>';
+                    '<Contains>' +
+                    '<FieldRef Name="' + fieldDefinition.staticName + '" />' +
+                    '<Value Type="Text">' + searchString + '</Value>' +
+                    '</Contains>';
             }
             return camlSelector;
         }

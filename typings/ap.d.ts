@@ -2,8 +2,6 @@
 
 //{
 
-/// <reference path="../src/app.module.ts" />
-
 /// <reference path="../src/config.ts" />
 
 /// <reference path="../src/constants/apConfig.ts" />

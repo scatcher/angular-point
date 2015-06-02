@@ -1,20 +1,26 @@
-/// <reference path="../../typings/ap.d.ts" />
+/// <reference path="../app.module.ts" />
 
 module ap {
     'use strict';
 
-    export interface IIndexedCache <T> {
-        addEntity(entity:T): void;
+    export interface IIndexedCache<T> {
+        addEntity(listItem: IListItem<T>): void;
         clear(): void;
         count(): number;
-        first(): T;
+        first(): IListItem<T>;
         keys(): string[];
-        last(): T;
-        nthEntity(index:number): T;
-        removeEntity(listItem:T|number): void;
-        toArray(): T[];
+        last(): IListItem<T>;
+        nthEntity(index:number): IListItem<T>;
+        removeEntity(listItem: IListItem<T>): void;
+        removeEntity(listItem: number): void;
+        toArray(): IIndexedCache<T>[];
         //Object with keys equaling ID and values being the individual list item
-        [key: number]: T;
+        [key: number]: IListItem<T>;
+    }
+    
+    interface IIndexedEntity{
+        id: number;
+        [key:string]: any;
     }
 
     /**
@@ -27,7 +33,7 @@ module ap {
      * @requires angularPoint.apIndexedCacheFactory
      * @constructor
      */
-    export class IndexedCache implements IIndexedCache {
+    export class IndexedCache<T> implements IIndexedCache<T>{
         constructor(object?:Object) {
             if (object) {
                 _.extend(this, object);
@@ -42,14 +48,14 @@ module ap {
          * Adds a new key to the cache if not already there with a value of the new listItem.
          * @param {object} listItem Entity to add to the cache.
          */
-        addEntity(listItem:ListItem) {
+        addEntity(listItem: IListItem<T>): void {
             if (_.isObject(listItem) && !!listItem.id) {
                 /** Only add the listItem to the cache if it's not already there */
                 if (!this[listItem.id]) {
                     this[listItem.id] = listItem;
                 }
             } else {
-                throw 'A valid listItem wasn\'t found: ' + JSON.stringify(listItem);
+                throw new Error('A valid listItem wasn\'t found: ' + JSON.stringify(listItem));
             }
         }
 
@@ -60,7 +66,7 @@ module ap {
          * @description
          * Clears all cached elements from the containing cache object.
          */
-        clear() {
+        clear(): void {
             _.each(this, (listItem, key) => delete this[key]);
         }
 
@@ -72,7 +78,7 @@ module ap {
          * Returns the number of entities in the cache.
          * @returns {number} Number of entities in the cache.
          */
-        count() {
+        count(): number {
             return this.keys().length;
         }
 
@@ -84,7 +90,7 @@ module ap {
          * Returns the first listItem in the index (smallest ID).
          * @returns {object} First listItem in cache.
          */
-        first() {
+        first(): IListItem<T> {
             return this.nthEntity(0);
         }
 
@@ -96,7 +102,7 @@ module ap {
          * Returns the array of keys (listItem ID's) for the cache.
          * @returns {string[]} Array of listItem id's as strings.
          */
-        keys() {
+        keys(): string[] {
             return _.keys(this);
         }
 
@@ -108,7 +114,7 @@ module ap {
          * Returns the last listItem in the index (largest ID).
          * @returns {object} Last listItem in cache.
          */
-        last() {
+        last(): IListItem<T> {
             var keys = this.keys();
             return this[keys[keys.length - 1]];
         }
@@ -122,7 +128,7 @@ module ap {
          * @param {number} index The index of the item requested.
          * @returns {object} First listItem in cache.
          */
-        nthEntity(index) {
+        nthEntity(index: number): IListItem<T> {
             var keys = this.keys();
             return this[keys[index]];
         }
@@ -135,7 +141,7 @@ module ap {
          * Removes a listItem from the cache.
          * @param {object|number} listItem Entity to remove or ID of listItem to be removed.
          */
-        removeEntity(listItem) {
+        removeEntity(listItem: IListItem<T> | number): void {
             if (_.isObject && listItem.id && this[listItem.id]) {
                 delete this[listItem.id];
             } else if (_.isNumber(listItem)) {
@@ -152,7 +158,7 @@ module ap {
          * Turns the cache object into an array of entities.
          * @returns {object[]} Returns the array of entities currently in the cache.
          */
-        toArray() {
+        toArray(): IIndexedCache<T>[] {
             return _.toArray(this);
         }
 
@@ -175,8 +181,8 @@ module ap {
          * @description
          * Instantiates and returns a new Indexed Cache.grunt
          */
-        create(overrides?:Object): IIndexedCache {
-            return new IndexedCache(overrides);
+        create<T>(overrides?:Object): IIndexedCache<T> {
+            return new IndexedCache<T>(overrides);
         }
         IndexedCache = IndexedCache;
 

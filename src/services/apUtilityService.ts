@@ -1,4 +1,9 @@
-/// <reference path="../../typings/ap.d.ts" />
+/// <reference path="../app.module.ts" />
+
+interface _{
+    isDefined(val): boolean;
+    isGuid(val): boolean;
+}
 
 module ap {
     'use strict';
@@ -29,13 +34,13 @@ module ap {
 
     /** Extend underscore with a simple helper function */
     _.mixin({
-        isDefined: function (value) {
+        isDefined: function(value) {
             return !_.isUndefined(value);
         },
         /** Based on functionality in Breeze.js */
-        isGuid: function (value) {
+        isGuid: function(value) {
             return (typeof value === "string") && /[a-fA-F\d]{8}-(?:[a-fA-F\d]{4}-){3}[a-fA-F\d]{12}/
-                    .test(value);
+                .test(value);
         }
     });
 
@@ -265,7 +270,7 @@ module ap {
          * }
      * </pre>
      */
-    function resolvePermissions(permissionsMask: string): {[key: string]: boolean} {
+    function resolvePermissions(permissionsMask): IUserPermissionsObject {
         var permissionSet = {
             ViewListItems: (1 & permissionsMask) > 0,
             AddListItems: (2 & permissionsMask) > 0,
@@ -309,7 +314,7 @@ module ap {
          * so in that case, set everything to true
          */
         if (permissionSet.FullMask) {
-            _.each(permissionSet, function (perm, key) {
+            _.each(permissionSet, function(perm, key) {
                 permissionSet[key] = true;
             });
         }
@@ -384,7 +389,7 @@ module ap {
     }
 
     function toCamelCase(str): string {
-        return str.replace(/(?:^\w|[A-Z]|\b\w)/g, function (letter, index) {
+        return str.replace(/(?:^\w|[A-Z]|\b\w)/g, function(letter, index) {
             return index == 0 ? letter.toLowerCase() : letter.toUpperCase();
         }).replace(/\s+/g, '');
     }
@@ -401,14 +406,14 @@ module ap {
     function fromCamelCase(str): string {
         // insert a space before all caps
         return str.replace(/([A-Z])/g, ' $1')
-            // uppercase the first character
-            .replace(/^./, function (str) {
-                return str.toUpperCase();
-            });
+        // uppercase the first character
+            .replace(/^./, function(str) {
+            return str.toUpperCase();
+        });
     }
 
     // Split values like 1;#value into id and value
-    class SplitIndex{
+    class SplitIndex {
         id: number;
         value: string;
         constructor(str) {

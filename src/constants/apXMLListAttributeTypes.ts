@@ -1,9 +1,13 @@
-/// <reference path="../../typings/ap.d.ts" />
+/// <reference path="../app.module.ts" />
 
 module ap {
     'use strict';
 
-    export var XMLListAttributeTypes = {
+    export interface IXMLListAttributeTypes {
+        [key: string]: string;
+    }
+
+    export var XMLListAttributeTypes: IXMLListAttributeTypes = {
         BaseType: 'Number',
         ServerTemplate: 'Number',
         Created: 'DateTime',

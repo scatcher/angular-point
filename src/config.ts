@@ -1,4 +1,4 @@
-/// <reference path="../typings/ap.d.ts" />
+/// <reference path="app.module.ts" />
 
 module ap {
     'use strict';

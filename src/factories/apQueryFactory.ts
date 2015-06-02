@@ -1,4 +1,4 @@
-/// <reference path="../../typings/ap.d.ts" />
+/// <reference path="../app.module.ts" />
 
 module ap {
     'use strict';
@@ -10,7 +10,7 @@ module ap {
         cacheXML?: boolean;
         changeToken?:string;
         execute?<T>(options?:Object): ng.IPromise< IIndexedCache<T> >;
-        getModel():IModel;
+        getModel():Model;
         indexedCache:IIndexedCache;
         initialized:ng.IDeferred<any>
         lastRun: Date;
@@ -97,7 +97,7 @@ module ap {
         /** Reference to the most recent query when performing GetListItemChangesSinceToken */
         changeToken = undefined;
 
-        getModel():IModel;
+        getModel():Model;
 
         /** Key value hash map with key being the id of the entity */
         indexedCache:IIndexedCache;

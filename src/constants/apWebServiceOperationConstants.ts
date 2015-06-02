@@ -1,13 +1,20 @@
+/// <reference path="../app.module.ts" />
+
 //  apWebServiceOperationConstants.OpName = [WebService, needs_SOAPAction];
 //      OpName              The name of the Web Service operation -> These names are unique
 //      WebService          The name of the WebService this operation belongs to
 //      needs_SOAPAction    Boolean indicating whether the operation needs to have the SOAPAction passed in the setRequestHeaderfunction.
 //                          true if the operation does a write, else false
 
-/// <reference path='../../typings/ap.d.ts' />
+
 module ap {
     'use strict';
-    export var WebServiceOperationConstants:{[key:string]:[string, boolean]} = {
+
+    export interface IWebServiceOperationConstants {
+        [key: string]: [string, boolean]
+    }
+
+    export var WebServiceOperationConstants: IWebServiceOperationConstants = {
         GetAlerts: ['Alerts', false],
         DeleteAlerts: ['Alerts', true],
         Mode: ['Authentication', false],

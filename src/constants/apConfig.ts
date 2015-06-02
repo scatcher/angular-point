@@ -1,4 +1,4 @@
-/// <reference path="../../typings/ap.d.ts" />
+/// <reference path="../app.module.ts" />
 
 /**
  * @ngdoc object
@@ -48,7 +48,7 @@
 module ap {
     'use strict';
 
-    export interface IAPConfig{
+    export interface IAPConfig {
         appTitle: string;
         debug: boolean;
         defaultQueryName: string;
@@ -56,10 +56,10 @@ module ap {
         environment?: string;
         firebaseURL?: string;
         offline: boolean;
-        userLoginNamePrefix?:string;
+        userLoginNamePrefix?: string;
     }
 
-    export var APConfig:IAPConfig = {
+    export var APConfig: IAPConfig = {
         appTitle: 'Angular-Point',
         debug: false,
         defaultQueryName: 'primary',
@@ -67,10 +67,10 @@ module ap {
         environment: 'production',
         firebaseURL: "The optional url of your firebase source",
         offline: window.location.href.indexOf('localhost') > -1 ||
-            window.location.href.indexOf('http://0.') > -1 ||
-            window.location.href.indexOf('http://10.') > -1 ||
-            window.location.href.indexOf('http://127.') > -1 ||
-            window.location.href.indexOf('http://192.') > -1,
+        window.location.href.indexOf('http://0.') > -1 ||
+        window.location.href.indexOf('http://10.') > -1 ||
+        window.location.href.indexOf('http://127.') > -1 ||
+        window.location.href.indexOf('http://192.') > -1,
         offlineXML: 'dev/'
     };
 

@@ -1,4 +1,4 @@
-/// <reference path="../../typings/ap.d.ts" />
+/// <reference path="../app.module.ts" />
 
 module ap {
     'use strict';
@@ -10,7 +10,7 @@ module ap {
      * Primarily used for apMockBackend so we can know what to expect before an attempt to update a list
      * item is intercepted.
      */
-    export class ChangeService{
+    export class ChangeService {
         callbackQueue = [];
         registerListItemUpdate(entity, options, promise) {
             _.each(this.callbackQueue, (callback) => {

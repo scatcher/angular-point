@@ -1,37 +1,38 @@
-/// <reference path="../../typings/ap.d.ts" />
+/// <reference path="../app.module.ts" />
 
 module ap {
     'use strict';
 
-    var apCacheService, apDataService, apListFactory, ListItemFactory,
-        apQueryFactory, apUtilityService, apFieldService, apConfig,
-        apIndexedCacheFactory, apDecodeService, $q, toastr;
+    var apCacheService: CacheService, apDataService: DataService, apListFactory: ListFactory,
+        ListItemFactory: ListItemFactory, apQueryFactory: QueryFactory, apUtilityService: UtilityService,
+        apFieldService: FieldService, apConfig: IAPConfig, apIndexedCacheFactory: IndexedCacheFactory,
+        apDecodeService: DecodeService, $q: ng.IQService, toastr: toastr;
 
     export interface IModel {
-        addNewItem(entity: Object, options?: Object): ng.IPromise<IListItem>;
-        createEmptyItem(overrides?: Object): IListItem;
-        deferredListDefinition:ng.IPromise<Object>;
-        executeQuery<T>(queryName?: string, options?: Object): ng.IPromise<IndexedCache<T>>;
+        addNewItem<T>(entity: IUninitializedListItem<T>, options?: Object): ng.IPromise<IListItem<T>>;
+        createEmptyItem<T>(overrides?: IUninitializedListItem<T>): IListItem<T>;
+        deferredListDefinition: ng.IPromise<Object>;
+        executeQuery<T>(queryName?: string, options?: Object): ng.IPromise<IIndexedCache<T>>;
         extendListMetadata(options?: Object): ng.IPromise<any>;
-        factory<T>(obj: Object): T;
-        generateMockData(options?: Object): IListItem[];
-        getAllListItems<T>(): ng.IPromise<IndexedCache<T>>;
-        getCache(queryName?: string): ICache;
+        factory<T>(obj: IUninitializedListItem<T>): void;
+        generateMockData<T>(options?: Object): IListItem<T>[];
+        getAllListItems<T>(): ng.IPromise<IIndexedCache<T>>;
+        getCache<T>(queryName?: string): IIndexedCache<T>;
         getCachedEntities<T>(): IIndexedCache<T>;
-        getCachedEntity(entityId: number): IListItem;
+        getCachedEntity<T>(listItemId: number): IListItem<T>;
         getFieldDefinition(fieldName: string): IFieldDefinition;
         getList(): IList;
         getListId(): string;
-        getListItemById(entityId: number, options?: Object): ng.IPromise<IListItem>;
-        getModel(): IModel;
+        getListItemById<T>(listItemId: number, options?: Object): ng.IPromise<IListItem<T>>;
+        getModel(): Model;
         getQuery(queryName: string): IQuery;
         isInitialised(): boolean;
         lastServerUpdate: Date;
         list: IList;
-        queries: {getAllListItems: IQuery; [key: string]: IQuery};
+        queries: QueriesContainer;
         registerQuery(queryOptions: IQueryOptions): IQuery;
         resolvePermissions(): IUserPermissionsObject;
-        validateEntity(entity: IListItem, options?: Object): boolean;
+        validateEntity<T>(listItem: IListItem<T>, options?: Object): boolean;
     }
 
 
@@ -134,7 +135,12 @@ module ap {
      * </pre>
      */
 
-    interface QueriesContainer{
+    interface IUninitializedModel {
+        factory<T>(obj: Object): void;
+        list: IList;
+    }
+
+    interface QueriesContainer {
         getAllListItems?: IQuery;
         [key: string]: IQuery
     }
@@ -143,13 +149,14 @@ module ap {
         data = [];
         deferredListDefinition;
         list: IList;
-        factory<T>(obj): T;
+        factory<T>(obj: IUninitializedListItem<T>): void;
         fieldDefinitionsExtended: boolean = false;
         /** Date/Time of last communication with server */
         lastServerUpdate: Date;
         queries: QueriesContainer = {};
         requestForFieldDefinitions;
-        constructor(config) {
+        constructor(config: IUninitializedModel) {
+
             var model = this;
 
             _.assign(model, config);
@@ -170,42 +177,7 @@ module ap {
 
 
         }
-
-        /**
-         * @ngdoc function
-         * @name ListItem.getModel
-         * @description
-         * Allows us to reference the parent model directly from the list item.  This is added to the
-         * model.factory prototype in apModelFactory.  See the [List](#/api/List) documentation for more info.
-         * @returns {object} Model for the list item.
-         */
-        getModel(): ap.Model {
-            return this;
-        }
-
-        /**
-         * @ngdoc function
-         * @name ListItem.getListId
-         * @description
-         * Allows us to reference the list ID directly from the model.
-         * @returns {string} List ID.
-         */
-        getListId(): string {
-            return this.list.getListId();
-        }
-
-        /**
-         * @ngdoc function
-         * @name ListItem.getList
-         * @description
-         * Allows us to reference the list definition directly from the list item.  This is added to the
-         * model.factory prototype in apModelFactory.  See the [List](#/api/List) documentation for more info.
-         * @returns {object} List for the list item.
-         */
-        getList(): ap.IList {
-            return this.list;
-        }
-
+        
         /**
          * @ngdoc function
          * @name Model.addNewItem
@@ -222,29 +194,30 @@ module ap {
          * <pre>
          * <file name="app/modules/project/projectsModel.js">
          * projectModel.addNewItem({
-             *        title: 'A Project',
-             *        customer: {lookupValue: 'My Customer', lookupId: 123},
-             *        description: 'This is the project description'
-             *     }).then(function(newEntityFromServer) {
-             *         //The local query cache is automatically updated but
-             *         //any other dependent logic can go here
-             * };
+         *        title: 'A Project',
+         *        customer: {lookupValue: 'My Customer', lookupId: 123},
+         *        description: 'This is the project description'
+         *     }).then(function(newEntityFromServer) {
+         *         //The local query cache is automatically updated but
+         *         //any other dependent logic can go here
+         * };
          * </file>
          * </pre>
          */
-        addNewItem<T>(entity: Object, options?: Object): ng.IPromise<T> {
+        addNewItem<T>(entity: IUninitializedListItem<T>, options?: Object): ng.IPromise<IListItem<T>> {
             var model = this,
                 deferred = $q.defer();
 
             apDataService.createListItem(model, entity, options)
-                .then( (listItem) => {
-                    deferred.resolve(listItem);
-                    /** Optionally broadcast change event */
-                    apUtilityService.registerChange(model, 'create', listItem.id);
-                });
+                .then((listItem) => {
+                deferred.resolve(listItem);
+                /** Optionally broadcast change event */
+                apUtilityService.registerChange(model, 'create', listItem.id);
+            });
             return deferred.promise;
         }
-
+        
+        
         /**
          * @ngdoc function
          * @name Model.createEmptyItem
@@ -258,7 +231,7 @@ module ap {
          * @param {object} [overrides] - Optionally extend the new empty item with specific values.
          * @returns {object} Newly created list item.
          */
-        createEmptyItem<T>(overrides?: Object): T {
+        createEmptyItem<T>(overrides?: IUninitializedListItem<T>): IListItem<T> {
             var model = this;
             var newItem = {};
             _.each(model.list.customFields, (fieldDefinition) => {
@@ -270,9 +243,9 @@ module ap {
             });
             /** Extend any values that should override the default empty values */
             var rawObject = _.assign({}, newItem, overrides);
-            return new model.factory(rawObject);
+            return new model.factory<T>(rawObject);
         }
-
+        
         /**
          * @ngdoc function
          * @name Model.executeQuery
@@ -289,20 +262,21 @@ module ap {
          * @example To call the query or check for changes since the last call.
          * <pre>
          * projectModel.executeQuery('MyCustomQuery').then(function(entities) {
-             *      //We now have a reference to array of entities stored in the local cache
-             *      //These inherit from the ListItem prototype as well as the Project prototype on the model
-             *      $scope.subsetOfProjects = entities;
-             *  });
+         *      //We now have a reference to array of entities stored in the local cache
+         *      //These inherit from the ListItem prototype as well as the Project prototype on the model
+         *      $scope.subsetOfProjects = entities;
+         *  });
          * </pre>
          */
-        executeQuery(queryName?: string, options?: Object): ng.IPromise<ap.IndexedCache> {
+        executeQuery<T>(queryName?: string, options?: Object): ng.IPromise<IIndexedCache<T>> {
             var model = this;
             var query = model.getQuery(queryName);
             if (query) {
                 return query.execute(options);
             }
         }
-
+        
+        
         /**
          * @ngdoc function
          * @name Model.extendListMetadata
@@ -316,7 +290,7 @@ module ap {
         extendListMetadata(options?: Object): ng.IPromise<any> {
             var model = this,
                 deferred = $q.defer(),
-                defaults = {listName: model.list.getListId()};
+                defaults = { listName: model.list.getListId() };
 
             /** Only request information if the list hasn't already been extended and is not currently being requested */
             if (!model.deferredListDefinition) {
@@ -325,14 +299,14 @@ module ap {
 
                 var opts = _.extend({}, defaults, options);
                 apDataService.getList(opts)
-                    .then( (responseXML) => {
-                        apDecodeService.extendListMetadata(model, responseXML);
-                        deferred.resolve(model);
-                    });
+                    .then((responseXML) => {
+                    apDecodeService.extendListMetadata(model, responseXML);
+                    deferred.resolve(model);
+                });
             }
             return model.deferredListDefinition;
         }
-
+        
         /**
          * @ngdoc function
          * @name Model.generateMockData
@@ -347,7 +321,7 @@ module ap {
          * @param {boolean} [options.staticValue=false] By default all mock data is dynamically created but if set,
          * this will cause static data to be used instead.
          */
-        generateMockData<T>(options?: Object): T[] {
+        generateMockData<T>(options?: Object): IListItem<T>[] {
             var mockData = [],
                 model = this;
 
@@ -360,7 +334,7 @@ module ap {
             /** Extend defaults with any provided options */
             var opts = _.extend({}, defaults, options);
 
-            _.times(opts.quantity,  (count) => {
+            _.times(opts.quantity, (count) => {
                 var mock = {
                     id: count + 1
                 };
@@ -374,7 +348,7 @@ module ap {
             });
             return mockData;
         }
-
+        
         /**
          * @ngdoc function
          * @name Model.getAllListItems
@@ -386,16 +360,16 @@ module ap {
          * <pre>
          * //Taken from a fictitious projectsModel.js
          * projectModel.getAllListItems().then(function(entities) {
-             *     //Do something with all of the returned entities
-             *     $scope.projects = entities;
-             * };
+         *     //Do something with all of the returned entities
+         *     $scope.projects = entities;
+         * };
          * </pre>
          */
-        getAllListItems(): ng.IPromise<ap.IndexedCache> {
+        getAllListItems<T>(): ng.IPromise<IIndexedCache<T>> {
             var model = this;
-            return apDataService.executeQuery(model, model.queries.getAllListItems);
+            return apDataService.executeQuery<T>(model, model.queries.getAllListItems);
         }
-
+        
         /**
          * @ngdoc function
          * @name Model.getCache
@@ -421,7 +395,7 @@ module ap {
          * var namedQueryCache = projectModel.getCache('customQuery');
          * </pre>
          */
-        getCache(queryName?: string): ap.ICache {
+        getCache<T>(queryName?: string): IIndexedCache<T> {
             var model = this, query, cache;
             query = model.getQuery(queryName);
             if (query && query.indexedCache) {
@@ -429,7 +403,21 @@ module ap {
             }
             return cache;
         }
-
+        
+        /**
+         * @ngdoc function
+         * @name Model.getCachedEntities
+         * @module Model
+         * @description
+         * Returns all entities registered for this model regardless of query.
+         * @returns {IIndexedCache<T>} All registered entities for this model.
+         */
+        getCachedEntities<T>(): IIndexedCache<T> {
+            var model = this;
+            return apCacheService.getCachedEntities<T>(model.list.getListId());
+        }
+        
+        
         /**
          * @ngdoc function
          * @name Model.getCachedEntity
@@ -439,24 +427,12 @@ module ap {
          * @param {number} listItemId The ID of the requested listItem.
          * @returns {object} Returns either the requested listItem or undefined if it's not found.
          */
-        getCachedEntity<T>(listItemId: number): T {
+        getCachedEntity<T>(listItemId: number): IListItem<T> {
             var model = this;
-            return apCacheService.getCachedEntity(model.list.getListId(), listItemId);
+            return apCacheService.getCachedEntity<T>(model.list.getListId(), listItemId);
         }
-
-        /**
-         * @ngdoc function
-         * @name Model.getCachedEntities
-         * @module Model
-         * @description
-         * Returns all entities registered for this model regardless of query.
-         * @returns {object[]} All registered entities for this model.
-         */
-        getCachedEntities(): ap.IndexedCache {
-            var model = this;
-            return apCacheService.getCachedEntities(model.list.getListId());
-        }
-
+        
+        
         /**
          * @ngdoc function
          * @name Model.getFieldDefinition
@@ -465,12 +441,12 @@ module ap {
          * Returns the field definition from the definitions defined in the custom fields array within a model.
          * <pre>
          * var project = {
-             *    title: 'Project 1',
-             *    location: {
-             *        lookupId: 5,
-             *        lookupValue: 'Some Building'
-             *    }
-             * };
+         *    title: 'Project 1',
+         *    location: {
+         *        lookupId: 5,
+         *        lookupValue: 'Some Building'
+         *    }
+         * };
          *
          * //To get field metadata
          * var locationDefinition = projectsModel.getFieldDefinition('location');
@@ -480,9 +456,35 @@ module ap {
          */
         getFieldDefinition(fieldName: string): IFieldDefinition {
             var model = this;
-            return _.find(model.list.fields, {mappedName: fieldName});
+            return _.find(model.list.fields, { mappedName: fieldName });
         }
-
+        
+        
+        /**
+         * @ngdoc function
+         * @name ListItem.getList
+         * @description
+         * Allows us to reference the list definition directly from the list item.  This is added to the
+         * model.factory prototype in apModelFactory.  See the [List](#/api/List) documentation for more info.
+         * @returns {object} List for the list item.
+         */
+        getList(): IList {
+            return this.list;
+        }
+        
+        
+        /**
+         * @ngdoc function
+         * @name ListItem.getListId
+         * @description
+         * Allows us to reference the list ID directly from the model.
+         * @returns {string} List ID.
+         */
+        getListId(): string {
+            return this.list.getListId();
+        }
+        
+        
         /**
          * @ngdoc function
          * @name Model.getListItemById
@@ -496,12 +498,12 @@ module ap {
          * <pre>
          * //Taken from a fictitious projectsModel.js
          * projectModel.getListItemById(12).then(function(listItem) {
-             *     //Do something with the located listItem
-             *     $scope.project = listItem;
-             * };
+         *     //Do something with the located listItem
+         *     $scope.project = listItem;
+         * };
          * </pre>
          */
-        getListItemById<T>(listItemId: number, options?: Object): ng.IPromise<T> {
+        getListItemById<T>(listItemId: number, options?: Object): ng.IPromise<IListItem<T>> {
             var deferred = $q.defer(),
                 model = this,
                 /** Unique Query Name */
@@ -529,15 +531,29 @@ module ap {
             }
 
             model.executeQuery(queryKey)
-                .then( (indexedCache) => {
-                    /** Should return an indexed cache object with a single listItem so just return the requested listItem */
-                    deferred.resolve(indexedCache.first());
-                }, (err) => {
+                .then((indexedCache) => {
+                /** Should return an indexed cache object with a single listItem so just return the requested listItem */
+                deferred.resolve(indexedCache.first());
+            }, (err) => {
                     deferred.reject(err);
                 });
 
             return deferred.promise;
         }
+        
+
+        /**
+         * @ngdoc function
+         * @name ListItem.getModel
+         * @description
+         * Allows us to reference the parent model directly from the list item.  This is added to the
+         * model.factory prototype in apModelFactory.  See the [List](#/api/List) documentation for more info.
+         * @returns {object} Model for the list item.
+         */
+        getModel(): Model {
+            return this;
+        }
+
 
         /**
          * @ngdoc function
@@ -561,7 +577,7 @@ module ap {
          * var namedQuery = projectModel.getQuery('customQuery');
          * </pre>
          */
-        getQuery(queryName: string): ap.IQuery {
+        getQuery(queryName: string): IQuery {
             var model = this, query;
             if (_.isObject(model.queries[queryName])) {
                 /** The named query exists */
@@ -575,7 +591,170 @@ module ap {
             }
             return query;
         }
+        
+        
+        
+        /**
+         * @ngdoc function
+         * @name Model.isInitialised
+         * @module Model
+         * @description
+         * Methods which allows us to easily determine if we've successfully made any queries this session.
+         * @returns {boolean} Returns evaluation.
+         */
+        isInitialised(): boolean {
+            var model = this;
+            return _.isDate(model.lastServerUpdate);
+        }
+        
+        
+        /**
+         * @ngdoc function
+         * @name Model.registerQuery
+         * @module Model
+         * @description
+         * Constructor that allows us create a static query with the option to build dynamic queries as seen in the
+         * third example.  This construct is a passthrough to [SPServices](http: //spservices.codeplex.com/)
+         * @param {object} [queryOptions] Optional options to pass through to the
+         * [dataService](#/api/dataService.executeQuery).
+         * @param {string} [queryOptions.name=apConfig.defaultQueryName] Optional name of the new query (recommended but will
+         * default to 'Primary' if not specified)
+         * @param {string} [queryOptions.operation="GetListItemChangesSinceToken"] Defaults to
+         * [GetListItemChangesSinceToken](http: //msdn.microsoft.com/en-us/library/lists.lists.getlistitemchangessincetoken%28v=office.12%29.aspx)
+         * but for a smaller payload and faster response you can use
+         * [GetListItems](http: //spservices.codeplex.com/wikipage?title=GetListItems&referringTitle=Lists).
+         * @param {boolean} [queryOptions.cacheXML=false] Typically don't need to store the XML response because it
+         * has already been parsed into JS objects.
+         * @param {string} [queryOptions.offlineXML] Optionally reference a specific XML file to use for this query instead
+         * of using the shared XML file used by all queries on this model.  Useful to mock custom query results.
+         * @param {string} [queryOptions.query] CAML Query - Josh McCarty has a good quick reference
+         * [here](http: //joshmccarty.com/2012/06/a-caml-query-quick-reference)
+         * @param {string} [queryOptions.queryOptions]
+         * <pre>
+         * // Default options
+         * '<QueryOptions>' +
+         * '   <IncludeMandatoryColumns>' +
+         *      'FALSE' +
+         *     '</IncludeMandatoryColumns>' +
+         * '   <IncludeAttachmentUrls>' +
+         *      'TRUE' +
+         *     '</IncludeAttachmentUrls>' +
+         * '   <IncludeAttachmentVersion>' +
+         *      'FALSE' +
+         *     '</IncludeAttachmentVersion>' +
+         * '   <ExpandUserField>' +
+         *      'FALSE' +
+         *     '</ExpandUserField>' +
+         * '</QueryOptions>',
+         * </pre>
+         *
+         *
+         * @returns {object} Query Returns a new query object.
+         *
+         * @example
+         * <h4>Example #1</h4>
+         * <pre>
+         * // Query to retrieve the most recent 25 modifications
+         * model.registerQuery({
+         *    name: 'recentChanges',
+         *    CAMLRowLimit: 25,
+         *    query: '' +
+         *        '<Query>' +
+         *        '   <OrderBy>' +
+         *        '       <FieldRef Name="Modified" Ascending="FALSE"/>' +
+         *        '   </OrderBy>' +
+         *            //Prevents any records from being returned if user doesn't
+         *            // have permissions on project
+         *        '   <Where>' +
+         *        '       <IsNotNull>' +
+         *        '           <FieldRef Name="Project"/>' +
+         *        '       </IsNotNull>' +
+         *        '   </Where>' +
+         *        '</Query>'
+         * });
+         * </pre>
+         *
+         * <h4>Example #2</h4>
+         * <pre>
+         * // Could be placed on the projectModel and creates the query but doesn't
+         * // call it
+         * projectModel.registerQuery({
+         *     name: 'primary',
+         *     query: '' +
+         *         '<Query>' +
+         *         '   <OrderBy>' +
+         *         '       <FieldRef Name="Title" Ascending="TRUE"/>' +
+         *         '   </OrderBy>' +
+         *         '</Query>'
+         * });
+         *
+         * //To call the query or check for changes since the last call
+         * projectModel.executeQuery('primary').then(function(entities) {
+         *     // We now have a reference to array of entities stored in the local
+         *     // cache.  These inherit from the ListItem prototype as well as the
+         *     // Project prototype on the model
+         *     $scope.projects = entities;
+         * });
+         * </pre>
+         *
+         * <h4>Example #3</h4>
+         * <pre>
+         * // Advanced functionality that would allow us to dynamically create
+         * // queries for list items with a lookup field associated with a specific
+         * // project id.  Let's assume this is on the projectTasksModel.
+         * model.queryByProjectId(projectId) {
+         *     // Unique query name
+         *     var queryKey = 'pid' + projectId;
+         *
+         *     // Register project query if it doesn't exist
+         *     if (!_.isObject(model.queries[queryKey])) {
+         *         model.registerQuery({
+         *             name: queryKey,
+         *             query: '' +
+         *                 '<Query>' +
+         *                 '   <OrderBy>' +
+         *                 '       <FieldRef Name="ID" Ascending="TRUE"/>' +
+         *                 '   </OrderBy>' +
+         *                 '   <Where>' +
+         *                 '       <And>' +
+         *                              // Prevents any records from being returned
+         *                              //if user doesn't have permissions on project
+         *                 '           <IsNotNull>' +
+         *                 '               <FieldRef Name="Project"/>' +
+         *                 '           </IsNotNull>' +
+         *                              // Return all records for the project matching
+         *                              // param projectId
+         *                 '           <Eq>' +
+         *                 '               <FieldRef Name="Project" LookupId="TRUE"/>' +
+         *                 '               <Value Type="Lookup">' + projectId + '</Value>' +
+         *                 '           </Eq>' +
+         *                 '       </And>' +
+         *                 '   </Where>' +
+         *                 '</Query>'
+         *         });
+         *     }
+         *     //Still using execute query but now we have a custom query
+         *     return model.executeQuery(queryKey);
+         * };
+         * </pre>
+         */
+        registerQuery(queryOptions: IQueryOptions): IQuery {
+            var model = this;
 
+            var defaults = {
+                /** If name isn't set, assume this is the only model and designate as primary */
+                name: apConfig.defaultQueryName
+            };
+
+            queryOptions = _.extend({}, defaults, queryOptions);
+
+            model.queries[queryOptions.name] = apQueryFactory.create(queryOptions, model);
+
+            /** Return the newly created query */
+            return model.queries[queryOptions.name];
+        }
+        
+        
         /**
          * @ngdoc function
          * @name Model.resolvePermissions
@@ -629,7 +808,7 @@ module ap {
             * }
          * </pre>
          */
-        resolvePermissions(): ap.IUserPermissionsObject {
+        resolvePermissions(): IUserPermissionsObject {
             var model = this;
             if (model.list && model.list.effectivePermMask) {
                 /** Get the permission mask from the permission mask name */
@@ -640,167 +819,7 @@ module ap {
                 return apUtilityService.resolvePermissions(null);
             }
         }
-
-        /**
-         * @ngdoc function
-         * @name Model.isInitialised
-         * @module Model
-         * @description
-         * Methods which allows us to easily determine if we've successfully made any queries this session.
-         * @returns {boolean} Returns evaluation.
-         */
-        isInitialised(): boolean {
-            var model = this;
-            return _.isDate(model.lastServerUpdate);
-        }
-
-        /**
-         * @ngdoc function
-         * @name Model.registerQuery
-         * @module Model
-         * @description
-         * Constructor that allows us create a static query with the option to build dynamic queries as seen in the
-         * third example.  This construct is a passthrough to [SPServices](http: //spservices.codeplex.com/)
-         * @param {object} [queryOptions] Optional options to pass through to the
-         * [dataService](#/api/dataService.executeQuery).
-         * @param {string} [queryOptions.name=apConfig.defaultQueryName] Optional name of the new query (recommended but will
-         * default to 'Primary' if not specified)
-         * @param {string} [queryOptions.operation="GetListItemChangesSinceToken"] Defaults to
-         * [GetListItemChangesSinceToken](http: //msdn.microsoft.com/en-us/library/lists.lists.getlistitemchangessincetoken%28v=office.12%29.aspx)
-         * but for a smaller payload and faster response you can use
-         * [GetListItems](http: //spservices.codeplex.com/wikipage?title=GetListItems&referringTitle=Lists).
-         * @param {boolean} [queryOptions.cacheXML=false] Typically don't need to store the XML response because it
-         * has already been parsed into JS objects.
-         * @param {string} [queryOptions.offlineXML] Optionally reference a specific XML file to use for this query instead
-         * of using the shared XML file used by all queries on this model.  Useful to mock custom query results.
-         * @param {string} [queryOptions.query] CAML Query - Josh McCarty has a good quick reference
-         * [here](http: //joshmccarty.com/2012/06/a-caml-query-quick-reference)
-         * @param {string} [queryOptions.queryOptions]
-         * <pre>
-         * // Default options
-         * '<QueryOptions>' +
-         * '   <IncludeMandatoryColumns>' +
-         *      'FALSE' +
-         *     '</IncludeMandatoryColumns>' +
-         * '   <IncludeAttachmentUrls>' +
-         *      'TRUE' +
-         *     '</IncludeAttachmentUrls>' +
-         * '   <IncludeAttachmentVersion>' +
-         *      'FALSE' +
-         *     '</IncludeAttachmentVersion>' +
-         * '   <ExpandUserField>' +
-         *      'FALSE' +
-         *     '</ExpandUserField>' +
-         * '</QueryOptions>',
-         * </pre>
-         *
-         *
-         * @returns {object} Query Returns a new query object.
-         *
-         * @example
-         * <h4>Example #1</h4>
-         * <pre>
-         * // Query to retrieve the most recent 25 modifications
-         * model.registerQuery({
-     *    name: 'recentChanges',
-     *    CAMLRowLimit: 25,
-     *    query: '' +
-     *        '<Query>' +
-     *        '   <OrderBy>' +
-     *        '       <FieldRef Name="Modified" Ascending="FALSE"/>' +
-     *        '   </OrderBy>' +
-     *            //Prevents any records from being returned if user doesn't
-     *            // have permissions on project
-     *        '   <Where>' +
-     *        '       <IsNotNull>' +
-     *        '           <FieldRef Name="Project"/>' +
-     *        '       </IsNotNull>' +
-     *        '   </Where>' +
-     *        '</Query>'
-     * });
-         * </pre>
-         *
-         * <h4>Example #2</h4>
-         * <pre>
-         * // Could be placed on the projectModel and creates the query but doesn't
-         * // call it
-         * projectModel.registerQuery({
-     *     name: 'primary',
-     *     query: '' +
-     *         '<Query>' +
-     *         '   <OrderBy>' +
-     *         '       <FieldRef Name="Title" Ascending="TRUE"/>' +
-     *         '   </OrderBy>' +
-     *         '</Query>'
-     * });
-         *
-         * //To call the query or check for changes since the last call
-         * projectModel.executeQuery('primary').then(function(entities) {
-     *     // We now have a reference to array of entities stored in the local
-     *     // cache.  These inherit from the ListItem prototype as well as the
-     *     // Project prototype on the model
-     *     $scope.projects = entities;
-     * });
-         * </pre>
-         *
-
-         * <h4>Example #3</h4>
-         * <pre>
-         * // Advanced functionality that would allow us to dynamically create
-         * // queries for list items with a lookup field associated with a specific
-         * // project id.  Let's assume this is on the projectTasksModel.
-         * model.queryByProjectId(projectId) {
-     *     // Unique query name
-     *     var queryKey = 'pid' + projectId;
-     *
-     *     // Register project query if it doesn't exist
-     *     if (!_.isObject(model.queries[queryKey])) {
-     *         model.registerQuery({
-     *             name: queryKey,
-     *             query: '' +
-     *                 '<Query>' +
-     *                 '   <OrderBy>' +
-     *                 '       <FieldRef Name="ID" Ascending="TRUE"/>' +
-     *                 '   </OrderBy>' +
-     *                 '   <Where>' +
-     *                 '       <And>' +
-     *                              // Prevents any records from being returned
-     *                              //if user doesn't have permissions on project
-     *                 '           <IsNotNull>' +
-     *                 '               <FieldRef Name="Project"/>' +
-     *                 '           </IsNotNull>' +
-     *                              // Return all records for the project matching
-     *                              // param projectId
-     *                 '           <Eq>' +
-     *                 '               <FieldRef Name="Project" LookupId="TRUE"/>' +
-     *                 '               <Value Type="Lookup">' + projectId + '</Value>' +
-     *                 '           </Eq>' +
-     *                 '       </And>' +
-     *                 '   </Where>' +
-     *                 '</Query>'
-     *         });
-     *     }
-     *     //Still using execute query but now we have a custom query
-     *     return model.executeQuery(queryKey);
-     * };
-         pre>
-         */
-        registerQuery(queryOptions: ap.IQueryOptions): ap.IQuery {
-            var model = this;
-
-            var defaults = {
-                /** If name isn't set, assume this is the only model and designate as primary */
-                name: apConfig.defaultQueryName
-            };
-
-            queryOptions = _.extend({}, defaults, queryOptions);
-
-            model.queries[queryOptions.name] = apQueryFactory.create(queryOptions, model);
-
-            /** Return the newly created query */
-            return model.queries[queryOptions.name];
-        }
-
+        
         /**
          * @ngdoc function
          * @name Model.validateEntity
@@ -814,7 +833,7 @@ module ap {
          * @param {boolean} [options.toast=true] Should toasts be generated to alert the user of issues.
          * @returns {boolean} Evaluation of validity.
          */
-        validateEntity(listItem: IListItem, options?: Object): boolean {
+        validateEntity<T>(listItem: IListItem<T>, options?: Object): boolean {
             var valid = true,
                 model = this;
 

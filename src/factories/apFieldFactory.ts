@@ -1,28 +1,61 @@
-/// <reference path="../../typings/ap.d.ts" />
+/// <reference path="../app.module.ts" />
 
 module ap {
     'use strict';
 
     var apFieldService: FieldService, apUtilityService: UtilityService;
+    
+    export interface IXMLFieldDefinition{
+        ID: string;
+        Type: string;
+        ReadOnly: string;
+        Hidden: string;
+        DisplayName: string;
+        Required: string;
+        SourceID: string;
+        ColName: string;
+        StaticName: string;
+        Choices?: string[];
+        Description?: string;
+        Indexed?: string;
+        EnforceUniqueValues?: string;
+        RowOrdinal?: string;
+        Sortable?: string;
+        Filterable?: string;
+        RelationshipDeleteBehavior?: string;
+        List?: string;
+        ShowField?: string;
+        ResultType?: string;
+        FillInChoice?: string;
+        Name?: string;
+        NumLines?: string;
+        RichText?: string;
+        Format?: string;
+    }
 
     export interface IFieldDefinition {
         choices?: string[];
-        Choices?: string[];
+//        Choices?: string[];
         description?: string;
-        Description?: string;
+//        Description?: string;
         displayName?: string;
-        DisplayName?: string;
+//        DisplayName?: string;
         getDefaultValueForType?(): string;
         getDefinition?(): string;
         getMockData?(options?: Object): any;
-        label: string;
+        label?: string;
         mappedName: string;
         objectType: string;
         readOnly?: boolean;
         required?: boolean;
-        Required?: boolean;
+//        Required?: boolean;
         staticName: string;
-        List?:string;
+//        List?: string;
+    }
+    
+    //An extended field definition combines the user defined field definition with the XML returned by SharePoint
+    export interface IExtendedFieldDefinition extends IXMLFieldDefinition, IFieldDefinition{
+
     }
 
 
@@ -109,7 +142,7 @@ module ap {
      * @requires angularPoint.apFieldFactory
      * @constructor
      */
-    export class Field implements IFieldDefinition{
+    export class Field implements IFieldDefinition {
         displayName;
         internalName;
         label;
@@ -160,7 +193,7 @@ module ap {
          * @param {boolean} [options.staticValue=false] Default to dynamically build mock data.
          * @returns {*} mockData
          */
-        getMockData (options) {
+        getMockData(options) {
             return apFieldService.getMockData(this.objectType, options);
         }
     }
@@ -176,7 +209,7 @@ module ap {
      * @requires angularPoint.apUtilityService
      *
      */
-    export class FieldFactory{
+    export class FieldFactory {
         Field = Field;
         constructor($injector) {
             apFieldService = $injector.get('apFieldService');

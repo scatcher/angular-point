@@ -17,19 +17,20 @@ require('angular-point-tools')(projectDir, paths);
 
 
 gulp.task('build', function () {
+//    var tsResult = gulp.src(paths.tsFiles)
     var tsResult = gulp.src(['./typings/**/*.d.ts', paths.tsFiles])
-        .pipe(sourcemaps.init()) // This means sourcemaps will be generated
+        .pipe(sourcemaps.init({loadMaps: true})) // This means sourcemaps will be generated
         .pipe(typescript({
             target: 'ES5',
             sortOutput: true,
-            declarationFiles: false,
-            noExternalResolve: true
+            noExternalResolve: true,
+            typescript: require('typescript')
         }));
 
     return merge([
         tsResult.js
             .pipe(concat('angular-point.js')) // You can use other plugins that also support gulp-sourcemaps
-            .pipe(sourcemaps.write()) // Now the sourcemaps are added to the .js file
+            .pipe(sourcemaps.write('.', { sourceRoot: '/' })) // Now the sourcemaps are added along side the .js file
             .pipe(gulp.dest('./dist')),
         tsResult.dts.pipe(gulp.dest('./dist/definitions'))
     ]);

@@ -1,4 +1,4 @@
-/// <reference path="../../typings/ap.d.ts" />
+/// <reference path="../app.module.ts" />
 
 module ap {
     'use strict';
@@ -13,16 +13,16 @@ module ap {
     }
 
     export class FieldService {
-        fieldTypes:{[key: string]: IFieldDefinition};
+        fieldTypes = getFieldTypes();
         getDefaultValueForType = getDefaultValueForType;
         getDefinition = getDefinition;
         getMockData = getMockData;
         mockPermMask = mockPermMask;
         resolveValueForEffectivePermMask = resolveValueForEffectivePermMask;
 
-        constructor() {
-            this.fieldTypes = getFieldTypes();
-        }
+//        constructor() {
+//            this.fieldTypes = getFieldTypes();
+//        }
     }
 
     /** Store as a function to ensure we instantiate new objects for default values instead

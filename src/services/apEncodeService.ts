@@ -1,4 +1,4 @@
-/// <reference path="../../typings/ap.d.ts" />
+/// <reference path="../app.module.ts" />
 
 module ap {
     'use strict';
@@ -24,7 +24,7 @@ module ap {
                 str += delim;
 
                 /** Append each item in the supplied array followed by deliminator */
-                _.each(arr, (choice) => str += choice + delim );
+                _.each(arr, (choice) => str += choice + delim);
             }
             return str;
         }
@@ -49,7 +49,7 @@ module ap {
          * @param {*} value Current field value.
          * @returns {Array} [fieldName, fieldValue]
          */
-        createValuePair(fieldDefinition: IFieldDefinition, value:any): [string, string] {
+        createValuePair(fieldDefinition: IFieldDefinition, value: any): [string, string] {
             var encodedValue = this.encodeValue(fieldDefinition.objectType, value);
             return [fieldDefinition.staticName, encodedValue];
         }
@@ -63,7 +63,7 @@ module ap {
          * @returns {string} Encoded value ready to be sent to the server.
          */
         encodeValue(fieldType: string, value: any): string {
-            var str = '';
+            var str:string = '';
             /** Only process if note empty, undefined, or null.  Allow false. */
             if (value !== '' && !_.isUndefined(value) && !_.isNull(value)) {
                 switch (fieldType) {
@@ -82,7 +82,7 @@ module ap {
                         str = this.choiceMultiToString(value);
                         break;
                     case 'Boolean':
-                        str = value ? 1 : 0;
+                        str = value ? "1" : "0";
                         break;
                     case 'DateTime':
                         //A string date in ISO8601 format, e.g., '2013-05-08T01:20:29Z-05:00'
@@ -114,9 +114,11 @@ module ap {
          * @param {Array} fieldDefinitions Definitions from the model.
          * @param {object} listItem list item that we'll attempt to iterate over to find the properties that we need to
          * save it to SharePoint.
-         * @returns {Array[]} Value pairs of all non-readonly fields. [[fieldName, fieldValue]]
+         * @returns {[string, string][]} Value pairs of all non-readonly fields. 
+         * @example
+         * [[fieldName1, fieldValue1], [fieldName2, fieldValue2], ...]
          */
-        generateValuePairs(fieldDefinitions: IFieldDefinition[], listItem: IListItem): [[string, string][]] {
+        generateValuePairs(fieldDefinitions: IFieldDefinition[], listItem: IListItem<any>): [string, string][] {
             var pairs = [];
             _.each(fieldDefinitions, (field) => {
                 /** Check to see if item contains data for this field */
@@ -139,7 +141,7 @@ module ap {
          * @param {Date} date Valid JS date.
          * @returns {string} ISO8601 date string.
          */
-        stringifySharePointDate(date: Date|string): string {
+        stringifySharePointDate(date: Date | string): string {
             var jsDate;
             if (!_.isDate(date) && _.isString(date) && date.split('-').length === 3) {
                 /** Date string formatted YYYY-MM-DD */
@@ -193,7 +195,7 @@ module ap {
             var stringifiedValues = '';
             var idProp = idProperty || 'lookupId';
             var valProp = valueProperty || 'lookupValue';
-            _.each(multiSelectValue, function (lookupObject, iteration) {
+            _.each(multiSelectValue, function(lookupObject, iteration) {
                 /** Need to format string of id's in following format [ID0];#[VAL0];#[ID1];#[VAL1];# */
                 stringifiedValues += lookupObject[idProp] + ';#' + (lookupObject[valProp] || '');
                 if (iteration < multiSelectValue.length) {

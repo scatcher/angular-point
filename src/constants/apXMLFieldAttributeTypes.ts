@@ -1,9 +1,13 @@
-/// <reference path="../../typings/ap.d.ts" />
+/// <reference path="../app.module.ts" />
 
 module ap {
     'use strict';
 
-    export var XMLFieldAttributeTypes = {
+    export interface IXMLFieldAttributeTypes {
+        [key: string]: string;
+    }
+
+    export var XMLFieldAttributeTypes: IXMLFieldAttributeTypes = {
         Decimals: 'Number',
         EnforceUniqueValues: 'Boolean',
         Filterable: 'Boolean',

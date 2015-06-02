@@ -1,4 +1,4 @@
-/// <reference path="../../typings/ap.d.ts" />
+/// <reference path="../app.module.ts" />
 
 module ap {
     'use strict';
@@ -9,7 +9,33 @@ module ap {
         toastr, SPServices, apDefaultListItemQueryOptions, apWebServiceOperationConstants, apXMLToJSONService,
         apChangeService: ChangeService;
 
-    export class DataService {
+    export interface IDataService {
+        createListItem<T>(model: Model, listItem: Object, options?: { buildValuePairs: boolean; valuePairs: [[string, any][]] }): ng.IPromise<IListItem<T>>;
+        createItemUrlFromFileRef(fileRefString: string): string;
+        deleteAttachment(options: { listItemID: number; url: string; listName: string; }): ng.IPromise<any>;
+        deleteListItem(model: Model, listItem: ListItem<any>, options?: { target: IIndexedCache<any> }): ng.IPromise<any>;
+        executeQuery<T>(model: Model, query: IQuery, options?: { target: IIndexedCache<T>; }): ng.IPromise<IIndexedCache<T>>;
+        generateWebServiceUrl(service: string, webURL?: string): ng.IPromise<string>;
+        getAvailableWorkflows(fileRefString: string): ng.IPromise<IWorkflowDefinition[]>;
+        getCollection(options: { operation: string; userLoginName?: string; groupName?: string; listName?: string; filterNode: string; }): ng.IPromise<Object[]>;
+        getCurrentSite(): ng.IPromise<string>;
+        getFieldVersionHistory<T>(options: { operation?: string; webURL?: string; strListID: string; strListItemID: number; strFieldName?: string; }, fieldDefinition: IFieldDefinition): ng.IPromise<ap.IListItemVersion<T>[]>;
+        getGroupCollectionFromUser(login?: string): ng.IPromise<IGroupDefinition[]>;
+        getList(options: { listName: string }): ng.IPromise<Object>;
+        getListFields(options: { listName: string; }): ng.IPromise<IXMLFieldDefinition[]>;
+        getUserProfileByName(login?: string): ng.IPromise<IUserProfile>;
+        processChangeTokenXML(model: Model, query: IQuery, responseXML: XMLDocument, opts): void;
+        processDeletionsSinceToken(responseXML: XMLDocument, indexedCache: IIndexedCache<any>): void;
+        requestData(opts): ng.IPromise<XMLDocument>;
+        retrieveChangeToken(responseXML: XMLDocument): string;
+        retrievePermMask(responseXML: XMLDocument): string;
+        serviceWrapper(options): ng.IPromise<any>;
+        startWorkflow(options: { item: string; templateId: string; workflowParameters?: string; fileRef?: string; }): ng.IPromise<any>;
+        updateListItem<T>(model: Model, listItem: IListItem<T>, options): ng.IPromise<IListItem<T>>;
+        validateCollectionPayload(opts): boolean;
+    }
+
+    export class DataService implements IDataService {
         queryForCurrentSite: ng.IPromise<string>;
 
         constructor($injector) {
@@ -45,25 +71,25 @@ module ap {
          * field identified in the model.
          * @returns {object} Promise which resolves with the newly created item.
          */
-        createListItem(model: IModel, listItem: ListItem, options?: {buildValuePairs: boolean; valuePairs: [ [string, any][] ]}): ng.IPromise<IListItem> {
+        createListItem<T>(model: Model, listItem: Object, options?: { buildValuePairs: boolean; valuePairs: [[string, any][]] }): ng.IPromise<IListItem<T>> {
             var defaults = {
-                    batchCmd: 'New',
-                    buildValuePairs: true,
-                    indexedCache: apIndexedCacheFactory.create({}),
-                    listName: model.list.getListId(),
-                    operation: 'UpdateListItems',
-                    target: undefined,
-                    valuePairs: [],
-                    webURL: model.list.identifyWebURL()
-                },
+                batchCmd: 'New',
+                buildValuePairs: true,
+                indexedCache: apIndexedCacheFactory.create({}),
+                listName: model.list.getListId(),
+                operation: 'UpdateListItems',
+                target: undefined,
+                valuePairs: [],
+                webURL: model.list.identifyWebURL()
+            },
                 deferred = $q.defer();
 
             defaults.target = defaults.indexedCache;
-            var opts: {buildValuePairs: boolean; valuePairs: [[string, any][]]; getCache(): ICache; indexedCache: IIndexedCache}
-                = _.extend({}, defaults, options);
+            var opts: { buildValuePairs: boolean; valuePairs: [[string, any][]]; getCache(): IIndexedCache<T>; indexedCache: IIndexedCache<T> }
+                = _.assign({}, defaults, options);
 
             if (opts.buildValuePairs === true) {
-                var editableFields: IFieldDefinition[] = _.where(model.list.fields, {readOnly: false});
+                var editableFields: IFieldDefinition[] = _.where(model.list.fields, { readOnly: false });
                 opts.valuePairs = apEncodeService.generateValuePairs(editableFields, listItem);
             }
 
@@ -72,17 +98,17 @@ module ap {
             /** Overload the function then pass anything past the first parameter to the supporting methods */
             this.serviceWrapper(opts)
                 .then((response) => {
-                    /** Online this should return an XML object */
-                    var indexedCache = apDecodeService.processListItems(model, opts, response, opts);
-                    /** Return reference to last listItem in cache because it will have the new highest id */
-                    deferred.resolve(indexedCache.last());
-                }, (err) => {
+                /** Online this should return an XML object */
+                var indexedCache = apDecodeService.processListItems(model, opts, response, opts);
+                /** Return reference to last listItem in cache because it will have the new highest id */
+                deferred.resolve(indexedCache.last());
+            }, (err) => {
                     deferred.reject(err);
                 });
             return deferred.promise;
         }
 
-        createItemUrlFromFileRef(fileRefString: string) {
+        createItemUrlFromFileRef(fileRefString: string): string {
             return window.location.protocol + '//' + window.location.hostname + '/' + fileRefString;
         }
 
@@ -114,7 +140,7 @@ module ap {
          * };
          * </pre>
          */
-        deleteAttachment(options: {listItemID: number; url: string; listName: string; }) {
+        deleteAttachment(options: { listItemID: number; url: string; listName: string; }): ng.IPromise<any> {
             var defaults = {
                 operation: 'DeleteAttachment',
                 filterNode: 'Field'
@@ -138,7 +164,7 @@ module ap {
          * local cached copy.
          * @returns {object} Promise which resolves when the operation is complete.  Nothing of importance is returned.
          */
-        deleteListItem(model: IModel, listItem: ListItem, options?: {target: ICache}) {
+        deleteListItem(model: Model, listItem: ListItem, options?: { target: IIndexedCache<any> }): ng.IPromise<any> {
             var defaults = {
                 target: _.isFunction(listItem.getCache) ? listItem.getCache() : model.getCache(),
                 operation: 'UpdateListItems',
@@ -151,15 +177,15 @@ module ap {
             var opts = _.extend({}, defaults, options);
 
             /** Check to see if list item or document because documents need the FileRef as well as id to delete */
-            if(listItem.fileRef  && listItem.fileRef.lookupValue) {
+            if (listItem.fileRef && listItem.fileRef.lookupValue) {
                 var fileExtension = listItem.fileRef.lookupValue.split('.').pop();
-                if(isNaN(fileExtension)) {
+                if (isNaN(fileExtension)) {
                     /** File extension instead of numeric extension so it's a document
                      * @Example
                      * Document: "Site/library/file.csv"
                      * List Item: "Site/List/5_.000"
                      * */
-                    opts.valuePairs = [['FileRef', listItem.fileRef.lookupValue ]];
+                    opts.valuePairs = [['FileRef', listItem.fileRef.lookupValue]];
 
                 }
             }
@@ -168,10 +194,10 @@ module ap {
 
             this.serviceWrapper(opts)
                 .then(() => {
-                    /** Success */
-                    apCacheService.deleteEntity(opts.listName, listItem.id);
-                    deferred.resolve();
-                }, (outcome) => {
+                /** Success */
+                apCacheService.deleteEntity(opts.listName, listItem.id);
+                deferred.resolve();
+            }, (outcome) => {
                     //In the event of an error, display toast
                     toastr.error('There was an error deleting a list item from ' + model.list.title);
                     deferred.reject(outcome);
@@ -191,7 +217,7 @@ module ap {
          * @param {Array} [options.target=model.getCache()] The target destination for returned entities
          * @returns {object} - Key value hash containing all list item id's as keys with the listItem as the value.
          */
-        executeQuery(model: IModel, query: IQuery, options?: {target: ICache;}) {
+        executeQuery<T>(model: Model, query: IQuery, options?: { target: IIndexedCache<T>; }): ng.IPromise<IIndexedCache<T>> {
 
             var defaults = {
                 target: model.getCache()
@@ -204,17 +230,17 @@ module ap {
 
             this.serviceWrapper(query)
                 .then((response) => {
-                    if (query.operation === 'GetListItemChangesSinceToken') {
-                        this.processChangeTokenXML(model, query, response, opts);
-                    }
+                if (query.operation === 'GetListItemChangesSinceToken') {
+                    this.processChangeTokenXML(model, query, response, opts);
+                }
 
-                    /** Convert the XML into JS objects */
-                    var entities = apDecodeService.processListItems(model, query, response, opts);
-                    deferred.resolve(entities);
+                /** Convert the XML into JS objects */
+                var entities = apDecodeService.processListItems(model, query, response, opts);
+                deferred.resolve(entities);
 
-                    /** Set date time to allow for time based updates */
-                    query.lastRun = new Date();
-                });
+                /** Set date time to allow for time based updates */
+                query.lastRun = new Date();
+            });
 
             return deferred.promise;
         }
@@ -229,13 +255,13 @@ module ap {
          * @param {string} [webURL] Optionally provide the URL so we don't need to make a call to the server.
          * @returns {promise} Resolves with the url for the service.
          */
-        generateWebServiceUrl(service: string, webURL?: string) {
+        generateWebServiceUrl(service: string, webURL?: string): ng.IPromise<string> {
             var ajaxURL = "_vti_bin/" + service + ".asmx",
                 deferred = $q.defer();
 
             if (webURL) {
                 ajaxURL = webURL.charAt(webURL.length - 1) === '/' ?
-                webURL + ajaxURL : webURL + '/' + ajaxURL;
+                    webURL + ajaxURL : webURL + '/' + ajaxURL;
                 deferred.resolve(ajaxURL);
             } else {
                 this.getCurrentSite().then((thisSite) => {
@@ -266,7 +292,7 @@ module ap {
          * @param {string} fileRefString Relative or static url referencing the item.
          * @returns {object} Resolves with an array of objects defining each of the available workflows for the item.
          */
-        getAvailableWorkflows(fileRefString: string) {
+        getAvailableWorkflows(fileRefString: string): ng.IPromise<IWorkflowDefinition[]> {
             var deferred = $q.defer();
             /** Build the full url for the fileRef if not already provided.  FileRef for an item defaults to a relative url */
             var itemUrl = fileRefString.indexOf(': //') > -1 ? fileRefString : this.createItemUrlFromFileRef(fileRefString);
@@ -274,10 +300,10 @@ module ap {
             this.serviceWrapper({
                 operation: 'GetTemplatesForItem',
                 item: itemUrl
-            }).then(function (responseXML) {
+            }).then(function(responseXML) {
                 var workflowTemplates = [];
                 var xmlTemplates = $(responseXML).SPFilterNode('WorkflowTemplate');
-                _.each(xmlTemplates, function (xmlTemplate) {
+                _.each(xmlTemplates, function(xmlTemplate) {
                     var template = {
                         name: $(xmlTemplate).attr('Name'),
                         instantiationUrl: $(xmlTemplate).attr('InstantiationUrl'),
@@ -323,7 +349,7 @@ module ap {
          *       });
          * </pre>
          */
-        getCollection(options: {operation: string; userLoginName?: string; groupName?: string; listName?: string; filterNode: string;}): ng.IPromise<Object[]> {
+        getCollection(options: { operation: string; userLoginName?: string; groupName?: string; listName?: string; filterNode: string; }): ng.IPromise<Object[]> {
             var defaults = {
                 postProcess: processXML
             };
@@ -340,12 +366,12 @@ module ap {
                 /** Get attachments only returns the links associated with a list item */
                 if (opts.operation === 'GetAttachmentCollection') {
                     /** Unlike other call, get attachments only returns strings instead of an object with attributes */
-                    $(serverResponse).SPFilterNode(filterNode).each(function () {
+                    $(serverResponse).SPFilterNode(filterNode).each(function() {
                         convertedItems.push($(this).text());
                     });
                 } else {
                     var nodes = $(serverResponse).SPFilterNode(filterNode);
-                    convertedItems = apXMLToJSONService.parse(nodes, {includeAllAttrs: true, removeOws: false});
+                    convertedItems = apXMLToJSONService.parse(nodes, { includeAllAttrs: true, removeOws: false });
                 }
                 return convertedItems;
             }
@@ -354,8 +380,8 @@ module ap {
             if (validPayload) {
                 this.serviceWrapper(opts)
                     .then((response) => {
-                        deferred.resolve(response);
-                    });
+                    deferred.resolve(response);
+                });
             } else {
                 toastr.error('Invalid payload: ', opts);
                 deferred.reject();
@@ -374,7 +400,7 @@ module ap {
          */
         getCurrentSite(): ng.IPromise<string> {
             var deferred = $q.defer();
-//var self = this.getCurrentSite;
+            //var self = this.getCurrentSite;
             if (!this.queryForCurrentSite) {
                 /** We only want to run this once so cache the promise the first time and just reference it in the future */
                 this.queryForCurrentSite = deferred.promise;
@@ -398,10 +424,10 @@ module ap {
                     apConfig.defaultUrl = $(response.data).find("WebUrlFromPageUrlResult").text();
                     deferred.resolve(apConfig.defaultUrl)
                 }, (response) => {
-                    /** Error */
-                    var error = apDecodeService.checkResponseForErrors(response.data);
-                    deferred.reject(error);
-                });
+                        /** Error */
+                        var error = apDecodeService.checkResponseForErrors(response.data);
+                        deferred.reject(error);
+                    });
             }
             return this.queryForCurrentSite;
         }
@@ -424,7 +450,7 @@ module ap {
          * @param {object} fieldDefinition Field definition object from the model.
          * @returns {object[]} Promise which resolves with an array of list item changes for the specified field.
          */
-        getFieldVersionHistory(options: {operation?: string; webURL?: string; strListID: string; strListItemID: number; strFieldName?: string;}, fieldDefinition: IFieldDefinition): ng.IPromise<ap.IListItemVersion> {
+        getFieldVersionHistory<T>(options: { operation?: string; webURL?: string; strListID: string; strListItemID: number; strFieldName?: string; }, fieldDefinition: IFieldDefinition): ng.IPromise<ap.IListItemVersion<T>[]> {
             var defaults = {
                 operation: 'GetVersionCollection'
             };
@@ -434,11 +460,11 @@ module ap {
 
             this.serviceWrapper(opts)
                 .then((response) => {
-                    /** Parse XML response */
-                    var versions = apDecodeService.parseFieldVersions(response, fieldDefinition);
-                    /** Resolve with an array of all field versions */
-                    deferred.resolve(versions);
-                }, (outcome) => {
+                /** Parse XML response */
+                var versions = apDecodeService.parseFieldVersions(response, fieldDefinition);
+                /** Resolve with an array of all field versions */
+                deferred.resolve(versions);
+            }, (outcome) => {
                     /** Failure */
                     toastr.error('Failed to fetch version history.');
                     deferred.reject(outcome);
@@ -454,7 +480,7 @@ module ap {
          * @param {string} [login=CurrentUser] Optional param of another user's login to return the profile for.
          * @returns {string[]} Promise which resolves with the array of groups the user belongs to.
          */
-        getGroupCollectionFromUser(login?: string): ng.IPromise<Object[]> {
+        getGroupCollectionFromUser(login?: string): ng.IPromise<IGroupDefinition[]> {
             /** Create a new deferred object if not already defined */
             var deferred = $q.defer();
             var getGroupCollection = (userLoginName) => {
@@ -462,7 +488,7 @@ module ap {
                     operation: 'GetGroupCollectionFromUser',
                     userLoginName: userLoginName,
                     filterNode: 'Group'
-                }).then((groupCollection) => deferred.resolve(groupCollection));
+                }).then((groupCollection: IGroupDefinition[]) => deferred.resolve(groupCollection));
             };
 
             if (!login) {
@@ -484,7 +510,7 @@ module ap {
          * @param {string} options.listName GUID of the list.
          * @returns {object} Promise which resolves with an object defining field and list config.
          */
-        getList(options: {listName: string}): ng.IPromise<Object> {
+        getList(options: { listName: string }): ng.IPromise<Object> {
             var defaults = {
                 operation: 'GetList'
             };
@@ -500,16 +526,16 @@ module ap {
          * Returns field definitions for a specified list.
          * @param {object} options Configuration parameters.
          * @param {string} options.listName GUID of the list.
-         * @returns {object} Promise which resolves with an array of field definitions for the list.
+         * @returns {Promise} Promise which resolves with an array of field definitions for the list.
          */
-        getListFields(options: {listName: string;}): ng.IPromise<Object[]> {
+        getListFields(options: { listName: string; }): ng.IPromise<IXMLFieldDefinition[]> {
             var deferred = $q.defer();
             this.getList(options)
                 .then((responseXml) => {
-                    var nodes = $(responseXml).SPFilterNode('Field');
-                    var fields = apXMLToJSONService.parse(nodes, {includeAllAttrs: true, removeOws: false});
-                    deferred.resolve(fields);
-                });
+                var nodes = $(responseXml).SPFilterNode('Field');
+                var fields = apXMLToJSONService.parse(nodes, { includeAllAttrs: true, removeOws: false });
+                deferred.resolve(fields);
+            });
             return deferred.promise;
         }
 
@@ -523,7 +549,7 @@ module ap {
          * @param {string} [login=CurrentUser] Optional param of another user's login to return the profile for.
          * @returns {object} Promise which resolves with the requested user profile.
          */
-        getUserProfileByName(login?: string): ng.IPromise<{ AccountName: string; userLoginName: string; }> {
+        getUserProfileByName(login?: string): ng.IPromise<IUserProfile> {
             var deferred = $q.defer();
             var payload = {
                 accountName: undefined,
@@ -535,23 +561,23 @@ module ap {
 
             this.serviceWrapper(payload)
                 .then((serverResponse) => {
-                    var userProfile = {
-                        AccountName: undefined,
-                        userLoginName: undefined
-                    };
-                    //Not formatted like a normal SP response so need to manually parse
-                    $(serverResponse).SPFilterNode('PropertyData').each(function () {
-                        var nodeName = $(this).SPFilterNode('Name');
-                        var nodeValue = $(this).SPFilterNode('Value');
-                        if (nodeName.length > 0 && nodeValue.length > 0) {
-                            userProfile[nodeName.text().trim()] = nodeValue.text().trim();
-                        }
-                    });
-                    /** Optionally specify a necessary prefix that should appear before the user login */
-                    userProfile.userLoginName = apConfig.userLoginNamePrefix ?
-                        (apConfig.userLoginNamePrefix + userProfile.AccountName) : userProfile.AccountName;
-                    deferred.resolve(userProfile);
+                var userProfile = {
+                    AccountName: undefined,
+                    userLoginName: undefined
+                };
+                //Not formatted like a normal SP response so need to manually parse
+                $(serverResponse).SPFilterNode('PropertyData').each(function() {
+                    var nodeName = $(this).SPFilterNode('Name');
+                    var nodeValue = $(this).SPFilterNode('Value');
+                    if (nodeName.length > 0 && nodeValue.length > 0) {
+                        userProfile[nodeName.text().trim()] = nodeValue.text().trim();
+                    }
                 });
+                /** Optionally specify a necessary prefix that should appear before the user login */
+                userProfile.userLoginName = apConfig.userLoginNamePrefix ?
+                    (apConfig.userLoginNamePrefix + userProfile.AccountName) : userProfile.AccountName;
+                deferred.resolve(userProfile);
+            });
             return deferred.promise;
         }
 
@@ -567,7 +593,7 @@ module ap {
          * @param {XMLDocument} responseXML XML response from the server.
          * @param {object} opts Config options built up along the way.
          */
-        processChangeTokenXML(model: IModel, query: IQuery, responseXML: XMLDocument, opts) {
+        processChangeTokenXML(model: Model, query: IQuery, responseXML: XMLDocument, opts): void {
             if (!model.deferredListDefinition) {
                 var deferred = $q.defer();
 
@@ -602,9 +628,9 @@ module ap {
          * @param {XMLDocument} responseXML XML response from the server.
          * @param {Object} indexedCache Cached object of key value pairs.
          */
-        processDeletionsSinceToken(responseXML: XMLDocument, indexedCache: IIndexedCache) {
+        processDeletionsSinceToken(responseXML: XMLDocument, indexedCache: IIndexedCache<any>): void {
             /** Remove any locally cached entities that were deleted from the server */
-            $(responseXML).SPFilterNode('Id').each(function () {
+            $(responseXML).SPFilterNode('Id').each(function() {
                 /** Check for the type of change */
                 var changeType = $(this).attr('ChangeType');
 
@@ -632,35 +658,35 @@ module ap {
             var service = apWebServiceOperationConstants[opts.operation][0];
             this.generateWebServiceUrl(service, opts.webURL)
                 .then((url) => {
-                    $http.post(url, soapData.msg, {
-                        responseType: "document",
-                        headers: {
-                            "Content-Type": "text/xml;charset='utf-8'",
-                            SOAPAction: () => soapData.SOAPAction ? soapData.SOAPAction : null
-                        },
-                        transformResponse: (data, headersGetter) => {
-                            if (_.isString(data)) {
-                                data = $.parseXML(data);
-                            }
-                            return data;
+                $http.post(url, soapData.msg, {
+                    responseType: "document",
+                    headers: {
+                        "Content-Type": "text/xml;charset='utf-8'",
+                        SOAPAction: () => soapData.SOAPAction ? soapData.SOAPAction : null
+                    },
+                    transformResponse: (data, headersGetter) => {
+                        if (_.isString(data)) {
+                            data = $.parseXML(data);
                         }
-                    }).then((response) => {
-                        /** Success */
-                        /** Errors can still be resolved without throwing an error so check the XML */
-                        var error = apDecodeService.checkResponseForErrors(response.data);
-                        if (error) {
-                            console.error(error, opts);
-                            deferred.reject(error);
-                        } else {
-                            deferred.resolve(response.data);
-                        }
-                    }, (response) => {
+                        return data;
+                    }
+                }).then((response) => {
+                    /** Success */
+                    /** Errors can still be resolved without throwing an error so check the XML */
+                    var error = apDecodeService.checkResponseForErrors(response.data);
+                    if (error) {
+                        console.error(error, opts);
+                        deferred.reject(error);
+                    } else {
+                        deferred.resolve(response.data);
+                    }
+                }, (response) => {
                         /** Failure */
                         var error = apDecodeService.checkResponseForErrors(response.data);
                         console.error(response.statusText, opts);
                         deferred.reject(response.statusText + ': ' + error);
                     });
-                });
+            });
 
             return deferred.promise;
         }
@@ -673,7 +699,7 @@ module ap {
          * Note: this attribute is only found when using 'GetListItemChangesSinceToken'
          * @param {XMLDocument} responseXML XML response from the server.
          */
-        retrieveChangeToken(responseXML: XMLDocument) {
+        retrieveChangeToken(responseXML: XMLDocument): string {
             return $(responseXML).find('Changes').attr('LastChangeToken');
         }
 
@@ -685,7 +711,7 @@ module ap {
          * Note: this attribute is only found when using 'GetListItemChangesSinceToken'
          * @param {XMLDocument} responseXML XML response from the server.
          */
-        retrievePermMask(responseXML: XMLDocument) {
+        retrievePermMask(responseXML: XMLDocument): string {
             return $(responseXML).find('listitems').attr('EffectivePermMask');
         }
 
@@ -720,7 +746,7 @@ module ap {
             function processXML(serverResponse) {
                 if (opts.filterNode) {
                     var nodes = $(serverResponse).SPFilterNode(opts.filterNode);
-                    return apXMLToJSONService.parse(nodes, {includeAllAttrs: true, removeOws: false});
+                    return apXMLToJSONService.parse(nodes, { includeAllAttrs: true, removeOws: false });
                 } else {
                     return serverResponse;
                 }
@@ -728,10 +754,10 @@ module ap {
 
             this.requestData(opts)
                 .then((response) => {
-                    /** Failure */
-                    var data = opts.postProcess(response);
-                    deferred.resolve(data);
-                }, (response) => {
+                /** Failure */
+                var data = opts.postProcess(response);
+                deferred.resolve(data);
+            }, (response) => {
                     /** Failure */
                     toastr.error('Failed to complete the requested ' + opts.operation + ' operation.');
                     deferred.reject(response);
@@ -767,15 +793,15 @@ module ap {
          *   })
          * </pre>
          */
-        startWorkflow(options: {item: string; templateId: string; workflowParameters?: string; fileRef?: string;}): ng.IPromise<any> {
+        startWorkflow(options: { item: string; templateId: string; workflowParameters?: string; fileRef?: string; }): ng.IPromise<any> {
             var defaults = {
-                    operation: 'StartWorkflow',
-                    item: '',
-                    fileRef: '',
-                    templateId: '',
-                    workflowParameters: '<root />'
-                },
-                opts: {item: string; fileRef: string;} = _.extend({}, defaults, options);
+                operation: 'StartWorkflow',
+                item: '',
+                fileRef: '',
+                templateId: '',
+                workflowParameters: '<root />'
+            },
+                opts: { item: string; fileRef: string; } = _.extend({}, defaults, options);
 
             /** We have the relative file reference but we need to create the fully qualified reference */
             if (!opts.item && opts.fileRef) {
@@ -799,22 +825,22 @@ module ap {
          * field identified in the model.
          * @returns {object} Promise which resolves with the newly created item.
          */
-        updateListItem(model: IModel, listItem: ListItem, options) {
+        updateListItem<T>(model: Model, listItem: IListItem<T>, options): ng.IPromise<IListItem<T>> {
             var defaults = {
-                    batchCmd: 'Update',
-                    buildValuePairs: true,
-                    ID: listItem.id,
-                    listName: model.list.getListId(),
-                    operation: 'UpdateListItems',
-                    target: listItem.getCache(),
-                    valuePairs: [],
-                    webURL: model.list.identifyWebURL()
-                },
+                batchCmd: 'Update',
+                buildValuePairs: true,
+                ID: listItem.id,
+                listName: model.list.getListId(),
+                operation: 'UpdateListItems',
+                target: listItem.getCache(),
+                valuePairs: [],
+                webURL: model.list.identifyWebURL()
+            },
                 deferred = $q.defer(),
-                opts: {buildValuePairs: boolean; valuePairs: [[string, any][]]; webURL: string;} = _.extend({}, defaults, options);
+                opts: { buildValuePairs: boolean; valuePairs: [[string, any][]]; webURL: string; } = _.extend({}, defaults, options);
 
             if (opts.buildValuePairs === true) {
-                var editableFields = _.where(model.list.fields, {readOnly: false});
+                var editableFields = _.where(model.list.fields, { readOnly: false });
                 opts.valuePairs = apEncodeService.generateValuePairs(editableFields, listItem);
             }
 
@@ -828,11 +854,11 @@ module ap {
             ///** Overload the function then pass anything past the first parameter to the supporting methods */
             //this.serviceWrapper(opts, listItem, model)
             this.serviceWrapper(opts)
-                .then(function (response) {
-                    var indexedCache = apDecodeService.processListItems(model, listItem.getQuery(), response, opts);
-                    /** Return reference to updated listItem  */
-                    deferred.resolve(indexedCache[listItem.id]);
-                }, function (err) {
+                .then(function(response) {
+                var indexedCache = apDecodeService.processListItems(model, listItem.getQuery(), response, opts);
+                /** Return reference to updated listItem  */
+                deferred.resolve(indexedCache[listItem.id]);
+            }, function(err) {
                     deferred.reject(err);
                 });
 
@@ -845,7 +871,7 @@ module ap {
          * @param {object} opts Payload config.
          * @returns {boolean} Collection is valid.
          */
-        validateCollectionPayload(opts) {
+        validateCollectionPayload(opts): boolean {
             var validPayload = true;
             var verifyParams = (params) => {
                 _.each(params, (param) => {
@@ -856,7 +882,7 @@ module ap {
                 });
             };
 
-//Verify all required params are included
+            //Verify all required params are included
             switch (opts.operation) {
                 case 'GetGroupCollectionFromUser':
                     verifyParams(['userLoginName']);

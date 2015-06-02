@@ -1,7 +1,21 @@
-/// <reference path="../../typings/ap.d.ts" />
+/// <reference path="../app.module.ts" />
 
 module ap {
     'use strict';
+
+    export interface ICacheService {
+        deleteEntity(listId: string, entityId: number): void;
+        getCachedEntities<T>(listId: string): IIndexedCache<T>;
+        getCachedEntity<T>(listId: string, entityId: number): IListItem<T>;
+        getEntity<T>(listId: string, entityId: number): ng.IPromise<IListItem<T>>;
+        getListId(keyString: string): string;
+        getListIdFromListName(name: string): string;
+        getModel(listId: string): Model;
+        getModelCache(listId: string): ModelCache;
+        registerEntity<T>(entity: IListItem<T>, targetCache?: IIndexedCache<T>): IListItem<T>;
+        registerModel(model: Model): void;
+        removeEntity(listId: string, entityId: number): void; 
+    }
 
     var service: CacheService, $q: ng.IQService, $log: ng.ILogService, apIndexedCacheFactory: IndexedCacheFactory;
 
@@ -122,7 +136,7 @@ module ap {
      * Cache of Entity Containers for each registered entity retrieved by the model.
      * @constructor
      */
-    class ModelCache extends IndexedCache {
+    class ModelCache extends IndexedCache<any> {
 
     }
 
@@ -163,10 +177,10 @@ module ap {
          * @param {string} listId GUID for list the list item belongs to.
          * @returns {object} Indexed cache containing all entities for a model.
          */
-        getCachedEntities(listId: string): IIndexedCache {
+        getCachedEntities<T>(listId: string): IIndexedCache<T> {
             var modelCache = this.getModelCache(listId),
                 allEntities = apIndexedCacheFactory.create();
-            _.each(modelCache, (entityContainer) => {
+            _.each(modelCache, (entityContainer: EntityContainer) => {
                 if (entityContainer.entity && entityContainer.entity.id) {
                     allEntities.addEntity(entityContainer.entity);
                 }
@@ -184,7 +198,7 @@ module ap {
          * @param {number} entityId The entity.id.
          * @returns {object} entity || undefined
          */
-        getCachedEntity(listId: string, entityId: number): IListItem {
+        getCachedEntity<T>(listId: string, entityId: number): IListItem<T> {
             return this.getEntityContainer(listId, entityId).entity;
         }
 
@@ -199,12 +213,12 @@ module ap {
          * @param {number} entityId The entity.id.
          * @returns {promise} entity
          */
-        getEntity(listId: string, entityId: number): ng.IPromise<IListItem> {
+        getEntity<T>(listId: string, entityId: number): ng.IPromise<IListItem<T>> {
             var entityContainer = this.getEntityContainer(listId, entityId);
             return entityContainer.getEntity();
         }
 
-        getEntityContainer(listId: string, entityId: number): EntityContainer {
+        private getEntityContainer(listId: string, entityId: number): EntityContainer {
             var entityTypeKey = this.getListId(listId);
             var modelCache = this.getModelCache(entityTypeKey);
             /** Create the object structure if it doesn't already exist */
@@ -257,7 +271,7 @@ module ap {
          * @param {string} listId List title or list GUID.
          * @returns {object} A reference to the requested model.
          */
-        getModel(listId: string): IModel {
+        getModel(listId: string): Model {
             var model,
                 entityTypeKey = this.getListId(listId);
 
@@ -286,7 +300,7 @@ module ap {
          * @param {object} entity Pass in a newly created entity to add to the cache.
          * @param {object} [targetCache] Optionally pass in a secondary cache to add a reference to this entity.
          */
-        registerEntity(entity: IListItem, targetCache?: IIndexedCache): IListItem {
+        registerEntity<T>(entity: IListItem<T>, targetCache?: IIndexedCache<T>): IListItem<T> {
             var model = entity.getModel();
             var entityContainer = this.getEntityContainer(model.list.getListId(), entity.id);
             /** Maintain a single object in cache for this entity */
@@ -295,14 +309,14 @@ module ap {
                 entityContainer.entity = entity;
             } else {
                 /** Already exists so update to maintain any other references being used for this entity. */
-                    //TODO Look at performance hit from extending and see if it would be acceptable just to replace
+                //TODO Look at performance hit from extending and see if it would be acceptable just to replace
                 _.assign(entityContainer.entity, entity);
             }
 
             /** Counter to keep track of the number of updates for this entity */
             entityContainer.updateCount++;
 
-            if (_.isObject(targetCache) && !_.isArray(targetCache) && !targetCache[entity.id] ) {
+            if (_.isObject(targetCache) && !_.isArray(targetCache) && !targetCache[entity.id]) {
                 /** Entity hasn't been added to the target cache yet */
                 targetCache[entity.id] = entityContainer.entity;
             }
@@ -326,7 +340,7 @@ module ap {
          * the entity id's and value being a EntityContainer.  The entity is stored at EntityContainer.entity.
          * @param {object} model Model to create the cache for.
          */
-        registerModel(model: IModel): void {
+        registerModel(model: Model): void {
             if (model.list && model.list.getListId() && model.list.title) {
                 var listId = model.list.getListId().toLowerCase();
                 /** Store a reference to the model by list title */
