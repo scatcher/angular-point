@@ -1,8 +1,10 @@
 node_modules/
 bower_components/
-dgeni/
+
 coverage/
 *.log
 .idea
 .grunt
 .tmp
+.settings
+.DS_Strore
