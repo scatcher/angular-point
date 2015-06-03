@@ -35,6 +35,12 @@ module ap {
         validateEntity<T>(listItem: IListItem<T>, options?: Object): boolean;
     }
     
+    export interface IUninitializedModel {
+        factory:Function;
+        list: IUninstantiatedList;
+        [key: string]: any;
+    }
+    
     export interface IQueriesContainer {
         getAllListItems?: IQuery<any>;
         [key: string]: IQuery<any>
@@ -149,7 +155,7 @@ module ap {
         lastServerUpdate: Date;
         queries: IQueriesContainer = {};
         requestForFieldDefinitions;
-        constructor(config: Object) {
+        constructor(config: IUninitializedModel) {
 
             var model = this;
 
