@@ -42,12 +42,6 @@ module ap {
 
     }
 
-    export interface IUninitializedListItem {
-        [key: string]: any;
-        getCache(): IIndexedCache<any>;
-        getQuery(): IQuery<any>;
-    }
-
 
     /**
      * @ngdoc object

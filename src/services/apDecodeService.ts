@@ -6,7 +6,7 @@ module ap {
     export interface IDecodeService {
         checkResponseForErrors(responseXML: XMLDocument): string;
         convertUTCDateToLocalDate(date: Date): Date;
-        createListItemProvider<T>(model: Model, query: IQuery<T>, indexedCache: IIndexedCache<T>): (Object) => IListItem<T>;
+        createListItemProvider<T>(model: Model, query: IQuery<T>, indexedCache: IIndexedCache<T>): (rawObject: Object) => IListItem<T>;
         extendFieldDefinitionsFromXML(fieldDefinitions: IFieldDefinition[], responseXML: XMLDocument): IExtendedFieldDefinition[];
         extendListDefinitionFromXML(list: IList, responseXML: XMLDocument): IList;
         extendListMetadata(model: Model, responseXML: XMLDocument): void;
@@ -103,8 +103,8 @@ module ap {
          * @returns {Function} Returns a function that takes the new list item while keeping model, query,
          * and container in scope for future reference.
          */
-        createListItemProvider<T>(model: Model, query: IQuery<T>, indexedCache: IIndexedCache<T>): (Object) => IListItem<T> {
-            return (rawObject: IUninitializedListItem) => {
+        createListItemProvider<T>(model: Model, query: IQuery<T>, indexedCache: IIndexedCache<T>): (rawObject: Object) => IListItem<T> {
+            return (rawObject: {[key: string]: any, getCache(): IIndexedCache<any>, getQuery(): IQuery<any>}) => {
                 /** Create Reference to the indexed cache */
                 rawObject.getCache = () => indexedCache;
 

@@ -9,8 +9,8 @@ module ap {
         apDecodeService: DecodeService, $q: ng.IQService, toastr: toastr;
 
     export interface IModel {
-        addNewItem<T>(entity: IUninitializedListItem, options?: Object): ng.IPromise<IListItem<T>>;
-        createEmptyItem<T>(overrides?: IUninitializedListItem): IListItem<T>;
+        addNewItem<T>(entity: Object, options?: Object): ng.IPromise<IListItem<T>>;
+        createEmptyItem<T>(overrides?: Object): IListItem<T>;
         deferredListDefinition: ng.IPromise<Object>;
         executeQuery<T>(queryName?: string, options?: Object): ng.IPromise<IIndexedCache<T>>;
         extendListMetadata(options?: Object): ng.IPromise<any>;
@@ -35,12 +35,6 @@ module ap {
         validateEntity<T>(listItem: IListItem<T>, options?: Object): boolean;
     }
     
-    export interface IUninitializedModel {
-        factory:Function;
-        list: IUninstantiatedList;
-        [key: string]: any;
-    }
-
     export interface IQueriesContainer {
         getAllListItems?: IQuery<any>;
         [key: string]: IQuery<any>
@@ -155,7 +149,7 @@ module ap {
         lastServerUpdate: Date;
         queries: IQueriesContainer = {};
         requestForFieldDefinitions;
-        constructor(config: IUninitializedModel) {
+        constructor(config: Object) {
 
             var model = this;
 
@@ -204,7 +198,7 @@ module ap {
          * </file>
          * </pre>
          */
-        addNewItem<T>(entity: IUninitializedListItem, options?: Object): ng.IPromise<IListItem<T>> {
+        addNewItem<T>(entity: Object, options?: Object): ng.IPromise<IListItem<T>> {
             var model = this,
                 deferred = $q.defer();
 
@@ -231,7 +225,7 @@ module ap {
          * @param {object} [overrides] - Optionally extend the new empty item with specific values.
          * @returns {object} Newly created list item.
          */
-        createEmptyItem<T>(overrides?: IUninitializedListItem): IListItem<T> {
+        createEmptyItem<T>(overrides?: Object): IListItem<T> {
             var model = this;
             var newItem = {};
             _.each(model.list.customFields, (fieldDefinition) => {
