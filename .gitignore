@@ -7,4 +7,5 @@ coverage/
 .grunt
 .tmp
 .settings
-.DS_Strore
+.DS_Store/
+.DS_Store
