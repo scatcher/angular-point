@@ -136,7 +136,7 @@ module ap {
                 this.webURL = apConfig.defaultUrl;
             }
 
-            _.extend(this, config);
+            _.assign(this, config);
 
             /** Allow the model to be referenced at a later time */
             this.getModel = () => model;
@@ -175,7 +175,7 @@ module ap {
                 };
 
                 /** Extend defaults with any options */
-                var queryOptions = _.extend({}, defaults, options);
+                var queryOptions = _.assign({}, defaults, options);
 
                 apDataService.executeQuery(model, query, queryOptions).then((results) => {
                     if (firstRunQuery) {

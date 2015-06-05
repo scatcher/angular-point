@@ -16,29 +16,29 @@ module ap {
         permMask?: string;
         uniqueId?: string;
 
-        deleteAttachment(url: string): ng.IPromise<any>;
-        deleteItem(options?: IListItemCrudOptions<T>): ng.IPromise<any>;
-        getAttachmentCollection(): ng.IPromise<string[]>;
-        getAvailableWorkflows(): ng.IPromise<IWorkflowDefinition[]>;
-        getCache?(): IIndexedCache<T>;
-        getFieldChoices(fieldName: string): string[];
-        getFieldDefinition(fieldName: string): IFieldDefinition;
-        getFieldDescription(fieldName: string): string;
-        getFieldLabel(fieldName: string): string;
-        getFieldVersionHistory(fieldNames: string[]): ng.IPromise<IListItemVersion<T>[]>;
-        getFormattedValue(fieldName: string, options?: Object): string;
-        getList(): IList;
-        getListId(): string;
-        getLookupReference(fieldName: string, lookupId?: number): IListItem<any>;
-        resolvePermissions(): IUserPermissionsObject;
-        saveChanges(options?: IListItemCrudOptions<T>): ng.IPromise<IListItem<T>>;
-        saveFields(fieldArray: string[], options?: IListItemCrudOptions<T>): ng.IPromise<IListItem<T>>;
-        startWorkflow(options: IStartWorkflowParams): ng.IPromise<any>;
-        validateEntity(options?: Object): boolean;
+        deleteAttachment: (url: string) => ng.IPromise<any>;
+        deleteItem: (options?: IListItemCrudOptions<T>) => ng.IPromise<any>;
+        getAttachmentCollection: () => ng.IPromise<string[]>;
+        getAvailableWorkflows: () => ng.IPromise<IWorkflowDefinition[]>;
+        getCache?: () => IIndexedCache<T>;
+        getFieldChoices: (fieldName: string) => string[];
+        getFieldDefinition: (fieldName: string) => IFieldDefinition | IExtendedFieldDefinition;
+        getFieldDescription: (fieldName: string) => string;
+        getFieldLabel: (fieldName: string) => string;
+        getFieldVersionHistory: (fieldNames: string[]) => ng.IPromise<IListItemVersion<T>[]>;
+        getFormattedValue: (fieldName: string, options?: Object) => string;
+        getList: () => IList;
+        getListId: () => string;
+        getLookupReference: <T1>(fieldName: string, lookupId?: number) => T1;
+        resolvePermissions: () => IUserPermissionsObject;
+        saveChanges: (options?: IListItemCrudOptions<T>) => ng.IPromise<T>;
+        saveFields: (fieldArray: string[], options?: IListItemCrudOptions<T>) => ng.IPromise<T>;
+        startWorkflow: (options: IStartWorkflowParams) => ng.IPromise<any>;
+        validateEntity: (options?: Object) => boolean;
 
         //Added by Model Instantiation
-        getModel?(): Model;
-        getQuery?(): IQuery<T>;
+        getModel?: () => Model;
+        getQuery?: () => IQuery<T>;
 
     }
 
@@ -56,16 +56,14 @@ module ap {
         created: Date;
         editor: IUser;
         fileRef: ILookup;
-        getCache(): IIndexedCache<T>;
-        getModel(): Model;
-        //        getQuery(): IQuery;
+        getCache: () => IIndexedCache<T>;
+        getModel: () => Model;
+        getQuery: () => IQuery<T>;
         id: number;
         modified: Date;
         permMask: string;
         uniqueId: string;
-        constructor() {
-        }
-        
+
         /**
          * @ngdoc function
          * @name ListItem.deleteAttachment
@@ -94,8 +92,8 @@ module ap {
                 listName: listItem.getModel().list.getListId()
             });
         }
-        
-        
+
+
         /**
          * @ngdoc function
          * @name ListItem.deleteItem
@@ -131,8 +129,8 @@ module ap {
 
             return deferred.promise;
         }
-        
-        
+
+
         /**
          * @ngdoc function
          * @name ListItem.getAttachmentCollection
@@ -161,8 +159,8 @@ module ap {
                 filterNode: 'Attachment'
             });
         }
-        
-        
+
+
         /**
          * @ngdoc function
          * @name ListItem.getAvailableWorkflows
@@ -175,8 +173,8 @@ module ap {
             var listItem = this;
             return apDataService.getAvailableWorkflows(listItem.fileRef.lookupValue);
         }
-        
-        
+
+
         /**
          * @ngdoc function
          * @name ListItem.getFieldChoices
@@ -195,8 +193,8 @@ module ap {
             var fieldDefinition = listItem.getFieldDefinition(fieldName);
             return fieldDefinition.choices || fieldDefinition.Choices || [];
         }
-        
-        
+
+
         /**
          * @ngdoc function
          * @name ListItem.getFieldDefinition
@@ -219,12 +217,12 @@ module ap {
          * @param {string} fieldName Internal field name.
          * @returns {object} Field definition.
          */
-        getFieldDefinition(fieldName: string): IFieldDefinition {
+        getFieldDefinition(fieldName: string): IExtendedFieldDefinition {
             var listItem = this;
             return listItem.getModel().getFieldDefinition(fieldName);
         }
-        
-        
+
+
         /**
          * @ngdoc function
          * @name ListItem.getFieldDescription
@@ -242,8 +240,8 @@ module ap {
             var fieldDefinition = listItem.getFieldDefinition(fieldName);
             return fieldDefinition.description || fieldDefinition.Description || '';
         }
-        
-        
+
+
         /**
          * @ngdoc function
          * @name ListItem.getFieldLabel
@@ -262,8 +260,8 @@ module ap {
             var fieldDefinition = listItem.getFieldDefinition(fieldName);
             return fieldDefinition.label || fieldDefinition.DisplayName || fieldDefinition.displayName;
         }
-        
-        
+
+
         /**
          * @ngdoc function
          * @name ListItem.getFieldVersionHistory
@@ -343,7 +341,7 @@ module ap {
                         versionHistory[fieldVersion.modified.toJSON()] || {};
 
                         /** Add field to the version history for this version */
-                        _.extend(versionHistory[fieldVersion.modified.toJSON()], fieldVersion);
+                        _.assign(versionHistory[fieldVersion.modified.toJSON()], fieldVersion);
                     });
                 });
 
@@ -359,8 +357,8 @@ module ap {
 
             return deferred.promise;
         }
-        
-        
+
+
         /**
          * @ngdoc function
          * @name ListItem.getFormattedValue
@@ -381,8 +379,8 @@ module ap {
             return apFormattedFieldValueService
                 .getFormattedFieldValue(listItem[fieldName], fieldDefinition.objectType, options);
         }
-        
-        
+
+
         /**
          * @ngdoc function
          * @name ListItem.getList
@@ -394,8 +392,8 @@ module ap {
             var model: Model = this.getModel();
             return model.getList();
         }
-        
-        
+
+
         /**
          * @ngdoc function
          * @name ListItem.getListId
@@ -408,8 +406,8 @@ module ap {
             var model = this.getModel();
             return model.getListId();
         }
-        
-        
+
+
         /**
          * @ngdoc function
          * @name ListItem.getLookupReference
@@ -434,7 +432,7 @@ module ap {
          * </pre>
          * @returns {object} The listItem the lookup is referencing or undefined if not in the cache.
          */
-        getLookupReference(fieldName: string, lookupId?: number): IListItem<any> {
+        getLookupReference<T>(fieldName: string, lookupId?: number): T {
             var listItem = this;
             var lookupReference;
             if (_.isUndefined(fieldName)) {
@@ -457,7 +455,7 @@ module ap {
             return lookupReference;
         }
 
-        
+
         /**
          * @ngdoc function
          * @name ListItem.resolvePermissions
@@ -516,8 +514,8 @@ module ap {
         resolvePermissions(): IUserPermissionsObject {
             return apUtilityService.resolvePermissions(this.permMask);
         }
-   
-      
+
+
         /**
          * @ngdoc function
          * @name ListItem.saveChanges
@@ -545,7 +543,7 @@ module ap {
          * }
          * </pre>
          */
-        saveChanges(options?: IListItemCrudOptions<T>): ng.IPromise<IListItem<T>> {
+        saveChanges(options?: IListItemCrudOptions<T>): ng.IPromise<T> {
             var listItem = this;
             var model = listItem.getModel();
             var deferred = $q.defer();
@@ -566,7 +564,7 @@ module ap {
 
             return deferred.promise;
         }
-        
+
 
         /**
          * @ngdoc function
@@ -599,7 +597,7 @@ module ap {
          * }
          * </pre>
          */
-        saveFields(fieldArray: string[], options?: IListItemCrudOptions<T>): ng.IPromise<IListItem<T>> {
+        saveFields(fieldArray: string[], options?: IListItemCrudOptions<T>): ng.IPromise<T> {
 
             var listItem = this;
             var model = listItem.getModel();
@@ -621,7 +619,7 @@ module ap {
             var defaults = { buildValuePairs: false, valuePairs: valuePairs };
 
             /** Extend defaults with any provided options */
-            var opts = _.extend({}, defaults, options);
+            var opts = _.assign({}, defaults, options);
 
             apDataService.updateListItem<T>(model, listItem, opts)
                 .then((updatedListItem) => {

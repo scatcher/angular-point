@@ -65,7 +65,7 @@ module ap {
                     delim: '; ',
                     includeTitleRow: true
                 },
-                opts = _.extend({}, defaults, options),
+                opts = _.assign({}, defaults, options),
                 entitiesArray = [
                     []
                 ];

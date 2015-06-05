@@ -4,7 +4,7 @@ module ap {
     'use strict';
 
     var apFieldService: FieldService, apUtilityService: UtilityService;
-    
+
     export interface IXMLFieldDefinition{
         ID: string;
         Type: string;
@@ -35,24 +35,19 @@ module ap {
 
     export interface IFieldDefinition {
         choices?: string[];
-//        Choices?: string[];
         description?: string;
-//        Description?: string;
         displayName?: string;
-//        DisplayName?: string;
-        getDefaultValueForType?(): string;
-        getDefinition?(): string;
-        getMockData?(options?: Object): any;
+        getDefaultValueForType?: () => string;
+        getDefinition?: () => string;
+        getMockData?: (options?: Object) => any;
         label?: string;
         mappedName: string;
         objectType: string;
         readOnly?: boolean;
         required?: boolean;
-//        Required?: boolean;
         staticName: string;
-//        List?: string;
     }
-    
+
     //An extended field definition combines the user defined field definition with the XML returned by SharePoint
     export interface IExtendedFieldDefinition extends IXMLFieldDefinition, IFieldDefinition{
 
@@ -155,7 +150,7 @@ module ap {
                 readOnly: false,
                 objectType: 'Text'
             };
-            _.extend(self, defaults, obj);
+            _.assign(self, defaults, obj);
             self.displayName = self.displayName ? self.displayName : apUtilityService.fromCamelCase(self.mappedName);
             /** Deprecated internal name and replace with staticName but maintain compatibility */
             self.staticName = self.staticName || self.internalName;

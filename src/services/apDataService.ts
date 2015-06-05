@@ -10,7 +10,7 @@ module ap {
         apChangeService: ChangeService;
 
     export interface IDataService {
-        createListItem<T>(model: Model, listItem: Object, options?: { buildValuePairs: boolean; valuePairs: [[string, any][]] }): ng.IPromise<IListItem<T>>;
+        createListItem<T>(model: Model, listItem: Object, options?: { buildValuePairs: boolean; valuePairs: [string, any][] }): ng.IPromise<T>;
         createItemUrlFromFileRef(fileRefString: string): string;
         deleteAttachment(options: { listItemID: number; url: string; listName: string; }): ng.IPromise<any>;
         deleteListItem(model: Model, listItem: ListItem<any>, options?: { target: IIndexedCache<any> }): ng.IPromise<any>;
@@ -31,7 +31,7 @@ module ap {
         retrievePermMask(responseXML: XMLDocument): string;
         serviceWrapper(options): ng.IPromise<any>;
         startWorkflow(options: { item: string; templateId: string; workflowParameters?: string; fileRef?: string; }): ng.IPromise<any>;
-        updateListItem<T>(model: Model, listItem: IListItem<T>, options): ng.IPromise<IListItem<T>>;
+        updateListItem<T>(model: Model, listItem: IListItem<T>, options): ng.IPromise<T>;
         validateCollectionPayload(opts): boolean;
     }
 
@@ -71,7 +71,7 @@ module ap {
          * field identified in the model.
          * @returns {object} Promise which resolves with the newly created item.
          */
-        createListItem<T>(model: Model, listItem: Object, options?: { buildValuePairs: boolean; valuePairs: [[string, any][]] }): ng.IPromise<IListItem<T>> {
+        createListItem<T>(model: Model, listItem: Object, options?: { buildValuePairs: boolean; valuePairs: [string, any][] }): ng.IPromise<T> {
             var defaults = {
                 batchCmd: 'New',
                 buildValuePairs: true,
@@ -85,7 +85,7 @@ module ap {
                 deferred = $q.defer();
 
             defaults.target = defaults.indexedCache;
-            var opts: { buildValuePairs: boolean; valuePairs: [[string, any][]]; getCache(): IIndexedCache<T>; indexedCache: IIndexedCache<T> }
+            var opts: { buildValuePairs: boolean; valuePairs: [string, any][]; getCache(): IIndexedCache<T>; indexedCache: IIndexedCache<T> }
                 = _.assign({}, defaults, options);
 
             if (opts.buildValuePairs === true) {
@@ -146,7 +146,7 @@ module ap {
                 filterNode: 'Field'
             };
 
-            var opts = _.extend({}, defaults, options);
+            var opts = _.assign({}, defaults, options);
 
             return this.serviceWrapper(opts);
         }
@@ -174,7 +174,7 @@ module ap {
                 webURL: model.list.identifyWebURL()
             };
 
-            var opts = _.extend({}, defaults, options);
+            var opts = _.assign({}, defaults, options);
 
             /** Check to see if list item or document because documents need the FileRef as well as id to delete */
             if (listItem.fileRef && listItem.fileRef.lookupValue) {
@@ -226,7 +226,7 @@ module ap {
             var deferred = $q.defer();
 
             /** Extend defaults **/
-            var opts = _.extend({}, defaults, options);
+            var opts = _.assign({}, defaults, options);
 
             this.serviceWrapper(query)
                 .then((response) => {
@@ -353,7 +353,7 @@ module ap {
             var defaults = {
                 postProcess: processXML
             };
-            var opts = _.extend({}, defaults, options);
+            var opts = _.assign({}, defaults, options);
 
             /** Determine the XML node to iterate over if filterNode isn't provided */
             var filterNode = opts.filterNode || opts.operation.split('Get')[1].split('Collection')[0];
@@ -454,7 +454,7 @@ module ap {
             var defaults = {
                 operation: 'GetVersionCollection'
             };
-            var opts = _.extend({}, defaults, options);
+            var opts = _.assign({}, defaults, options);
 
             var deferred = $q.defer();
 
@@ -515,7 +515,7 @@ module ap {
                 operation: 'GetList'
             };
 
-            var opts = _.extend({}, defaults, options);
+            var opts = _.assign({}, defaults, options);
             return this.serviceWrapper(opts);
         }
 
@@ -739,7 +739,7 @@ module ap {
                 postProcess: processXML,
                 webURL: apConfig.defaultUrl
             };
-            var opts = _.extend({}, defaults, options);
+            var opts = _.assign({}, defaults, options);
             var deferred = $q.defer();
 
             /** Convert the xml returned from the server into an array of js objects */
@@ -801,7 +801,7 @@ module ap {
                 templateId: '',
                 workflowParameters: '<root />'
             },
-                opts: { item: string; fileRef: string; } = _.extend({}, defaults, options);
+                opts: { item: string; fileRef: string; } = _.assign({}, defaults, options);
 
             /** We have the relative file reference but we need to create the fully qualified reference */
             if (!opts.item && opts.fileRef) {
@@ -825,7 +825,7 @@ module ap {
          * field identified in the model.
          * @returns {object} Promise which resolves with the newly created item.
          */
-        updateListItem<T>(model: Model, listItem: IListItem<T>, options): ng.IPromise<IListItem<T>> {
+        updateListItem<T>(model: Model, listItem: IListItem<T>, options): ng.IPromise<T> {
             var defaults = {
                 batchCmd: 'Update',
                 buildValuePairs: true,
@@ -837,7 +837,7 @@ module ap {
                 webURL: model.list.identifyWebURL()
             },
                 deferred = $q.defer(),
-                opts: { buildValuePairs: boolean; valuePairs: [[string, any][]]; webURL: string; } = _.extend({}, defaults, options);
+                opts: { buildValuePairs: boolean; valuePairs: [string, any][]; webURL: string; } = _.assign({}, defaults, options);
 
             if (opts.buildValuePairs === true) {
                 var editableFields = _.where(model.list.fields, { readOnly: false });

@@ -7,7 +7,7 @@ declare module ap {
     }
 
 
-    export interface IListItemVersion<T> extends IListItem<T> {
+    export interface IListItemVersion<T> extends T {
         version: Date;
     }
 

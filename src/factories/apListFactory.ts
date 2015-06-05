@@ -4,7 +4,7 @@ module ap {
     'use strict';
 
     var apConfig: IAPConfig, apDefaultFields, apFieldFactory: FieldFactory;
-    
+
     export interface IUninstantiatedList{
         customFields: IFieldDefinition[];
         environments?: { [key: string]: string };
@@ -100,7 +100,7 @@ module ap {
         webURL: string;
         constructor(config) {
             this.webURL = apConfig.defaultUrl;
-            _.extend(this, config);
+            _.assign(this, config);
             this.environments = this.environments || { production: this.guid };
             this.extendFieldDefinitions();
         }

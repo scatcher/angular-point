@@ -9,21 +9,21 @@ module ap {
         apDecodeService: DecodeService, $q: ng.IQService, toastr: toastr;
 
     export interface IModel {
-        addNewItem<T>(entity: Object, options?: Object): ng.IPromise<IListItem<T>>;
-        createEmptyItem<T>(overrides?: Object): IListItem<T>;
+        addNewItem<T>(entity: Object, options?: Object): ng.IPromise<T>;
+        createEmptyItem<T>(overrides?: Object): T;
         deferredListDefinition: ng.IPromise<Object>;
         executeQuery<T>(queryName?: string, options?: Object): ng.IPromise<IIndexedCache<T>>;
         extendListMetadata(options?: Object): ng.IPromise<any>;
-        factory:Function;
-        generateMockData<T>(options?: Object): IListItem<T>[];
+        factory: <T>(rawObject: Object) => void;
+        generateMockData<T>(options?: Object): T[];
         getAllListItems<T>(): ng.IPromise<IIndexedCache<T>>;
         getCache<T>(queryName?: string): IIndexedCache<T>;
         getCachedEntities<T>(): IIndexedCache<T>;
-        getCachedEntity<T>(listItemId: number): IListItem<T>;
-        getFieldDefinition(fieldName: string): IFieldDefinition;
+        getCachedEntity<T>(listItemId: number): T;
+        getFieldDefinition(fieldName: string): IExtendedFieldDefinition | IFieldDefinition;
         getList(): IList;
         getListId(): string;
-        getListItemById<T>(listItemId: number, options?: Object): ng.IPromise<IListItem<T>>;
+        getListItemById<T>(listItemId: number, options?: Object): ng.IPromise<T>;
         getModel(): Model;
         getQuery<T>(queryName: string): IQuery<T>;
         isInitialised(): boolean;
@@ -34,13 +34,13 @@ module ap {
         resolvePermissions(): IUserPermissionsObject;
         validateEntity<T>(listItem: IListItem<T>, options?: Object): boolean;
     }
-    
+
     export interface IUninitializedModel {
         factory:Function;
         list: IUninstantiatedList;
         [key: string]: any;
     }
-    
+
     export interface IQueriesContainer {
         getAllListItems?: IQuery<any>;
         [key: string]: IQuery<any>
@@ -86,60 +86,60 @@ module ap {
     *         guid: '{PROJECT LIST GUID}',
     *         title: 'Projects',
     *         customFields: [
-        *             {
-        *                staticName: 'Title',
+    *             {
+    *                staticName: 'Title',
     *                objectType: 'Text',
     *                mappedName: 'title',
     *                readOnly: false
-        *             },
+    *             },
     *             {
     *                staticName: 'Customer',
     *                objectType: 'Lookup',
     *                mappedName: 'customer',
     *                readOnly: false
-        *             },
+    *             },
     *             {
     *                staticName: 'ProjectDescription',
     *                objectType: 'Text',
     *                mappedName: 'projectDescription',
     *                readOnly: false
-        *             },
+    *             },
     *             {
     *                staticName: 'Status',
     *                objectType: 'Text',
     *                mappedName: 'status',
     *                readOnly: false
-        *             },
+    *             },
     *             {
     *                staticName: 'TaskManager',
     *                objectType: 'User',
     *                mappedName: 'taskManager',
     *                readOnly: false
-        *             },
+    *             },
     *             {
     *                staticName: 'ProjectGroup',
     *                objectType: 'Lookup',
     *                mappedName: 'group',
     *                readOnly: false
-        *             },
+    *             },
     *             {
     *                staticName: 'CostEstimate',
     *                objectType: 'Currency',
     *                mappedName: 'costEstimate',
     *                readOnly: false
-        *             },
+    *             },
     *             {
     *                staticName: 'Active',
     *                objectType: 'Boolean',
     *                mappedName: 'active',
     *                readOnly: false
-        *             },
+    *             },
     *             {
     *                staticName: 'Attachments',
     *                objectType: 'Attachments',
     *                mappedName: 'attachments',
     *                readOnly: true
-        *             }
+    *             }
     *         ]
     *     }
     * });
@@ -149,7 +149,7 @@ module ap {
         data = [];
         deferredListDefinition;
         list: IList;
-        factory;
+        factory: <T>(rawObject: Object) => void;
         fieldDefinitionsExtended: boolean = false;
         /** Date/Time of last communication with server */
         lastServerUpdate: Date;
@@ -157,27 +157,26 @@ module ap {
         requestForFieldDefinitions;
         constructor(config: IUninitializedModel) {
 
-            var model = this;
+            /** Assign all properties of config to the model */
+            _.assign(this, config);
 
-            _.assign(model, config);
+            /** Allow us to reference the model directly from the list item's factory prototype */
+            this.factory.prototype.getModel = () => this;
 
-            model.factory.prototype.getModel = () => this;
-
-            /** Use list constructor to decorate */
-            model.list = apListFactory.create(model.list);
+            /** Use list constructor to instantiate valid list */
+            this.list = new List(this.list);
 
             /** Register cache name with cache service so we can map factory name with list GUID */
-            apCacheService.registerModel(model);
+            apCacheService.registerModel(this);
 
             /** Convenience query that simply returns all list items within a list. */
-            model.registerQuery({
+            this.registerQuery({
                 name: 'getAllListItems',
                 operation: 'GetListItems'
             });
 
-
         }
-        
+
         /**
          * @ngdoc function
          * @name Model.addNewItem
@@ -204,7 +203,7 @@ module ap {
          * </file>
          * </pre>
          */
-        addNewItem<T>(entity: Object, options?: Object): ng.IPromise<IListItem<T>> {
+        addNewItem<T>(entity: Object, options?: Object): ng.IPromise<T> {
             var model = this,
                 deferred = $q.defer();
 
@@ -216,8 +215,8 @@ module ap {
             });
             return deferred.promise;
         }
-        
-        
+
+
         /**
          * @ngdoc function
          * @name Model.createEmptyItem
@@ -231,7 +230,7 @@ module ap {
          * @param {object} [overrides] - Optionally extend the new empty item with specific values.
          * @returns {object} Newly created list item.
          */
-        createEmptyItem<T>(overrides?: Object): IListItem<T> {
+        createEmptyItem<T>(overrides?: Object): T {
             var model = this;
             var newItem = {};
             _.each(model.list.customFields, (fieldDefinition) => {
@@ -243,9 +242,9 @@ module ap {
             });
             /** Extend any values that should override the default empty values */
             var rawObject = _.assign({}, newItem, overrides);
-            return new model.factory(rawObject);
+            return new model.factory<T>(rawObject);
         }
-        
+
         /**
          * @ngdoc function
          * @name Model.executeQuery
@@ -275,8 +274,8 @@ module ap {
                 return query.execute(options);
             }
         }
-        
-        
+
+
         /**
          * @ngdoc function
          * @name Model.extendListMetadata
@@ -297,7 +296,7 @@ module ap {
                 /** All Future Requests get this */
                 model.deferredListDefinition = deferred.promise;
 
-                var opts = _.extend({}, defaults, options);
+                var opts = _.assign({}, defaults, options);
                 apDataService.getList(opts)
                     .then((responseXML) => {
                     apDecodeService.extendListMetadata(model, responseXML);
@@ -306,7 +305,7 @@ module ap {
             }
             return model.deferredListDefinition;
         }
-        
+
         /**
          * @ngdoc function
          * @name Model.generateMockData
@@ -321,7 +320,7 @@ module ap {
          * @param {boolean} [options.staticValue=false] By default all mock data is dynamically created but if set,
          * this will cause static data to be used instead.
          */
-        generateMockData<T>(options?: Object): IListItem<T>[] {
+        generateMockData<T>(options?: Object): T[] {
             var mockData = [],
                 model = this;
 
@@ -332,7 +331,7 @@ module ap {
             };
 
             /** Extend defaults with any provided options */
-            var opts = _.extend({}, defaults, options);
+            var opts = _.assign({}, defaults, options);
 
             _.times(opts.quantity, (count) => {
                 var mock = {
@@ -344,11 +343,11 @@ module ap {
                 });
 
                 /** Use the factory on the model to extend the object */
-                mockData.push(new model.factory(mock));
+                mockData.push(new model.factory<T>(mock));
             });
             return mockData;
         }
-        
+
         /**
          * @ngdoc function
          * @name Model.getAllListItems
@@ -369,7 +368,7 @@ module ap {
             var model = this;
             return apDataService.executeQuery<T>(model, model.queries.getAllListItems);
         }
-        
+
         /**
          * @ngdoc function
          * @name Model.getCache
@@ -403,7 +402,7 @@ module ap {
             }
             return cache;
         }
-        
+
         /**
          * @ngdoc function
          * @name Model.getCachedEntities
@@ -416,8 +415,8 @@ module ap {
             var model = this;
             return apCacheService.getCachedEntities<T>(model.list.getListId());
         }
-        
-        
+
+
         /**
          * @ngdoc function
          * @name Model.getCachedEntity
@@ -427,12 +426,12 @@ module ap {
          * @param {number} listItemId The ID of the requested listItem.
          * @returns {object} Returns either the requested listItem or undefined if it's not found.
          */
-        getCachedEntity<T>(listItemId: number): IListItem<T> {
+        getCachedEntity<T>(listItemId: number): T {
             var model = this;
             return apCacheService.getCachedEntity<T>(model.list.getListId(), listItemId);
         }
-        
-        
+
+
         /**
          * @ngdoc function
          * @name Model.getFieldDefinition
@@ -454,12 +453,12 @@ module ap {
          * @param {string} fieldName Internal field name.
          * @returns {object} Field definition.
          */
-        getFieldDefinition(fieldName: string): IFieldDefinition {
+        getFieldDefinition(fieldName: string): IExtendedFieldDefinition {
             var model = this;
             return _.find(model.list.fields, { mappedName: fieldName });
         }
-        
-        
+
+
         /**
          * @ngdoc function
          * @name ListItem.getList
@@ -471,8 +470,8 @@ module ap {
         getList(): IList {
             return this.list;
         }
-        
-        
+
+
         /**
          * @ngdoc function
          * @name ListItem.getListId
@@ -483,8 +482,8 @@ module ap {
         getListId(): string {
             return this.list.getListId();
         }
-        
-        
+
+
         /**
          * @ngdoc function
          * @name Model.getListItemById
@@ -503,7 +502,7 @@ module ap {
          * };
          * </pre>
          */
-        getListItemById<T>(listItemId: number, options?: Object): ng.IPromise<IListItem<T>> {
+        getListItemById<T>(listItemId: number, options?: Object): ng.IPromise<T> {
             var deferred = $q.defer(),
                 model = this,
                 /** Unique Query Name */
@@ -526,7 +525,7 @@ module ap {
                     '</Query>'
                 };
                 /** Allows us to override defaults */
-                var opts = _.extend({}, defaults, options);
+                var opts = _.assign({}, defaults, options);
                 model.registerQuery(opts);
             }
 
@@ -540,7 +539,7 @@ module ap {
 
             return deferred.promise;
         }
-        
+
 
         /**
          * @ngdoc function
@@ -591,9 +590,9 @@ module ap {
             }
             return query;
         }
-        
-        
-        
+
+
+
         /**
          * @ngdoc function
          * @name Model.isInitialised
@@ -606,8 +605,8 @@ module ap {
             var model = this;
             return _.isDate(model.lastServerUpdate);
         }
-        
-        
+
+
         /**
          * @ngdoc function
          * @name Model.registerQuery
@@ -746,15 +745,15 @@ module ap {
                 name: apConfig.defaultQueryName
             };
 
-            queryOptions = _.extend({}, defaults, queryOptions);
+            queryOptions = _.assign({}, defaults, queryOptions);
 
             model.queries[queryOptions.name] = apQueryFactory.create(queryOptions, model);
 
             /** Return the newly created query */
             return model.queries[queryOptions.name];
         }
-        
-        
+
+
         /**
          * @ngdoc function
          * @name Model.resolvePermissions
@@ -819,7 +818,7 @@ module ap {
                 return apUtilityService.resolvePermissions(null);
             }
         }
-        
+
         /**
          * @ngdoc function
          * @name Model.validateEntity
@@ -842,7 +841,7 @@ module ap {
             };
 
             /** Extend defaults with any provided options */
-            var opts = _.extend({}, defaults, options);
+            var opts = _.assign({}, defaults, options);
 
             var checkObject = (fieldValue) => {
                 return _.isObject(fieldValue) && _.isNumber(fieldValue.lookupId);
