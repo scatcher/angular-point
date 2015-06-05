@@ -77,7 +77,7 @@ module ap {
             delim: ', ',
             dateFormat: 'short'
         },
-            opts = _.extend({}, defaults, options);
+            opts = _.assign({}, defaults, options);
 
         var str: string = '';
         /** Only process if prop is defined */

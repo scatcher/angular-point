@@ -2,7 +2,7 @@
 
 module ap {
     'use strict';
-	
+
     var deferred: ng.IDeferred<Function>,
         registerCallback: ng.IPromise<Function>;
 

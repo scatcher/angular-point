@@ -15,7 +15,7 @@ module ap {
                 sparse: false // If true, empty ("") values will not be returned
             };
 
-            var opts = _.extend({}, defaults, options);
+            var opts = _.assign({}, defaults, options);
 
             var jsonObjectArray = [];
 
