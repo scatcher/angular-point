@@ -37,9 +37,10 @@ module ap {
 
     export class LookupFactory {
         Lookup = Lookup;
-        constructor($injector) {
-            $q = $injector.get('$q');
-            apUtilityService = $injector.get('apUtilityService');
+        static $inject = ['$q', 'apUtilityService'];
+        constructor(_$q_, _apUtilityService_) {
+            $q = _$q_;
+            apUtilityService = _apUtilityService_;
         }
 
         /**

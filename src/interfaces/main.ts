@@ -2,8 +2,28 @@
 
 declare module ap {
 
+    export interface IXMLGroup {
+        ID: string;
+        Name: string;
+        Description: string;
+        OwnerID: string;
+        OwnerIsUser: string;
+    }
+
+    export interface IXMLUser {
+        ID: string;
+        Sid: string;
+        Name: string;
+        LoginName: string;
+        Email: string;
+        Notes: string;
+        IsSiteAdmin: string;
+        IsDomainGroup: string;
+        Flags: string;
+    }
+
     export interface IListItemCrudOptions<T> {
-        target:IIndexedCache<T>;
+        target: IIndexedCache<T>;
     }
 
 
@@ -25,31 +45,31 @@ declare module ap {
         workflowName?: string;
     }
 
-//    export interface IDiscussionThread {
-//        posts: IDiscussionThreadPost[];
-//        nextId: number;
-//        getNextId(): number;
-//        createPost(parentId: number, content: string): IDiscussionThreadPost;
-//        getListItem(): IListItem;
-//        prune(): void;
-//        saveChanges(): ng.IPromise<IListItem>;
-//    }
+    //    export interface IDiscussionThread {
+    //        posts: IDiscussionThreadPost[];
+    //        nextId: number;
+    //        getNextId(): number;
+    //        createPost(parentId: number, content: string): IDiscussionThreadPost;
+    //        getListItem(): IListItem;
+    //        prune(): void;
+    //        saveChanges(): ng.IPromise<IListItem>;
+    //    }
 
-//    export interface IDiscussionThreadPost {
-//        content: string;
-//        id: number;
-//        parentId: number;
-//        created: Date;
-//        user: IUser;
-//        removePost(): void;
-//        deletePost(): ng.IPromise<IListItem>;
-//        savePost(): ng.IPromise<IListItem>;
-//        reply(): ng.IPromise<IListItem>;
-//    }
+    //    export interface IDiscussionThreadPost {
+    //        content: string;
+    //        id: number;
+    //        parentId: number;
+    //        created: Date;
+    //        user: IUser;
+    //        removePost(): void;
+    //        deletePost(): ng.IPromise<IListItem>;
+    //        savePost(): ng.IPromise<IListItem>;
+    //        reply(): ng.IPromise<IListItem>;
+    //    }
 
-//    export interface ICache<T> extends IIndexedCache<T>{
-//        //TODO Populate me!
-//    }
+    //    export interface ICache<T> extends IIndexedCache<T>{
+    //        //TODO Populate me!
+    //    }
 
     export interface IUserPermissionsObject {
         ViewListItems: boolean;
@@ -95,10 +115,10 @@ interface JQuery {
 }
 
 interface _ {
-    isGuid(string):boolean;
+    isGuid(string): boolean;
     deepIn(Object, string): boolean;
     deepGet(Object, string): any;
-    isDefined(val:any): boolean;
+    isDefined(val: any): boolean;
 }
 
 interface chance {
@@ -110,16 +130,16 @@ interface window {
     Chance;
 }
 
-interface IToast{
-    toastId:number;
-    scope:ng.IScope;
-    iconClass:string;
+interface IToast {
+    toastId: number;
+    scope: ng.IScope;
+    iconClass: string;
 }
 
 interface toastr {
-    error(message: string, title?:string, optionsOverride?:Object):IToast;
-    info(message: string, title?:string, optionsOverride?:Object):IToast;
-    success(message: string, title?:string, optionsOverride?:Object):IToast;
-    warning(message: string, title?:string, optionsOverride?:Object):IToast;
-    clear(IToast?):void;
+    error(message: string, title?: string, optionsOverride?: Object): IToast;
+    info(message: string, title?: string, optionsOverride?: Object): IToast;
+    success(message: string, title?: string, optionsOverride?: Object): IToast;
+    warning(message: string, title?: string, optionsOverride?: Object): IToast;
+    clear(IToast?): void;
 }

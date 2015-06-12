@@ -21,9 +21,10 @@ module ap {
         stringifyMultiChoice = stringifyMultiChoice;
         stringifyMultiLookup = stringifyMultiLookup;
         stringifyNumber = stringifyNumber;
+        static $inject = ['$filter'];
 
-        constructor($injector) {
-            $filter = $injector.get('$filter');
+        constructor(_$filter_) {
+            $filter = _$filter_;
         }
     }
 

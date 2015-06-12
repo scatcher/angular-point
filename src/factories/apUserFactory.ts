@@ -40,14 +40,15 @@ module ap {
      * @param {string} s Delimited string used to create a User object.
      * @constructor
      */
-    class User implements IUser{
+    class User implements IUser {
         lookupValue: string;
         lookupId: number;
-        loginName:string;
-        email:string;
-        sipAddress:string;
-        title:string;
-        constructor(str:string) {
+        loginName: string;
+        email: string;
+        sipAddress: string;
+        title: string;
+
+        constructor(str: string) {
             var self = this;
             var thisUser = new apUtilityService.SplitIndex(str);
 
@@ -69,12 +70,12 @@ module ap {
     }
 
 
-
     export class UserFactory {
         User = User;
-        constructor($injector) {
-            apUtilityService = $injector.get('apUtilityService');
+        static $inject = ['apUtilityService'];
 
+        constructor(_apUtilityService_) {
+            apUtilityService = _apUtilityService_;
         }
 
         /**

@@ -206,14 +206,18 @@ module ap {
 
     export class QueryFactory {
         Query = Query;
-        constructor($injector) {
-            $q = $injector.get('$q');
-            apConfig = $injector.get('apConfig');
-            apDataService = $injector.get('apDataService');
-            apDefaultListItemQueryOptions = $injector.get('apDefaultListItemQueryOptions');
-            apIndexedCacheFactory = $injector.get('apIndexedCacheFactory');
+        static $inject = ['$q', 'apConfig', 'apDataService', 'apDefaultListItemQueryOptions', 'apIndexedCacheFactory'];
+
+        constructor(_$q_, _apConfig_, _apDataService_, _apDefaultListItemQueryOptions_, _apIndexedCacheFactory_) {
+
+            $q = _$q_;
+            apConfig = _apConfig_;
+            apDataService = _apDataService_;
+            apDefaultListItemQueryOptions = _apDefaultListItemQueryOptions_;
+            apIndexedCacheFactory = _apIndexedCacheFactory_;
 
         }
+
         /**
          * @ngdoc function
          * @name angularPoint.apQueryFactory:create

@@ -4,7 +4,7 @@ module ap {
     'use strict';
 
     var apCacheService: CacheService, apDataService: DataService, apListFactory: ListFactory,
-        ListItemFactory: ListItemFactory, apQueryFactory: QueryFactory, apUtilityService: UtilityService,
+        apQueryFactory: QueryFactory, apUtilityService: UtilityService,
         apFieldService: FieldService, apConfig: IAPConfig, apIndexedCacheFactory: IndexedCacheFactory,
         apDecodeService: DecodeService, $q: ng.IQService, toastr: toastr;
 
@@ -899,19 +899,20 @@ module ap {
 
     export class ModelFactory {
         Model = Model;
-        constructor($injector) {
-            $q = $injector.get('$q');
-            apCacheService = $injector.get('apCacheService');
-            apConfig = $injector.get('apConfig');
-            apDataService = $injector.get('apDataService');
-            apDecodeService = $injector.get('apDecodeService');
-            apFieldService = $injector.get('apFieldService');
-            apIndexedCacheFactory = $injector.get('apIndexedCacheFactory');
-            apListFactory = $injector.get('apListFactory');
-            apQueryFactory = $injector.get('apQueryFactory');
-            apUtilityService = $injector.get('apUtilityService');
-            ListItemFactory = $injector.get('apListItemFactory');
-            toastr = $injector.get('toastr');
+        static $inject = ['$q', 'apCacheService', 'apConfig', 'apDataService', 'apDecodeService', 'apFieldService', 'apIndexedCacheFactory', 'apListFactory', 'apQueryFactory', 'apUtilityService', 'toastr'];
+        constructor(_$q_, _apCacheService_, _apConfig_, _apDataService_, _apDecodeService_, _apFieldService_, _apIndexedCacheFactory_, _apListFactory_, _apQueryFactory_, _apUtilityService_, _toastr_) {
+
+            $q = _$q_;
+            apCacheService = _apCacheService_;
+            apConfig = _apConfig_;
+            apDataService = _apDataService_;
+            apDecodeService = _apDecodeService_;
+            apFieldService = _apFieldService_;
+            apIndexedCacheFactory = _apIndexedCacheFactory_;
+            apListFactory = _apListFactory_;
+            apQueryFactory = _apQueryFactory_;
+            apUtilityService = _apUtilityService_;
+            toastr = _toastr_;
         }
 
         create(config) {

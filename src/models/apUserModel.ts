@@ -81,6 +81,7 @@ module ap {
     }
 
     class UserModel {
+        static $inject = ['$q', 'apDataService'];
         constructor(private $q: ng.IQService, private apDataService: DataService) {
 
         }

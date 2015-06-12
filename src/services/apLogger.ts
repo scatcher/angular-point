@@ -18,7 +18,7 @@ module ap {
         url?: string;
     }
 
-    export interface ILogger{
+    export interface ILogger {
         debug(message: string, optionsOverride?: ILogEvent): ng.IPromise<IListItem<any>>;
         error(message: string, optionsOverride?: ILogEvent): ng.IPromise<IListItem<any>>;
         exception(exception, cause?, optionsOverride?: ILogEvent): void;
@@ -75,6 +75,8 @@ module ap {
          * @param {ILogger} [optionsOverride] Override any log options.
          */
         warn(message: string, optionsOverride?: ILogEvent): ng.IPromise<IListItem<any>>;
+
+        static $inject = ['$q', '$window', '$log', '$timeout'];
 
         constructor($q, private $window, private $log, private $timeout) {
             /** Create a deferred object we can use to delay functionality until log model is registered */
@@ -141,9 +143,9 @@ module ap {
         }
 
         private notify(options: ILogEvent) {
-            return this.$timeout( () => {
+            return this.$timeout(() => {
                 /** Allow navigation to settle before capturing url */
-                return this.registerEvent(_.assign({}, { url: this.$window.location.href }, options));
+                return this.registerEvent(_.assign({}, {url: this.$window.location.href}, options));
             }, 0);
         }
 

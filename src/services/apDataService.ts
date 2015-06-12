@@ -37,25 +37,31 @@ module ap {
 
     export class DataService implements IDataService {
         queryForCurrentSite: ng.IPromise<string>;
+        static $inject = ['$http', '$q', '$timeout', 'apCacheService', 'apChangeService', 'apConfig', 'apDecodeService',
+            'apDefaultListItemQueryOptions', 'apEncodeService', 'apFieldService', 'apIndexedCacheFactory',
+            'apUtilityService', 'apWebServiceOperationConstants', 'apXMLToJSONService', 'SPServices', 'toastr' ];
 
-        constructor($injector) {
+        constructor(_$http_, _$q_, _$timeout_, _apCacheService_, _apChangeService_, _apConfig_, _apDecodeService_,
+                    _apDefaultListItemQueryOptions_, _apEncodeService_, _apFieldService_, _apIndexedCacheFactory_,
+                    _apUtilityService_, _apWebServiceOperationConstants_, _apXMLToJSONService_, _SPServices_, _toastr_) {
             service = this;
-            $http = $injector.get('$http');
-            $q = $injector.get('$q');
-            $timeout = $injector.get('$timeout');
-            apCacheService = $injector.get('apCacheService');
-            apChangeService = $injector.get('apChangeService');
-            apConfig = $injector.get('apConfig');
-            apDecodeService = $injector.get('apDecodeService');
-            apDefaultListItemQueryOptions = $injector.get('apDefaultListItemQueryOptions');
-            apEncodeService = $injector.get('apEncodeService');
-            apFieldService = $injector.get('apFieldService');
-            apIndexedCacheFactory = $injector.get('apIndexedCacheFactory');
-            apUtilityService = $injector.get('apUtilityService');
-            apWebServiceOperationConstants = $injector.get('apWebServiceOperationConstants');
-            apXMLToJSONService = $injector.get('apXMLToJSONService');
-            SPServices = $injector.get('SPServices');
-            toastr = $injector.get('toastr');
+
+            $http = _$http_;
+            $q = _$q_;
+            $timeout = _$timeout_;
+            apCacheService = _apCacheService_;
+            apChangeService = _apChangeService_;
+            apConfig = _apConfig_;
+            apDecodeService = _apDecodeService_;
+            apDefaultListItemQueryOptions = _apDefaultListItemQueryOptions_;
+            apEncodeService = _apEncodeService_;
+            apFieldService = _apFieldService_;
+            apIndexedCacheFactory = _apIndexedCacheFactory_;
+            apUtilityService = _apUtilityService_;
+            apWebServiceOperationConstants = _apWebServiceOperationConstants_;
+            apXMLToJSONService = _apXMLToJSONService_;
+            SPServices = _SPServices_;
+            toastr = _toastr_;
         }
 
         /**

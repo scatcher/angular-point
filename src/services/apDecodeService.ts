@@ -27,11 +27,11 @@ module ap {
         parseFieldVersions(responseXML: XMLDocument, fieldDefinition: IFieldDefinition): IListItemVersion[];
         parseStringValue(str: string, objectType?: string, options?: { entity: Object; propertyName: string; }): any;
         parseXMLEntity<T>(xmlEntity: XMLDocument, listItemProvider: (Object) => T,
-            options: { mapping: IFieldDefinition[]; includeAllAttrs?: boolean; listItemProvider?: Function; removeOws?: boolean; target?: IIndexedCache<T> }): T;
+                          options: { mapping: IFieldDefinition[]; includeAllAttrs?: boolean; listItemProvider?: Function; removeOws?: boolean; target?: IIndexedCache<T> }): T;
         processListItems<T>(model: Model, query: IQuery<T>, responseXML: XMLDocument,
-            options?: { factory: Function; filter: string; mapping: IFieldDefinition[]; target: IIndexedCache<T> }): IIndexedCache<T>;
+                            options?: { factory: Function; filter: string; mapping: IFieldDefinition[]; target: IIndexedCache<T> }): IIndexedCache<T>;
         xmlToJson<T>(xmlEntities: XMLDocument[], listItemProvider: (Object) => T,
-            options: { mapping: IFieldDefinition[]; includeAllAttrs?: boolean; listItemProvider?: Function; removeOws?: boolean; target?: IIndexedCache<T> }): T[];
+                     options: { mapping: IFieldDefinition[]; includeAllAttrs?: boolean; listItemProvider?: Function; removeOws?: boolean; target?: IIndexedCache<T> }): T[];
     }
 
     /**
@@ -45,9 +45,12 @@ module ap {
      * @requires angularPoint.apCacheService
      */
     export class DecodeService implements IDecodeService {
+        static $inject = ['apCacheService', 'apLookupFactory', 'apUserFactory', 'apFieldService',
+            'apXMLListAttributeTypes', 'apXMLFieldAttributeTypes'];
+
         constructor(private apCacheService: ICacheService, private apLookupFactory: LookupFactory,
-            private apUserFactory: UserFactory, private apFieldService, private apXMLListAttributeTypes,
-            private apXMLFieldAttributeTypes) {
+                    private apUserFactory: UserFactory, private apFieldService, private apXMLListAttributeTypes,
+                    private apXMLFieldAttributeTypes) {
 
         }
 
@@ -66,7 +69,7 @@ module ap {
             /** Look for <errorstring></errorstring> or <ErrorText></ErrorText> for details on any errors */
             var errorElements = ['ErrorText', 'errorstring'];
             _.each(errorElements, (element) => {
-                $(responseXML).find(element).each(function() {
+                $(responseXML).find(element).each(function () {
                     error = $(this).text();
                     /** Break early if found */
                     return false;
@@ -187,7 +190,7 @@ module ap {
          */
         extendListDefinitionFromXML(list: IList, responseXML: XMLDocument): IList {
             var service = this;
-            $(responseXML).find("List").each(function() {
+            $(responseXML).find("List").each(function () {
                 service.extendObjectWithXMLAttributes(this, list, service.apXMLListAttributeTypes);
             });
             return list;
@@ -448,7 +451,7 @@ module ap {
 
                 /** Properly format field based on definition from model */
                 version[fieldDefinition.mappedName] =
-                this.parseStringValue($(xmlVersion).attr(fieldDefinition.staticName), fieldDefinition.objectType);
+                    this.parseStringValue($(xmlVersion).attr(fieldDefinition.staticName), fieldDefinition.objectType);
 
                 /** Push to beginning of array */
                 versions.unshift(version);
@@ -549,7 +552,7 @@ module ap {
          * @returns {object} New entity using the factory on the model.
          */
         parseXMLEntity<T>(xmlEntity: XMLDocument, listItemProvider: (Object) => IListItem<T>,
-            options: { mapping: IFieldDefinition[]; includeAllAttrs?: boolean; listItemProvider?: Function; removeOws?: boolean; target?: IIndexedCache<T> }): T {
+                          options: { mapping: IFieldDefinition[]; includeAllAttrs?: boolean; listItemProvider?: Function; removeOws?: boolean; target?: IIndexedCache<T> }): T {
             var entity = {};
             var rowAttrs = xmlEntity.attributes;
 
@@ -595,7 +598,7 @@ module ap {
          * @returns {Object} Inedexed Cache.
          */
         processListItems<T>(model: Model, query: IQuery<T>, responseXML: XMLDocument,
-            options?: { factory: Function; filter: string; mapping: IFieldDefinition[]; target: IIndexedCache<T> }): IIndexedCache<T> {
+                            options?: { factory: Function; filter: string; mapping: IFieldDefinition[]; target: IIndexedCache<T> }): IIndexedCache<T> {
             var defaults = {
                 factory: model.factory,
                 filter: 'z:row',
@@ -639,7 +642,7 @@ module ap {
          * @returns {object[]} An array of JavaScript objects.
          */
         xmlToJson<T>(xmlEntities: XMLDocument[], listItemProvider: (Object) => IListItem<T>,
-            options: { mapping: IFieldDefinition[]; includeAllAttrs?: boolean; listItemProvider?: Function; removeOws?: boolean; target?: IIndexedCache<T> }): T[] {
+                     options: { mapping: IFieldDefinition[]; includeAllAttrs?: boolean; listItemProvider?: Function; removeOws?: boolean; target?: IIndexedCache<T> }): T[] {
 
             var defaults = {
                 mapping: {},

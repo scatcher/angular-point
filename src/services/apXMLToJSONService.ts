@@ -3,10 +3,13 @@
 module ap {
     'use strict';
 
-    export class XMLToJSONService{
+    export class XMLToJSONService {
+        static $inject = ['apDecodeService'];
+
         constructor(private apDecodeService: DecodeService) {
 
         }
+
         parse(xmlNodeSet: XMLDocument, options?: {includeAllAttrs: boolean; mapping: Object; removeOws: boolean; sparse: boolean; }): Object[] {
             var defaults = {
                 includeAllAttrs: false, // If true, return all attributes, regardless whether they are in the mapping

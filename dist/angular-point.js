@@ -756,11 +756,12 @@ var ap;
      *
      */
     var FieldFactory = (function () {
-        function FieldFactory($injector) {
+        function FieldFactory(_apFieldService_, _apUtilityService_) {
             this.Field = Field;
-            apFieldService = $injector.get('apFieldService');
-            apUtilityService = $injector.get('apUtilityService');
+            apFieldService = _apFieldService_;
+            apUtilityService = _apUtilityService_;
         }
+        FieldFactory.$inject = ['apFieldService', 'apUtilityService'];
         return FieldFactory;
     })();
     ap.FieldFactory = FieldFactory;
@@ -1099,11 +1100,11 @@ var ap;
      * @requires angularPoint.apFieldFactory
      */
     var ListFactory = (function () {
-        function ListFactory($injector) {
+        function ListFactory(_apConfig_, _apDefaultFields_, _apFieldFactory_) {
             this.List = List;
-            apConfig = $injector.get('apConfig');
-            apDefaultFields = $injector.get('apDefaultFields');
-            apFieldFactory = $injector.get('apFieldFactory');
+            apConfig = _apConfig_;
+            apDefaultFields = _apDefaultFields_;
+            apFieldFactory = _apFieldFactory_;
         }
         /**
          * @ngdoc function
@@ -1116,6 +1117,7 @@ var ap;
         ListFactory.prototype.create = function (config) {
             return new List(config);
         };
+        ListFactory.$inject = ['apConfig', 'apDefaultFields', 'apFieldFactory'];
         return ListFactory;
     })();
     ap.ListFactory = ListFactory;
@@ -1736,16 +1738,16 @@ var ap;
      * @requires apUtilityService
      */
     var ListItemFactory = (function () {
-        function ListItemFactory($injector) {
+        function ListItemFactory(_$q_, _apCacheService_, _apConfig_, _apDataService_, _apEncodeService_, _apFormattedFieldValueService_, _apUtilityService_, _toastr_) {
             this.ListItem = ListItem;
-            $q = $injector.get("$q");
-            apCacheService = $injector.get("apCacheService");
-            apConfig = $injector.get("apConfig");
-            apDataService = $injector.get("apDataService");
-            apEncodeService = $injector.get("apEncodeService");
-            apFormattedFieldValueService = $injector.get("apFormattedFieldValueService");
-            apUtilityService = $injector.get("apUtilityService");
-            toastr = $injector.get("toastr");
+            $q = _$q_;
+            apCacheService = _apCacheService_;
+            apConfig = _apConfig_;
+            apDataService = _apDataService_;
+            apEncodeService = _apEncodeService_;
+            apFormattedFieldValueService = _apFormattedFieldValueService_;
+            apUtilityService = _apUtilityService_;
+            toastr = _toastr_;
         }
         /**
          * @ngdoc function
@@ -1768,6 +1770,7 @@ var ap;
         ListItemFactory.prototype.createGenericFactory = function () {
             return new StandardListItem();
         };
+        ListItemFactory.$inject = ['$q', 'apCacheService', 'apConfig', 'apDataService', 'apEncodeService', 'apFormattedFieldValueService', 'apUtilityService', 'toastr'];
         return ListItemFactory;
     })();
     ap.ListItemFactory = ListItemFactory;
@@ -1804,10 +1807,10 @@ var ap;
     })();
     ap.Lookup = Lookup;
     var LookupFactory = (function () {
-        function LookupFactory($injector) {
+        function LookupFactory(_$q_, _apUtilityService_) {
             this.Lookup = Lookup;
-            $q = $injector.get('$q');
-            apUtilityService = $injector.get('apUtilityService');
+            $q = _$q_;
+            apUtilityService = _apUtilityService_;
         }
         /**
          * @ngdoc function
@@ -1819,6 +1822,7 @@ var ap;
         LookupFactory.prototype.create = function (s, options) {
             return new Lookup(s, options);
         };
+        LookupFactory.$inject = ['$q', 'apUtilityService'];
         return LookupFactory;
     })();
     ap.LookupFactory = LookupFactory;
@@ -1837,7 +1841,7 @@ var ap;
 var ap;
 (function (ap) {
     'use strict';
-    var apCacheService, apDataService, apListFactory, ListItemFactory, apQueryFactory, apUtilityService, apFieldService, apConfig, apIndexedCacheFactory, apDecodeService, $q, toastr;
+    var apCacheService, apDataService, apListFactory, apQueryFactory, apUtilityService, apFieldService, apConfig, apIndexedCacheFactory, apDecodeService, $q, toastr;
     /**
      * @ngdoc function
      * @name Model
@@ -2626,24 +2630,24 @@ var ap;
     })();
     ap.Model = Model;
     var ModelFactory = (function () {
-        function ModelFactory($injector) {
+        function ModelFactory(_$q_, _apCacheService_, _apConfig_, _apDataService_, _apDecodeService_, _apFieldService_, _apIndexedCacheFactory_, _apListFactory_, _apQueryFactory_, _apUtilityService_, _toastr_) {
             this.Model = Model;
-            $q = $injector.get('$q');
-            apCacheService = $injector.get('apCacheService');
-            apConfig = $injector.get('apConfig');
-            apDataService = $injector.get('apDataService');
-            apDecodeService = $injector.get('apDecodeService');
-            apFieldService = $injector.get('apFieldService');
-            apIndexedCacheFactory = $injector.get('apIndexedCacheFactory');
-            apListFactory = $injector.get('apListFactory');
-            apQueryFactory = $injector.get('apQueryFactory');
-            apUtilityService = $injector.get('apUtilityService');
-            ListItemFactory = $injector.get('apListItemFactory');
-            toastr = $injector.get('toastr');
+            $q = _$q_;
+            apCacheService = _apCacheService_;
+            apConfig = _apConfig_;
+            apDataService = _apDataService_;
+            apDecodeService = _apDecodeService_;
+            apFieldService = _apFieldService_;
+            apIndexedCacheFactory = _apIndexedCacheFactory_;
+            apListFactory = _apListFactory_;
+            apQueryFactory = _apQueryFactory_;
+            apUtilityService = _apUtilityService_;
+            toastr = _toastr_;
         }
         ModelFactory.prototype.create = function (config) {
             return new Model(config);
         };
+        ModelFactory.$inject = ['$q', 'apCacheService', 'apConfig', 'apDataService', 'apDecodeService', 'apFieldService', 'apIndexedCacheFactory', 'apListFactory', 'apQueryFactory', 'apUtilityService', 'toastr'];
         return ModelFactory;
     })();
     ap.ModelFactory = ModelFactory;
@@ -2796,13 +2800,13 @@ var ap;
     })();
     ap.Query = Query;
     var QueryFactory = (function () {
-        function QueryFactory($injector) {
+        function QueryFactory(_$q_, _apConfig_, _apDataService_, _apDefaultListItemQueryOptions_, _apIndexedCacheFactory_) {
             this.Query = Query;
-            $q = $injector.get('$q');
-            apConfig = $injector.get('apConfig');
-            apDataService = $injector.get('apDataService');
-            apDefaultListItemQueryOptions = $injector.get('apDefaultListItemQueryOptions');
-            apIndexedCacheFactory = $injector.get('apIndexedCacheFactory');
+            $q = _$q_;
+            apConfig = _apConfig_;
+            apDataService = _apDataService_;
+            apDefaultListItemQueryOptions = _apDefaultListItemQueryOptions_;
+            apIndexedCacheFactory = _apIndexedCacheFactory_;
         }
         /**
          * @ngdoc function
@@ -2816,6 +2820,7 @@ var ap;
         QueryFactory.prototype.create = function (config, model) {
             return new Query(config, model);
         };
+        QueryFactory.$inject = ['$q', 'apConfig', 'apDataService', 'apDefaultListItemQueryOptions', 'apIndexedCacheFactory'];
         return QueryFactory;
     })();
     ap.QueryFactory = QueryFactory;
@@ -2886,9 +2891,9 @@ var ap;
         return User;
     })();
     var UserFactory = (function () {
-        function UserFactory($injector) {
+        function UserFactory(_apUtilityService_) {
             this.User = User;
-            apUtilityService = $injector.get('apUtilityService');
+            apUtilityService = _apUtilityService_;
         }
         /**
          * @ngdoc function
@@ -2900,6 +2905,7 @@ var ap;
         UserFactory.prototype.create = function (s) {
             return new User(s);
         };
+        UserFactory.$inject = ['apUtilityService'];
         return UserFactory;
     })();
     ap.UserFactory = UserFactory;
@@ -2994,6 +3000,7 @@ var ap;
             }
             return _getUserProfile;
         };
+        UserModel.$inject = ['$q', 'apDataService'];
         return UserModel;
     })();
     /**
@@ -3137,11 +3144,11 @@ var ap;
         return ModelCache;
     })(ap.IndexedCache);
     var CacheService = (function () {
-        function CacheService($injector) {
+        function CacheService(_$q_, _$log_, _apIndexedCacheFactory_) {
             this.entityCache = entityCache;
-            $q = $injector.get('$q');
-            $log = $injector.get('$log');
-            apIndexedCacheFactory = $injector.get('apIndexedCacheFactory');
+            $q = _$q_;
+            $log = _$log_;
+            apIndexedCacheFactory = _apIndexedCacheFactory_;
             service = this;
         }
         /**
@@ -3348,6 +3355,7 @@ var ap;
                 delete modelCache[entityId];
             }
         };
+        CacheService.$inject = ['$q', '$log', 'apIndexedCacheFactory'];
         return CacheService;
     })();
     ap.CacheService = CacheService;
@@ -3399,24 +3407,24 @@ var ap;
     'use strict';
     var service, $q, $timeout, $http, apConfig, apUtilityService, apCacheService, apDecodeService, apEncodeService, apFieldService, apIndexedCacheFactory, toastr, SPServices, apDefaultListItemQueryOptions, apWebServiceOperationConstants, apXMLToJSONService, apChangeService;
     var DataService = (function () {
-        function DataService($injector) {
+        function DataService(_$http_, _$q_, _$timeout_, _apCacheService_, _apChangeService_, _apConfig_, _apDecodeService_, _apDefaultListItemQueryOptions_, _apEncodeService_, _apFieldService_, _apIndexedCacheFactory_, _apUtilityService_, _apWebServiceOperationConstants_, _apXMLToJSONService_, _SPServices_, _toastr_) {
             service = this;
-            $http = $injector.get('$http');
-            $q = $injector.get('$q');
-            $timeout = $injector.get('$timeout');
-            apCacheService = $injector.get('apCacheService');
-            apChangeService = $injector.get('apChangeService');
-            apConfig = $injector.get('apConfig');
-            apDecodeService = $injector.get('apDecodeService');
-            apDefaultListItemQueryOptions = $injector.get('apDefaultListItemQueryOptions');
-            apEncodeService = $injector.get('apEncodeService');
-            apFieldService = $injector.get('apFieldService');
-            apIndexedCacheFactory = $injector.get('apIndexedCacheFactory');
-            apUtilityService = $injector.get('apUtilityService');
-            apWebServiceOperationConstants = $injector.get('apWebServiceOperationConstants');
-            apXMLToJSONService = $injector.get('apXMLToJSONService');
-            SPServices = $injector.get('SPServices');
-            toastr = $injector.get('toastr');
+            $http = _$http_;
+            $q = _$q_;
+            $timeout = _$timeout_;
+            apCacheService = _apCacheService_;
+            apChangeService = _apChangeService_;
+            apConfig = _apConfig_;
+            apDecodeService = _apDecodeService_;
+            apDefaultListItemQueryOptions = _apDefaultListItemQueryOptions_;
+            apEncodeService = _apEncodeService_;
+            apFieldService = _apFieldService_;
+            apIndexedCacheFactory = _apIndexedCacheFactory_;
+            apUtilityService = _apUtilityService_;
+            apWebServiceOperationConstants = _apWebServiceOperationConstants_;
+            apXMLToJSONService = _apXMLToJSONService_;
+            SPServices = _SPServices_;
+            toastr = _toastr_;
         }
         /**
          * @ngdoc function
@@ -4183,6 +4191,9 @@ var ap;
             }
             return validPayload;
         };
+        DataService.$inject = ['$http', '$q', '$timeout', 'apCacheService', 'apChangeService', 'apConfig', 'apDecodeService',
+            'apDefaultListItemQueryOptions', 'apEncodeService', 'apFieldService', 'apIndexedCacheFactory',
+            'apUtilityService', 'apWebServiceOperationConstants', 'apXMLToJSONService', 'SPServices', 'toastr'];
         return DataService;
     })();
     ap.DataService = DataService;
@@ -4770,6 +4781,8 @@ var ap;
             });
             return parsedEntities;
         };
+        DecodeService.$inject = ['apCacheService', 'apLookupFactory', 'apUserFactory', 'apFieldService',
+            'apXMLListAttributeTypes', 'apXMLFieldAttributeTypes'];
         return DecodeService;
     })();
     ap.DecodeService = DecodeService;
@@ -4979,6 +4992,7 @@ var ap;
             });
             return stringifiedValues;
         };
+        EncodeService.$inject = ['apUtilityService', 'SPServices'];
         return EncodeService;
     })();
     ap.EncodeService = EncodeService;
@@ -5263,6 +5277,7 @@ var ap;
             if (filename === void 0) { filename = 'debug.xml'; }
             this.saveFile(data, 'xml', filename);
         };
+        ExportService.$inject = ['apUtilityService', 'apFormattedFieldValueService'];
         return ExportService;
     })();
     ap.ExportService = ExportService;
@@ -5585,7 +5600,7 @@ var ap;
      * Returns the formatted string value for a field based on field type.
      */
     var FormattedFieldValueService = (function () {
-        function FormattedFieldValueService($injector) {
+        function FormattedFieldValueService(_$filter_) {
             this.getFormattedFieldValue = getFormattedFieldValue;
             this.stringifyBoolean = stringifyBoolean;
             this.stringifyCalc = stringifyCalc;
@@ -5595,8 +5610,9 @@ var ap;
             this.stringifyMultiChoice = stringifyMultiChoice;
             this.stringifyMultiLookup = stringifyMultiLookup;
             this.stringifyNumber = stringifyNumber;
-            $filter = $injector.get('$filter');
+            $filter = _$filter_;
         }
+        FormattedFieldValueService.$inject = ['$filter'];
         return FormattedFieldValueService;
     })();
     ap.FormattedFieldValueService = FormattedFieldValueService;
@@ -5918,6 +5934,7 @@ var ap;
         Logger.prototype.subscribe = function (callback) {
             deferred.resolve(callback);
         };
+        Logger.$inject = ['$q', '$window', '$log', '$timeout'];
         return Logger;
     })();
     ap.Logger = Logger;
@@ -7660,7 +7677,7 @@ var ap;
     'use strict';
     var $q, apConfig, $timeout;
     var UtilityService = (function () {
-        function UtilityService($injector) {
+        function UtilityService(_$q_, _$timeout_, _apConfig_) {
             this.batchProcess = batchProcess;
             this.convertEffectivePermMask = convertEffectivePermMask;
             this.dateWithinRange = dateWithinRange;
@@ -7672,10 +7689,11 @@ var ap;
             this.stringifyXML = stringifyXML;
             this.toCamelCase = toCamelCase;
             this.yyyymmdd = yyyymmdd;
-            $q = $injector.get('$q');
-            apConfig = $injector.get('apConfig');
-            $timeout = $injector.get('$timeout');
+            $q = _$q_;
+            $timeout = _$timeout_;
+            apConfig = _apConfig_;
         }
+        UtilityService.$inject = ['$q', '$timeout', 'apConfig'];
         return UtilityService;
     })();
     ap.UtilityService = UtilityService;
@@ -8237,6 +8255,7 @@ var ap;
             // Return the JSON object
             return jsonObjectArray;
         };
+        XMLToJSONService.$inject = ['apDecodeService'];
         return XMLToJSONService;
     })();
     ap.XMLToJSONService = XMLToJSONService;

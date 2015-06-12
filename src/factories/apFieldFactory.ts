@@ -206,9 +206,10 @@ module ap {
      */
     export class FieldFactory {
         Field = Field;
-        constructor($injector) {
-            apFieldService = $injector.get('apFieldService');
-            apUtilityService = $injector.get('apUtilityService');
+        static $inject = ['apFieldService', 'apUtilityService'];
+        constructor(_apFieldService_, _apUtilityService_) {
+            apFieldService = _apFieldService_;
+            apUtilityService = _apUtilityService_;
         }
     }
 

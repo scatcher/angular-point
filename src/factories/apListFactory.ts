@@ -5,7 +5,7 @@ module ap {
 
     var apConfig: IAPConfig, apDefaultFields, apFieldFactory: FieldFactory;
 
-    export interface IUninstantiatedList{
+    export interface IUninstantiatedList {
         customFields: IFieldDefinition[];
         environments?: { [key: string]: string };
         guid?: string;
@@ -198,11 +198,12 @@ module ap {
      * @requires angularPoint.apFieldFactory
      */
     export class ListFactory {
-        constructor($injector) {
+        static $inject = ['apConfig', 'apDefaultFields', 'apFieldFactory'];
+        constructor(_apConfig_, _apDefaultFields_, _apFieldFactory_) {
 
-            apConfig = $injector.get('apConfig');
-            apDefaultFields = $injector.get('apDefaultFields');
-            apFieldFactory = $injector.get('apFieldFactory');
+            apConfig = _apConfig_;
+            apDefaultFields = _apDefaultFields_;
+            apFieldFactory = _apFieldFactory_;
 
         }
 

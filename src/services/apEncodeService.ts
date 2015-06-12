@@ -6,6 +6,8 @@ module ap {
 
     export class EncodeService {
         savedTimeZone;
+        static $inject = ['apUtilityService', 'SPServices'];
+
         constructor(private apUtilityService, private SPServices) {
 
         }
@@ -63,7 +65,7 @@ module ap {
          * @returns {string} Encoded value ready to be sent to the server.
          */
         encodeValue(fieldType: string, value: any): string {
-            var str:string = '';
+            var str: string = '';
             /** Only process if note empty, undefined, or null.  Allow false. */
             if (value !== '' && !_.isUndefined(value) && !_.isNull(value)) {
                 switch (fieldType) {
@@ -114,7 +116,7 @@ module ap {
          * @param {Array} fieldDefinitions Definitions from the model.
          * @param {object} listItem list item that we'll attempt to iterate over to find the properties that we need to
          * save it to SharePoint.
-         * @returns {[string, string][]} Value pairs of all non-readonly fields. 
+         * @returns {[string, string][]} Value pairs of all non-readonly fields.
          * @example
          * [[fieldName1, fieldValue1], [fieldName2, fieldValue2], ...]
          */
@@ -195,7 +197,7 @@ module ap {
             var stringifiedValues = '';
             var idProp = idProperty || 'lookupId';
             var valProp = valueProperty || 'lookupValue';
-            _.each(multiSelectValue, function(lookupObject, iteration) {
+            _.each(multiSelectValue, function (lookupObject, iteration) {
                 /** Need to format string of id's in following format [ID0];#[VAL0];#[ID1];#[VAL1];# */
                 stringifiedValues += lookupObject[idProp] + ';#' + (lookupObject[valProp] || '');
                 if (iteration < multiSelectValue.length) {

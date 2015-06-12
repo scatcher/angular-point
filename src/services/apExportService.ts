@@ -5,6 +5,8 @@ module ap {
 
 
     export class ExportService {
+        static $inject = ['apUtilityService', 'apFormattedFieldValueService'];
+
         constructor(private apUtilityService, private apFormattedFieldValueService) {
 
         }
@@ -59,7 +61,7 @@ module ap {
          * </pre>
          *
          */
-        generateCSV(entities: ListItem[], fields: [string[]|Object[]], options?:{delim:string}): [[string[]][]] {
+        generateCSV(entities: ListItem[], fields: [string[]|Object[]], options?: {delim:string}): [[string[]][]] {
             var defaults = {
                     dateFormat: 'json', //Format as JSON date rather than a formal date string
                     delim: '; ',
@@ -244,7 +246,7 @@ module ap {
          * </pre>
          *
          */
-        saveJSON(data:Object, filename = 'debug.json') {
+        saveJSON(data: Object, filename = 'debug.json') {
             this.saveFile(data, 'json', filename);
         }
 

@@ -557,10 +557,10 @@ module ap {
 
             apDataService.updateListItem<T>(model, listItem, options)
                 .then((updatedListItem) => {
-                deferred.resolve(updatedListItem);
-                /** Optionally broadcast change event */
-                apUtilityService.registerChange(model, 'update', updatedListItem.id);
-            });
+                    deferred.resolve(updatedListItem);
+                    /** Optionally broadcast change event */
+                    apUtilityService.registerChange(model, 'update', updatedListItem.id);
+                });
 
             return deferred.promise;
         }
@@ -623,10 +623,10 @@ module ap {
 
             apDataService.updateListItem<T>(model, listItem, opts)
                 .then((updatedListItem) => {
-                deferred.resolve(updatedListItem);
-                /** Optionally broadcast change event */
-                apUtilityService.registerChange(model, 'update', updatedListItem.id);
-            });
+                    deferred.resolve(updatedListItem);
+                    /** Optionally broadcast change event */
+                    apUtilityService.registerChange(model, 'update', updatedListItem.id);
+                });
 
             return deferred.promise;
         }
@@ -659,14 +659,14 @@ module ap {
                 /** We first need to get the template GUID for the workflow */
                 listItem.getAvailableWorkflows()
                     .then((workflows) => {
-                    var targetWorklow = _.findWhere(workflows, { name: options.workflowName });
-                    if (!targetWorklow) {
-                        throw 'A workflow with the specified name wasn\'t found.';
-                    }
-                    /** Create an extended set of options to pass any overrides to apDataService */
-                    options.templateId = targetWorklow.templateId;
-                    initiateRequest();
-                });
+                        var targetWorklow = _.findWhere(workflows, { name: options.workflowName });
+                        if (!targetWorklow) {
+                            throw 'A workflow with the specified name wasn\'t found.';
+                        }
+                        /** Create an extended set of options to pass any overrides to apDataService */
+                        options.templateId = targetWorklow.templateId;
+                        initiateRequest();
+                    });
             }
 
             return deferred.promise;
@@ -674,8 +674,8 @@ module ap {
             function initiateRequest() {
                 apDataService.startWorkflow(options)
                     .then((xmlResponse) => {
-                    deferred.resolve(xmlResponse);
-                });
+                        deferred.resolve(xmlResponse);
+                    });
             }
         }
 
@@ -722,15 +722,17 @@ module ap {
 
     export class ListItemFactory {
         ListItem = ListItem;
-        constructor($injector) {
-            $q = $injector.get("$q");
-            apCacheService = $injector.get("apCacheService");
-            apConfig = $injector.get("apConfig");
-            apDataService = $injector.get("apDataService");
-            apEncodeService = $injector.get("apEncodeService");
-            apFormattedFieldValueService = $injector.get("apFormattedFieldValueService");
-            apUtilityService = $injector.get("apUtilityService");
-            toastr = $injector.get("toastr");
+        static $inject = ['$q', 'apCacheService', 'apConfig', 'apDataService', 'apEncodeService', 'apFormattedFieldValueService', 'apUtilityService', 'toastr'];
+
+        constructor(_$q_, _apCacheService_, _apConfig_, _apDataService_, _apEncodeService_, _apFormattedFieldValueService_, _apUtilityService_, _toastr_) {
+            $q = _$q_;
+            apCacheService = _apCacheService_;
+            apConfig = _apConfig_;
+            apDataService = _apDataService_;
+            apEncodeService = _apEncodeService_;
+            apFormattedFieldValueService = _apFormattedFieldValueService_;
+            apUtilityService = _apUtilityService_;
+            toastr = _toastr_;
         }
 
         /**

@@ -142,10 +142,14 @@ module ap {
 
     export class CacheService {
         entityCache = entityCache;
-        constructor($injector) {
-            $q = $injector.get('$q');
-            $log = $injector.get('$log');
-            apIndexedCacheFactory = $injector.get('apIndexedCacheFactory');
+        static $inject = ['$q', '$log', 'apIndexedCacheFactory'];
+
+        constructor(_$q_, _$log_, _apIndexedCacheFactory_) {
+
+            $q = _$q_;
+            $log = _$log_;
+            apIndexedCacheFactory = _apIndexedCacheFactory_;
+
             service = this;
         }
 
@@ -309,7 +313,7 @@ module ap {
                 entityContainer.entity = entity;
             } else {
                 /** Already exists so update to maintain any other references being used for this entity. */
-                //TODO Look at performance hit from extending and see if it would be acceptable just to replace
+                    //TODO Look at performance hit from extending and see if it would be acceptable just to replace
                 _.assign(entityContainer.entity, entity);
             }
 
