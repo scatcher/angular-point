@@ -30,7 +30,8 @@ gulp.task('build', ['gen-ts-refs'], function () {
     return merge([
         tsResult.js
             .pipe(concat('angular-point.js')) // You can use other plugins that also support gulp-sourcemaps
-            .pipe(sourcemaps.write('.', { sourceRoot: '/' })) // Now the sourcemaps are added along side the .js file
+            .pipe(sourcemaps.write('.')) // Now the sourcemaps are added along side the .js file
+            // .pipe(sourcemaps.write('.', { sourceRoot: '/' })) // Now the sourcemaps are added along side the .js file
             .pipe(gulp.dest('./dist')),
         tsResult.dts.pipe(gulp.dest('./dist'))
     ]);
