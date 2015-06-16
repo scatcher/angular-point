@@ -1,4 +1,5 @@
 /// <reference path="../typings/ap.d.ts" />
+/// <reference path="../typings/tsd.d.ts" />
 var ap;
 (function (ap) {
     'use strict';
@@ -30,7 +31,9 @@ var ap;
      */
     angular.module('angularPoint', [
         'toastr'
-    ]);
+    ])
+        .run(function (apListItemFactory, apModelFactory) {
+    });
 })(ap || (ap = {}));
 
 /// <reference path="app.module.ts" />

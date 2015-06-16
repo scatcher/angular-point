@@ -33,5 +33,9 @@ module ap {
      */
     angular.module('angularPoint', [
         'toastr'
-    ]);
+    ])
+    /** Bootstrap everything that needs to be immediately instantiated */
+    .run((apListItemFactory, apModelFactory) => {
+        
+    })
 }
