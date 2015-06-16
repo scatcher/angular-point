@@ -35,7 +35,7 @@ module ap {
         'toastr'
     ])
     /** Bootstrap everything that needs to be immediately instantiated */
-    .run((apListItemFactory, apModelFactory) => {
+    .run((apListItemFactory: ListItemFactory, apModelFactory: ModelFactory) => {
         
     })
 }
