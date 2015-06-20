@@ -1034,7 +1034,7 @@ var ap;
              * @param fieldDefinition
              */
             var buildField = function (fieldDefinition) {
-                var field = new apFieldFactory.Field(fieldDefinition);
+                var field = new apFieldFactory.FieldDefinition(fieldDefinition);
                 _this.fields.push(field);
                 _this.viewFields += '<FieldRef Name="' + field.staticName + '"/>';
                 _this.mapping['ows_' + field.staticName] = {
@@ -1947,6 +1947,7 @@ var ap;
         function Model(config) {
             var _this = this;
             this.data = [];
+            // factory: <T>(rawObject: Object) => void;
             this.fieldDefinitionsExtended = false;
             this.queries = {};
             /** Assign all properties of config to the model */
@@ -2634,7 +2635,6 @@ var ap;
     ap.Model = Model;
     var ModelFactory = (function () {
         function ModelFactory(_$q_, _apCacheService_, _apConfig_, _apDataService_, _apDecodeService_, _apFieldService_, _apIndexedCacheFactory_, _apListFactory_, _apQueryFactory_, _apUtilityService_, _toastr_) {
-            this.Model = Model;
             $q = _$q_;
             apCacheService = _apCacheService_;
             apConfig = _apConfig_;

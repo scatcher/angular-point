@@ -4,22 +4,23 @@ module ap {
     'use strict';
 
     export interface IIndexedCache<T> {
+        new (object?: Object): IIndexedCache<T>;
         addEntity: (listItem: T) => void;
         clear: () => void;
         count: () => number;
         first: () => T;
         keys: () => string[];
         last: () => T;
-        nthEntity: (index:number) => T;
+        nthEntity: (index: number) => T;
         removeEntity: (listItem: IListItem<T>) => void;
         removeEntity: (listItem: number) => void;
-        toArray: () => IIndexedCache<T>[];
+        toArray: () => T[];
 
         //Object with keys equaling ID and values being the individual list item
         [key: number]: T;
 
         //(value: number): IListItem<T>;
-//        [key: string]: IListItem<T>;
+        //        [key: string]: IListItem<T>;
     }
 
     /**
@@ -33,7 +34,7 @@ module ap {
      * @constructor
      */
     export class IndexedCache<T> implements IIndexedCache<T>{
-        constructor(object?:Object) {
+        constructor(object?: Object) {
             if (object) {
                 _.assign(this, object);
             }
@@ -47,7 +48,7 @@ module ap {
          * Adds a new key to the cache if not already there with a value of the new listItem.
          * @param {object} listItem Entity to add to the cache.
          */
-        addEntity(listItem: T): void {
+        addEntity(listItem: ap.IListItem<T>): void {
             if (_.isObject(listItem) && !!listItem.id) {
                 /** Only add the listItem to the cache if it's not already there */
                 if (!this[listItem.id]) {
@@ -157,7 +158,7 @@ module ap {
          * Turns the cache object into an array of entities.
          * @returns {object[]} Returns the array of entities currently in the cache.
          */
-        toArray(): IIndexedCache<T>[] {
+        toArray(): T[] {
             return _.toArray(this);
         }
 
@@ -180,7 +181,7 @@ module ap {
          * @description
          * Instantiates and returns a new Indexed Cache.grunt
          */
-        create<T>(overrides?:Object): IndexedCache<T> {
+        create<T>(overrides?: Object): IndexedCache<T> {
             return new IndexedCache<T>(overrides);
         }
         IndexedCache = IndexedCache;
@@ -188,5 +189,5 @@ module ap {
     }
 
     angular.module('angularPoint')
-        .service('apIndexedCacheFactory', IndexedCacheFactory );
+        .service('apIndexedCacheFactory', IndexedCacheFactory);
 }

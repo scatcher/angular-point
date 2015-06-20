@@ -14,7 +14,7 @@ module ap {
         deferredListDefinition: ng.IPromise<Object>;
         executeQuery<T>(queryName?: string, options?: Object): ng.IPromise<IIndexedCache<T>>;
         extendListMetadata(options?: Object): ng.IPromise<any>;
-        factory: <T>(rawObject: Object) => void;
+        factory: IModelFactory;
         generateMockData<T>(options?: Object): T[];
         getAllListItems<T>(): ng.IPromise<IIndexedCache<T>>;
         getCache<T>(queryName?: string): IIndexedCache<T>;
@@ -36,7 +36,7 @@ module ap {
     }
 
     export interface IUninitializedModel {
-        factory:Function;
+        factory: Function;
         list: IUninstantiatedList;
         [key: string]: any;
     }
@@ -44,6 +44,10 @@ module ap {
     export interface IQueriesContainer {
         getAllListItems?: IQuery<any>;
         [key: string]: IQuery<any>
+    }
+    
+    interface IModelFactory{
+        new <T>(rawObject: Object): T;
     }
 
 
@@ -149,7 +153,8 @@ module ap {
         data = [];
         deferredListDefinition;
         list: IList;
-        factory: <T>(rawObject: Object) => void;
+        factory: IModelFactory;
+        // factory: <T>(rawObject: Object) => void;
         fieldDefinitionsExtended: boolean = false;
         /** Date/Time of last communication with server */
         lastServerUpdate: Date;
@@ -209,10 +214,10 @@ module ap {
 
             apDataService.createListItem(model, entity, options)
                 .then((listItem) => {
-                deferred.resolve(listItem);
-                /** Optionally broadcast change event */
-                apUtilityService.registerChange(model, 'create', listItem.id);
-            });
+                    deferred.resolve(listItem);
+                    /** Optionally broadcast change event */
+                    apUtilityService.registerChange(model, 'create', listItem.id);
+                });
             return deferred.promise;
         }
 
@@ -299,9 +304,9 @@ module ap {
                 var opts = _.assign({}, defaults, options);
                 apDataService.getList(opts)
                     .then((responseXML) => {
-                    apDecodeService.extendListMetadata(model, responseXML);
-                    deferred.resolve(model);
-                });
+                        apDecodeService.extendListMetadata(model, responseXML);
+                        deferred.resolve(model);
+                    });
             }
             return model.deferredListDefinition;
         }
@@ -338,7 +343,7 @@ module ap {
                     id: count + 1
                 };
                 /** Create an attribute with mock data for each field */
-                _.each(model.list.fields, (field: Field) => {
+                _.each(model.list.fields, (field: IFieldDefinition) => {
                     mock[field.mappedName] = field.getMockData(opts);
                 });
 
@@ -531,9 +536,9 @@ module ap {
 
             model.executeQuery(queryKey)
                 .then((indexedCache) => {
-                /** Should return an indexed cache object with a single listItem so just return the requested listItem */
-                deferred.resolve(indexedCache.first());
-            }, (err) => {
+                    /** Should return an indexed cache object with a single listItem so just return the requested listItem */
+                    deferred.resolve(indexedCache.first());
+                }, (err) => {
                     deferred.reject(err);
                 });
 
@@ -898,7 +903,7 @@ module ap {
     }
 
     export class ModelFactory {
-        Model = Model;
+        Model;
         static $inject = ['$q', 'apCacheService', 'apConfig', 'apDataService', 'apDecodeService', 'apFieldService', 'apIndexedCacheFactory', 'apListFactory', 'apQueryFactory', 'apUtilityService', 'toastr'];
         constructor(_$q_, _apCacheService_, _apConfig_, _apDataService_, _apDecodeService_, _apFieldService_, _apIndexedCacheFactory_, _apListFactory_, _apQueryFactory_, _apUtilityService_, _toastr_) {
 

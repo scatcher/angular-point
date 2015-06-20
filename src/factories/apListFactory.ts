@@ -98,7 +98,7 @@ module ap {
         viewFields = '';
         WebFullUrl; //Only appears if extended from list definition
         webURL: string;
-        constructor(config) {
+        constructor(config: IUninstantiatedList) {
             this.webURL = apConfig.defaultUrl;
             _.assign(this, config);
             this.environments = this.environments || { production: this.guid };
@@ -121,7 +121,7 @@ module ap {
              * @param fieldDefinition
              */
             var buildField = (fieldDefinition) => {
-                var field = new apFieldFactory.Field(fieldDefinition);
+                var field = new apFieldFactory.FieldDefinition(fieldDefinition);
                 this.fields.push(field);
                 this.viewFields += '<FieldRef Name="' + field.staticName + '"/>';
                 this.mapping['ows_' + field.staticName] = {

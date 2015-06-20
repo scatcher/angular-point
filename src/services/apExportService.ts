@@ -61,7 +61,7 @@ module ap {
          * </pre>
          *
          */
-        generateCSV(entities: ListItem[], fields: [string[]|Object[]], options?: {delim:string}): [[string[]][]] {
+        generateCSV(entities: ListItem<any>[], fields: [string[]|Object[]], options?: {delim:string}): string[][] {
             var defaults = {
                     dateFormat: 'json', //Format as JSON date rather than a formal date string
                     delim: '; ',
@@ -165,7 +165,7 @@ module ap {
          * </pre>
          *
          */
-        saveCSV(data: [[string[]][]], filename = 'debug.csv'): void {
+        saveCSV(data: string[][], filename = 'debug.csv'): void {
             var csvString = '';
             _.each(data, function (row) {
                 _.each(row, function (column, columnIndex) {
