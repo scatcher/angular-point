@@ -6,7 +6,7 @@ module ap {
     export interface IDecodeService {
         checkResponseForErrors(responseXML: XMLDocument): string;
         convertUTCDateToLocalDate(date: Date): Date;
-        createListItemProvider<T>(model: Model, query: IQuery<T>, indexedCache: IIndexedCache<T>): (rawObject: Object) => T;
+        createListItemProvider<T>(model: Model, query: IQuery<T>, indexedCache: IndexedCache<T>): (rawObject: Object) => T;
         extendFieldDefinitionsFromXML(fieldDefinitions: IFieldDefinition[], responseXML: XMLDocument): IExtendedFieldDefinition[];
         extendListDefinitionFromXML(list: IList, responseXML: XMLDocument): IList;
         extendListMetadata(model: Model, responseXML: XMLDocument): void;
@@ -27,11 +27,11 @@ module ap {
         parseFieldVersions(responseXML: XMLDocument, fieldDefinition: IFieldDefinition): IListItemVersion[];
         parseStringValue(str: string, objectType?: string, options?: { entity: Object; propertyName: string; }): any;
         parseXMLEntity<T>(xmlEntity: XMLDocument, listItemProvider: (Object) => T,
-                          options: { mapping: IFieldDefinition[]; includeAllAttrs?: boolean; listItemProvider?: Function; removeOws?: boolean; target?: IIndexedCache<T> }): T;
+                          options: { mapping: IFieldDefinition[]; includeAllAttrs?: boolean; listItemProvider?: Function; removeOws?: boolean; target?: IndexedCache<T> }): T;
         processListItems<T>(model: Model, query: IQuery<T>, responseXML: XMLDocument,
-                            options?: { factory: Function; filter: string; mapping: IFieldDefinition[]; target: IIndexedCache<T> }): IIndexedCache<T>;
+                            options?: { factory: Function; filter: string; mapping: IFieldDefinition[]; target: IndexedCache<T> }): IndexedCache<T>;
         xmlToJson<T>(xmlEntities: XMLDocument[], listItemProvider: (Object) => T,
-                     options: { mapping: IFieldDefinition[]; includeAllAttrs?: boolean; listItemProvider?: Function; removeOws?: boolean; target?: IIndexedCache<T> }): T[];
+                     options: { mapping: IFieldDefinition[]; includeAllAttrs?: boolean; listItemProvider?: Function; removeOws?: boolean; target?: IndexedCache<T> }): T[];
     }
 
     /**
@@ -106,8 +106,8 @@ module ap {
          * @returns {Function} Returns a function that takes the new list item while keeping model, query,
          * and container in scope for future reference.
          */
-        createListItemProvider<T>(model: Model, query: IQuery<T>, indexedCache: IIndexedCache<T>): (rawObject: Object) => T {
-            return (rawObject: {[key: string]: any, getCache(): IIndexedCache<any>, getQuery(): IQuery<any>}) => {
+        createListItemProvider<T>(model: Model, query: IQuery<T>, indexedCache: IndexedCache<T>): (rawObject: Object) => T {
+            return (rawObject: {[key: string]: any, getCache(): IndexedCache<any>, getQuery(): IQuery<any>}) => {
                 /** Create Reference to the indexed cache */
                 rawObject.getCache = () => indexedCache;
 
@@ -551,8 +551,8 @@ module ap {
          * @param {boolean} [options.removeOws=true] Specifically for GetListItems, if true, the leading ows_ will
          * @returns {object} New entity using the factory on the model.
          */
-        parseXMLEntity<T>(xmlEntity: XMLDocument, listItemProvider: (Object) => IListItem<T>,
-                          options: { mapping: IFieldDefinition[]; includeAllAttrs?: boolean; listItemProvider?: Function; removeOws?: boolean; target?: IIndexedCache<T> }): T {
+        parseXMLEntity<T>(xmlEntity: XMLDocument, listItemProvider: (Object) => ListItem<T>,
+                          options: { mapping: IFieldDefinition[]; includeAllAttrs?: boolean; listItemProvider?: Function; removeOws?: boolean; target?: IndexedCache<T> }): T {
             var entity = {};
             var rowAttrs = xmlEntity.attributes;
 
@@ -598,7 +598,7 @@ module ap {
          * @returns {Object} Inedexed Cache.
          */
         processListItems<T>(model: Model, query: IQuery<T>, responseXML: XMLDocument,
-                            options?: { factory: Function; filter: string; mapping: IFieldDefinition[]; target: IIndexedCache<T> }): IIndexedCache<T> {
+                            options?: { factory: Function; filter: string; mapping: IFieldDefinition[]; target: IndexedCache<T> }): IndexedCache<T> {
             var defaults = {
                 factory: model.factory,
                 filter: 'z:row',
@@ -641,8 +641,8 @@ module ap {
          * @param {array} [options.target] Optional location to push parsed entities.
          * @returns {object[]} An array of JavaScript objects.
          */
-        xmlToJson<T>(xmlEntities: XMLDocument[], listItemProvider: (Object) => IListItem<T>,
-                     options: { mapping: IFieldDefinition[]; includeAllAttrs?: boolean; listItemProvider?: Function; removeOws?: boolean; target?: IIndexedCache<T> }): T[] {
+        xmlToJson<T>(xmlEntities: XMLDocument[], listItemProvider: (Object) => ListItem<T>,
+                     options: { mapping: IFieldDefinition[]; includeAllAttrs?: boolean; listItemProvider?: Function; removeOws?: boolean; target?: IndexedCache<T> }): T[] {
 
             var defaults = {
                 mapping: {},

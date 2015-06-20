@@ -4,23 +4,26 @@ module ap {
     'use strict';
 
     export interface IIndexedCache<T> {
-        new (object?: Object): IIndexedCache<T>;
-        addEntity: (listItem: T) => void;
+        addEntity: (listItem: ListItem<T>) => void;
         clear: () => void;
         count: () => number;
         first: () => T;
         keys: () => string[];
         last: () => T;
         nthEntity: (index: number) => T;
-        removeEntity: (listItem: IListItem<T>) => void;
-        removeEntity: (listItem: number) => void;
+        removeEntity(listItem: ListItem<T>): void;
+        removeEntity(listItem: number): void;
         toArray: () => T[];
 
         //Object with keys equaling ID and values being the individual list item
         [key: number]: T;
 
-        //(value: number): IListItem<T>;
-        //        [key: string]: IListItem<T>;
+        //(value: number): ListItem<T>;
+        //        [key: string]: ListItem<T>;
+    }
+    
+    interface IUninstantiatedIndexCache<T>{
+        [key: number]: T;
     }
 
     /**
@@ -34,7 +37,7 @@ module ap {
      * @constructor
      */
     export class IndexedCache<T> implements IIndexedCache<T>{
-        constructor(object?: Object) {
+        constructor(object?: IUninstantiatedIndexCache<T>) {
             if (object) {
                 _.assign(this, object);
             }
@@ -48,7 +51,7 @@ module ap {
          * Adds a new key to the cache if not already there with a value of the new listItem.
          * @param {object} listItem Entity to add to the cache.
          */
-        addEntity(listItem: ap.IListItem<T>): void {
+        addEntity(listItem: ListItem<T>): void {
             if (_.isObject(listItem) && !!listItem.id) {
                 /** Only add the listItem to the cache if it's not already there */
                 if (!this[listItem.id]) {
@@ -181,7 +184,7 @@ module ap {
          * @description
          * Instantiates and returns a new Indexed Cache.grunt
          */
-        create<T>(overrides?: Object): IndexedCache<T> {
+        create<T>(overrides?: IUninstantiatedIndexCache<T>): IndexedCache<T> {
             return new IndexedCache<T>(overrides);
         }
         IndexedCache = IndexedCache;

@@ -120,7 +120,7 @@ module ap {
          * @example
          * [[fieldName1, fieldValue1], [fieldName2, fieldValue2], ...]
          */
-        generateValuePairs(fieldDefinitions: IFieldDefinition[], listItem: IListItem<any>): [string, string][] {
+        generateValuePairs(fieldDefinitions: IFieldDefinition[], listItem: ListItem<any>): [string, string][] {
             var pairs = [];
             _.each(fieldDefinitions, (field) => {
                 /** Check to see if item contains data for this field */

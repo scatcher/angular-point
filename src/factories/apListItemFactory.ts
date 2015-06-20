@@ -20,7 +20,7 @@ module ap {
         deleteItem: (options?: IListItemCrudOptions<T>) => ng.IPromise<any>;
         getAttachmentCollection: () => ng.IPromise<string[]>;
         getAvailableWorkflows: () => ng.IPromise<IWorkflowDefinition[]>;
-        getCache?: () => IIndexedCache<T>;
+        getCache?: () => IndexedCache<T>;
         getFieldChoices: (fieldName: string) => string[];
         getFieldDefinition: (fieldName: string) => IFieldDefinition | IExtendedFieldDefinition;
         getFieldDescription: (fieldName: string) => string;
@@ -56,7 +56,7 @@ module ap {
         created: Date;
         editor: IUser;
         fileRef: ILookup;
-        getCache: () => IIndexedCache<T>;
+        getCache: () => IndexedCache<T>;
         getModel: () => Model;
         getQuery: () => IQuery<T>;
         id: number;
@@ -742,7 +742,7 @@ module ap {
          * @description
          * Instantiates and returns a new ListItem.
          */
-        create<T>(): IListItem<T> {
+        create<T>(): ListItem<T> {
             return new ListItem<T>();
         }
 

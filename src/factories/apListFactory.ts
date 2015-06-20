@@ -198,6 +198,7 @@ module ap {
      * @requires angularPoint.apFieldFactory
      */
     export class ListFactory {
+        List = List;
         static $inject = ['apConfig', 'apDefaultFields', 'apFieldFactory'];
         constructor(_apConfig_, _apDefaultFields_, _apFieldFactory_) {
 
@@ -219,7 +220,7 @@ module ap {
             return new List(config);
         }
 
-        List = List;
+
     }
 
 

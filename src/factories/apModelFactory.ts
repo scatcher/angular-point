@@ -12,13 +12,13 @@ module ap {
         addNewItem<T>(entity: Object, options?: Object): ng.IPromise<T>;
         createEmptyItem<T>(overrides?: Object): T;
         deferredListDefinition: ng.IPromise<Object>;
-        executeQuery<T>(queryName?: string, options?: Object): ng.IPromise<IIndexedCache<T>>;
+        executeQuery<T>(queryName?: string, options?: Object): ng.IPromise<IndexedCache<T>>;
         extendListMetadata(options?: Object): ng.IPromise<any>;
         factory: IModelFactory;
         generateMockData<T>(options?: Object): T[];
-        getAllListItems<T>(): ng.IPromise<IIndexedCache<T>>;
-        getCache<T>(queryName?: string): IIndexedCache<T>;
-        getCachedEntities<T>(): IIndexedCache<T>;
+        getAllListItems<T>(): ng.IPromise<IndexedCache<T>>;
+        getCache<T>(queryName?: string): IndexedCache<T>;
+        getCachedEntities<T>(): IndexedCache<T>;
         getCachedEntity<T>(listItemId: number): T;
         getFieldDefinition(fieldName: string): IExtendedFieldDefinition | IFieldDefinition;
         getList(): IList;
@@ -32,7 +32,7 @@ module ap {
         queries: IQueriesContainer;
         registerQuery<T>(queryOptions: IQueryOptions): IQuery<T>;
         resolvePermissions(): IUserPermissionsObject;
-        validateEntity<T>(listItem: IListItem<T>, options?: Object): boolean;
+        validateEntity<T>(listItem: ListItem<T>, options?: Object): boolean;
     }
 
     export interface IUninitializedModel {
@@ -272,7 +272,7 @@ module ap {
          *  });
          * </pre>
          */
-        executeQuery<T>(queryName?: string, options?: Object): ng.IPromise<IIndexedCache<T>> {
+        executeQuery<T>(queryName?: string, options?: Object): ng.IPromise<IndexedCache<T>> {
             var model = this;
             var query = model.getQuery(queryName);
             if (query) {
@@ -369,7 +369,7 @@ module ap {
          * };
          * </pre>
          */
-        getAllListItems<T>(): ng.IPromise<IIndexedCache<T>> {
+        getAllListItems<T>(): ng.IPromise<IndexedCache<T>> {
             var model = this;
             return apDataService.executeQuery<T>(model, model.queries.getAllListItems);
         }
@@ -399,7 +399,7 @@ module ap {
          * var namedQueryCache = projectModel.getCache('customQuery');
          * </pre>
          */
-        getCache<T>(queryName?: string): IIndexedCache<T> {
+        getCache<T>(queryName?: string): IndexedCache<T> {
             var model = this, query, cache;
             query = model.getQuery(queryName);
             if (query && query.indexedCache) {
@@ -414,9 +414,9 @@ module ap {
          * @module Model
          * @description
          * Returns all entities registered for this model regardless of query.
-         * @returns {IIndexedCache<T>} All registered entities for this model.
+         * @returns {IndexedCache<T>} All registered entities for this model.
          */
-        getCachedEntities<T>(): IIndexedCache<T> {
+        getCachedEntities<T>(): IndexedCache<T> {
             var model = this;
             return apCacheService.getCachedEntities<T>(model.list.getListId());
         }
@@ -837,7 +837,7 @@ module ap {
          * @param {boolean} [options.toast=true] Should toasts be generated to alert the user of issues.
          * @returns {boolean} Evaluation of validity.
          */
-        validateEntity<T>(listItem: IListItem<T>, options?: Object): boolean {
+        validateEntity<T>(listItem: ListItem<T>, options?: Object): boolean {
             var valid = true,
                 model = this;
 
@@ -903,7 +903,7 @@ module ap {
     }
 
     export class ModelFactory {
-        Model;
+        Model = Model;
         static $inject = ['$q', 'apCacheService', 'apConfig', 'apDataService', 'apDecodeService', 'apFieldService', 'apIndexedCacheFactory', 'apListFactory', 'apQueryFactory', 'apUtilityService', 'toastr'];
         constructor(_$q_, _apCacheService_, _apConfig_, _apDataService_, _apDecodeService_, _apFieldService_, _apIndexedCacheFactory_, _apListFactory_, _apQueryFactory_, _apUtilityService_, _toastr_) {
 

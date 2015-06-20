@@ -19,14 +19,14 @@ module ap {
     }
 
     export interface ILogger {
-        debug(message: string, optionsOverride?: ILogEvent): ng.IPromise<IListItem<any>>;
-        error(message: string, optionsOverride?: ILogEvent): ng.IPromise<IListItem<any>>;
+        debug(message: string, optionsOverride?: ILogEvent): ng.IPromise<ListItem<any>>;
+        error(message: string, optionsOverride?: ILogEvent): ng.IPromise<ListItem<any>>;
         exception(exception, cause?, optionsOverride?: ILogEvent): void;
-        info(message: string, optionsOverride?: ILogEvent): ng.IPromise<IListItem<any>>;
-        log(message: string, optionsOverride?: ILogEvent): ng.IPromise<IListItem<any>>;
-        registerEvent(event: ILogEvent): ng.IPromise<IListItem<any>>;
+        info(message: string, optionsOverride?: ILogEvent): ng.IPromise<ListItem<any>>;
+        log(message: string, optionsOverride?: ILogEvent): ng.IPromise<ListItem<any>>;
+        registerEvent(event: ILogEvent): ng.IPromise<ListItem<any>>;
         subscribe(callback: Function): void;
-        warn(message: string, optionsOverride?: ILogEvent): ng.IPromise<IListItem<any>>;
+        warn(message: string, optionsOverride?: ILogEvent): ng.IPromise<ListItem<any>>;
     }
 
     export class Logger implements ILogger {
@@ -38,7 +38,7 @@ module ap {
          * @param {string} message Message to log.
          * @param {ILogger} [optionsOverride] Override any log options.
          */
-        debug(message: string, optionsOverride?: ILogEvent): ng.IPromise<IListItem<any>>;
+        debug(message: string, optionsOverride?: ILogEvent): ng.IPromise<ListItem<any>>;
 
         /**
          * @ngdoc function
@@ -47,7 +47,7 @@ module ap {
          * @param {string} message Message to log.
          * @param {ILogger} [optionsOverride] Override any log options.
          */
-        error(message: string, optionsOverride?: ILogEvent): ng.IPromise<IListItem<any>>;
+        error(message: string, optionsOverride?: ILogEvent): ng.IPromise<ListItem<any>>;
 
         /**
          * @ngdoc function
@@ -56,7 +56,7 @@ module ap {
          * @param {string} message Message to log.
          * @param {ILogger} [optionsOverride] Override any log options.
          */
-        info(message: string, optionsOverride?: ILogEvent): ng.IPromise<IListItem<any>>;
+        info(message: string, optionsOverride?: ILogEvent): ng.IPromise<ListItem<any>>;
 
         /**
          * @ngdoc function
@@ -65,7 +65,7 @@ module ap {
          * @param {string} message Message to log.
          * @param {ILogger} [optionsOverride] Override any log options.
          */
-        log(message: string, optionsOverride?: ILogEvent): ng.IPromise<IListItem<any>>;
+        log(message: string, optionsOverride?: ILogEvent): ng.IPromise<ListItem<any>>;
 
         /**
          * @ngdoc function
@@ -74,7 +74,7 @@ module ap {
          * @param {string} message Message to log.
          * @param {ILogger} [optionsOverride] Override any log options.
          */
-        warn(message: string, optionsOverride?: ILogEvent): ng.IPromise<IListItem<any>>;
+        warn(message: string, optionsOverride?: ILogEvent): ng.IPromise<ListItem<any>>;
 
         static $inject = ['$q', '$window', '$log', '$timeout'];
 
@@ -89,7 +89,7 @@ module ap {
                 /**
                  * @Example
                  *
-                 * info(message: string, optionsOverride?: ILogEvent): ng.IPromise<IListItem<any>> {
+                 * info(message: string, optionsOverride?: ILogEvent): ng.IPromise<ListItem<any>> {
                  *     var opts = _.assign({}, {
                  *         message: message,
                  *         type: 'info'
@@ -101,7 +101,7 @@ module ap {
                  *
                  */
 
-                this[logType] = (message: string, optionsOverride?: ILogEvent): ng.IPromise<IListItem<any>> => {
+                this[logType] = (message: string, optionsOverride?: ILogEvent): ng.IPromise<ListItem<any>> => {
                     var opts = _.assign({}, {
                         message: message,
                         type: logType,
@@ -149,7 +149,7 @@ module ap {
             }, 0);
         }
 
-        registerEvent(logEvent: ILogEvent): ng.IPromise<IListItem<any>> {
+        registerEvent(logEvent: ILogEvent): ng.IPromise<ListItem<any>> {
             return registerCallback.then((callback: Function) => {
                 if (_.isFunction(callback)) {
                     return callback(logEvent);

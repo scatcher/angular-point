@@ -23,7 +23,7 @@ declare module ap {
     }
 
     export interface IListItemCrudOptions<T> {
-        target: IIndexedCache<T>;
+        target: IndexedCache<T>;
     }
 
 
@@ -67,7 +67,7 @@ declare module ap {
     //        reply(): ng.IPromise<IListItem>;
     //    }
 
-    //    export interface ICache<T> extends IIndexedCache<T>{
+    //    export interface ICache<T> extends IndexedCache<T>{
     //        //TODO Populate me!
     //    }
 

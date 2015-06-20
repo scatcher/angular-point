@@ -13,8 +13,8 @@ module ap {
         createListItem<T>(model: Model, listItem: Object, options?: { buildValuePairs: boolean; valuePairs: [string, any][] }): ng.IPromise<T>;
         createItemUrlFromFileRef(fileRefString: string): string;
         deleteAttachment(options: { listItemID: number; url: string; listName: string; }): ng.IPromise<any>;
-        deleteListItem(model: Model, listItem: ListItem<any>, options?: { target: IIndexedCache<any> }): ng.IPromise<any>;
-        executeQuery<T>(model: Model, query: IQuery<T>, options?: { target: IIndexedCache<T>; }): ng.IPromise<IIndexedCache<T>>;
+        deleteListItem(model: Model, listItem: ListItem<any>, options?: { target: IndexedCache<any> }): ng.IPromise<any>;
+        executeQuery<T>(model: Model, query: IQuery<T>, options?: { target: IndexedCache<T>; }): ng.IPromise<IndexedCache<T>>;
         generateWebServiceUrl(service: string, webURL?: string): ng.IPromise<string>;
         getAvailableWorkflows(fileRefString: string): ng.IPromise<IWorkflowDefinition[]>;
         getCollection(options: { operation: string; userLoginName?: string; groupName?: string; listName?: string; filterNode: string; }): ng.IPromise<Object[]>;
@@ -25,13 +25,13 @@ module ap {
         getListFields(options: { listName: string; }): ng.IPromise<IXMLFieldDefinition[]>;
         getUserProfileByName(login?: string): ng.IPromise<IUserProfile>;
         processChangeTokenXML<T>(model: Model, query: IQuery<T>, responseXML: XMLDocument, opts): void;
-        processDeletionsSinceToken(responseXML: XMLDocument, indexedCache: IIndexedCache<any>): void;
+        processDeletionsSinceToken(responseXML: XMLDocument, indexedCache: IndexedCache<any>): void;
         requestData(opts): ng.IPromise<XMLDocument>;
         retrieveChangeToken(responseXML: XMLDocument): string;
         retrievePermMask(responseXML: XMLDocument): string;
         serviceWrapper(options): ng.IPromise<any>;
         startWorkflow(options: { item: string; templateId: string; workflowParameters?: string; fileRef?: string; }): ng.IPromise<any>;
-        updateListItem<T>(model: Model, listItem: IListItem<T>, options): ng.IPromise<T>;
+        updateListItem<T>(model: Model, listItem: ListItem<T>, options): ng.IPromise<T>;
         validateCollectionPayload(opts): boolean;
     }
 
@@ -91,7 +91,7 @@ module ap {
                 deferred = $q.defer();
 
             defaults.target = defaults.indexedCache;
-            var opts: { buildValuePairs: boolean; valuePairs: [string, any][]; getCache(): IIndexedCache<T>; indexedCache: IIndexedCache<T> }
+            var opts: { buildValuePairs: boolean; valuePairs: [string, any][]; getCache(): IndexedCache<T>; indexedCache: IndexedCache<T> }
                 = _.assign({}, defaults, options);
 
             if (opts.buildValuePairs === true) {
@@ -170,7 +170,7 @@ module ap {
          * local cached copy.
          * @returns {object} Promise which resolves when the operation is complete.  Nothing of importance is returned.
          */
-        deleteListItem(model: Model, listItem: ListItem, options?: { target: IIndexedCache<any> }): ng.IPromise<any> {
+        deleteListItem(model: Model, listItem: ListItem, options?: { target: IndexedCache<any> }): ng.IPromise<any> {
             var defaults = {
                 target: _.isFunction(listItem.getCache) ? listItem.getCache() : model.getCache(),
                 operation: 'UpdateListItems',
@@ -223,7 +223,7 @@ module ap {
          * @param {Array} [options.target=model.getCache()] The target destination for returned entities
          * @returns {object} - Key value hash containing all list item id's as keys with the listItem as the value.
          */
-        executeQuery<T>(model: Model, query: IQuery<T>, options?: { target: IIndexedCache<T>; }): ng.IPromise<IIndexedCache<T>> {
+        executeQuery<T>(model: Model, query: IQuery<T>, options?: { target: IndexedCache<T>; }): ng.IPromise<IndexedCache<T>> {
 
             var defaults = {
                 target: model.getCache()
@@ -634,7 +634,7 @@ module ap {
          * @param {XMLDocument} responseXML XML response from the server.
          * @param {Object} indexedCache Cached object of key value pairs.
          */
-        processDeletionsSinceToken(responseXML: XMLDocument, indexedCache: IIndexedCache<any>): void {
+        processDeletionsSinceToken(responseXML: XMLDocument, indexedCache: IndexedCache<any>): void {
             /** Remove any locally cached entities that were deleted from the server */
             $(responseXML).SPFilterNode('Id').each(function() {
                 /** Check for the type of change */
@@ -831,7 +831,7 @@ module ap {
          * field identified in the model.
          * @returns {object} Promise which resolves with the newly created item.
          */
-        updateListItem<T>(model: Model, listItem: IListItem<T>, options): ng.IPromise<T> {
+        updateListItem<T>(model: Model, listItem: ListItem<T>, options): ng.IPromise<T> {
             var defaults = {
                 batchCmd: 'Update',
                 buildValuePairs: true,

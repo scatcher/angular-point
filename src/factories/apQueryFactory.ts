@@ -9,17 +9,17 @@ module ap {
     export interface IQuery<T> {
         cacheXML?: boolean;
         changeToken?: string;
-        execute(options?: Object): ng.IPromise<IIndexedCache<T>>;
+        execute(options?: Object): ng.IPromise<IndexedCache<T>>;
         getModel(): Model;
-        indexedCache: IIndexedCache<T>;
-        initialized: ng.IDeferred<IIndexedCache<T>>
+        indexedCache: IndexedCache<T>;
+        initialized: ng.IDeferred<IndexedCache<T>>
         lastRun: Date;
         listName: string;
         name: string;
         negotiatingWithServer: boolean;
         offlineXML?: string;
         operation?: string;
-        promise?: ng.IPromise<IIndexedCache<T>>;
+        promise?: ng.IPromise<IndexedCache<T>>;
         query?: string;
         queryOptions?: IQueryOptions;
         viewFields: string;
@@ -30,7 +30,6 @@ module ap {
         name?: string;
         operation?: string;
     }
-
 
     /**
      * @ngdoc function
@@ -97,12 +96,12 @@ module ap {
         /** Reference to the most recent query when performing GetListItemChangesSinceToken */
         changeToken = undefined;
 
-        getModel(): Model;
+        getModel: () => Model;
 
         /** Key value hash map with key being the id of the entity */
-        indexedCache: IIndexedCache<T>;
+        indexedCache: IndexedCache<T>;
         /** Promise resolved after first time query is executed */
-        initialized: ng.IDeferred<IIndexedCache<T>>;
+        initialized: ng.IDeferred<IndexedCache<T>>;
         /** Date/Time last run */
         lastRun;
         listName;
@@ -125,7 +124,7 @@ module ap {
         webURL;
 
         constructor(config, model: Model) {
-            this.indexedCache = apIndexedCacheFactory.create();
+            this.indexedCache = apIndexedCacheFactory.create<T>();
             this.initialized = $q.defer();
             this.listName = model.list.getListId();
             this.queryOptions = apDefaultListItemQueryOptions;
@@ -153,7 +152,7 @@ module ap {
          * @param {object} [options] Any options that should be passed to dataService.executeQuery.
          * @returns {object[]} Array of list item objects.
          */
-        execute(options): ng.IPromise<IIndexedCache<T>> {
+        execute(options): ng.IPromise<IndexedCache<T>> {
             var query = this;
             var model = query.getModel();
             var deferred = $q.defer();
@@ -198,7 +197,7 @@ module ap {
             }
         }
 
-        getCache(): IIndexedCache<T> {
+        getCache(): IndexedCache<T> {
             return this.indexedCache;
         }
     }

@@ -137,7 +137,7 @@ module ap {
      * @requires angularPoint.apFieldFactory
      * @constructor
      */
-    export class Field implements IFieldDefinition {
+    export class FieldDefinition implements IFieldDefinition {
         displayName;
         internalName;
         label;
@@ -205,7 +205,7 @@ module ap {
      *
      */
     export class FieldFactory {
-        Field = Field;
+        FieldDefinition = FieldDefinition;
         static $inject = ['apFieldService', 'apUtilityService'];
         constructor(_apFieldService_, _apUtilityService_) {
             apFieldService = _apFieldService_;
