@@ -27,12 +27,12 @@ module ap {
         getFieldLabel: (fieldName: string) => string;
         getFieldVersionHistory: (fieldNames: string[]) => ng.IPromise<IListItemVersion<T>[]>;
         getFormattedValue: (fieldName: string, options?: Object) => string;
-        getList: () => IList;
+        getList: () => List;
         getListId: () => string;
-        getLookupReference: <T1>(fieldName: string, lookupId?: number) => T1;
+        getLookupReference: <T2>(fieldName: string, lookupId?: number) => ListItem<T2>;
         resolvePermissions: () => IUserPermissionsObject;
-        saveChanges: (options?: IListItemCrudOptions<T>) => ng.IPromise<T>;
-        saveFields: (fieldArray: string[], options?: IListItemCrudOptions<T>) => ng.IPromise<T>;
+        saveChanges: (options?: IListItemCrudOptions<T>) => ng.IPromise<ListItem<T>>;
+        saveFields: (fieldArray: string[], options?: IListItemCrudOptions<T>) => ng.IPromise<ListItem<T>>;
         startWorkflow: (options: IStartWorkflowParams) => ng.IPromise<any>;
         validateEntity: (options?: Object) => boolean;
 
@@ -285,12 +285,12 @@ module ap {
          *      };
          * </pre>
          */
-        getFieldVersionHistory(fieldNames: string[]): ng.IPromise<IListItemVersion<T>[]> {
+        getFieldVersionHistory(fieldNames?: string[] | string): ng.IPromise<IListItemVersion<T>[]> {
             var deferred = $q.defer();
-            var promiseArray = [];
             var listItem = this;
             var model = listItem.getModel();
-
+            var promiseArray = [];
+            
             /** Constructor that creates a promise for each field */
             var createPromise = (fieldName) => {
 
@@ -388,7 +388,7 @@ module ap {
          * Abstraction to allow logic in model to be used instead of defining the list location in more than one place.
          * @returns {object} List for the list item.
          */
-        getList(): IList {
+        getList(): List {
             var model: Model = this.getModel();
             return model.getList();
         }
@@ -432,7 +432,7 @@ module ap {
          * </pre>
          * @returns {object} The listItem the lookup is referencing or undefined if not in the cache.
          */
-        getLookupReference<T>(fieldName: string, lookupId?: number): T {
+        getLookupReference<T2>(fieldName: string, lookupId?: number): ListItem<T2> {
             var listItem = this;
             var lookupReference;
             if (_.isUndefined(fieldName)) {
@@ -543,7 +543,7 @@ module ap {
          * }
          * </pre>
          */
-        saveChanges(options?: IListItemCrudOptions<T>): ng.IPromise<T> {
+        saveChanges(options?: IListItemCrudOptions<T>): ng.IPromise<ListItem<T>> {
             var listItem = this;
             var model = listItem.getModel();
             var deferred = $q.defer();
@@ -597,7 +597,7 @@ module ap {
          * }
          * </pre>
          */
-        saveFields(fieldArray: string[], options?: IListItemCrudOptions<T>): ng.IPromise<T> {
+        saveFields(fieldArray: string[], options?: IListItemCrudOptions<T>): ng.IPromise<ListItem<T>> {
 
             var listItem = this;
             var model = listItem.getModel();

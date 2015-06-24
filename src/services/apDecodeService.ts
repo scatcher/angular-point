@@ -6,9 +6,9 @@ module ap {
     export interface IDecodeService {
         checkResponseForErrors(responseXML: XMLDocument): string;
         convertUTCDateToLocalDate(date: Date): Date;
-        createListItemProvider<T>(model: Model, query: IQuery<T>, indexedCache: IndexedCache<T>): (rawObject: Object) => T;
+        createListItemProvider<T>(model: Model, query: IQuery<T>, indexedCache: IndexedCache<T>): (rawObject: Object) => ListItem<T>;
         extendFieldDefinitionsFromXML(fieldDefinitions: IFieldDefinition[], responseXML: XMLDocument): IExtendedFieldDefinition[];
-        extendListDefinitionFromXML(list: IList, responseXML: XMLDocument): IList;
+        extendListDefinitionFromXML(list: List, responseXML: XMLDocument): List;
         extendListMetadata(model: Model, responseXML: XMLDocument): void;
         extendObjectWithXMLAttributes(xmlObject: XMLDocument, jsObject?: Object, attributeTypes?: Object): Object;
         jsAttachments(str): string[]|number|string;
@@ -27,11 +27,11 @@ module ap {
         parseFieldVersions(responseXML: XMLDocument, fieldDefinition: IFieldDefinition): IListItemVersion[];
         parseStringValue(str: string, objectType?: string, options?: { entity: Object; propertyName: string; }): any;
         parseXMLEntity<T>(xmlEntity: XMLDocument, listItemProvider: (Object) => T,
-                          options: { mapping: IFieldDefinition[]; includeAllAttrs?: boolean; listItemProvider?: Function; removeOws?: boolean; target?: IndexedCache<T> }): T;
+                          options: { mapping: IFieldDefinition[]; includeAllAttrs?: boolean; listItemProvider?: Function; removeOws?: boolean; target?: IndexedCache<T> }): ListItem<T>;
         processListItems<T>(model: Model, query: IQuery<T>, responseXML: XMLDocument,
                             options?: { factory: Function; filter: string; mapping: IFieldDefinition[]; target: IndexedCache<T> }): IndexedCache<T>;
         xmlToJson<T>(xmlEntities: XMLDocument[], listItemProvider: (Object) => T,
-                     options: { mapping: IFieldDefinition[]; includeAllAttrs?: boolean; listItemProvider?: Function; removeOws?: boolean; target?: IndexedCache<T> }): T[];
+                     options: { mapping: IFieldDefinition[]; includeAllAttrs?: boolean; listItemProvider?: Function; removeOws?: boolean; target?: IndexedCache<T> }): ListItem<T>[];
     }
 
     /**
@@ -48,7 +48,7 @@ module ap {
         static $inject = ['apCacheService', 'apLookupFactory', 'apUserFactory', 'apFieldService',
             'apXMLListAttributeTypes', 'apXMLFieldAttributeTypes'];
 
-        constructor(private apCacheService: ICacheService, private apLookupFactory: LookupFactory,
+        constructor(private apCacheService: CacheService, private apLookupFactory: LookupFactory,
                     private apUserFactory: UserFactory, private apFieldService, private apXMLListAttributeTypes,
                     private apXMLFieldAttributeTypes) {
 
@@ -106,7 +106,7 @@ module ap {
          * @returns {Function} Returns a function that takes the new list item while keeping model, query,
          * and container in scope for future reference.
          */
-        createListItemProvider<T>(model: Model, query: IQuery<T>, indexedCache: IndexedCache<T>): (rawObject: Object) => T {
+        createListItemProvider<T>(model: Model, query: IQuery<T>, indexedCache: IndexedCache<T>): (rawObject: Object) => ListItem<T> {
             return (rawObject: {[key: string]: any, getCache(): IndexedCache<any>, getQuery(): IQuery<any>}) => {
                 /** Create Reference to the indexed cache */
                 rawObject.getCache = () => indexedCache;
@@ -188,7 +188,7 @@ module ap {
          * @param {object} responseXML XML response from the server.
          * @returns {object} Extended list object.
          */
-        extendListDefinitionFromXML(list: IList, responseXML: XMLDocument): IList {
+        extendListDefinitionFromXML(list: List, responseXML: XMLDocument): List {
             var service = this;
             $(responseXML).find("List").each(function () {
                 service.extendObjectWithXMLAttributes(this, list, service.apXMLListAttributeTypes);
@@ -552,7 +552,7 @@ module ap {
          * @returns {object} New entity using the factory on the model.
          */
         parseXMLEntity<T>(xmlEntity: XMLDocument, listItemProvider: (Object) => ListItem<T>,
-                          options: { mapping: IFieldDefinition[]; includeAllAttrs?: boolean; listItemProvider?: Function; removeOws?: boolean; target?: IndexedCache<T> }): T {
+                          options: { mapping: IFieldDefinition[]; includeAllAttrs?: boolean; listItemProvider?: Function; removeOws?: boolean; target?: IndexedCache<T> }): ListItem<T> {
             var entity = {};
             var rowAttrs = xmlEntity.attributes;
 
@@ -642,7 +642,7 @@ module ap {
          * @returns {object[]} An array of JavaScript objects.
          */
         xmlToJson<T>(xmlEntities: XMLDocument[], listItemProvider: (Object) => ListItem<T>,
-                     options: { mapping: IFieldDefinition[]; includeAllAttrs?: boolean; listItemProvider?: Function; removeOws?: boolean; target?: IndexedCache<T> }): T[] {
+                     options: { mapping: IFieldDefinition[]; includeAllAttrs?: boolean; listItemProvider?: Function; removeOws?: boolean; target?: IndexedCache<T> }): ListItem<T>[] {
 
             var defaults = {
                 mapping: {},

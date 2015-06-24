@@ -2,6 +2,17 @@
 
 module ap {
     'use strict';
+    
+    interface IUpdateOptions<T>{
+        batchCmd: string;
+        buildValuePairs:boolean;
+        ID: number;
+        listName: string;
+        operation: string;
+        target: IndexedCache<T>;
+        valuePairs: string[][];
+        webURL: string;
+    }
 
     /**
      * @ngdoc service
@@ -12,12 +23,12 @@ module ap {
      */
     export class ChangeService {
         callbackQueue = [];
-        registerListItemUpdate(entity, options, promise) {
+        registerListItemUpdate<T>(entity: ListItem<T>, options: IUpdateOptions<T>, promise: ng.IPromise<ListItem<T>>) {
             _.each(this.callbackQueue, (callback) => {
                 callback(entity, options, promise);
             });
         }
-        subscribeToUpdates(callback) {
+        subscribeToUpdates(callback: (entity: ListItem<any>, options: IUpdateOptions<any>, promise: ng.IPromise<any>) => void ) {
             this.callbackQueue.push(callback);
         }
     }

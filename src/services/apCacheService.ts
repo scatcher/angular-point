@@ -3,16 +3,16 @@
 module ap {
     'use strict';
 
-    export interface ICacheService {
+    interface ICacheService {
         deleteEntity(listId: string, entityId: number): void;
         getCachedEntities<T>(listId: string): IndexedCache<T>;
-        getCachedEntity<T>(listId: string, entityId: number): T;
+        getCachedEntity<T>(listId: string, entityId: number): ListItem<T>;
         getEntity<T>(listId: string, entityId: number): ng.IPromise<T>;
         getListId(keyString: string): string;
         getListIdFromListName(name: string): string;
         getModel(listId: string): Model;
         getModelCache(listId: string): ModelCache;
-        registerEntity<T>(entity: ListItem<T>, targetCache?: IndexedCache<T>): T;
+        registerEntity<T>(entity: ListItem<T>, targetCache?: IndexedCache<T>): ListItem<T>;
         registerModel(model: Model): void;
         removeEntity(listId: string, entityId: number): void;
     }
@@ -140,7 +140,7 @@ module ap {
 
     }
 
-    export class CacheService {
+    export class CacheService implements ICacheService {
         entityCache = entityCache;
         static $inject = ['$q', '$log', 'apIndexedCacheFactory'];
 
@@ -202,7 +202,7 @@ module ap {
          * @param {number} entityId The entity.id.
          * @returns {object} entity || undefined
          */
-        getCachedEntity<T>(listId: string, entityId: number): T {
+        getCachedEntity<T>(listId: string, entityId: number): ListItem<T> {
             return this.getEntityContainer(listId, entityId).entity;
         }
 
@@ -217,7 +217,7 @@ module ap {
          * @param {number} entityId The entity.id.
          * @returns {promise} entity
          */
-        getEntity<T>(listId: string, entityId: number): ng.IPromise<T> {
+        getEntity<T>(listId: string, entityId: number): ng.IPromise<ListItem<T>> {
             var entityContainer = this.getEntityContainer(listId, entityId);
             return entityContainer.getEntity();
         }
@@ -304,7 +304,7 @@ module ap {
          * @param {object} entity Pass in a newly created entity to add to the cache.
          * @param {object} [targetCache] Optionally pass in a secondary cache to add a reference to this entity.
          */
-        registerEntity<T>(entity: ListItem<T>, targetCache?: IndexedCache<T>): T {
+        registerEntity<T>(entity: ListItem<T>, targetCache?: IndexedCache<T>): ListItem<T> {
             var model = entity.getModel();
             var entityContainer = this.getEntityContainer(model.list.getListId(), entity.id);
             /** Maintain a single object in cache for this entity */

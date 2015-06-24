@@ -10,7 +10,7 @@ module ap {
         apChangeService: ChangeService;
 
     export interface IDataService {
-        createListItem<T>(model: Model, listItem: Object, options?: { buildValuePairs: boolean; valuePairs: [string, any][] }): ng.IPromise<T>;
+        createListItem<T>(model: Model, listItem: Object, options?: { buildValuePairs: boolean; valuePairs: [string, any][] }): ng.IPromise<ListItem<T>>;
         createItemUrlFromFileRef(fileRefString: string): string;
         deleteAttachment(options: { listItemID: number; url: string; listName: string; }): ng.IPromise<any>;
         deleteListItem(model: Model, listItem: ListItem<any>, options?: { target: IndexedCache<any> }): ng.IPromise<any>;
@@ -31,7 +31,7 @@ module ap {
         retrievePermMask(responseXML: XMLDocument): string;
         serviceWrapper(options): ng.IPromise<any>;
         startWorkflow(options: { item: string; templateId: string; workflowParameters?: string; fileRef?: string; }): ng.IPromise<any>;
-        updateListItem<T>(model: Model, listItem: ListItem<T>, options): ng.IPromise<T>;
+        updateListItem<T>(model: Model, listItem: ListItem<T>, options): ng.IPromise<ListItem<T>>;
         validateCollectionPayload(opts): boolean;
     }
 
@@ -77,7 +77,7 @@ module ap {
          * field identified in the model.
          * @returns {object} Promise which resolves with the newly created item.
          */
-        createListItem<T>(model: Model, listItem: Object, options?: { buildValuePairs: boolean; valuePairs: [string, any][] }): ng.IPromise<T> {
+        createListItem<T>(model: Model, listItem: Object, options?: { buildValuePairs: boolean; valuePairs: [string, any][] }): ng.IPromise<ListItem<T>> {
             var defaults = {
                 batchCmd: 'New',
                 buildValuePairs: true,
@@ -170,7 +170,7 @@ module ap {
          * local cached copy.
          * @returns {object} Promise which resolves when the operation is complete.  Nothing of importance is returned.
          */
-        deleteListItem(model: Model, listItem: ListItem, options?: { target: IndexedCache<any> }): ng.IPromise<any> {
+        deleteListItem(model: Model, listItem: ListItem<any>, options?: { target: IndexedCache<any> }): ng.IPromise<any> {
             var defaults = {
                 target: _.isFunction(listItem.getCache) ? listItem.getCache() : model.getCache(),
                 operation: 'UpdateListItems',
@@ -831,7 +831,7 @@ module ap {
          * field identified in the model.
          * @returns {object} Promise which resolves with the newly created item.
          */
-        updateListItem<T>(model: Model, listItem: ListItem<T>, options): ng.IPromise<T> {
+        updateListItem<T>(model: Model, listItem: ListItem<T>, options): ng.IPromise<ListItem<T>> {
             var defaults = {
                 batchCmd: 'Update',
                 buildValuePairs: true,

@@ -38,7 +38,7 @@ module ap {
          * @param {string} message Message to log.
          * @param {ILogger} [optionsOverride] Override any log options.
          */
-        debug(message: string, optionsOverride?: ILogEvent): ng.IPromise<ListItem<any>>;
+        debug: (message: string, optionsOverride?: ILogEvent) => ng.IPromise<ListItem<any>>;
 
         /**
          * @ngdoc function
@@ -47,7 +47,7 @@ module ap {
          * @param {string} message Message to log.
          * @param {ILogger} [optionsOverride] Override any log options.
          */
-        error(message: string, optionsOverride?: ILogEvent): ng.IPromise<ListItem<any>>;
+        error: (message: string, optionsOverride?: ILogEvent) => ng.IPromise<ListItem<any>>;
 
         /**
          * @ngdoc function
@@ -56,7 +56,7 @@ module ap {
          * @param {string} message Message to log.
          * @param {ILogger} [optionsOverride] Override any log options.
          */
-        info(message: string, optionsOverride?: ILogEvent): ng.IPromise<ListItem<any>>;
+        info: (message: string, optionsOverride?: ILogEvent) => ng.IPromise<ListItem<any>>;
 
         /**
          * @ngdoc function
@@ -65,7 +65,7 @@ module ap {
          * @param {string} message Message to log.
          * @param {ILogger} [optionsOverride] Override any log options.
          */
-        log(message: string, optionsOverride?: ILogEvent): ng.IPromise<ListItem<any>>;
+        log: (message: string, optionsOverride?: ILogEvent) => ng.IPromise<ListItem<any>>;
 
         /**
          * @ngdoc function
@@ -74,7 +74,7 @@ module ap {
          * @param {string} message Message to log.
          * @param {ILogger} [optionsOverride] Override any log options.
          */
-        warn(message: string, optionsOverride?: ILogEvent): ng.IPromise<ListItem<any>>;
+        warn: (message: string, optionsOverride?: ILogEvent) => ng.IPromise<ListItem<any>>;
 
         static $inject = ['$q', '$window', '$log', '$timeout'];
 

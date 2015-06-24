@@ -89,6 +89,7 @@ module ap {
      */
     export class List implements IList {
         customFields = [];
+        effectivePermMask: string;
         environments: { [key: string]: string };
         fields = [];
         guid: string = '';

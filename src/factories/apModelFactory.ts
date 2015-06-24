@@ -9,26 +9,26 @@ module ap {
         apDecodeService: DecodeService, $q: ng.IQService, toastr: toastr;
 
     export interface IModel {
-        addNewItem<T>(entity: Object, options?: Object): ng.IPromise<T>;
-        createEmptyItem<T>(overrides?: Object): T;
+        addNewItem<T>(entity: Object, options?: Object): ng.IPromise<ListItem<T>>;
+        createEmptyItem<T>(overrides?: Object): ListItem<T>;
         deferredListDefinition: ng.IPromise<Object>;
         executeQuery<T>(queryName?: string, options?: Object): ng.IPromise<IndexedCache<T>>;
         extendListMetadata(options?: Object): ng.IPromise<any>;
         factory: IModelFactory;
-        generateMockData<T>(options?: Object): T[];
+        generateMockData<T>(options?: Object): ListItem<T>[];
         getAllListItems<T>(): ng.IPromise<IndexedCache<T>>;
         getCache<T>(queryName?: string): IndexedCache<T>;
         getCachedEntities<T>(): IndexedCache<T>;
-        getCachedEntity<T>(listItemId: number): T;
+        getCachedEntity<T>(listItemId: number): ListItem<T>;
         getFieldDefinition(fieldName: string): IExtendedFieldDefinition | IFieldDefinition;
-        getList(): IList;
+        getList(): List;
         getListId(): string;
-        getListItemById<T>(listItemId: number, options?: Object): ng.IPromise<T>;
+        getListItemById<T>(listItemId: number, options?: Object): ng.IPromise<ListItem<T>>;
         getModel(): Model;
         getQuery<T>(queryName: string): IQuery<T>;
         isInitialised(): boolean;
         lastServerUpdate: Date;
-        list: IList;
+        list: List;
         queries: IQueriesContainer;
         registerQuery<T>(queryOptions: IQueryOptions): IQuery<T>;
         resolvePermissions(): IUserPermissionsObject;
@@ -47,7 +47,7 @@ module ap {
     }
     
     interface IModelFactory{
-        new <T>(rawObject: Object): T;
+        new <T>(rawObject: Object): ListItem<T>;
     }
 
 
@@ -152,7 +152,7 @@ module ap {
     export class Model implements IModel {
         data = [];
         deferredListDefinition;
-        list: IList;
+        list: List;
         factory: IModelFactory;
         // factory: <T>(rawObject: Object) => void;
         fieldDefinitionsExtended: boolean = false;
@@ -208,7 +208,7 @@ module ap {
          * </file>
          * </pre>
          */
-        addNewItem<T>(entity: Object, options?: Object): ng.IPromise<T> {
+        addNewItem<T>(entity: Object, options?: Object): ng.IPromise<ListItem<T>> {
             var model = this,
                 deferred = $q.defer();
 
@@ -235,7 +235,7 @@ module ap {
          * @param {object} [overrides] - Optionally extend the new empty item with specific values.
          * @returns {object} Newly created list item.
          */
-        createEmptyItem<T>(overrides?: Object): T {
+        createEmptyItem<T>(overrides?: Object): ListItem<T> {
             var model = this;
             var newItem = {};
             _.each(model.list.customFields, (fieldDefinition) => {
@@ -325,7 +325,7 @@ module ap {
          * @param {boolean} [options.staticValue=false] By default all mock data is dynamically created but if set,
          * this will cause static data to be used instead.
          */
-        generateMockData<T>(options?: Object): T[] {
+        generateMockData<T>(options?: Object): ListItem<T>[] {
             var mockData = [],
                 model = this;
 
@@ -431,7 +431,7 @@ module ap {
          * @param {number} listItemId The ID of the requested listItem.
          * @returns {object} Returns either the requested listItem or undefined if it's not found.
          */
-        getCachedEntity<T>(listItemId: number): T {
+        getCachedEntity<T>(listItemId: number): ListItem<T> {
             var model = this;
             return apCacheService.getCachedEntity<T>(model.list.getListId(), listItemId);
         }
@@ -472,7 +472,7 @@ module ap {
          * model.factory prototype in apModelFactory.  See the [List](#/api/List) documentation for more info.
          * @returns {object} List for the list item.
          */
-        getList(): IList {
+        getList(): List {
             return this.list;
         }
 
@@ -507,7 +507,7 @@ module ap {
          * };
          * </pre>
          */
-        getListItemById<T>(listItemId: number, options?: Object): ng.IPromise<T> {
+        getListItemById<T>(listItemId: number, options?: Object): ng.IPromise<ListItem<T>> {
             var deferred = $q.defer(),
                 model = this,
                 /** Unique Query Name */

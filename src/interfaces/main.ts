@@ -27,7 +27,7 @@ declare module ap {
     }
 
 
-    export interface IListItemVersion<T> extends T {
+    export interface IListItemVersion<T> extends ListItem<T> {
         version: Date;
     }
 
@@ -44,6 +44,7 @@ declare module ap {
         fileRef?: string;
         workflowName?: string;
     }
+    
 
     //    export interface IDiscussionThread {
     //        posts: IDiscussionThreadPost[];
@@ -114,21 +115,12 @@ interface JQuery {
     SPFilterNode(string);
 }
 
-interface _ {
-    isGuid(string): boolean;
-    deepIn(Object, string): boolean;
-    deepGet(Object, string): any;
-    isDefined(val: any): boolean;
-}
-
-interface chance {
-
-}
-
-interface window {
-    URL;
-    Chance;
-}
+// declare module "lodash"  {
+//     isGuid(string): boolean;
+//     deepIn(Object, string): boolean;
+//     deepGet(Object, string): any;
+//     isDefined(val: any): boolean;
+// }
 
 interface IToast {
     toastId: number;
@@ -143,3 +135,30 @@ interface toastr {
     warning(message: string, title?: string, optionsOverride?: Object): IToast;
     clear(IToast?): void;
 }
+
+declare module ngTable {
+    export interface INGTableParamsObject {
+        page?: number;
+        count?: number;
+        filter?: Object;
+        sorting?: Object;
+    }
+
+    export interface INGTableSettings {
+        total?: number;
+        counts?: number[];
+        defaultSort?: string; //options: ['asc', 'desc']
+        groupBy?: string | Function;
+        filterDelay?: number;
+        getData($defer: ng.IDeferred<ap.ListItem<any>[]>, params: INGTableParamsObject): void;
+    }
+
+    export interface INGTableParams {
+        new (parameters: INGTableParamsObject, settings: INGTableSettings): INGTable;
+    }
+
+    export interface INGTable {
+        reload(): void;
+    }
+}
+

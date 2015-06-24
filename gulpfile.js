@@ -23,7 +23,7 @@ gulp.task('build', ['gen-ts-refs'], function () {
         .pipe(typescript({
             target: 'ES5',
             sortOutput: true,
-            noExternalResolve: true,
+            // noExternalResolve: true,
             typescript: require('typescript')
         }));
 

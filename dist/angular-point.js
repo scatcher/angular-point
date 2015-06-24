@@ -491,102 +491,6 @@ var ap;
 })(ap || (ap = {}));
 
 /// <reference path="../app.module.ts" />
-
-/// <reference path="../app.module.ts" />
-var ap;
-(function (ap) {
-    'use strict';
-    /** Local references to cached promises */
-    var _getGroupCollection, _getUserProfile;
-    var UserModel = (function () {
-        function UserModel($q, apDataService) {
-            this.$q = $q;
-            this.apDataService = apDataService;
-        }
-        /**
-         * @ngdoc function
-         * @name angularPoint.apUserModel:checkIfMember
-         * @methodOf angularPoint.apUserModel
-         * @description
-         * Checks to see if current user is a member of the specified group.
-         * @param {string} groupName Name of the group.
-         * @param {boolean} [force=false] Ignore any cached value.
-         * @returns {{ID:string, Name:string, Description:string, OwnerId:string, OwnerIsUser:string}} Returns the group definition if the user is a member.
-         * @example
-         * <pre>{ID: "190", Name: "Blog Contributors", Description: "We are bloggers...", OwnerID: "126", OwnerIsUser: "False"}</pre>
-         */
-        UserModel.prototype.checkIfMember = function (groupName, force) {
-            if (force === void 0) { force = false; }
-            //Allow function to be called before group collection is ready
-            var deferred = this.$q.defer();
-            //Initially ensure groups are ready, any future calls will receive the return
-            this.getGroupCollection(force).then(function (groupCollection) {
-                var groupDefinition = _.find(groupCollection, { Name: groupName });
-                deferred.resolve(groupDefinition);
-            });
-            return deferred.promise;
-        };
-        /**
-         * @ngdoc function
-         * @name angularPoint.apUserModel:getGroupCollection
-         * @methodOf angularPoint.apUserModel
-         * @description
-         * Returns the group definitions for the current user and caches results.
-         * @param {boolean} [force=false] Ignore any cached value.
-         * @returns {IGroupDefinition[]} Promise which resolves with the array of groups the user belongs to.
-         */
-        UserModel.prototype.getGroupCollection = function (force) {
-            var _this = this;
-            if (force === void 0) { force = false; }
-            if (!_getGroupCollection || force) {
-                /** Create a new deferred object if not already defined */
-                var deferred = this.$q.defer();
-                this.getUserProfile(force).then(function (userProfile) {
-                    _this.apDataService.getGroupCollectionFromUser(userProfile.userLoginName)
-                        .then(function (groupCollection) {
-                        deferred.resolve(groupCollection);
-                    });
-                });
-                _getGroupCollection = deferred.promise;
-            }
-            return _getGroupCollection;
-        };
-        /**
-         * @ngdoc function
-         * @name angularPoint.apUserModel:getUserProfile
-         * @methodOf angularPoint.apUserModel
-         * @description
-         * Returns the user profile for the current user and caches results.
-         * Pull user profile info and parse into a profile object
-         * http://spservices.codeplex.com/wikipage?title=GetUserProfileByName
-         * @param {boolean} [force=false] Ignore any cached value.
-         * @returns {object} Promise which resolves with the requested user profile.
-         */
-        UserModel.prototype.getUserProfile = function (force) {
-            if (force === void 0) { force = false; }
-            if (!_getUserProfile || force) {
-                /** Create a new deferred object if not already defined */
-                _getUserProfile = this.apDataService.getUserProfileByName();
-            }
-            return _getUserProfile;
-        };
-        UserModel.$inject = ['$q', 'apDataService'];
-        return UserModel;
-    })();
-    /**
-     * @ngdoc service
-     * @name angularPoint.apUserModel
-     * @description
-     * Simple service that allows us to request and cache both the current user and their group memberships.
-     *
-     * @requires apDataService
-     *
-     */
-    angular.module('angularPoint')
-        .service('apUserModel', UserModel);
-})(ap || (ap = {}));
-
-/// <reference path="../app.module.ts" />
 var ap;
 (function (ap) {
     'use strict';
@@ -1445,9 +1349,9 @@ var ap;
          */
         ListItem.prototype.getFieldVersionHistory = function (fieldNames) {
             var deferred = $q.defer();
-            var promiseArray = [];
             var listItem = this;
             var model = listItem.getModel();
+            var promiseArray = [];
             /** Constructor that creates a promise for each field */
             var createPromise = function (fieldName) {
                 var fieldDefinition = _.find(model.list.fields, { mappedName: fieldName });
@@ -3018,6 +2922,102 @@ var ap;
      */
     angular.module('angularPoint')
         .service('apUserFactory', UserFactory);
+})(ap || (ap = {}));
+
+/// <reference path="../app.module.ts" />
+
+/// <reference path="../app.module.ts" />
+var ap;
+(function (ap) {
+    'use strict';
+    /** Local references to cached promises */
+    var _getGroupCollection, _getUserProfile;
+    var UserModel = (function () {
+        function UserModel($q, apDataService) {
+            this.$q = $q;
+            this.apDataService = apDataService;
+        }
+        /**
+         * @ngdoc function
+         * @name angularPoint.apUserModel:checkIfMember
+         * @methodOf angularPoint.apUserModel
+         * @description
+         * Checks to see if current user is a member of the specified group.
+         * @param {string} groupName Name of the group.
+         * @param {boolean} [force=false] Ignore any cached value.
+         * @returns {{ID:string, Name:string, Description:string, OwnerId:string, OwnerIsUser:string}} Returns the group definition if the user is a member.
+         * @example
+         * <pre>{ID: "190", Name: "Blog Contributors", Description: "We are bloggers...", OwnerID: "126", OwnerIsUser: "False"}</pre>
+         */
+        UserModel.prototype.checkIfMember = function (groupName, force) {
+            if (force === void 0) { force = false; }
+            //Allow function to be called before group collection is ready
+            var deferred = this.$q.defer();
+            //Initially ensure groups are ready, any future calls will receive the return
+            this.getGroupCollection(force).then(function (groupCollection) {
+                var groupDefinition = _.find(groupCollection, { Name: groupName });
+                deferred.resolve(groupDefinition);
+            });
+            return deferred.promise;
+        };
+        /**
+         * @ngdoc function
+         * @name angularPoint.apUserModel:getGroupCollection
+         * @methodOf angularPoint.apUserModel
+         * @description
+         * Returns the group definitions for the current user and caches results.
+         * @param {boolean} [force=false] Ignore any cached value.
+         * @returns {IGroupDefinition[]} Promise which resolves with the array of groups the user belongs to.
+         */
+        UserModel.prototype.getGroupCollection = function (force) {
+            var _this = this;
+            if (force === void 0) { force = false; }
+            if (!_getGroupCollection || force) {
+                /** Create a new deferred object if not already defined */
+                var deferred = this.$q.defer();
+                this.getUserProfile(force).then(function (userProfile) {
+                    _this.apDataService.getGroupCollectionFromUser(userProfile.userLoginName)
+                        .then(function (groupCollection) {
+                        deferred.resolve(groupCollection);
+                    });
+                });
+                _getGroupCollection = deferred.promise;
+            }
+            return _getGroupCollection;
+        };
+        /**
+         * @ngdoc function
+         * @name angularPoint.apUserModel:getUserProfile
+         * @methodOf angularPoint.apUserModel
+         * @description
+         * Returns the user profile for the current user and caches results.
+         * Pull user profile info and parse into a profile object
+         * http://spservices.codeplex.com/wikipage?title=GetUserProfileByName
+         * @param {boolean} [force=false] Ignore any cached value.
+         * @returns {object} Promise which resolves with the requested user profile.
+         */
+        UserModel.prototype.getUserProfile = function (force) {
+            if (force === void 0) { force = false; }
+            if (!_getUserProfile || force) {
+                /** Create a new deferred object if not already defined */
+                _getUserProfile = this.apDataService.getUserProfileByName();
+            }
+            return _getUserProfile;
+        };
+        UserModel.$inject = ['$q', 'apDataService'];
+        return UserModel;
+    })();
+    /**
+     * @ngdoc service
+     * @name angularPoint.apUserModel
+     * @description
+     * Simple service that allows us to request and cache both the current user and their group memberships.
+     *
+     * @requires apDataService
+     *
+     */
+    angular.module('angularPoint')
+        .service('apUserModel', UserModel);
 })(ap || (ap = {}));
 
 /// <reference path="../app.module.ts" />
@@ -5300,23 +5300,128 @@ var ap;
 var ap;
 (function (ap) {
     'use strict';
-    var uniqueCount = 0;
+    var service, uniqueCount = 0;
     var FieldService = (function () {
         function FieldService() {
+            service = this;
             this.fieldTypes = getFieldTypes();
-            this.getDefaultValueForType = getDefaultValueForType;
-            this.getDefinition = getDefinition;
-            this.getMockData = getMockData;
-            this.mockPermMask = mockPermMask;
-            this.resolveValueForEffectivePermMask = resolveValueForEffectivePermMask;
         }
+        /**
+         * @ngdoc function
+         * @name angularPoint.apFieldService:getDefaultValueForType
+         * @methodOf angularPoint.apFieldService
+         * @description
+         * Returns the empty value expected for a field type
+         * @param {string} fieldType Type of field.
+         * @returns {*} Default value based on field type.
+         */
+        FieldService.prototype.getDefaultValueForType = function (fieldType) {
+            var fieldDefinition = service.getDefinition(fieldType), defaultValue;
+            if (fieldDefinition) {
+                defaultValue = fieldDefinition.defaultValue;
+            }
+            return defaultValue;
+        };
+        /**
+         * Returns an object defining a specific field type
+         * @param {string} fieldType
+         * @returns {object} fieldTypeDefinition
+         */
+        FieldService.prototype.getDefinition = function (fieldType) {
+            return service.fieldTypes[fieldType] ? service.fieldTypes[fieldType] : service.fieldTypes['Text'];
+        };
+        /**
+         * @ngdoc function
+         * @name angularPoint.apFieldService:getMockData
+         * @methodOf angularPoint.apFieldService
+         * @description
+         * Can return mock data appropriate for the field type, by default it dynamically generates data but
+         * the staticValue param will instead return a hard coded type specific value
+         *
+         * @requires ChanceJS to produce dynamic data.
+         * https://github.com/victorquinn/chancejs
+         * @param {string} fieldType Field type from the field definition.
+         * @param {object} [options] Optional params.
+         * @param {boolean} [options.staticValue=false] Default to dynamically build mock data.
+         * @returns {*} mockData
+         */
+        FieldService.prototype.getMockData = function (fieldType, options) {
+            var mock;
+            var fieldDefinition = service.getDefinition(fieldType);
+            if (fieldDefinition) {
+                if (_.isFunction(window.Chance) && options && !options.staticValue) {
+                    /** Return dynamic data if ChanceJS is available and flag isn't set requiring static data */
+                    mock = fieldDefinition.dynamicMock(options);
+                }
+                else {
+                    /** Return static data if the flag is set or ChanceJS isn't available */
+                    mock = fieldDefinition.staticMock;
+                }
+            }
+            return mock;
+        };
+        /**
+         * @ngdoc function
+         * @name angularPoint.apFieldService:mockPermMask
+         * @methodOf angularPoint.apFieldService
+         * @description
+         * Defaults to a full mask but allows simulation of each of main permission levels
+         * @param {object} [options] Options container.
+         * @param {string} [options.permissionLevel=FullMask] Optional mask.
+         * @returns {string} Values for mask.
+         */
+        FieldService.prototype.mockPermMask = function (options) {
+            var mask = 'FullMask';
+            if (options && options.permissionLevel) {
+                mask = options.permissionLevel;
+            }
+            return service.resolveValueForEffectivePermMask(mask);
+        };
+        /**
+         * @ngdoc function
+         * @name angularPoint.apFieldService:resolveValueForEffectivePermMask
+         * @methodOf angularPoint.apFieldService
+         * @description
+         * Takes the name of a permission mask and returns a permission value which can then be used
+         * to generate a permission object using modelService.resolvePermissions(outputfromthis)
+         * @param {string} perMask Options:
+         *  - AddListItems
+         *  - EditListItems
+         *  - DeleteListItems
+         *  - ApproveItems
+         *  - FullMask
+         *  - ViewListItems
+         * @returns {string} value
+         */
+        FieldService.prototype.resolveValueForEffectivePermMask = function (perMask) {
+            var permissionValue;
+            switch (perMask) {
+                case 'AddListItems':
+                    permissionValue = '0x0000000000000002';
+                    break;
+                case 'EditListItems':
+                    permissionValue = '0x0000000000000004';
+                    break;
+                case 'DeleteListItems':
+                    permissionValue = '0x0000000000000008';
+                    break;
+                case 'ApproveItems':
+                    permissionValue = '0x0000000000000010';
+                    break;
+                case 'FullMask':
+                    permissionValue = '0x7FFFFFFFFFFFFFFF';
+                    break;
+                case 'ViewListItems':
+                default:
+                    permissionValue = '0x0000000000000001';
+                    break;
+            }
+            return permissionValue;
+        };
         return FieldService;
     })();
     ap.FieldService = FieldService;
-    /** Store as a function to ensure we instantiate new objects for default values instead
-     *  of having all blank field that have an array for a default value share the same array */
     function getFieldTypes() {
-        /** Field types used on the models to create a field definition */
         return {
             Text: {
                 defaultValue: '',
@@ -5385,9 +5490,9 @@ var ap;
                 dynamicMock: randomLookupMulti
             },
             Mask: {
-                defaultValue: mockPermMask(),
-                staticMock: mockPermMask(),
-                dynamicMock: mockPermMask
+                defaultValue: service.mockPermMask(),
+                staticMock: service.mockPermMask(),
+                dynamicMock: service.mockPermMask
             },
             MultiChoice: {
                 defaultValue: [],
@@ -5409,7 +5514,6 @@ var ap;
             }
         };
     }
-    /**=================PRIVATE===================*/
     function getUniqueCounter() {
         uniqueCount++;
         return uniqueCount;
@@ -5443,64 +5547,6 @@ var ap;
     function randomInteger() {
         return chance.integer();
     }
-    /**
-     * @ngdoc function
-     * @name angularPoint.apFieldService:resolveValueForEffectivePermMask
-     * @methodOf angularPoint.apFieldService
-     * @description
-     * Takes the name of a permission mask and returns a permission value which can then be used
-     * to generate a permission object using modelService.resolvePermissions(outputfromthis)
-     * @param {string} perMask Options:
-     *  - AddListItems
-     *  - EditListItems
-     *  - DeleteListItems
-     *  - ApproveItems
-     *  - FullMask
-     *  - ViewListItems
-     * @returns {string} value
-     */
-    function resolveValueForEffectivePermMask(perMask) {
-        var permissionValue;
-        switch (perMask) {
-            case 'AddListItems':
-                permissionValue = '0x0000000000000002';
-                break;
-            case 'EditListItems':
-                permissionValue = '0x0000000000000004';
-                break;
-            case 'DeleteListItems':
-                permissionValue = '0x0000000000000008';
-                break;
-            case 'ApproveItems':
-                permissionValue = '0x0000000000000010';
-                break;
-            case 'FullMask':
-                permissionValue = '0x7FFFFFFFFFFFFFFF';
-                break;
-            case 'ViewListItems':
-            default:
-                permissionValue = '0x0000000000000001';
-                break;
-        }
-        return permissionValue;
-    }
-    /**
-     * @ngdoc function
-     * @name angularPoint.apFieldService:mockPermMask
-     * @methodOf angularPoint.apFieldService
-     * @description
-     * Defaults to a full mask but allows simulation of each of main permission levels
-     * @param {object} [options] Options container.
-     * @param {string} [options.permissionLevel=FullMask] Optional mask.
-     * @returns {string} Values for mask.
-     */
-    function mockPermMask(options) {
-        var mask = 'FullMask';
-        if (options && options.permissionLevel) {
-            mask = options.permissionLevel;
-        }
-        return resolveValueForEffectivePermMask(mask);
-    }
     function randomLookup() {
         return {
             lookupId: getUniqueCounter(),
@@ -5528,61 +5574,6 @@ var ap;
         return mockData;
     }
     /**
-     * Returns an object defining a specific field type
-     * @param {string} fieldType
-     * @returns {object} fieldTypeDefinition
-     */
-    function getDefinition(fieldType) {
-        var fieldTypes = getFieldTypes();
-        return fieldTypes[fieldType] ? fieldTypes[fieldType] : fieldTypes['Text'];
-    }
-    /**
-     * @ngdoc function
-     * @name angularPoint.apFieldService:getDefaultValueForType
-     * @methodOf angularPoint.apFieldService
-     * @description
-     * Returns the empty value expected for a field type
-     * @param {string} fieldType Type of field.
-     * @returns {*} Default value based on field type.
-     */
-    function getDefaultValueForType(fieldType) {
-        var fieldDefinition = getDefinition(fieldType), defaultValue;
-        if (fieldDefinition) {
-            defaultValue = fieldDefinition.defaultValue;
-        }
-        return defaultValue;
-    }
-    /**
-     * @ngdoc function
-     * @name angularPoint.apFieldService:getMockData
-     * @methodOf angularPoint.apFieldService
-     * @description
-     * Can return mock data appropriate for the field type, by default it dynamically generates data but
-     * the staticValue param will instead return a hard coded type specific value
-     *
-     * @requires ChanceJS to produce dynamic data.
-     * https://github.com/victorquinn/chancejs
-     * @param {string} fieldType Field type from the field definition.
-     * @param {object} [options] Optional params.
-     * @param {boolean} [options.staticValue=false] Default to dynamically build mock data.
-     * @returns {*} mockData
-     */
-    function getMockData(fieldType, options) {
-        var mock;
-        var fieldDefinition = getDefinition(fieldType);
-        if (fieldDefinition) {
-            if (_.isFunction(window.Chance) && options && !options.staticValue) {
-                /** Return dynamic data if ChanceJS is available and flag isn't set requiring static data */
-                mock = fieldDefinition.dynamicMock(options);
-            }
-            else {
-                /** Return static data if the flag is set or ChanceJS isn't available */
-                mock = fieldDefinition.staticMock;
-            }
-        }
-        return mock;
-    }
-    /**
      * @ngdoc service
      * @name angularPoint.apFieldService
      * @description
@@ -5596,7 +5587,7 @@ var ap;
 var ap;
 (function (ap) {
     'use strict';
-    var $filter;
+    var service, $filter;
     /**
      * @ngdoc service
      * @name angularPoint.apFormattedFieldValueService
@@ -5605,245 +5596,236 @@ var ap;
      */
     var FormattedFieldValueService = (function () {
         function FormattedFieldValueService(_$filter_) {
-            this.getFormattedFieldValue = getFormattedFieldValue;
-            this.stringifyBoolean = stringifyBoolean;
-            this.stringifyCalc = stringifyCalc;
-            this.stringifyCurrency = stringifyCurrency;
-            this.stringifyDate = stringifyDate;
-            this.stringifyLookup = stringifyLookup;
-            this.stringifyMultiChoice = stringifyMultiChoice;
-            this.stringifyMultiLookup = stringifyMultiLookup;
-            this.stringifyNumber = stringifyNumber;
+            service = this;
             $filter = _$filter_;
         }
+        /**
+         * @ngdoc function
+         * @name angularPoint.apFormattedFieldValueService:getFormattedFieldValue
+         * @methodOf angularPoint.apFormattedFieldValueService
+         * @param {object|array|string|integer|boolean} prop Target that we'd like to stringify.
+         * @param {string} [propertyType='String'] Assumes by default that it's already a string.  Most of the normal field
+         * types identified in the model field definitions are supported.
+         *
+         * - Lookup
+         * - User
+         * - Boolean
+         * - DateTime
+         * - Integer
+         * - Number
+         * - Counter
+         * - MultiChoice
+         * - UserMulti
+         * - LookupMulti
+         * @param {object} options Optional config.
+         * @param {string} [options.delim=', '] Optional delimiter to split concatenated strings.
+         * @param {string} [options.dateFormat='short'] Either 'json' which converts a date into ISO8601 date string
+         * or a mask for the angular date filter.
+         * @example
+         * <pre>
+         *  var project = {
+         *    title: 'Super Project',
+         *   members: [
+         *     { lookupId: 12, lookupValue: 'Joe' },
+         *     { lookupId: 19, lookupValue: 'Beth' }
+         *   ]
+         * };
+         *
+         * var membersAsString = apFormattedFieldValueService:getFormattedFieldValue({
+         *    project.members,
+         *    'UserMulti',
+         *    { delim: ' | '} //Custom Delimiter
+         * });
+         *
+         * // membersAsString = 'Joe | Beth';
+         *
+         * </pre>
+         * @returns {string} Stringified property on the object based on the field type.
+         */
+        FormattedFieldValueService.prototype.getFormattedFieldValue = function (prop, propertyType, options) {
+            if (propertyType === void 0) { propertyType = 'String'; }
+            var defaults = {
+                delim: ', ',
+                dateFormat: 'short'
+            }, opts = _.assign({}, defaults, options);
+            var str = '';
+            /** Only process if prop is defined */
+            if (prop) {
+                switch (propertyType) {
+                    case 'Boolean':
+                        str = service.stringifyBoolean(prop);
+                        break;
+                    case 'Calculated':
+                        str = service.stringifyCalc(prop);
+                        break;
+                    case 'Lookup':
+                    case 'User':
+                        str = service.stringifyLookup(prop);
+                        break;
+                    case 'DateTime':
+                        str = service.stringifyDate(prop, opts.dateFormat);
+                        break;
+                    case 'Integer':
+                    case 'Number':
+                    case 'Float':
+                    case 'Counter':
+                        str = service.stringifyNumber(prop);
+                        break;
+                    case 'Currency':
+                        str = service.stringifyCurrency(prop);
+                        break;
+                    case 'MultiChoice':
+                        str = service.stringifyMultiChoice(prop, opts.delim);
+                        break;
+                    case 'UserMulti':
+                    case 'LookupMulti':
+                        str = service.stringifyMultiLookup(prop, opts.delim);
+                        break;
+                    default:
+                        str = prop;
+                }
+            }
+            return str;
+        };
+        /**
+         * @ngdoc function
+         * @name angularPoint.apFormattedFieldValueService:stringifyBoolean
+         * @methodOf angularPoint.apFormattedFieldValueService
+         * @param {boolean} prop Boolean to stringify.
+         * @description
+         * Returns the stringified boolean if it is set.
+         * @returns {string} Stringified boolean.
+         */
+        FormattedFieldValueService.prototype.stringifyBoolean = function (prop) {
+            var str = '';
+            if (_.isBoolean(prop)) {
+                str = prop.toString();
+            }
+            return str;
+        };
+        FormattedFieldValueService.prototype.stringifyCalc = function (prop) {
+            if (prop.length === 0) {
+                return '';
+            }
+            else if (_.isNumber(prop)) {
+                return service.getFormattedFieldValue(prop, 'Number');
+            }
+            else if (_.isDate(prop)) {
+                return service.getFormattedFieldValue(prop, 'DateTime');
+            }
+            else {
+                return service.getFormattedFieldValue(prop, 'Text');
+            }
+        };
+        /**
+         * @ngdoc function
+         * @name angularPoint.apFormattedFieldValueService:stringifyCurrency
+         * @methodOf angularPoint.apFormattedFieldValueService
+         * @description
+         * Converts a numeric value into a formatted currency string.
+         * @param {number} prop Property on object to parse.
+         * @returns {string} Stringified currency.
+         */
+        FormattedFieldValueService.prototype.stringifyCurrency = function (prop) {
+            return $filter('currency')(prop, '$');
+        };
+        /**
+         * @ngdoc function
+         * @name angularPoint.apFormattedFieldValueService:stringifyDate
+         * @methodOf angularPoint.apFormattedFieldValueService
+         * @param {date} prop Date object.
+         * @param {string} dateFormat Either 'json' which converts a date into ISO8601 date string or a mask for
+         * the angular date filter.
+         * @description
+         * Returns JSON date.
+         * @returns {string} JSON date.
+         */
+        FormattedFieldValueService.prototype.stringifyDate = function (prop, dateFormat) {
+            var str = '';
+            if (_.isDate(prop)) {
+                str = dateFormat === 'json' ? prop.toJSON() : $filter('date')(prop, dateFormat);
+            }
+            return str;
+        };
+        /**
+         * @ngdoc function
+         * @name angularPoint.apFormattedFieldValueService:stringifyLookup
+         * @methodOf angularPoint.apFormattedFieldValueService
+         * @param {obj} prop Property on object to parse.
+         * @description
+         * Returns the property.lookupValue if present.
+         * @returns {string} Property.lookupValue.
+         */
+        FormattedFieldValueService.prototype.stringifyLookup = function (prop) {
+            var str = '';
+            if (prop && prop.lookupValue) {
+                str = prop.lookupValue;
+            }
+            return str;
+        };
+        /**
+         * @ngdoc function
+         * @name angularPoint.apFormattedFieldValueService:stringifyMultiChoice
+         * @methodOf angularPoint.apFormattedFieldValueService
+         * @param {string[]} prop Array of selected choices.
+         * @param {string} [delim='; '] Custom delimiter used between the concatenated values.
+         * @description
+         * Converts an array of strings into a single concatenated string.
+         * @returns {string} Concatenated string representation.
+         */
+        FormattedFieldValueService.prototype.stringifyMultiChoice = function (prop, delim) {
+            if (delim === void 0) { delim = '; '; }
+            var str = '';
+            _.each(prop, function (choice, i) {
+                if (i > 0) {
+                    str += delim;
+                }
+                str += choice;
+            });
+            return str;
+        };
+        /**
+         * @ngdoc function
+         * @name angularPoint.apFormattedFieldValueService:stringifyMultiLookup
+         * @methodOf angularPoint.apFormattedFieldValueService
+         * @param {object[]} prop Array of lookup objects.
+         * @param {string} [delim='; '] Custom delimiter used between the concatenated values.
+         * @description
+         * Converts an array of selected lookup values into a single concatenated string.
+         * @returns {string} Concatenated string representation.
+         */
+        FormattedFieldValueService.prototype.stringifyMultiLookup = function (prop, delim) {
+            if (delim === void 0) { delim = '; '; }
+            var str = '';
+            _.each(prop, function (val, valIndex) {
+                /** Add artificial delim */
+                if (valIndex > 0) {
+                    str += delim;
+                }
+                str += service.stringifyLookup(val);
+            });
+            return str;
+        };
+        /**
+         * @ngdoc function
+         * @name angularPoint.apFormattedFieldValueService:stringifyNumber
+         * @methodOf angularPoint.apFormattedFieldValueService
+         * @param {number} prop Property on object to parse.
+         * @description
+         * Converts a number to a string representation.
+         * @returns {string} Stringified number.
+         */
+        FormattedFieldValueService.prototype.stringifyNumber = function (prop) {
+            var str = '';
+            if (_.isNumber(prop)) {
+                str = prop.toString();
+            }
+            return str;
+        };
         FormattedFieldValueService.$inject = ['$filter'];
         return FormattedFieldValueService;
     })();
     ap.FormattedFieldValueService = FormattedFieldValueService;
-    /**==================PRIVATE==================*/
-    /**
-     * @ngdoc function
-     * @name angularPoint.apFormattedFieldValueService:getFormattedFieldValue
-     * @methodOf angularPoint.apFormattedFieldValueService
-     * @param {object|array|string|integer|boolean} prop Target that we'd like to stringify.
-     * @param {string} [propertyType='String'] Assumes by default that it's already a string.  Most of the normal field
-     * types identified in the model field definitions are supported.
-     *
-     * - Lookup
-     * - User
-     * - Boolean
-     * - DateTime
-     * - Integer
-     * - Number
-     * - Counter
-     * - MultiChoice
-     * - UserMulti
-     * - LookupMulti
-     * @param {object} options Optional config.
-     * @param {string} [options.delim=', '] Optional delimiter to split concatenated strings.
-     * @param {string} [options.dateFormat='short'] Either 'json' which converts a date into ISO8601 date string
-     * or a mask for the angular date filter.
-     * @example
-     * <pre>
-     *  var project = {
-     *    title: 'Super Project',
-     *   members: [
-     *     { lookupId: 12, lookupValue: 'Joe' },
-     *     { lookupId: 19, lookupValue: 'Beth' }
-     *   ]
-     * };
-     *
-     * var membersAsString = apFormattedFieldValueService:getFormattedFieldValue({
-     *    project.members,
-     *    'UserMulti',
-     *    { delim: ' | '} //Custom Delimiter
-     * });
-     *
-     * // membersAsString = 'Joe | Beth';
-     *
-     * </pre>
-     * @returns {string} Stringified property on the object based on the field type.
-     */
-    function getFormattedFieldValue(prop, propertyType, options) {
-        if (propertyType === void 0) { propertyType = 'String'; }
-        var defaults = {
-            delim: ', ',
-            dateFormat: 'short'
-        }, opts = _.assign({}, defaults, options);
-        var str = '';
-        /** Only process if prop is defined */
-        if (prop) {
-            switch (propertyType) {
-                case 'Boolean':
-                    str = stringifyBoolean(prop);
-                    break;
-                case 'Calculated':
-                    str = stringifyCalc(prop);
-                    break;
-                case 'Lookup':
-                case 'User':
-                    str = stringifyLookup(prop);
-                    break;
-                case 'DateTime':
-                    str = stringifyDate(prop, opts.dateFormat);
-                    break;
-                case 'Integer':
-                case 'Number':
-                case 'Float':
-                case 'Counter':
-                    str = stringifyNumber(prop);
-                    break;
-                case 'Currency':
-                    str = stringifyCurrency(prop);
-                    break;
-                case 'MultiChoice':
-                    str = stringifyMultiChoice(prop, opts.delim);
-                    break;
-                case 'UserMulti':
-                case 'LookupMulti':
-                    str = stringifyMultiLookup(prop, opts.delim);
-                    break;
-                default:
-                    str = prop;
-            }
-        }
-        return str;
-    }
-    function stringifyCalc(prop) {
-        if (prop.length === 0) {
-            return '';
-        }
-        else if (_.isNumber(prop)) {
-            return getFormattedFieldValue(prop, 'Number');
-        }
-        else if (_.isDate(prop)) {
-            return getFormattedFieldValue(prop, 'DateTime');
-        }
-        else {
-            return getFormattedFieldValue(prop, 'Text');
-        }
-    }
-    /**
-     * @ngdoc function
-     * @name angularPoint.apFormattedFieldValueService:stringifyNumber
-     * @methodOf angularPoint.apFormattedFieldValueService
-     * @param {number} prop Property on object to parse.
-     * @description
-     * Converts a number to a string representation.
-     * @returns {string} Stringified number.
-     */
-    function stringifyNumber(prop) {
-        var str = '';
-        if (_.isNumber(prop)) {
-            str = prop.toString();
-        }
-        return str;
-    }
-    /**
-     * @ngdoc function
-     * @name angularPoint.apFormattedFieldValueService:stringifyCurrency
-     * @methodOf angularPoint.apFormattedFieldValueService
-     * @description
-     * Converts a numeric value into a formatted currency string.
-     * @param {number} prop Property on object to parse.
-     * @returns {string} Stringified currency.
-     */
-    function stringifyCurrency(prop) {
-        return $filter('currency')(prop, '$');
-    }
-    /**
-     * @ngdoc function
-     * @name angularPoint.apFormattedFieldValueService:stringifyLookup
-     * @methodOf angularPoint.apFormattedFieldValueService
-     * @param {obj} prop Property on object to parse.
-     * @description
-     * Returns the property.lookupValue if present.
-     * @returns {string} Property.lookupValue.
-     */
-    function stringifyLookup(prop) {
-        var str = '';
-        if (prop && prop.lookupValue) {
-            str = prop.lookupValue;
-        }
-        return str;
-    }
-    /**
-     * @ngdoc function
-     * @name angularPoint.apFormattedFieldValueService:stringifyBoolean
-     * @methodOf angularPoint.apFormattedFieldValueService
-     * @param {boolean} prop Boolean to stringify.
-     * @description
-     * Returns the stringified boolean if it is set.
-     * @returns {string} Stringified boolean.
-     */
-    function stringifyBoolean(prop) {
-        var str = '';
-        if (_.isBoolean(prop)) {
-            str = prop.toString();
-        }
-        return str;
-    }
-    /**
-     * @ngdoc function
-     * @name angularPoint.apFormattedFieldValueService:stringifyDate
-     * @methodOf angularPoint.apFormattedFieldValueService
-     * @param {date} prop Date object.
-     * @param {string} dateFormat Either 'json' which converts a date into ISO8601 date string or a mask for
-     * the angular date filter.
-     * @description
-     * Returns JSON date.
-     * @returns {string} JSON date.
-     */
-    function stringifyDate(prop, dateFormat) {
-        var str = '';
-        if (_.isDate(prop)) {
-            str = dateFormat === 'json' ? prop.toJSON() : $filter('date')(prop, dateFormat);
-        }
-        return str;
-    }
-    /**
-     * @ngdoc function
-     * @name angularPoint.apFormattedFieldValueService:stringifyMultiChoice
-     * @methodOf angularPoint.apFormattedFieldValueService
-     * @param {string[]} prop Array of selected choices.
-     * @param {string} [delim='; '] Custom delimiter used between the concatenated values.
-     * @description
-     * Converts an array of strings into a single concatenated string.
-     * @returns {string} Concatenated string representation.
-     */
-    function stringifyMultiChoice(prop, delim) {
-        if (delim === void 0) { delim = '; '; }
-        var str = '';
-        _.each(prop, function (choice, i) {
-            if (i > 0) {
-                str += delim;
-            }
-            str += choice;
-        });
-        return str;
-    }
-    /**
-     * @ngdoc function
-     * @name angularPoint.apFormattedFieldValueService:stringifyMultiLookup
-     * @methodOf angularPoint.apFormattedFieldValueService
-     * @param {object[]} prop Array of lookup objects.
-     * @param {string} [delim='; '] Custom delimiter used between the concatenated values.
-     * @description
-     * Converts an array of selected lookup values into a single concatenated string.
-     * @returns {string} Concatenated string representation.
-     */
-    function stringifyMultiLookup(prop, delim) {
-        if (delim === void 0) { delim = '; '; }
-        var str = '';
-        _.each(prop, function (val, valIndex) {
-            /** Add artificial delim */
-            if (valIndex > 0) {
-                str += delim;
-            }
-            str += stringifyLookup(val);
-        });
-        return str;
-    }
     angular
         .module('angularPoint')
         .service('apFormattedFieldValueService', FormattedFieldValueService);
@@ -7021,657 +7003,6 @@ var ap;
             return regex.test(jQuery(elem)[attr.method](attr.property));
         };
         return SPServices;
-        //// Known list field types
-        //var spListFieldTypes = [
-        //    "Text",
-        //    "DateTime",
-        //    "datetime",
-        //    "User",
-        //    "UserMulti",
-        //    "Lookup",
-        //    "LookupMulti",
-        //    "Boolean",
-        //    "Integer",
-        //    "Counter",
-        //    "MultiChoice",
-        //    "Currency",
-        //    "float",
-        //    "Calc",
-        //    "Attachments",
-        //    "Calculated",
-        //    "ContentTypeId",
-        //    "Note",
-        //    //          "Computed",
-        //    "URL",
-        //    "Number",
-        //    "Choice",
-        //    "ModStat",
-        //    "Guid",
-        //    "File"
-        //];
-        // Convert a JavaScript date to the ISO 8601 format required by SharePoint to update list items
-        //function SPConvertDateToISO(options) {
-        //
-        //    var opt = $.extend({}, {
-        //        dateToConvert: new Date(), // The JavaScript date we'd like to convert. If no date is passed, the function returns the current date/time
-        //        dateOffset: "-05:00" // The time zone offset requested. Default is EST
-        //    }, options);
-        //
-        //    //Generate ISO 8601 date/time formatted string
-        //    var s = "";
-        //    var d = opt.dateToConvert;
-        //    s += d.getFullYear() + "-";
-        //    s += pad(d.getMonth() + 1) + "-";
-        //    s += pad(d.getDate());
-        //    s += "T" + pad(d.getHours()) + ":";
-        //    s += pad(d.getMinutes()) + ":";
-        //    s += pad(d.getSeconds()) + "Z" + opt.dateOffset;
-        //    //Return the ISO8601 date string
-        //    return s;
-        //
-        //} // End SPServices.SPConvertDateToISO
-        // Split values like 1;#value into id and value
-        //function SplitIndex(s) {
-        //    var spl = s.split(";#");
-        //    this.id = spl[0];
-        //    this.value = spl[1];
-        //}
-        //function pad(n) {
-        //    return n < 10 ? "0" + n : n;
-        //}
-        //var escaped_one_to_xml_special_map = {
-        //    '&amp;': '&',
-        //    '&quot;': '"',
-        //    '&lt;': '<',
-        //    '&gt;': '>'
-        //};
-        //
-        //function decodeXml(string) {
-        //    return string.replace(/(&quot;|&lt;|&gt;|&amp;)/g,
-        //        function (str, item) {
-        //            return escaped_one_to_xml_special_map[item];
-        //        });
-        //}
-        // Escape Url
-        //function escapeUrl(u) {
-        //    return u.replace(/&/g, '%26');
-        //}
-        // Return the current version of SPServices as a string
-        //SPServices.Version = function () {
-        //
-        //    return VERSION;
-        //
-        //}; // End SPServices.Version
-        //// This function converts an XML node set to JSON
-        //// Initial implementation focuses only on GetListItems
-        //$.fn.SPXmlToJson = function (options) {
-        //
-        //    var opt = $.extend({}, {
-        //        mapping: {}, // columnName: mappedName: "mappedName", objectType: "objectType"
-        //        includeAllAttrs: false, // If true, return all attributes, regardless whether they are in the mapping
-        //        removeOws: true, // Specifically for GetListItems, if true, the leading ows_ will be stripped off the field name
-        //        sparse: false // If true, empty ("") values will not be returned
-        //    }, options);
-        //
-        //    var attrNum;
-        //    var jsonObject = [];
-        //
-        //    this.each(function () {
-        //        var row = {};
-        //        var rowAttrs = this.attributes;
-        //
-        //        if (!opt.sparse) {
-        //            // Bring back all mapped columns, even those with no value
-        //            $.each(opt.mapping, function () {
-        //                row[this.mappedName] = "";
-        //            });
-        //        }
-        //
-        //        // Parse through the element's attributes
-        //        for (attrNum = 0; attrNum < rowAttrs.length; attrNum++) {
-        //            var thisAttrName = rowAttrs[attrNum].name;
-        //            var thisMapping = opt.mapping[thisAttrName];
-        //            var thisObjectName = typeof thisMapping !== "undefined" ? thisMapping.mappedName : opt.removeOws ? thisAttrName.split("ows_")[1] : thisAttrName;
-        //            var thisObjectType = typeof thisMapping !== "undefined" ? thisMapping.objectType : undefined;
-        //            if (opt.includeAllAttrs || thisMapping !== undefined) {
-        //                row[thisObjectName] = apDecodeService.attrToJson(rowAttrs[attrNum].value, thisObjectType);
-        //            }
-        //        }
-        //        // Push this item into the JSON Object
-        //        jsonObject.push(row);
-        //
-        //    });
-        //
-        //    // Return the JSON object
-        //    return jsonObject;
-        //
-        //}; // End SPServices.SPXmlToJson
-        //function attrToJson(v, objectType) {
-        //
-        //    var colValue;
-        //
-        //    switch (objectType) {
-        //        case "Text":
-        //            colValue = stringToJsonObject(v);
-        //            break;
-        //        case "DateTime":
-        //        case "datetime": // For calculated columns, stored as datetime;#value
-        //            // Dates have dashes instead of slashes: ows_Created="2009-08-25 14:24:48"
-        //            colValue = dateToJsonObject(v);
-        //            break;
-        //        case "User":
-        //            colValue = userToJsonObject(v);
-        //            break;
-        //        case "UserMulti":
-        //            colValue = userMultiToJsonObject(v);
-        //            break;
-        //        case "Lookup":
-        //            colValue = lookupToJsonObject(v);
-        //            break;
-        //        case "LookupMulti":
-        //            colValue = lookupMultiToJsonObject(v);
-        //            break;
-        //        case "Boolean":
-        //            colValue = booleanToJsonObject(v);
-        //            break;
-        //        case "Integer":
-        //            colValue = intToJsonObject(v);
-        //            break;
-        //        case "Counter":
-        //            colValue = intToJsonObject(v);
-        //            break;
-        //        case "MultiChoice":
-        //            colValue = choiceMultiToJsonObject(v);
-        //            break;
-        //        case "Number":
-        //        case "Currency":
-        //        case "float": // For calculated columns, stored as float;#value
-        //            colValue = floatToJsonObject(v);
-        //            break;
-        //        case "Calculated":
-        //            colValue = calcToJsonObject(v);
-        //            break;
-        //        case "Attachments":
-        //            colValue = lookupToJsonObject(v);
-        //            break;
-        //        case "JSON":
-        //            colValue = jsonToJsonObject(v); // Special case for text JSON stored in text columns
-        //            break;
-        //        default:
-        //            // All other objectTypes will be simple strings
-        //            colValue = stringToJsonObject(v);
-        //            break;
-        //    }
-        //    return colValue;
-        //}
-        //
-        //function stringToJsonObject(s) {
-        //    return s;
-        //}
-        //
-        //function intToJsonObject(s) {
-        //    return parseInt(s, 10);
-        //}
-        //
-        //function floatToJsonObject(s) {
-        //    return parseFloat(s);
-        //}
-        //
-        //function booleanToJsonObject(s) {
-        //    var out = s === "0" ? false : true;
-        //    return out;
-        //}
-        //
-        //function dateToJsonObject(s) {
-        //
-        //    var dt = s.split("T")[0] !== s ? s.split("T") : s.split(" ");
-        //    var d = dt[0].split("-");
-        //    var t = dt[1].split(":");
-        //    var t3 = t[2].split("Z");
-        //    var date = new Date(d[0], (d[1] - 1), d[2], t[0], t[1], t3[0]);
-        //    return date;
-        //}
-        //
-        //function userToJsonObject(s) {
-        //    if (s.length === 0) {
-        //        return null;
-        //    } else {
-        //        var thisUser = new SplitIndex(s);
-        //        var thisUserExpanded = thisUser.value.split(",#");
-        //        if (thisUserExpanded.length === 1) {
-        //            return {
-        //                userId: thisUser.id,
-        //                userName: thisUser.value
-        //            };
-        //        } else {
-        //            return {
-        //                userId: thisUser.id,
-        //                userName: thisUserExpanded[0].replace(/(,,)/g, ","),
-        //                loginName: thisUserExpanded[1].replace(/(,,)/g, ","),
-        //                email: thisUserExpanded[2].replace(/(,,)/g, ","),
-        //                sipAddress: thisUserExpanded[3].replace(/(,,)/g, ","),
-        //                title: thisUserExpanded[4].replace(/(,,)/g, ",")
-        //            };
-        //        }
-        //    }
-        //}
-        //// Get the current context (as much as we can) on startup
-        //// See: http://johnliu.net/blog/2012/2/3/sharepoint-javascript-current-page-context-info.html
-        //function SPServicesContext() {
-        //
-        //    // SharePoint 2010 gives us a context variable
-        //    if (typeof _spPageContextInfo !== "undefined") {
-        //        this.thisSite = _spPageContextInfo.webServerRelativeUrl;
-        //        this.thisList = _spPageContextInfo.pageListId;
-        //        this.thisUserId = _spPageContextInfo.userId;
-        //        // In SharePoint 2007, we know the UserID only
-        //    } else {
-        //        this.thisSite = (typeof L_Menu_BaseUrl !== "undefined") ? L_Menu_BaseUrl : "";
-        //        this.thisList = "";
-        //        this.thisUserId = (typeof _spUserId !== "undefined") ? _spUserId : undefined;
-        //    }
-        //
-        //} // End of function SPServicesContext
-        //
-        //function userMultiToJsonObject(s) {
-        //    if (s.length === 0) {
-        //        return null;
-        //    } else {
-        //        var thisUserMultiObject = [];
-        //        var thisUserMulti = s.split(";#");
-        //        for (i = 0; i < thisUserMulti.length; i = i + 2) {
-        //            var thisUser = userToJsonObject(thisUserMulti[i] + ";#" + thisUserMulti[i + 1]);
-        //            thisUserMultiObject.push(thisUser);
-        //        }
-        //        return thisUserMultiObject;
-        //    }
-        //}
-        //
-        //function lookupToJsonObject(s) {
-        //    if (s.length === 0) {
-        //        return null;
-        //    } else {
-        //        var thisLookup = new SplitIndex(s);
-        //        return {
-        //            lookupId: thisLookup.id,
-        //            lookupValue: thisLookup.value
-        //        };
-        //    }
-        //}
-        //
-        //function lookupMultiToJsonObject(s) {
-        //    if (s.length === 0) {
-        //        return null;
-        //    } else {
-        //        var thisLookupMultiObject = [];
-        //        var thisLookupMulti = s.split(";#");
-        //        for (i = 0; i < thisLookupMulti.length; i = i + 2) {
-        //            var thisLookup = lookupToJsonObject(thisLookupMulti[i] + ";#" + thisLookupMulti[i + 1]);
-        //            thisLookupMultiObject.push(thisLookup);
-        //        }
-        //        return thisLookupMultiObject;
-        //    }
-        //}
-        //
-        //function choiceMultiToJsonObject(s) {
-        //    if (s.length === 0) {
-        //        return null;
-        //    } else {
-        //        var thisChoiceMultiObject = [];
-        //        var thisChoiceMulti = s.split(";#");
-        //        for (i = 0; i < thisChoiceMulti.length; i++) {
-        //            if (thisChoiceMulti[i].length !== 0) {
-        //                thisChoiceMultiObject.push(thisChoiceMulti[i]);
-        //            }
-        //        }
-        //        return thisChoiceMultiObject;
-        //    }
-        //}
-        //
-        //function calcToJsonObject(s) {
-        //    if (s.length === 0) {
-        //        return null;
-        //    } else {
-        //        var thisCalc = s.split(";#");
-        //        // The first value will be the calculated column value type, the second will be the value
-        //        return attrToJson(thisCalc[1], thisCalc[0]);
-        //    }
-        //}
-        //
-        //function jsonToJsonObject(s) {
-        //    if (s.length === 0) {
-        //        return null;
-        //    } else {
-        //        return $.parseJSON(s);
-        //    }
-        //}
-        // Build the URL for the Ajax call based on which operation we're calling
-        // If the webURL has been provided, then use it, else use the current site
-        //var ajaxURL = generateWebServiceUrl(service, opt.webURL);
-        //var ajaxURL = "_vti_bin/" + service + ".asmx";
-        //if (opt.webURL) {
-        //    ajaxURL = opt.webURL.charAt(opt.webURL.length - 1) === SLASH ?
-        //    opt.webURL + ajaxURL : opt.webURL + SLASH + ajaxURL;
-        //} else {
-        //    var thisSite = SPServices.SPGetCurrentSite();
-        //    ajaxURL = thisSite + ((thisSite.charAt(thisSite.length - 1) === SLASH) ? ajaxURL : (SLASH + ajaxURL));
-        //}
-        // If a string is a URL, format it as a link, else return the string as-is
-        //function checkLink(s) {
-        //    return ((s.indexOf("http") === 0) || (s.indexOf(SLASH) === 0)) ? "<a href='" + s + "'>" + s + "</a>" : s;
-        //}
-        //SPServices.generateWebServiceUrl = generateWebServiceUrl;
-        // Function to determine the current Web's URL.  We need this for successful Ajax calls.
-        // The function is also available as a public function.
-        //function SPGetCurrentSite() {
-        //
-        //    // We've already determined the current site...
-        //    if (currentContext.thisSite.length > 0) {
-        //        return currentContext.thisSite;
-        //    }
-        //
-        //    // If we still don't know the current site, we call WebUrlFromPageUrlResult.
-        //    var msg = SOAPEnvelope.header +
-        //        "<WebUrlFromPageUrl xmlns='" + SCHEMASharePoint + "/soap/' ><pageUrl>" +
-        //        ((location.href.indexOf("?") > 0) ? location.href.substr(0, location.href.indexOf("?")) : location.href) +
-        //        "</pageUrl></WebUrlFromPageUrl>" +
-        //        SOAPEnvelope.footer;
-        //    $.ajax({
-        //        async: false, // Need this to be synchronous so we're assured of a valid value
-        //        url: "/_vti_bin/Webs.asmx",
-        //        type: "POST",
-        //        data: msg,
-        //        dataType: "xml",
-        //        contentType: "text/xml;charset=\"utf-8\"",
-        //        complete: function (xData) {
-        //            currentContext.thisSite = $(xData.responseXML).find("WebUrlFromPageUrlResult").text();
-        //        }
-        //    });
-        //
-        //    return currentContext.thisSite; // Return the URL
-        //
-        //} // End SPServices.SPGetCurrentSite
-        //function generateWebServiceUrl(service, webURL) {
-        //    var ajaxURL = "_vti_bin/" + service + ".asmx";
-        //    if (webURL) {
-        //        ajaxURL = webURL.charAt(webURL.length - 1) === SLASH ?
-        //        webURL + ajaxURL : webURL + SLASH + ajaxURL;
-        //    } else {
-        //        var thisSite = SPServices.SPGetCurrentSite();
-        //        ajaxURL = thisSite + ((thisSite.charAt(thisSite.length - 1) === SLASH) ? ajaxURL : (SLASH + ajaxURL));
-        //    }
-        //    return ajaxURL;
-        //}
-        //switch (apWebServiceOperationConstants[opt.operation][0]) {
-        //    case "Alerts":
-        //        SOAPEnvelope.opheader += "xmlns='" + SCHEMASharePoint + "/soap/2002/1/alerts/' >";
-        //        SOAPAction = SCHEMASharePoint + "/soap/2002/1/alerts/";
-        //        break;
-        //    case "Meetings":
-        //        SOAPEnvelope.opheader += "xmlns='" + SCHEMASharePoint + "/soap/meetings/' >";
-        //        SOAPAction = SCHEMASharePoint + "/soap/meetings/";
-        //        break;
-        //    case "Permissions":
-        //        SOAPEnvelope.opheader += "xmlns='" + SCHEMASharePoint + "/soap/directory/' >";
-        //        SOAPAction = SCHEMASharePoint + "/soap/directory/";
-        //        break;
-        //    case "PublishedLinksService":
-        //        SOAPEnvelope.opheader += "xmlns='http://microsoft.com/webservices/SharePointPortalServer/PublishedLinksService/' >";
-        //        SOAPAction = "http://microsoft.com/webservices/SharePointPortalServer/PublishedLinksService/";
-        //        break;
-        //    case "Search":
-        //        SOAPEnvelope.opheader += "xmlns='urn:Microsoft.Search' >";
-        //        SOAPAction = "urn:Microsoft.Search/";
-        //        break;
-        //    case "SharePointDiagnostics":
-        //        SOAPEnvelope.opheader += "xmlns='" + SCHEMASharePoint + "/diagnostics/' >";
-        //        SOAPAction = "http://schemas.microsoft.com/sharepoint/diagnostics/";
-        //        break;
-        //    case "SocialDataService":
-        //        SOAPEnvelope.opheader += "xmlns='http://microsoft.com/webservices/SharePointPortalServer/SocialDataService' >";
-        //        SOAPAction = "http://microsoft.com/webservices/SharePointPortalServer/SocialDataService/";
-        //        break;
-        //    case "SpellCheck":
-        //        SOAPEnvelope.opheader += "xmlns='http://schemas.microsoft.com/sharepoint/publishing/spelling/' >";
-        //        SOAPAction = "http://schemas.microsoft.com/sharepoint/publishing/spelling/SpellCheck";
-        //        break;
-        //    case "TaxonomyClientService":
-        //        SOAPEnvelope.opheader += "xmlns='" + SCHEMASharePoint + "/taxonomy/soap/' >";
-        //        SOAPAction = SCHEMASharePoint + "/taxonomy/soap/";
-        //        break;
-        //    case "usergroup":
-        //        SOAPEnvelope.opheader += "xmlns='" + SCHEMASharePoint + "/soap/directory/' >";
-        //        SOAPAction = SCHEMASharePoint + "/soap/directory/";
-        //        break;
-        //    case "UserProfileService":
-        //        SOAPEnvelope.opheader += "xmlns='http://microsoft.com/webservices/SharePointPortalServer/UserProfileService' >";
-        //        SOAPAction = "http://microsoft.com/webservices/SharePointPortalServer/UserProfileService/";
-        //        break;
-        //    case "WebPartPages":
-        //        SOAPEnvelope.opheader += "xmlns='http://microsoft.com/sharepoint/webpartpages' >";
-        //        SOAPAction = "http://microsoft.com/sharepoint/webpartpages/";
-        //        break;
-        //    case "Workflow":
-        //        SOAPEnvelope.opheader += "xmlns='" + SCHEMASharePoint + "/soap/workflow/' >";
-        //        SOAPAction = SCHEMASharePoint + "/soap/workflow/";
-        //        break;
-        //    default:
-        //        SOAPEnvelope.opheader += "xmlns='" + SCHEMASharePoint + "/soap/'>";
-        //        SOAPAction = SCHEMASharePoint + "/soap/";
-        //        break;
-        //}
-        // Utility function to show the results of a Web Service call formatted well in the browser.
-        //SPServices.SPDebugXMLHttpResult = function (options) {
-        //
-        //    var opt = $.extend({}, {
-        //        node: null, // An XMLHttpResult object from an ajax call
-        //        indent: 0 // Number of indents
-        //    }, options);
-        //
-        //    var i;
-        //    var NODE_TEXT = 3;
-        //    var NODE_CDATA_SECTION = 4;
-        //
-        //    var outString = "";
-        //    // For each new subnode, begin rendering a new TABLE
-        //    outString += "<table class='ms-vb' style='margin-left:" + opt.indent * 3 + "px;' width='100%'>";
-        //    // DisplayPatterns are a bit unique, so let's handle them differently
-        //    if (opt.node.nodeName === "DisplayPattern") {
-        //        outString += "<tr><td width='100px' style='font-weight:bold;'>" + opt.node.nodeName +
-        //        "</td><td><textarea readonly='readonly' rows='5' cols='50'>" + opt.node.xml + "</textarea></td></tr>";
-        //        // A node which has no children
-        //    } else if (!opt.node.hasChildNodes()) {
-        //        outString += "<tr><td width='100px' style='font-weight:bold;'>" + opt.node.nodeName +
-        //        "</td><td>" + ((opt.node.nodeValue !== null) ? checkLink(opt.node.nodeValue) : "&nbsp;") + "</td></tr>";
-        //        if (opt.node.attributes) {
-        //            outString += "<tr><td colspan='99'>" + showAttrs(opt.node) + "</td></tr>";
-        //        }
-        //        // A CDATA_SECTION node
-        //    } else if (opt.node.hasChildNodes() && opt.node.firstChild.nodeType === NODE_CDATA_SECTION) {
-        //        outString += "<tr><td width='100px' style='font-weight:bold;'>" + opt.node.nodeName +
-        //        "</td><td><textarea readonly='readonly' rows='5' cols='50'>" + opt.node.parentNode.text + "</textarea></td></tr>";
-        //        // A TEXT node
-        //    } else if (opt.node.hasChildNodes() && opt.node.firstChild.nodeType === NODE_TEXT) {
-        //        outString += "<tr><td width='100px' style='font-weight:bold;'>" + opt.node.nodeName +
-        //        "</td><td>" + checkLink(opt.node.firstChild.nodeValue) + "</td></tr>";
-        //        // Handle child nodes
-        //    } else {
-        //        outString += "<tr><td width='100px' style='font-weight:bold;' colspan='99'>" + opt.node.nodeName + "</td></tr>";
-        //        if (opt.node.attributes) {
-        //            outString += "<tr><td colspan='99'>" + showAttrs(opt.node) + "</td></tr>";
-        //        }
-        //        // Since the node has child nodes, recurse
-        //        outString += "<tr><td>";
-        //        for (i = 0; i < opt.node.childNodes.length; i++) {
-        //            outString += SPServices.SPDebugXMLHttpResult({
-        //                node: opt.node.childNodes.item(i),
-        //                indent: opt.indent + 1
-        //            });
-        //        }
-        //        outString += "</td></tr>";
-        //    }
-        //    outString += "</table>";
-        //    // Return the HTML which we have built up
-        //    return outString;
-        //}; // End SPServices.SPDebugXMLHttpResult
-        // Show a single attribute of a node, enclosed in a table
-        //   node               The XML node
-        //   opt                The current set of options
-        //function showAttrs(node) {
-        //    var i;
-        //    var out = "<table class='ms-vb' width='100%'>";
-        //    for (i = 0; i < node.attributes.length; i++) {
-        //        out += "<tr><td width='10px' style='font-weight:bold;'>" + i + "</td><td width='100px'>" +
-        //        node.attributes.item(i).nodeName + "</td><td>" + checkLink(node.attributes.item(i).nodeValue) + "</td></tr>";
-        //    }
-        //    out += "</table>";
-        //    return out;
-        //} // End of function showAttrs
-        // Function which returns the account name for the current user in DOMAIN\username format
-        //SPServices.SPGetCurrentUser = function (options) {
-        //
-        //    var opt = $.extend({}, {
-        //        webURL: "", // URL of the target Site Collection.  If not specified, the current Web is used.
-        //        fieldName: "Name", // Specifies which field to return from the userdisp.aspx page
-        //        fieldNames: {}, // Specifies which fields to return from the userdisp.aspx page - added in v0.7.2 to allow multiple columns
-        //        debug: false // If true, show error messages; if false, run silent
-        //    }, options);
-        //
-        //    // The current user's ID is reliably available in an existing JavaScript variable
-        //    if (opt.fieldName === "ID" && typeof currentContext.thisUserId !== "undefined") {
-        //        return currentContext.thisUserId;
-        //    }
-        //
-        //    var thisField = "";
-        //    var theseFields = {};
-        //    var fieldCount = opt.fieldNames.length > 0 ? opt.fieldNames.length : 1;
-        //    var thisUserDisp;
-        //    var thisWeb = opt.webURL.length > 0 ? opt.webURL : SPServices.SPGetCurrentSite();
-        //
-        //    // Get the UserDisp.aspx page using AJAX
-        //    $.ajax({
-        //        // Need this to be synchronous so we're assured of a valid value
-        //        async: false,
-        //        // Force parameter forces redirection to a page that displays the information as stored in the UserInfo table rather than My Site.
-        //        // Adding the extra Query String parameter with the current date/time forces the server to view this as a new request.
-        //        url: thisWeb + "/_layouts/userdisp.aspx?Force=True&" + new Date().getTime(),
-        //        complete: function (xData) {
-        //            thisUserDisp = xData;
-        //        }
-        //    });
-        //
-        //    for (i = 0; i < fieldCount; i++) {
-        //
-        //        // The current user's ID is reliably available in an existing JavaScript variable
-        //        if (opt.fieldNames[i] === "ID") {
-        //            thisField = currentContext.thisUserId;
-        //        } else {
-        //            var thisTextValue;
-        //            if (fieldCount > 1) {
-        //                thisTextValue = RegExp("FieldInternalName=\"" + opt.fieldNames[i] + "\"", "gi");
-        //            } else {
-        //                thisTextValue = RegExp("FieldInternalName=\"" + opt.fieldName + "\"", "gi");
-        //            }
-        //            $(thisUserDisp.responseText).find("table.ms-formtable td[id^='SPField']").each(function () {
-        //                if (thisTextValue.test($(this).html())) {
-        //                    // Each fieldtype contains a different data type, as indicated by the id
-        //                    switch ($(this).attr("id")) {
-        //                        case "SPFieldText":
-        //                            thisField = $(this).text();
-        //                            break;
-        //                        case "SPFieldNote":
-        //                            thisField = $(this).find("div").html();
-        //                            break;
-        //                        case "SPFieldURL":
-        //                            thisField = $(this).find("img").attr("src");
-        //                            break;
-        //                        // Just in case
-        //                        default:
-        //                            thisField = $(this).text();
-        //                            break;
-        //                    }
-        //                    // Stop looking; we're done
-        //                    return false;
-        //                }
-        //            });
-        //        }
-        //        if (opt.fieldNames[i] !== "ID") {
-        //            thisField = (typeof thisField !== "undefined") ? thisField.replace(/(^[\s\xA0]+|[\s\xA0]+$)/g, '') : null;
-        //        }
-        //        if (fieldCount > 1) {
-        //            theseFields[opt.fieldNames[i]] = thisField;
-        //        }
-        //    }
-        //
-        //    return (fieldCount > 1) ? theseFields : thisField;
-        //
-        //}; // End SPServices.SPGetCurrentUser
-        // SPUpdateMultipleListItems allows you to update multiple items in a list based upon some common characteristic or metadata criteria.
-        //function SPUpdateMultipleListItems (options) {
-        //
-        //    var opt = $.extend({}, {
-        //        webURL: "", // [Optional] URL of the target Web.  If not specified, the current Web is used.
-        //        listName: "", // The list to operate on.
-        //        CAMLQuery: "", // A CAML fragment specifying which items in the list will be selected and updated
-        //        batchCmd: "Update", // The operation to perform. By default, Update.
-        //        valuePairs: [], // valuePairs for the update in the form [[fieldname1, fieldvalue1], [fieldname2, fieldvalue2]...]
-        //        completefunc: null, // Function to call on completion of rendering the change.
-        //        debug: false // If true, show error messages;if false, run silent
-        //    }, options);
-        //
-        //    var i;
-        //    var itemsToUpdate = [];
-        //    var documentsToUpdate = [];
-        //
-        //    // Call GetListItems to find all of the items matching the CAMLQuery
-        //    SPServices({
-        //        operation: "GetListItems",
-        //        async: false,
-        //        webURL: opt.webURL,
-        //        listName: opt.listName,
-        //        CAMLQuery: opt.CAMLQuery,
-        //        CAMLQueryOptions: "<QueryOptions><ViewAttributes Scope='Recursive' /></QueryOptions>",
-        //        completefunc: function (xData) {
-        //            $(xData.responseXML).SPFilterNode("z:row").each(function () {
-        //                itemsToUpdate.push($(this).attr("ows_ID"));
-        //                var fileRef = $(this).attr("ows_FileRef");
-        //                fileRef = "/" + fileRef.substring(fileRef.indexOf(";#") + 2);
-        //                documentsToUpdate.push(fileRef);
-        //            });
-        //        }
-        //    });
-        //
-        //    var fieldNum;
-        //    var batch = "<Batch OnError='Continue'>";
-        //    for (i = 0; i < itemsToUpdate.length; i++) {
-        //        batch += "<Method ID='" + i + "' Cmd='" + opt.batchCmd + "'>";
-        //        for (fieldNum = 0; fieldNum < opt.valuePairs.length; fieldNum++) {
-        //            batch += "<Field Name='" + opt.valuePairs[fieldNum][0] + "'>" + escapeColumnValue(opt.valuePairs[fieldNum][1]) + "</Field>";
-        //        }
-        //        batch += "<Field Name='ID'>" + itemsToUpdate[i] + "</Field>";
-        //        if (documentsToUpdate[i].length > 0) {
-        //            batch += "<Field Name='FileRef'>" + documentsToUpdate[i] + "</Field>";
-        //        }
-        //        batch += "</Method>";
-        //    }
-        //    batch += "</Batch>";
-        //
-        //    // Call UpdateListItems to update all of the items matching the CAMLQuery
-        //    SPServices({
-        //        operation: "UpdateListItems",
-        //        async: false,
-        //        webURL: opt.webURL,
-        //        listName: opt.listName,
-        //        updates: batch,
-        //        completefunc: function (xData) {
-        //            // If present, call completefunc when all else is done
-        //            if (opt.completefunc !== null) {
-        //                opt.completefunc(xData);
-        //            }
-        //        }
-        //    });
-        //
-        //} // End SPServices.SPUpdateMultipleListItems
     }
 })(ap || (ap = {}));
 
@@ -7679,24 +7010,376 @@ var ap;
 var ap;
 (function (ap) {
     'use strict';
-    var $q, apConfig, $timeout;
+    // Split values like 1;#value into id and value
+    var SplitIndex = (function () {
+        function SplitIndex(str) {
+            var spl = str.split(';#');
+            this.id = parseInt(spl[0], 10);
+            this.value = spl[1];
+        }
+        return SplitIndex;
+    })();
+    var service, $q, apConfig, $timeout;
     var UtilityService = (function () {
         function UtilityService(_$q_, _$timeout_, _apConfig_) {
-            this.batchProcess = batchProcess;
-            this.convertEffectivePermMask = convertEffectivePermMask;
-            this.dateWithinRange = dateWithinRange;
-            this.doubleDigit = doubleDigit;
-            this.fromCamelCase = fromCamelCase;
-            this.registerChange = registerChange;
-            this.resolvePermissions = resolvePermissions;
             this.SplitIndex = SplitIndex;
-            this.stringifyXML = stringifyXML;
-            this.toCamelCase = toCamelCase;
-            this.yyyymmdd = yyyymmdd;
+            service = this;
             $q = _$q_;
             $timeout = _$timeout_;
             apConfig = _apConfig_;
         }
+        /**
+         * @ngdoc function
+         * @name angularPoint.apUtilityService:batchProcess
+         * @methodOf angularPoint.apUtilityService
+         * @description
+         * We REALLY don't want to lock the user's browser (blocking the UI thread) while iterating over an array of
+         * entities and performing some process on them.  This function cuts the process into as many 50ms chunks as are
+         * necessary. Based on example found in the following article:
+         * [Timed array processing in JavaScript](http://www.nczonline.net/blog/2009/08/11/timed-array-processing-in-javascript/);
+         * @param {Object[]} entities The entities that need to be processed.
+         * @param {Function} process Reference to the process to be executed for each of the entities.
+         * @param {Object} context this
+         * @param {Number} [delay=25] Number of milliseconds to delay between batches.
+         * @param {Number} [maxItems=entities.length] Maximum number of entities to process before pausing.
+         * @returns {Object} Promise
+         * @example
+         * <pre>
+         * function buildProjectSummary = function() {
+             *    var deferred = $q.defer();
+             *
+             *    // Taken from a fictitious projectsModel.js
+             *    projectModel.getAllListItems().then(function(entities) {
+             *      var summaryObject = {};
+             *      var extendProjectSummary = function(project) {
+             *          // Do some process intensive stuff here
+             *
+             *      };
+             *
+             *      // Now that we have all of our projects we want to iterate
+             *      // over each to create our summary object. The problem is
+             *      // this could easily cause the page to hang with a sufficient
+             *      // number of entities.
+             *      apUtilityService.batchProcess(entities, extendProjectSummary, function() {
+             *          // Long running process is complete so resolve promise
+             *          deferred.resolve(summaryObject);
+             *      }, 25, 1000);
+             *    };
+             *
+             *    return deferred.promise;
+             * }
+         *
+         * </pre>
+         */
+        UtilityService.prototype.batchProcess = function (entities, process, context, delay, maxItems) {
+            var itemCount = entities.length, batchCount = 0, chunkMax = maxItems || itemCount, delay = delay || 25, index = 0, deferred = $q.defer();
+            function chunkTimer() {
+                batchCount++;
+                var start = +new Date(), chunkIndex = index;
+                while (index < itemCount && (index - chunkIndex) < chunkMax && (new Date() - start < 100)) {
+                    process.call(context, entities[index], index, batchCount);
+                    index += 1;
+                }
+                if (index < itemCount) {
+                    $timeout(chunkTimer, delay);
+                }
+                else {
+                    deferred.resolve(entities);
+                }
+            }
+            chunkTimer();
+            return deferred.promise;
+        };
+        /**
+         * @ngdoc function
+         * @name angularPoint.apUtilityService:convertEffectivePermMask
+         * @methodOf angularPoint.apUtilityService
+         * @description
+         * GetListItemsSinceToken operation returns the list element with an EffectivePermMask attribute which is the
+         * name of the PermissionMask.  We then need to convert the name into an actual mask so this function contains
+         * the known permission names with their masks.  If a provided mask name is found, the cooresponding mask
+         * is returned.  Otherwise returns null.  [MSDN Source](http://msdn.microsoft.com/en-us/library/jj575178(v=office.12).aspx)
+         * @param {string} permMaskName Permission mask name.
+         * @returns {string|null} Return the mask for the name.
+         */
+        UtilityService.prototype.convertEffectivePermMask = function (permMaskName) {
+            var permissionMask = null;
+            var permissions = {
+                //General
+                EmptyMask: '0x0000000000000000',
+                FullMask: '0x7FFFFFFFFFFFFFFF',
+                //List and document permissions
+                ViewListItems: '0x0000000000000001',
+                AddListItems: '',
+                EditListItems: '0x0000000000000004',
+                DeleteListItems: '0x0000000000000008',
+                ApproveItems: '0x0000000000000010',
+                OpenItems: '0x0000000000000020',
+                ViewVersions: '0x0000000000000040',
+                DeleteVersions: '0x0000000000000080',
+                CancelCheckout: '0x0000000000000100',
+                ManagePersonalViews: '0x0000000000000200',
+                ManageLists: '0x0000000000000800',
+                ViewFormPages: '0x0000000000001000',
+                //Web level permissions
+                Open: '0x0000000000010000',
+                ViewPages: '0x0000000000020000',
+                AddAndCustomizePages: '0x0000000000040000',
+                ApplyThemeAndBorder: '0x0000000000080000',
+                ApplyStyleSheets: '0x0000000000100000',
+                ViewUsageData: '0x0000000000200000',
+                CreateSSCSite: '0x0000000000400000',
+                ManageSubwebs: '0x0000000000800000',
+                CreateGroups: '0x0000000001000000',
+                ManagePermissions: '0x0000000002000000',
+                BrowseDirectories: '0x0000000004000000',
+                BrowseUserInfo: '0x0000000008000000',
+                AddDelPrivateWebParts: '0x0000000010000000',
+                UpdatePersonalWebParts: '0x0000000020000000',
+                ManageWeb: '0x0000000040000000',
+                UseClientIntegration: '0x0000001000000000',
+                UseRemoteAPIs: '0x0000002000000000',
+                ManageAlerts: '0x0000004000000000',
+                CreateAlerts: '0x0000008000000000',
+                EditMyUserInfo: '0x0000010000000000',
+                //Special Permissions
+                EnumeratePermissions: '0x4000000000000000'
+            };
+            if (permissions[permMaskName]) {
+                permissionMask = permissions[permMaskName];
+            }
+            return permissionMask;
+        };
+        /**
+         * @ngdoc function
+         * @name angularPoint.apUtilityService:dateWithinRange
+         * @methodOf angularPoint.apUtilityService
+         * @description
+         * Converts dates into yyyymmdd formatted ints and evaluates to determine if the dateToCheck
+         * falls within the date range provided
+         * @param {Date} startDate Starting date.
+         * @param {Date} endDate Ending date.
+         * @param {Date} [dateToCheck=new Date()] Defaults to the current date.
+         * @returns {boolean} Does the date fall within the range?
+         */
+        UtilityService.prototype.dateWithinRange = function (startDate, endDate, dateToCheck) {
+            if (dateToCheck === void 0) { dateToCheck = new Date(); }
+            /** Ensure both a start and end date are provided **/
+            if (!startDate || !endDate) {
+                return false;
+            }
+            /** Create an int representation of each of the dates */
+            var startInt = service.yyyymmdd(startDate);
+            var endInt = service.yyyymmdd(endDate);
+            var dateToCheckInt = service.yyyymmdd(dateToCheck);
+            return startInt <= dateToCheckInt && dateToCheckInt <= endInt;
+        };
+        /**
+         * @ngdoc function
+         * @name angularPoint.apUtilityService:doubleDigit
+         * @methodOf angularPoint.apUtilityService
+         * @description Add a leading zero if a number/string only contains a single character.  So in the case
+         * where the number 9 is passed in the string '09' is returned.
+         * @param {(number|string)} val A number or string to evaluate.
+         * @returns {string} Two digit string.
+         */
+        UtilityService.prototype.doubleDigit = function (val) {
+            if (typeof val === 'number') {
+                return val > 9 ? val.toString() : '0' + val;
+            }
+            else {
+                return service.doubleDigit(parseInt(val));
+            }
+        };
+        /**
+         * @ngdoc function
+         * @name angularPoint.apUtilityService:fromCamelCase
+         * @methodOf angularPoint.apUtilityService
+         * @param {string} str String to convert.
+         * @description
+         * Converts a camel case string into a space delimited string with each word having a capitalized first letter.
+         * @returns {string} Humanized string.
+         */
+        UtilityService.prototype.fromCamelCase = function (str) {
+            // insert a space before all caps
+            return str.replace(/([A-Z])/g, ' $1')
+                .replace(/^./, function (str) {
+                return str.toUpperCase();
+            });
+        };
+        /**
+         * @ngdoc function
+         * @name angularPoint.apUtilityService:registerChange
+         * @methodOf angularPoint.apUtilityService
+         * @description
+         * If online and sync is being used, notify all online users that a change has been made.
+         * //Todo Break this functionality into FireBase module that can be used if desired.
+         * @param {object} model event
+         */
+        UtilityService.prototype.registerChange = function (model, changeType, listItemId) {
+            /** Disabled this functionality until I can spend the necessary time to test */
+            if (model.sync && _.isFunction(model.sync.registerChange)) {
+                /** Register change after successful update */
+                model.sync.registerChange(changeType, listItemId);
+            }
+        };
+        /**
+         * @ngdoc function
+         * @name angularPoint.apUtilityService:resolvePermissions
+         * @methodOf angularPoint.apUtilityService
+         * @param {string} permissionsMask The WSS Rights Mask is an 8-byte, unsigned integer that specifies
+         * the rights that can be assigned to a user or site group. This bit mask can have zero or more flags set.
+         * @description
+         * Converts permMask into something usable to determine permission level for current user.  Typically used
+         * directly from a list item.  See ListItem.resolvePermissions.
+         *
+         * <h3>Additional Info</h3>
+         *
+         * -   [PermMask in SharePoint DVWPs](http://sympmarc.com/2009/02/03/permmask-in-sharepoint-dvwps/)
+         * -   [$().SPServices.SPLookupAddNew and security trimming](http://spservices.codeplex.com/discussions/208708)
+         *
+         * @returns {object} Object with properties for each permission level identifying if current user has rights (true || false)
+         * @example
+         * <pre>
+         * var perm = apUtilityService.resolvePermissions('0x0000000000000010');
+         * </pre>
+         * Example of what the returned object would look like
+         * for a site admin.
+         * <pre>
+         * perm = {
+             *    "ViewListItems":true,
+             *    "AddListItems":true,
+             *    "EditListItems":true,
+             *    "DeleteListItems":true,
+             *    "ApproveItems":true,
+             *    "OpenItems":true,
+             *    "ViewVersions":true,
+             *    "DeleteVersions":true,
+             *    "CancelCheckout":true,
+             *    "PersonalViews":true,
+             *    "ManageLists":true,
+             *    "ViewFormPages":true,
+             *    "Open":true,
+             *    "ViewPages":true,
+             *    "AddAndCustomizePages":true,
+             *    "ApplyThemeAndBorder":true,
+             *    "ApplyStyleSheets":true,
+             *    "ViewUsageData":true,
+             *    "CreateSSCSite":true,
+             *    "ManageSubwebs":true,
+             *    "CreateGroups":true,
+             *    "ManagePermissions":true,
+             *    "BrowseDirectories":true,
+             *    "BrowseUserInfo":true,
+             *    "AddDelPrivateWebParts":true,
+             *    "UpdatePersonalWebParts":true,
+             *    "ManageWeb":true,
+             *    "UseRemoteAPIs":true,
+             *    "ManageAlerts":true,
+             *    "CreateAlerts":true,
+             *    "EditMyUserInfo":true,
+             *    "EnumeratePermissions":true,
+             *    "FullMask":true
+             * }
+         * </pre>
+         */
+        UtilityService.prototype.resolvePermissions = function (permissionsMask) {
+            var permissionSet = {
+                ViewListItems: (1 & permissionsMask) > 0,
+                AddListItems: (2 & permissionsMask) > 0,
+                EditListItems: (4 & permissionsMask) > 0,
+                DeleteListItems: (8 & permissionsMask) > 0,
+                ApproveItems: (16 & permissionsMask) > 0,
+                OpenItems: (32 & permissionsMask) > 0,
+                ViewVersions: (64 & permissionsMask) > 0,
+                DeleteVersions: (128 & permissionsMask) > 0,
+                CancelCheckout: (256 & permissionsMask) > 0,
+                PersonalViews: (512 & permissionsMask) > 0,
+                ManageLists: (2048 & permissionsMask) > 0,
+                ViewFormPages: (4096 & permissionsMask) > 0,
+                Open: (permissionsMask & 65536) > 0,
+                ViewPages: (permissionsMask & 131072) > 0,
+                AddAndCustomizePages: (permissionsMask & 262144) > 0,
+                ApplyThemeAndBorder: (permissionsMask & 524288) > 0,
+                ApplyStyleSheets: (1048576 & permissionsMask) > 0,
+                ViewUsageData: (permissionsMask & 2097152) > 0,
+                CreateSSCSite: (permissionsMask & 4194314) > 0,
+                ManageSubwebs: (permissionsMask & 8388608) > 0,
+                CreateGroups: (permissionsMask & 16777216) > 0,
+                ManagePermissions: (permissionsMask & 33554432) > 0,
+                BrowseDirectories: (permissionsMask & 67108864) > 0,
+                BrowseUserInfo: (permissionsMask & 134217728) > 0,
+                AddDelPrivateWebParts: (permissionsMask & 268435456) > 0,
+                UpdatePersonalWebParts: (permissionsMask & 536870912) > 0,
+                ManageWeb: (permissionsMask & 1073741824) > 0,
+                UseRemoteAPIs: (permissionsMask & 137438953472) > 0,
+                ManageAlerts: (permissionsMask & 274877906944) > 0,
+                CreateAlerts: (permissionsMask & 549755813888) > 0,
+                EditMyUserInfo: (permissionsMask & 1099511627776) > 0,
+                EnumeratePermissions: (permissionsMask & 4611686018427387904) > 0,
+                FullMask: (permissionsMask == 9223372036854775807)
+            };
+            /**
+             * Full Mask only resolves correctly for the Full Mask level
+             * so in that case, set everything to true
+             */
+            if (permissionSet.FullMask) {
+                _.each(permissionSet, function (perm, key) {
+                    permissionSet[key] = true;
+                });
+            }
+            return permissionSet;
+        };
+        /**
+         * @ngdoc function
+         * @name angularPoint.apUtilityService:stringifyXML
+         * @methodOf angularPoint.apUtilityService
+         * @description Simple utility to convert an XML object into a string and remove unnecessary whitespace.
+         * @param {object} xml XML object.
+         * @returns {string} Stringified version of the XML object.
+         */
+        UtilityService.prototype.stringifyXML = function (xml) {
+            var str;
+            if (_.isObject(xml)) {
+                str = service.xmlToString(xml).replace(/\s+/g, ' ');
+            }
+            else if (_.isString(xml)) {
+                str = xml;
+            }
+            return str;
+        };
+        UtilityService.prototype.toCamelCase = function (str) {
+            return str.replace(/(?:^\w|[A-Z]|\b\w)/g, function (letter, index) {
+                return index == 0 ? letter.toLowerCase() : letter.toUpperCase();
+            }).replace(/\s+/g, '');
+        };
+        /**
+         * @ngdoc function
+         * @name angularPoint.apUtilityService:yyyymmdd
+         * @methodOf angularPoint.apUtilityService
+         * @description
+         * Convert date into a int formatted as yyyymmdd
+         * We don't need the time portion of comparison so an int makes this easier to evaluate
+         */
+        UtilityService.prototype.yyyymmdd = function (date) {
+            var yyyy = date.getFullYear();
+            var mm = date.getMonth() + 1;
+            var dd = date.getDate();
+            /** Add leading 0's to month and day if necessary */
+            return parseInt(yyyy + service.doubleDigit(mm) + service.doubleDigit(dd));
+        };
+        UtilityService.prototype.xmlToString = function (xmlData) {
+            var xmlString;
+            if (typeof XMLSerializer !== 'undefined') {
+                /** Modern Browsers */
+                xmlString = (new XMLSerializer()).serializeToString(xmlData);
+            }
+            else {
+                /** Old versions of IE */
+                xmlString = xmlData.xml;
+            }
+            return xmlString;
+        };
         UtilityService.$inject = ['$q', '$timeout', 'apConfig'];
         return UtilityService;
     })();
@@ -7712,396 +7395,6 @@ var ap;
                 .test(value);
         }
     });
-    /**
-     * @ngdoc function
-     * @name angularPoint.apUtilityService:doubleDigit
-     * @methodOf angularPoint.apUtilityService
-     * @description Add a leading zero if a number/string only contains a single character.  So in the case
-     * where the number 9 is passed in the string '09' is returned.
-     * @param {(number|string)} val A number or string to evaluate.
-     * @returns {string} Two digit string.
-     */
-    function doubleDigit(val) {
-        if (typeof val === 'number') {
-            return val > 9 ? val.toString() : '0' + val;
-        }
-        else {
-            return doubleDigit(parseInt(val));
-        }
-    }
-    /**
-     * @ngdoc function
-     * @name angularPoint.apUtilityService:yyyymmdd
-     * @methodOf angularPoint.apUtilityService
-     * @description
-     * Convert date into a int formatted as yyyymmdd
-     * We don't need the time portion of comparison so an int makes this easier to evaluate
-     */
-    function yyyymmdd(date) {
-        var yyyy = date.getFullYear();
-        var mm = date.getMonth() + 1;
-        var dd = date.getDate();
-        /** Add leading 0's to month and day if necessary */
-        return parseInt(yyyy + doubleDigit(mm) + doubleDigit(dd));
-    }
-    /**
-     * @ngdoc function
-     * @name angularPoint.apUtilityService:dateWithinRange
-     * @methodOf angularPoint.apUtilityService
-     * @description
-     * Converts dates into yyyymmdd formatted ints and evaluates to determine if the dateToCheck
-     * falls within the date range provided
-     * @param {Date} startDate Starting date.
-     * @param {Date} endDate Ending date.
-     * @param {Date} [dateToCheck=new Date()] Defaults to the current date.
-     * @returns {boolean} Does the date fall within the range?
-     */
-    function dateWithinRange(startDate, endDate, dateToCheck) {
-        if (dateToCheck === void 0) { dateToCheck = new Date(); }
-        /** Ensure both a start and end date are provided **/
-        if (!startDate || !endDate) {
-            return false;
-        }
-        /** Create an int representation of each of the dates */
-        var startInt = yyyymmdd(startDate);
-        var endInt = yyyymmdd(endDate);
-        var dateToCheckInt = yyyymmdd(dateToCheck);
-        return startInt <= dateToCheckInt && dateToCheckInt <= endInt;
-    }
-    /**
-     * @ngdoc function
-     * @name angularPoint.apUtilityService:batchProcess
-     * @methodOf angularPoint.apUtilityService
-     * @description
-     * We REALLY don't want to lock the user's browser (blocking the UI thread) while iterating over an array of
-     * entities and performing some process on them.  This function cuts the process into as many 50ms chunks as are
-     * necessary. Based on example found in the following article:
-     * [Timed array processing in JavaScript](http://www.nczonline.net/blog/2009/08/11/timed-array-processing-in-javascript/);
-     * @param {Object[]} entities The entities that need to be processed.
-     * @param {Function} process Reference to the process to be executed for each of the entities.
-     * @param {Object} context this
-     * @param {Number} [delay=25] Number of milliseconds to delay between batches.
-     * @param {Number} [maxItems=entities.length] Maximum number of entities to process before pausing.
-     * @returns {Object} Promise
-     * @example
-     * <pre>
-     * function buildProjectSummary = function() {
-         *    var deferred = $q.defer();
-         *
-         *    // Taken from a fictitious projectsModel.js
-         *    projectModel.getAllListItems().then(function(entities) {
-         *      var summaryObject = {};
-         *      var extendProjectSummary = function(project) {
-         *          // Do some process intensive stuff here
-         *
-         *      };
-         *
-         *      // Now that we have all of our projects we want to iterate
-         *      // over each to create our summary object. The problem is
-         *      // this could easily cause the page to hang with a sufficient
-         *      // number of entities.
-         *      apUtilityService.batchProcess(entities, extendProjectSummary, function() {
-         *          // Long running process is complete so resolve promise
-         *          deferred.resolve(summaryObject);
-         *      }, 25, 1000);
-         *    };
-         *
-         *    return deferred.promise;
-         * }
-     *
-     * </pre>
-     */
-    function batchProcess(entities, process, context, delay, maxItems) {
-        var itemCount = entities.length, batchCount = 0, chunkMax = maxItems || itemCount, delay = delay || 25, index = 0, deferred = $q.defer();
-        function chunkTimer() {
-            batchCount++;
-            var start = +new Date(), chunkIndex = index;
-            while (index < itemCount && (index - chunkIndex) < chunkMax && (new Date() - start < 100)) {
-                process.call(context, entities[index], index, batchCount);
-                index += 1;
-            }
-            if (index < itemCount) {
-                $timeout(chunkTimer, delay);
-            }
-            else {
-                deferred.resolve(entities);
-            }
-        }
-        chunkTimer();
-        return deferred.promise;
-    }
-    //function batchProcess(items, process, context, delay, maxItems) {
-    //    var n = items.length,
-    //        delay = delay || 25,
-    //        maxItems = maxItems || n,
-    //        i = 0,
-    //        deferred = $q.defer();
-    //
-    //    chunkTimer(i, n, deferred, items, process, context, delay, maxItems);
-    //    return deferred.promise;
-    //}
-    //
-    //function chunkTimer(i, n, deferred, items, process, context, delay, maxItems) {
-    //    var start = +new Date(),
-    //        j = i;
-    //
-    //    while (i < n && (i - j) < maxItems && (new Date() - start < 100)) {
-    //        process.call(context, items[i]);
-    //        i += 1;
-    //    }
-    //
-    //    if (i < n) {
-    //        setTimeout(function () {
-    //            chunkTimer(j, n, deferred, items, process, context, delay, maxItems);
-    //        }, delay);
-    //    }
-    //    else {
-    //        deferred.resolve(items);
-    //    }
-    //}
-    /**
-     * @ngdoc function
-     * @name angularPoint.apUtilityService:resolvePermissions
-     * @methodOf angularPoint.apUtilityService
-     * @param {string} permissionsMask The WSS Rights Mask is an 8-byte, unsigned integer that specifies
-     * the rights that can be assigned to a user or site group. This bit mask can have zero or more flags set.
-     * @description
-     * Converts permMask into something usable to determine permission level for current user.  Typically used
-     * directly from a list item.  See ListItem.resolvePermissions.
-     *
-     * <h3>Additional Info</h3>
-     *
-     * -   [PermMask in SharePoint DVWPs](http://sympmarc.com/2009/02/03/permmask-in-sharepoint-dvwps/)
-     * -   [$().SPServices.SPLookupAddNew and security trimming](http://spservices.codeplex.com/discussions/208708)
-     *
-     * @returns {object} Object with properties for each permission level identifying if current user has rights (true || false)
-     * @example
-     * <pre>
-     * var perm = apUtilityService.resolvePermissions('0x0000000000000010');
-     * </pre>
-     * Example of what the returned object would look like
-     * for a site admin.
-     * <pre>
-     * perm = {
-         *    "ViewListItems":true,
-         *    "AddListItems":true,
-         *    "EditListItems":true,
-         *    "DeleteListItems":true,
-         *    "ApproveItems":true,
-         *    "OpenItems":true,
-         *    "ViewVersions":true,
-         *    "DeleteVersions":true,
-         *    "CancelCheckout":true,
-         *    "PersonalViews":true,
-         *    "ManageLists":true,
-         *    "ViewFormPages":true,
-         *    "Open":true,
-         *    "ViewPages":true,
-         *    "AddAndCustomizePages":true,
-         *    "ApplyThemeAndBorder":true,
-         *    "ApplyStyleSheets":true,
-         *    "ViewUsageData":true,
-         *    "CreateSSCSite":true,
-         *    "ManageSubwebs":true,
-         *    "CreateGroups":true,
-         *    "ManagePermissions":true,
-         *    "BrowseDirectories":true,
-         *    "BrowseUserInfo":true,
-         *    "AddDelPrivateWebParts":true,
-         *    "UpdatePersonalWebParts":true,
-         *    "ManageWeb":true,
-         *    "UseRemoteAPIs":true,
-         *    "ManageAlerts":true,
-         *    "CreateAlerts":true,
-         *    "EditMyUserInfo":true,
-         *    "EnumeratePermissions":true,
-         *    "FullMask":true
-         * }
-     * </pre>
-     */
-    function resolvePermissions(permissionsMask) {
-        var permissionSet = {
-            ViewListItems: (1 & permissionsMask) > 0,
-            AddListItems: (2 & permissionsMask) > 0,
-            EditListItems: (4 & permissionsMask) > 0,
-            DeleteListItems: (8 & permissionsMask) > 0,
-            ApproveItems: (16 & permissionsMask) > 0,
-            OpenItems: (32 & permissionsMask) > 0,
-            ViewVersions: (64 & permissionsMask) > 0,
-            DeleteVersions: (128 & permissionsMask) > 0,
-            CancelCheckout: (256 & permissionsMask) > 0,
-            PersonalViews: (512 & permissionsMask) > 0,
-            ManageLists: (2048 & permissionsMask) > 0,
-            ViewFormPages: (4096 & permissionsMask) > 0,
-            Open: (permissionsMask & 65536) > 0,
-            ViewPages: (permissionsMask & 131072) > 0,
-            AddAndCustomizePages: (permissionsMask & 262144) > 0,
-            ApplyThemeAndBorder: (permissionsMask & 524288) > 0,
-            ApplyStyleSheets: (1048576 & permissionsMask) > 0,
-            ViewUsageData: (permissionsMask & 2097152) > 0,
-            CreateSSCSite: (permissionsMask & 4194314) > 0,
-            ManageSubwebs: (permissionsMask & 8388608) > 0,
-            CreateGroups: (permissionsMask & 16777216) > 0,
-            ManagePermissions: (permissionsMask & 33554432) > 0,
-            BrowseDirectories: (permissionsMask & 67108864) > 0,
-            BrowseUserInfo: (permissionsMask & 134217728) > 0,
-            AddDelPrivateWebParts: (permissionsMask & 268435456) > 0,
-            UpdatePersonalWebParts: (permissionsMask & 536870912) > 0,
-            ManageWeb: (permissionsMask & 1073741824) > 0,
-            UseRemoteAPIs: (permissionsMask & 137438953472) > 0,
-            ManageAlerts: (permissionsMask & 274877906944) > 0,
-            CreateAlerts: (permissionsMask & 549755813888) > 0,
-            EditMyUserInfo: (permissionsMask & 1099511627776) > 0,
-            EnumeratePermissions: (permissionsMask & 4611686018427387904) > 0,
-            FullMask: (permissionsMask == 9223372036854775807)
-        };
-        /**
-         * Full Mask only resolves correctly for the Full Mask level
-         * so in that case, set everything to true
-         */
-        if (permissionSet.FullMask) {
-            _.each(permissionSet, function (perm, key) {
-                permissionSet[key] = true;
-            });
-        }
-        return permissionSet;
-    }
-    /**
-     * @ngdoc function
-     * @name angularPoint.apUtilityService:convertEffectivePermMask
-     * @methodOf angularPoint.apUtilityService
-     * @description
-     * GetListItemsSinceToken operation returns the list element with an EffectivePermMask attribute which is the
-     * name of the PermissionMask.  We then need to convert the name into an actual mask so this function contains
-     * the known permission names with their masks.  If a provided mask name is found, the cooresponding mask
-     * is returned.  Otherwise returns null.  [MSDN Source](http://msdn.microsoft.com/en-us/library/jj575178(v=office.12).aspx)
-     * @param {string} permMaskName Permission mask name.
-     * @returns {string|null} Return the mask for the name.
-     */
-    function convertEffectivePermMask(permMaskName) {
-        var permissionMask = null;
-        var permissions = {
-            //General
-            EmptyMask: '0x0000000000000000',
-            FullMask: '0x7FFFFFFFFFFFFFFF',
-            //List and document permissions
-            ViewListItems: '0x0000000000000001',
-            AddListItems: '',
-            EditListItems: '0x0000000000000004',
-            DeleteListItems: '0x0000000000000008',
-            ApproveItems: '0x0000000000000010',
-            OpenItems: '0x0000000000000020',
-            ViewVersions: '0x0000000000000040',
-            DeleteVersions: '0x0000000000000080',
-            CancelCheckout: '0x0000000000000100',
-            ManagePersonalViews: '0x0000000000000200',
-            ManageLists: '0x0000000000000800',
-            ViewFormPages: '0x0000000000001000',
-            //Web level permissions
-            Open: '0x0000000000010000',
-            ViewPages: '0x0000000000020000',
-            AddAndCustomizePages: '0x0000000000040000',
-            ApplyThemeAndBorder: '0x0000000000080000',
-            ApplyStyleSheets: '0x0000000000100000',
-            ViewUsageData: '0x0000000000200000',
-            CreateSSCSite: '0x0000000000400000',
-            ManageSubwebs: '0x0000000000800000',
-            CreateGroups: '0x0000000001000000',
-            ManagePermissions: '0x0000000002000000',
-            BrowseDirectories: '0x0000000004000000',
-            BrowseUserInfo: '0x0000000008000000',
-            AddDelPrivateWebParts: '0x0000000010000000',
-            UpdatePersonalWebParts: '0x0000000020000000',
-            ManageWeb: '0x0000000040000000',
-            UseClientIntegration: '0x0000001000000000',
-            UseRemoteAPIs: '0x0000002000000000',
-            ManageAlerts: '0x0000004000000000',
-            CreateAlerts: '0x0000008000000000',
-            EditMyUserInfo: '0x0000010000000000',
-            //Special Permissions
-            EnumeratePermissions: '0x4000000000000000'
-        };
-        if (permissions[permMaskName]) {
-            permissionMask = permissions[permMaskName];
-        }
-        return permissionMask;
-    }
-    function toCamelCase(str) {
-        return str.replace(/(?:^\w|[A-Z]|\b\w)/g, function (letter, index) {
-            return index == 0 ? letter.toLowerCase() : letter.toUpperCase();
-        }).replace(/\s+/g, '');
-    }
-    /**
-     * @ngdoc function
-     * @name angularPoint.apUtilityService:fromCamelCase
-     * @methodOf angularPoint.apUtilityService
-     * @param {string} str String to convert.
-     * @description
-     * Converts a camel case string into a space delimited string with each word having a capitalized first letter.
-     * @returns {string} Humanized string.
-     */
-    function fromCamelCase(str) {
-        // insert a space before all caps
-        return str.replace(/([A-Z])/g, ' $1')
-            .replace(/^./, function (str) {
-            return str.toUpperCase();
-        });
-    }
-    // Split values like 1;#value into id and value
-    var SplitIndex = (function () {
-        function SplitIndex(str) {
-            var spl = str.split(';#');
-            this.id = parseInt(spl[0], 10);
-            this.value = spl[1];
-        }
-        return SplitIndex;
-    })();
-    /**
-     * @ngdoc function
-     * @name angularPoint.apUtilityService:stringifyXML
-     * @methodOf angularPoint.apUtilityService
-     * @description Simple utility to convert an XML object into a string and remove unnecessary whitespace.
-     * @param {object} xml XML object.
-     * @returns {string} Stringified version of the XML object.
-     */
-    function stringifyXML(xml) {
-        var str;
-        if (_.isObject(xml)) {
-            str = xmlToString(xml).replace(/\s+/g, ' ');
-        }
-        else if (_.isString(xml)) {
-            str = xml;
-        }
-        return str;
-    }
-    function xmlToString(xmlData) {
-        var xmlString;
-        if (typeof XMLSerializer !== 'undefined') {
-            /** Modern Browsers */
-            xmlString = (new XMLSerializer()).serializeToString(xmlData);
-        }
-        else {
-            /** Old versions of IE */
-            xmlString = xmlData.xml;
-        }
-        return xmlString;
-    }
-    /**
-     * @ngdoc function
-     * @name angularPoint.apUtilityService:registerChange
-     * @methodOf angularPoint.apUtilityService
-     * @description
-     * If online and sync is being used, notify all online users that a change has been made.
-     * //Todo Break this functionality into FireBase module that can be used if desired.
-     * @param {object} model event
-     */
-    function registerChange(model, changeType, listItemId) {
-        /** Disabled this functionality until I can spend the necessary time to test */
-        if (model.sync && _.isFunction(model.sync.registerChange)) {
-            /** Register change after successful update */
-            model.sync.registerChange(changeType, listItemId);
-        }
-    }
     /**
      * @ngdoc service
      * @name angularPoint.apUtilityService

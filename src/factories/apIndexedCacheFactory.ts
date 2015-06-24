@@ -7,23 +7,24 @@ module ap {
         addEntity: (listItem: ListItem<T>) => void;
         clear: () => void;
         count: () => number;
-        first: () => T;
+        first: () => ListItem<T>;
         keys: () => string[];
-        last: () => T;
-        nthEntity: (index: number) => T;
+        last: () => ListItem<T>;
+        nthEntity: (index: number) => ListItem<T>;
         removeEntity(listItem: ListItem<T>): void;
         removeEntity(listItem: number): void;
-        toArray: () => T[];
+        toArray: () => ListItem<T>[];
 
         //Object with keys equaling ID and values being the individual list item
-        [key: number]: T;
+        [key: number]: ListItem<T>;
 
         //(value: number): ListItem<T>;
         //        [key: string]: ListItem<T>;
     }
+
     
     interface IUninstantiatedIndexCache<T>{
-        [key: number]: T;
+        [key: number]: ListItem<T>;
     }
 
     /**
@@ -93,7 +94,7 @@ module ap {
          * Returns the first listItem in the index (smallest ID).
          * @returns {object} First listItem in cache.
          */
-        first(): T {
+        first(): ListItem<T> {
             return this.nthEntity(0);
         }
 
@@ -117,7 +118,7 @@ module ap {
          * Returns the last listItem in the index (largest ID).
          * @returns {object} Last listItem in cache.
          */
-        last(): T {
+        last(): ListItem<T> {
             var keys = this.keys();
             return this[keys[keys.length - 1]];
         }
@@ -131,7 +132,7 @@ module ap {
          * @param {number} index The index of the item requested.
          * @returns {object} First listItem in cache.
          */
-        nthEntity(index: number): T {
+        nthEntity(index: number): ListItem<T> {
             var keys = this.keys();
             return this[keys[index]];
         }
@@ -144,7 +145,7 @@ module ap {
          * Removes a listItem from the cache.
          * @param {object|number} listItem Entity to remove or ID of listItem to be removed.
          */
-        removeEntity(listItem): void {
+        removeEntity(listItem: ListItem<T> | number): void {
             if (_.isObject && listItem.id && this[listItem.id]) {
                 delete this[listItem.id];
             } else if (_.isNumber(listItem)) {
@@ -161,7 +162,7 @@ module ap {
          * Turns the cache object into an array of entities.
          * @returns {object[]} Returns the array of entities currently in the cache.
          */
-        toArray(): T[] {
+        toArray(): ListItem<T>[] {
             return _.toArray(this);
         }
 
