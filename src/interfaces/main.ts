@@ -138,10 +138,20 @@ interface toastr {
 
 declare module ngTable {
     export interface INGTableParamsObject {
-        page?: number;
         count?: number;
         filter?: Object;
+        page?: number;
         sorting?: Object;
+    }
+    
+    interface INGTableParamsReference {
+        count(): number;
+        filter(): Object;
+        orderBy(): string[]
+        page(): number;
+        sorting(): Object;
+        total(): number;
+        total(number): void;
     }
 
     export interface INGTableSettings {
@@ -150,7 +160,7 @@ declare module ngTable {
         defaultSort?: string; //options: ['asc', 'desc']
         groupBy?: string | Function;
         filterDelay?: number;
-        getData($defer: ng.IDeferred<ap.ListItem<any>[]>, params: INGTableParamsObject): void;
+        getData($defer: ng.IDeferred<ap.ListItem<any>[]>, params: INGTableParamsReference): void;
     }
 
     export interface INGTableParams {
