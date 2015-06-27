@@ -35,8 +35,8 @@ describe("Factory: apListItemFactory", function () {
         it('removes entity with ID of 1 from the cache', function () {
             mockListItem.deleteItem()
                 .then(function () {
-                    expect(mockModel.getCache('primary')[1]).toBeUndefined();
-                });
+                expect(mockModel.getCache('primary')[1]).toBeUndefined();
+            });
             $httpBackend.flush();
         });
     });
@@ -136,9 +136,9 @@ describe("Factory: apListItemFactory", function () {
         });
 
         it('returns a stringified json date with params', function () {
-            expect(mockListItem.getFormattedValue('date', {dateFormat: 'json'}))
+            expect(mockListItem.getFormattedValue('date', { dateFormat: 'json' }))
                 .toEqual('2014-08-19T07:00:00.000Z');
-                //.toEqual('2014-08-19T' + utils.getTimezoneOffsetString() + ':00.000Z');
+            //.toEqual('2014-08-19T' + utils.getTimezoneOffsetString() + ':00.000Z');
         });
     });
 
@@ -206,8 +206,8 @@ describe("Factory: apListItemFactory", function () {
                 mockListItem.integer = 13;
                 mockListItem.saveChanges()
                     .then(function (response) {
-                        expect(response.integer).toEqual(13);
-                    });
+                    expect(response.integer).toEqual(13);
+                });
                 $httpBackend.flush();
             });
             it('has the updated value', function () {
@@ -240,16 +240,16 @@ describe("Factory: apListItemFactory", function () {
             mockListItem.integer = 29;
             mockListItem.saveFields('integer')
                 .then(function (response) {
-                    expect(response.integer).toEqual(29);
-                });
+                expect(response.integer).toEqual(29);
+            });
             $httpBackend.flush();
         });
         it('shows the updating value in the secondary cache', function () {
             mockListItem.integer = 41;
             mockListItem.saveFields('integer')
                 .then(function (response) {
-                    expect(mockModel.getCache('secondary')[1].integer).toEqual(41);
-                });
+                expect(mockModel.getCache('secondary')[1].integer).toEqual(41);
+            });
             $httpBackend.flush();
         });
         //it('resolves the promise with the updated entity', function () {
@@ -276,13 +276,39 @@ describe("Factory: apListItemFactory", function () {
 
     });
 
+    describe('Method: setPristine', function () {
+        var initialLookupValue = '[{"lookupId":2,"lookupValue":"Lookup 2"},{"lookupId":3,"lookupValue":"Lookup 3"}]';
+
+        it('has the initial value before updating', function () {
+            expect(mockListItem.integer).toEqual(12);
+        });
+
+        it('restores any changes of primative back to the pristine state', function () {
+            //mockXMLService.xhrStub('getAttachmentCollection');
+            mockListItem.integer = 101;
+            mockListItem.setPristine();
+            expect(mockListItem.integer).toEqual(12);
+        });
+
+        it('has the complex property initially correct', function () {
+            expect(JSON.stringify(mockListItem.lookupMulti)).toEqual(initialLookupValue);
+        });
+
+        it('restores any changes of a referenced object back to the pristine state', function () {
+            mockListItem.lookupMulti.splice(0, 1);
+            expect(mockListItem.lookupMulti.length === 1);
+            mockListItem.setPristine();
+            expect(JSON.stringify(mockListItem.lookupMulti)).toEqual(initialLookupValue);
+        });
+    });
+
     describe('Method: getAttachmentCollection', function () {
         it('returns an array of attachments for the list item', function () {
             //mockXMLService.xhrStub('getAttachmentCollection');
             mockListItem.getAttachmentCollection()
                 .then(function (response) {
-                    expect(response.length).toEqual(1);
-                });
+                expect(response.length).toEqual(1);
+            });
             $httpBackend.flush();
         });
     });
@@ -292,8 +318,8 @@ describe("Factory: apListItemFactory", function () {
             //mockXMLService.xhrStub('deleteAttachment');
             mockListItem.deleteAttachment(mockListItem.attachments[0])
                 .then(function (response) {
-                    expect(response).toBeDefined();
-                });
+                expect(response).toBeDefined();
+            });
             $httpBackend.flush();
         });
     });
@@ -303,16 +329,16 @@ describe("Factory: apListItemFactory", function () {
             //mockXMLService.xhrStub('GetVersionCollection');
             mockListItem.getFieldVersionHistory('integer')
                 .then(function (response) {
-                    expect(response.length).toEqual(3);
-                });
+                expect(response.length).toEqual(3);
+            });
             $httpBackend.flush();
         });
         it('works without passing any any fields to dynamically build field array', function () {
             //mockXMLService.xhrStub('GetVersionCollection');
             mockListItem.getFieldVersionHistory()
                 .then(function (response) {
-                    expect(response.length).toEqual(3);
-                });
+                expect(response.length).toEqual(3);
+            });
             $httpBackend.flush();
         });
     });

@@ -33,11 +33,13 @@ module ap {
         resolvePermissions: () => IUserPermissionsObject;
         saveChanges: (options?: IListItemCrudOptions<T>) => ng.IPromise<ListItem<T>>;
         saveFields: (fieldArray: string[], options?: IListItemCrudOptions<T>) => ng.IPromise<ListItem<T>>;
+        setPristine: () => void;
         startWorkflow: (options: IStartWorkflowParams) => ng.IPromise<any>;
         validateEntity: (options?: Object) => boolean;
 
         //Added by Model Instantiation
         getModel?: () => Model;
+        getPristine?: () => Object;
         getQuery?: () => IQuery<T>;
 
     }
@@ -58,6 +60,7 @@ module ap {
         fileRef: ILookup;
         getCache: () => IndexedCache<T>;
         getModel: () => Model;
+        getPristine: () => Object;        
         getQuery: () => IQuery<T>;
         id: number;
         modified: Date;
@@ -453,6 +456,7 @@ module ap {
                 }
             }
             return lookupReference;
+
         }
 
 
@@ -629,6 +633,23 @@ module ap {
                 });
 
             return deferred.promise;
+        }
+        
+        
+        /**
+         * @ngdoc function
+         * @name ListItem.setPristine
+         * @methodOf ListItem
+         * @description
+         * Resets all list item properties back to a pristine state but doesn't update any properties added 
+         * manually to the list item.
+         */ 
+        setPristine(): void {
+            if(!this.id || !_.isFunction(this.getPristine)) {
+                throw new Error('Unable to find the pristine state for this list item.');
+            }
+            var pristineState = this.getPristine();
+            _.assign(this, pristineState);
         }
 
 

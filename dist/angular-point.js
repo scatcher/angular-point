@@ -1661,6 +1661,21 @@ var ap;
         };
         /**
          * @ngdoc function
+         * @name ListItem.setPristine
+         * @methodOf ListItem
+         * @description
+         * Resets all list item properties back to a pristine state but doesn't update any properties added
+         * manually to the list item.
+         */
+        ListItem.prototype.setPristine = function () {
+            if (!this.id || !_.isFunction(this.getPristine)) {
+                throw new Error('Unable to find the pristine state for this list item.');
+            }
+            var pristineState = this.getPristine();
+            _.assign(this, pristineState);
+        };
+        /**
+         * @ngdoc function
          * @name ListItem.startWorkflow
          * @methodOf ListItem
          * @description
@@ -4279,16 +4294,26 @@ var ap;
         DecodeService.prototype.createListItemProvider = function (model, query, indexedCache) {
             var _this = this;
             return function (rawObject) {
-                /** Create Reference to the indexed cache */
-                rawObject.getCache = function () { return indexedCache; };
-                /** Allow us to reference the originating query that generated this object */
-                rawObject.getQuery = function () { return query; };
-                /** Allow us to reference the parent model for any list item */
-                //rawObject.getModel = () => model;
-                var listItem = new model.factory(rawObject);
-                /** Register in global application listItem cache and extends the existing listItem if it
-                 * already exists */
-                return _this.apCacheService.registerEntity(listItem, indexedCache);
+                var listItem;
+                if (indexedCache[rawObject.id]) {
+                    //Object already exists in cache so we just need to update properties
+                    listItem = indexedCache[rawObject.id];
+                    //Call constructor on original list item to perform any initialization logic again
+                    listItem.constructor(rawObject);
+                }
+                else {
+                    //Creating a new List Item
+                    /** Create Reference to the indexed cache */
+                    rawObject.getCache = function () { return indexedCache; };
+                    /** Allow us to reference the originating query that generated this object */
+                    rawObject.getQuery = function () { return query; };
+                    listItem = new model.factory(rawObject);
+                    /** Register in global application listItem cache */
+                    _this.apCacheService.registerEntity(listItem, indexedCache);
+                }
+                //Allow us to reference the uninstantiated version of this list item
+                listItem.getPristine = function () { return rawObject; };
+                return indexedCache[rawObject.id];
             };
         };
         /**
@@ -4684,7 +4709,6 @@ var ap;
          * @description
          * Convert an XML list item into a JS object using the fields defined in the model for the given list item.
          * @param {object} xmlEntity XML Object.
-         * @param {function} listItemProvider Constructor function that instantiates a new object.
          * @param {object} options Configuration options.
          * @param {string} options.mapping Mapping of fields we'd like to extend on our JS object.
          * @param {boolean} [options.includeAllAttrs=false] If true, return all attributes, regardless whether
@@ -4692,14 +4716,13 @@ var ap;
          * @param {boolean} [options.removeOws=true] Specifically for GetListItems, if true, the leading ows_ will
          * @returns {object} New entity using the factory on the model.
          */
-        DecodeService.prototype.parseXMLEntity = function (xmlEntity, listItemProvider, options) {
+        DecodeService.prototype.parseXMLEntity = function (xmlEntity, options) {
             var _this = this;
             var entity = {};
             var rowAttrs = xmlEntity.attributes;
             /** Bring back all mapped columns, even those with no value */
             _.each(options.mapping, function (fieldDefinition) {
                 entity[fieldDefinition.mappedName] = _this.apFieldService.getDefaultValueForType(fieldDefinition.objectType);
-                //entity[fieldDefinition.mappedName] = '';
             });
             /** Parse through the element's attributes */
             _.each(rowAttrs, function (attr) {
@@ -4714,7 +4737,7 @@ var ap;
                     });
                 }
             });
-            return listItemProvider(entity);
+            return entity;
         };
         /**
          * @ngdoc function
@@ -4780,8 +4803,9 @@ var ap;
             var opts = _.assign({}, defaults, options);
             var parsedEntities = [];
             _.each(xmlEntities, function (xmlEntity) {
-                var parsedEntity = _this.parseXMLEntity(xmlEntity, listItemProvider, opts);
-                parsedEntities.push(parsedEntity);
+                var parsedEntity = _this.parseXMLEntity(xmlEntity, opts);
+                var instantiatedListItem = listItemProvider(parsedEntity);
+                parsedEntities.push(instantiatedListItem);
             });
             return parsedEntities;
         };
