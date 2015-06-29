@@ -146,7 +146,7 @@ module ap {
          * @param {object|number} listItem Entity to remove or ID of listItem to be removed.
          */
         removeEntity(listItem: ListItem<T> | number): void {
-            if (_.isObject && listItem.id && this[listItem.id]) {
+            if (_.isObject(listItem) && listItem.id && this[listItem.id]) {
                 delete this[listItem.id];
             } else if (_.isNumber(listItem)) {
                 /** Allow listItem ID to be used instead of then listItem */
