@@ -1,28 +1,23 @@
 /// <reference path="../../common/app.module.ts" />
-var __extends = this.__extends || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-    function __() { this.constructor = d; }
-    __.prototype = b.prototype;
-    d.prototype = new __();
-};
-(function () {
+
+(() => {
     'use strict';
-    var Mock = (function (_super) {
-        __extends(Mock, _super);
-        function Mock(obj) {
-            _super.call(this);
+
+    export class Mock extends ap.ListItem<Mock>{
+        constructor(obj) {
+            super();
             _.assign(this, obj);
         }
-        return Mock;
-    })(ap.ListItem);
-    exports.Mock = Mock;
-    var MOCKMODEL = (function (_super) {
-        __extends(MOCKMODEL, _super);
-        function MOCKMODEL(apModelFactory, apListItemFactory, apDecodeService, mockXMLService, $httpBackend, apCacheService) {
+    }
+
+    export class MOCKMODEL extends ap.Model {
+        constructor(apModelFactory, apListItemFactory, apDecodeService, mockXMLService, private $httpBackend, private apCacheService) {
+
             /********************* Model Definition ***************************************/
+
             /** Model Constructor
              *  Also passes list to List constructor to build viewFields (XML definition of fields to return) */
-            _super.call(this, {
+            super({
                 factory: Mock,
                 list: {
                     title: 'MockList',
@@ -70,10 +65,11 @@ var __extends = this.__extends || function (d, b) {
                     ]
                 }
             });
-            this.$httpBackend = $httpBackend;
-            this.apCacheService = apCacheService;
+
             var model = this;
+
             /*********************************** Queries ***************************************/
+
             /** Fetch data (pulls local xml if offline named model.list.title + '.xml')
              *  Initially pulls all requested data.  Each subsequent call just pulls records that have been changed,
              *  updates the model, and returns a reference to the updated data array
@@ -82,32 +78,35 @@ var __extends = this.__extends || function (d, b) {
             model.registerQuery({
                 name: 'primary'
             });
+
             model.registerQuery({
                 name: 'secondary'
             });
+
         }
-        MOCKMODEL.prototype.getField = function (name) {
+
+        getField(name) {
             return _.find(this.list.fields, { mappedName: name });
-        };
-        MOCKMODEL.prototype.importMocks = function () {
-            var _this = this;
-            var primaryCache = this.getCache('primary');
-            var secondaryCache = this.getCache('secondary');
-            primaryCache.clear();
-            secondaryCache.clear();
-            /** Clear out model cache */
-            _.each(this.apCacheService.entityCache, function (val, key) {
-                delete _this.apCacheService.entityCache[key];
-            });
-            this.executeQuery('primary');
-            this.executeQuery('secondary');
-            this.$httpBackend.flush();
-        };
-        return MOCKMODEL;
-    })(ap.Model);
-    exports.MOCKMODEL = MOCKMODEL;
+        }
+        
+        importMocks () {
+                var primaryCache = this.getCache('primary');
+                var secondaryCache = this.getCache('secondary');
+                primaryCache.clear();
+                secondaryCache.clear();
+
+                /** Clear out model cache */
+                _.each(this.apCacheService.entityCache, (val, key) => {
+                    delete this.apCacheService.entityCache[key];
+                });
+                this.executeQuery('primary');
+                this.executeQuery('secondary');
+                this.$httpBackend.flush();
+            }
+    }
+
+
     angular.module('angularPoint')
         .service('mockModel', MOCKMODEL);
-})();
 
-//# sourceMappingURL=../../common/models/MOCKMODEL.js.map
+})();
