@@ -640,16 +640,24 @@ module ap {
          * @ngdoc function
          * @name ListItem.setPristine
          * @methodOf ListItem
+         * @param {ListItem} [listItem] Optionally pass initial list item object back to the list item constructor to 
+         * run any initialization logic.  Otherwise we just overwrite existing values on the object with a copy from the
+         * original object.
          * @description
          * Resets all list item properties back to a pristine state but doesn't update any properties added 
          * manually to the list item.
          */ 
-        setPristine(): void {
+        setPristine(listItem?: ListItem<any>): void {
             if(!this.id || !_.isFunction(this.getPristine)) {
                 throw new Error('Unable to find the pristine state for this list item.');
             }
             var pristineState = this.getPristine();
-            _.assign(this, pristineState);
+            
+            if (listItem) {
+                listItem.constructor(pristineState);
+            } else {
+                _.assign(this, pristineState);
+            }
         }
 
 

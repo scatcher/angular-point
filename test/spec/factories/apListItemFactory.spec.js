@@ -279,22 +279,25 @@ describe("Factory: apListItemFactory", function () {
     describe('Method: setPristine', function () {
         var initialLookupValue = '[{"lookupId":2,"lookupValue":"Lookup 2"},{"lookupId":3,"lookupValue":"Lookup 3"}]';
 
-        it('has the initial value before updating', function () {
-            expect(mockListItem.integer).toEqual(12);
-        });
-
         it('restores any changes of primative back to the pristine state', function () {
             //mockXMLService.xhrStub('getAttachmentCollection');
+            expect(mockListItem.integer).toEqual(12);
             mockListItem.integer = 101;
-            mockListItem.setPristine();
+            mockListItem.setPristine(mockListItem);
             expect(mockListItem.integer).toEqual(12);
         });
 
-        it('has the complex property initially correct', function () {
-            expect(JSON.stringify(mockListItem.lookupMulti)).toEqual(initialLookupValue);
-        });
 
         it('restores any changes of a referenced object back to the pristine state', function () {
+            expect(JSON.stringify(mockListItem.lookupMulti)).toEqual(initialLookupValue);
+            mockListItem.lookupMulti.splice(0, 1);
+            expect(mockListItem.lookupMulti.length === 1);
+            mockListItem.setPristine(mockListItem);
+            expect(JSON.stringify(mockListItem.lookupMulti)).toEqual(initialLookupValue);
+        });
+        
+        it('restores any changes of a referenced object back to the pristine state when optional list item is not provided', function () {
+            expect(JSON.stringify(mockListItem.lookupMulti)).toEqual(initialLookupValue);
             mockListItem.lookupMulti.splice(0, 1);
             expect(mockListItem.lookupMulti.length === 1);
             mockListItem.setPristine();

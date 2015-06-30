@@ -1,24 +1,28 @@
-/// <reference path="../app.module.mock.ts" />
-
-module ap {
+/// <reference path="../../../src/app.module.ts" />
+var __extends = (this && this.__extends) || function (d, b) {
+    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+    function __() { this.constructor = d; }
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+};
+(function () {
     'use strict';
-
-    export class MockListItem extends ap.ListItem<Mock>{
-        constructor(obj) {
-            super();
+    var Mock = (function (_super) {
+        __extends(Mock, _super);
+        function Mock(obj) {
+            _super.call(this);
             _.assign(this, obj);
         }
-    }
-
-    export class MockModel extends ap.Model {
-        constructor(private $httpBackend, private apCacheService) {
-
+        return Mock;
+    })(ap.ListItem);
+    exports.Mock = Mock;
+    var MOCKMODEL = (function (_super) {
+        __extends(MOCKMODEL, _super);
+        function MOCKMODEL(apModelFactory, apListItemFactory, apDecodeService, mockXMLService, $httpBackend, apCacheService) {
             /********************* Model Definition ***************************************/
-
             /** Model Constructor
              *  Also passes list to List constructor to build viewFields (XML definition of fields to return) */
-            super({
-                factory: MockListItem,
+            _super.call(this, {
+                factory: Mock,
                 list: {
                     title: 'MockList',
                     /**Maps to the offline XML file in dev folder (no spaces) */
@@ -65,11 +69,10 @@ module ap {
                     ]
                 }
             });
-
+            this.$httpBackend = $httpBackend;
+            this.apCacheService = apCacheService;
             var model = this;
-
             /*********************************** Queries ***************************************/
-
             /** Fetch data (pulls local xml if offline named model.list.title + '.xml')
              *  Initially pulls all requested data.  Each subsequent call just pulls records that have been changed,
              *  updates the model, and returns a reference to the updated data array
@@ -78,35 +81,32 @@ module ap {
             model.registerQuery({
                 name: 'primary'
             });
-
             model.registerQuery({
                 name: 'secondary'
             });
-
         }
-
-        getField(name) {
+        MOCKMODEL.prototype.getField = function (name) {
             return _.find(this.list.fields, { mappedName: name });
-        }
-        
-        importMocks () {
-                var primaryCache = this.getCache('primary');
-                var secondaryCache = this.getCache('secondary');
-                primaryCache.clear();
-                secondaryCache.clear();
-
-                /** Clear out model cache */
-                _.each(this.apCacheService.entityCache, (val, key) => {
-                    delete this.apCacheService.entityCache[key];
-                });
-                this.executeQuery('primary');
-                this.executeQuery('secondary');
-                this.$httpBackend.flush();
-            }
-    }
-
-
+        };
+        MOCKMODEL.prototype.importMocks = function () {
+            var _this = this;
+            var primaryCache = this.getCache('primary');
+            var secondaryCache = this.getCache('secondary');
+            primaryCache.clear();
+            secondaryCache.clear();
+            /** Clear out model cache */
+            _.each(this.apCacheService.entityCache, function (val, key) {
+                delete _this.apCacheService.entityCache[key];
+            });
+            this.executeQuery('primary');
+            this.executeQuery('secondary');
+            this.$httpBackend.flush();
+        };
+        return MOCKMODEL;
+    })(ap.Model);
+    exports.MOCKMODEL = MOCKMODEL;
     angular.module('angularPoint')
-        .service('mockModel', MockModel);
+        .service('mockModel', MOCKMODEL);
+})();
 
-}
+//# sourceMappingURL=../../mock/models/MOCKMODEL.js.map
