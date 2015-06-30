@@ -4,13 +4,16 @@
 //var concat = require('concat-stream');
 var fs = require('fs');
 var gulp = require('gulp');
+var ghPages = require('gulp-gh-pages');
 //var inject = require('inject');
 var projectDir = __dirname + '/';
 var merge = require('merge2');
 var sourcemaps = require('gulp-sourcemaps');
+var ngdocs = require("gulp-ngdocs");
 var typescript = require('gulp-typescript');
 var concat = require('gulp-concat');
 var paths = require('./gulp.config')(projectDir);
+var pkg = require('./package.json');
 
 require('angular-point-tools')(projectDir, paths);
 
@@ -29,13 +32,53 @@ gulp.task('build', ['gen-ts-refs'], function () {
 
     return merge([
         tsResult.js
-            .pipe(concat('angular-point.js')) // You can use other plugins that also support gulp-sourcemaps
+            .pipe(concat(pkg.name + '.js')) // You can use other plugins that also support gulp-sourcemaps
             .pipe(sourcemaps.write('.')) // Now the sourcemaps are added along side the .js file
             // .pipe(sourcemaps.write('.', { sourceRoot: '/' })) // Now the sourcemaps are added along side the .js file
             .pipe(gulp.dest('./dist')),
         tsResult.dts.pipe(gulp.dest('./dist'))
     ]);
 
+});
+
+
+/**
+* Generate docs from code in docs folder.
+*/
+gulp.task('ngdocs', ['build'], function () {
+    
+    // return gulp
+    //     .src([paths.tsFiles])
+    //     .pipe(typedoc({ 
+    //         // module: "commonjs", 
+    //         gaID: 'UA-51195298-1',
+    //         gaSite: 'scatcher.github.io',
+    //         out: "./docs/", 
+    //         name: "angular-point", 
+    //         target: "es5",
+    //         includeDeclarations: true
+    //     }));
+
+   var options = {
+       analytics: {
+           account: 'UA-51195298-1',
+           domainName: 'scatcher.github.io'
+       },
+       html5Mode: false,
+       title: pkg.name,
+       titleLink: '/api'
+   };
+   return gulp.src('./dist/' + pkg.name + '.js')
+       .pipe(ngdocs.process(options))
+       .pipe(gulp.dest('./docs'));
+});
+
+/**
+* Push docs to live site.
+*/
+gulp.task('ghpages', ['ngdocs'], function () {
+   return gulp.src('./docs/**/*')
+       .pipe(ghPages());
 });
 
 

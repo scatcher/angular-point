@@ -12,92 +12,112 @@ Provides the Following
 - adds &quot;getAllListItems&quot; function
 - adds &quot;addNewItem&quot; function</p>
 </div></div>
-<h2 id="dependencies">Dependencies</h2>
-<ul class="dependencies"><li><code ng:non-bindable=""><a href="#/api/angularPoint.apModelFactory">apModelFactory</a></code>
-</li>
-</ul>
 <h2 id="usage">Usage</h2>
 <div class="usage"><pre class="prettyprint linenums">Model(config);</pre>
 <h4 id="usage_parameters">Parameters</h4><table class="variables-matrix table table-bordered table-striped"><thead><tr><th>Param</th><th>Type</th><th>Details</th></tr></thead><tbody><tr><td>config</td><td><a href="" class="label type-hint type-hint-object">object</a></td><td><div class="model-page"><p>Object containing optional params.</p>
-</div></td></tr><tr><td>config.factory</td><td><a href="" class="label type-hint type-hint-object">object</a></td><td><div class="model-page"><ul>
-<li>Constructor function for
-individual list items.</li>
-</ul>
-</div> <p><em>(default: apListItemFactory.createGenericFactory())</em></p></td></tr><tr><td>config.fieldDefinitionsExtended</td><td><a href="" class="label type-hint type-hint-boolean">boolean</a></td><td><div class="model-page"><p>Queries using the GetListItemChangesSinceToken
+</div></td></tr><tr><td>[config.factory</td><td><a href="" class="label type-hint type-hint-object">object</a></td><td><div class="model-page"><p>= apListItemFactory.createGenericFactory()] - Constructor function for
+individual list items.</p>
+</div></td></tr><tr><td>config.fieldDefinitionsExtended</td><td><a href="" class="label type-hint type-hint-boolean">boolean</a></td><td><div class="model-page"><p>Queries using the GetListItemChangesSinceToken
 operation return the full list definition along with the requested entities.  The first time one of these
 queries is executed we will try to extend our field definitions defined in the model with the additional
 information provided from the server.  Examples are options for a Choice field, display name of the field,
 field description, and any other field information provided for the fields specified in the model.  This
 flag is set once the first query is complete so we don&#39;t process again.</p>
-</div> <p><em>(default: false)</em></p></td></tr><tr><td>config.list</td><td><a href="" class="label type-hint type-hint-object">object</a></td><td><div class="model-page"><p>Definition of the list in SharePoint be passed to the list constructor to
-extend further.  See the List constructor in &quot;apListFactory&quot; for additional details.</p>
+</div> <p><em>(default: false)</em></p></td></tr><tr><td>config.list</td><td><a href="" class="label type-hint type-hint-object">object</a></td><td><div class="model-page"><ul>
+<li>Definition of the list in SharePoint.
+be passed to the list constructor to extend further</li>
+</ul>
+</div></td></tr><tr><td>config.list.title</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="model-page"><ul>
+<li>List name, no spaces.  Offline XML file will need to be
+named the same (ex: CustomList so xml file would be apConfig.offlineXML + &#39;/CustomList.xml&#39;)</li>
+</ul>
+</div></td></tr><tr><td>config.list.getListId()</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="model-page"><ul>
+<li>Unique SharePoint ID (ex: &#39;{3DBEB25A-BEF0-4213-A634-00DAF46E3897}&#39;)</li>
+</ul>
+</div></td></tr><tr><td>config.list.customFields</td><td><a href="" class="label type-hint type-hint-object">object[]</a></td><td><div class="model-page"><ul>
+<li>Maps SharePoint fields with names we&#39;ll use within the
+application.  Identifies field types and formats accordingly.  Also denotes if a field is read only.</li>
+</ul>
 </div></td></tr></tbody></table></div>
 <h2 id="example">Example</h2>
 <div class="example"><div class="model-page"><pre class="prettyprint linenums">
-angular.module('App')
- .service('taskerModel', function (apModelFactory) {
-    // Object Constructor (class)
-    // All list items are passed to the below constructor which inherits from
-    // the ListItem prototype.
-    function Task(obj) {
-        var self = this;
-        _.extend(self, obj);
-    }
+//Taken from a fictitious projectsModel.ts
 
-    // Model Constructor
-    var model = apModelFactory.create({
-        factory: Task,
-        list: {
-            // Maps to the offline XML file in dev folder (no spaces)
-            name: 'Tasks',
-            // List GUID can be found in list properties in SharePoint designer
-            guid: '{CB1B965E-D952-4ED5-86FD-FF8DA770F871}',
-            customFields: [
-                // Array of objects mapping each SharePoint field to a
-                // property on a list item object
-                {
-                 staticName: 'Title',
-                 objectType: 'Text',
-                 mappedName: 'title',
-                 readOnly:false
-                },
-                {
-                 staticName: 'Project',
-                 objectType: 'Lookup',
-                 mappedName: 'project',
-                 readOnly:false
-                },
-                {
-                 staticName: 'Priority',
-                 objectType: 'Choice',
-                 mappedName: 'priority',
-                 readOnly:false
-               },
-                {
-                 staticName: 'Description',
-                 objectType: 'Text',
-                 mappedName: 'description',
-                 readOnly:false
-                },
-                {
-                 staticName: 'Manager',
-                 objectType: 'Lookup',
-                 mappedName: 'requirement',
-                 readOnly:false
-                }
-            ]
-        }
-    });
+export class ProjectsModel extends ap.Model {
+     constructor() {
+         super({
+             factory: Project,
+             list: {
+                 guid: '{PROJECT LIST GUID}',
+                 title: 'Projects',
+                 customFields: [
+                     {
+                        staticName: 'Title',
+                        objectType: 'Text',
+                        mappedName: 'title',
+                        readOnly: false
+                     },
+                     {
+                        staticName: 'Customer',
+                        objectType: 'Lookup',
+                        mappedName: 'customer',
+                        readOnly: false
+                     },
+                     {
+                        staticName: 'ProjectDescription',
+                        objectType: 'Text',
+                        mappedName: 'projectDescription',
+                        readOnly: false
+                     },
+                     {
+                        staticName: 'Status',
+                        objectType: 'Text',
+                        mappedName: 'status',
+                        readOnly: false
+                     },
+                     {
+                        staticName: 'TaskManager',
+                        objectType: 'User',
+                        mappedName: 'taskManager',
+                        readOnly: false
+                     },
+                     {
+                        staticName: 'ProjectGroup',
+                        objectType: 'Lookup',
+                        mappedName: 'group',
+                        readOnly: false
+                     },
+                     {
+                        staticName: 'CostEstimate',
+                        objectType: 'Currency',
+                        mappedName: 'costEstimate',
+                        readOnly: false
+                     },
+                     {
+                        staticName: 'Active',
+                        objectType: 'Boolean',
+                        mappedName: 'active',
+                        readOnly: false
+                     },
+                     {
+                        staticName: 'Attachments',
+                        objectType: 'Attachments',
+                        mappedName: 'attachments',
+                        readOnly: true
+                     }
+                 ]
+             }
+         });
 
-    // Fetch data (pulls local xml if offline named model.list.title + '.xml')
-    // Initially pulls all requested data.  Each subsequent call just pulls
-    // records that have been changed, updates the model, and returns a reference
-   // to the updated data array
-    // @returns {Array} Requested list items
-    model.registerQuery({name: 'primary'});
+         var model = this;
 
-    return model;
-});
+         //Any other model setup
+     }
+     someExposedModelMethod() {
+         this.dosomething...
+     }
+
+  }
 </pre>
 </div></div>
 </div>

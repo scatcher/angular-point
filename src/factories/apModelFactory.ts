@@ -45,7 +45,7 @@ module ap {
         getAllListItems?: IQuery<any>;
         [key: string]: IQuery<any>
     }
-    
+
     interface IModelFactory{
         new <T>(rawObject: Object): ListItem<T>;
     }
@@ -83,70 +83,83 @@ module ap {
      *
      * @example
      * <pre>
-     * //Taken from a fictitious projectsModel.js
-     * var model = new apModelFactory.Model({
-    *     factory: Project,
-    *     list: {
-    *         guid: '{PROJECT LIST GUID}',
-    *         title: 'Projects',
-    *         customFields: [
-    *             {
-    *                staticName: 'Title',
-    *                objectType: 'Text',
-    *                mappedName: 'title',
-    *                readOnly: false
-    *             },
-    *             {
-    *                staticName: 'Customer',
-    *                objectType: 'Lookup',
-    *                mappedName: 'customer',
-    *                readOnly: false
-    *             },
-    *             {
-    *                staticName: 'ProjectDescription',
-    *                objectType: 'Text',
-    *                mappedName: 'projectDescription',
-    *                readOnly: false
-    *             },
-    *             {
-    *                staticName: 'Status',
-    *                objectType: 'Text',
-    *                mappedName: 'status',
-    *                readOnly: false
-    *             },
-    *             {
-    *                staticName: 'TaskManager',
-    *                objectType: 'User',
-    *                mappedName: 'taskManager',
-    *                readOnly: false
-    *             },
-    *             {
-    *                staticName: 'ProjectGroup',
-    *                objectType: 'Lookup',
-    *                mappedName: 'group',
-    *                readOnly: false
-    *             },
-    *             {
-    *                staticName: 'CostEstimate',
-    *                objectType: 'Currency',
-    *                mappedName: 'costEstimate',
-    *                readOnly: false
-    *             },
-    *             {
-    *                staticName: 'Active',
-    *                objectType: 'Boolean',
-    *                mappedName: 'active',
-    *                readOnly: false
-    *             },
-    *             {
-    *                staticName: 'Attachments',
-    *                objectType: 'Attachments',
-    *                mappedName: 'attachments',
-    *                readOnly: true
-    *             }
-    *         ]
-    *     }
-    * });
+     * //Taken from a fictitious projectsModel.ts
+     *
+     * export class ProjectsModel extends ap.Model {
+     *      constructor() {
+     *          super({
+     *              factory: Project,
+     *              list: {
+     *                  guid: '{PROJECT LIST GUID}',
+     *                  title: 'Projects',
+     *                  customFields: [
+     *                      {
+     *                         staticName: 'Title',
+     *                         objectType: 'Text',
+     *                         mappedName: 'title',
+     *                         readOnly: false
+     *                      },
+     *                      {
+     *                         staticName: 'Customer',
+     *                         objectType: 'Lookup',
+     *                         mappedName: 'customer',
+     *                         readOnly: false
+     *                      },
+     *                      {
+     *                         staticName: 'ProjectDescription',
+     *                         objectType: 'Text',
+     *                         mappedName: 'projectDescription',
+     *                         readOnly: false
+     *                      },
+     *                      {
+     *                         staticName: 'Status',
+     *                         objectType: 'Text',
+     *                         mappedName: 'status',
+     *                         readOnly: false
+     *                      },
+     *                      {
+     *                         staticName: 'TaskManager',
+     *                         objectType: 'User',
+     *                         mappedName: 'taskManager',
+     *                         readOnly: false
+     *                      },
+     *                      {
+     *                         staticName: 'ProjectGroup',
+     *                         objectType: 'Lookup',
+     *                         mappedName: 'group',
+     *                         readOnly: false
+     *                      },
+     *                      {
+     *                         staticName: 'CostEstimate',
+     *                         objectType: 'Currency',
+     *                         mappedName: 'costEstimate',
+     *                         readOnly: false
+     *                      },
+     *                      {
+     *                         staticName: 'Active',
+     *                         objectType: 'Boolean',
+     *                         mappedName: 'active',
+     *                         readOnly: false
+     *                      },
+     *                      {
+     *                         staticName: 'Attachments',
+     *                         objectType: 'Attachments',
+     *                         mappedName: 'attachments',
+     *                         readOnly: true
+     *                      }
+     *                  ]
+     *              }
+     *          });
+     *
+     *          var model = this;
+     *
+     *          //Any other model setup
+     *      }
+     *      someExposedModelMethod() {
+     *          this.dosomething...
+     *      }
+     *
+     *   }
      * </pre>
      */
     export class Model implements IModel {

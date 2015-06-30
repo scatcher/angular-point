@@ -94,7 +94,7 @@ module ap {
          * Checks to see if current user is a member of the specified group.
          * @param {string} groupName Name of the group.
          * @param {boolean} [force=false] Ignore any cached value.
-         * @returns {{ID:string, Name:string, Description:string, OwnerId:string, OwnerIsUser:string}} Returns the group definition if the user is a member.
+         * @returns {object} Returns the group definition if the user is a member. {ID:string, Name:string, Description:string, OwnerId:string, OwnerIsUser:string}
          * @example
          * <pre>{ID: "190", Name: "Blog Contributors", Description: "We are bloggers...", OwnerID: "126", OwnerIsUser: "False"}</pre>
          */

@@ -161,7 +161,7 @@ module ap {
          * @ngdoc function
          * @name apLogger.subscribe
          * @methodOf apLogger
-         * @param {Function} callback
+         * @param {Function} callback Callend when event occurs.
          * @description Callback fired when log event occurs
          */
         subscribe(callback: Function): void {

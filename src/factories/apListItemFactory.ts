@@ -21,6 +21,7 @@ module ap {
         getAttachmentCollection: () => ng.IPromise<string[]>;
         getAvailableWorkflows: () => ng.IPromise<IWorkflowDefinition[]>;
         getCache?: () => IndexedCache<T>;
+        getChanges(): ng.IPromise<ListItem<T>>;
         getFieldChoices: (fieldName: string) => string[];
         getFieldDefinition: (fieldName: string) => IFieldDefinition | IExtendedFieldDefinition;
         getFieldDescription: (fieldName: string) => string;
@@ -70,7 +71,6 @@ module ap {
         /**
          * @ngdoc function
          * @name ListItem.deleteAttachment
-         * @methodOf ListItem
          * @description
          * Delete an attachment from a list item.
          * @param {string} url Requires the URL for the attachment we want to delete.
@@ -100,7 +100,6 @@ module ap {
         /**
          * @ngdoc function
          * @name ListItem.deleteItem
-         * @methodOf ListItem
          * @description
          * Deletes record directly from the object and removes record from user cache.
          * @param {object} [options] Optionally pass params to the dataService.
@@ -137,7 +136,6 @@ module ap {
         /**
          * @ngdoc function
          * @name ListItem.getAttachmentCollection
-         * @methodOf ListItem
          * @description
          * Requests all attachments for a given list item.
          * @returns {object} Promise which resolves with all attachments for a list item.
@@ -167,7 +165,6 @@ module ap {
         /**
          * @ngdoc function
          * @name ListItem.getAvailableWorkflows
-         * @methodOf ListItem
          * @description
          * Wrapper for apDataService.getAvailableWorkflows.  Simply passes the current item in.
          * @returns {promise} Array of objects defining each of the available workflows.
@@ -176,12 +173,25 @@ module ap {
             var listItem = this;
             return apDataService.getAvailableWorkflows(listItem.fileRef.lookupValue);
         }
+        
+        
+        /**
+         * @ngdoc function
+         * @name ListItem.getChanges
+         * @description
+         * Wrapper for model.getListItemById.  Queries server for any changes and extends the existing
+         * list item with those changes.
+         * @returns {promise} Promise which resolves with the updated list item.
+         */
+        getChanges(): ng.IPromise<ListItem<T>> {
+            var model = this.getModel();
+            return model.getListItemById(this.id);
+        }
 
 
         /**
          * @ngdoc function
          * @name ListItem.getFieldChoices
-         * @methodOf ListItem
          * @param {string} fieldName Internal field name.
          * @description
          * Uses the field definition defined in the model to attempt to find the choices array for a given Lookup or
@@ -201,7 +211,6 @@ module ap {
         /**
          * @ngdoc function
          * @name ListItem.getFieldDefinition
-         * @methodOf ListItem
          * @description
          * Returns the field definition from the definitions defined in the custom fields array within a model.
          * @example
@@ -229,7 +238,6 @@ module ap {
         /**
          * @ngdoc function
          * @name ListItem.getFieldDescription
-         * @methodOf ListItem
          * @param {string} fieldName Internal field name.
          * @description
          * Uses the field definition defined in the model to attempt to find the description for a given field.  The default
@@ -248,7 +256,6 @@ module ap {
         /**
          * @ngdoc function
          * @name ListItem.getFieldLabel
-         * @methodOf ListItem
          * @param {string} fieldName Internal field name.
          * @description
          * Uses the field definition defined in the model to attempt to find the label for a given field.  The default
@@ -268,7 +275,6 @@ module ap {
         /**
          * @ngdoc function
          * @name ListItem.getFieldVersionHistory
-         * @methodOf ListItem
          * @description
          * Takes an array of field names, finds the version history for field, and returns a snapshot of the object at each
          * version.  If no fields are provided, we look at the field definitions in the model and pull all non-readonly
@@ -365,7 +371,6 @@ module ap {
         /**
          * @ngdoc function
          * @name ListItem.getFormattedValue
-         * @methodOf ListItem
          * @description
          * Given the attribute name on a listItem, we can lookup the field type and from there return a formatted
          * string representation of that value.
@@ -414,7 +419,6 @@ module ap {
         /**
          * @ngdoc function
          * @name ListItem.getLookupReference
-         * @methodOf ListItem
          * @description
          * Allows us to retrieve the listItem being referenced in a given lookup field.
          * @param {string} fieldName Name of the lookup property on the list item that references a listItem.
@@ -463,7 +467,6 @@ module ap {
         /**
          * @ngdoc function
          * @name ListItem.resolvePermissions
-         * @methodOf ListItem
          * @description
          * See apModelService.resolvePermissions for details on what we expect to have returned.
          * @returns {Object} Contains properties for each permission level evaluated for current user.
@@ -523,7 +526,6 @@ module ap {
         /**
          * @ngdoc function
          * @name ListItem.saveChanges
-         * @methodOf ListItem
          * @description
          * Updates record directly from the object
          * @param {object} [options] Optionally pass params to the data service.
@@ -573,7 +575,6 @@ module ap {
         /**
          * @ngdoc function
          * @name ListItem.saveFields
-         * @methodOf ListItem
          * @description
          * Saves a named subset of fields back to SharePoint.  This is an alternative to saving all fields.
          * @param {array|string} fieldArray Array of internal field names that should be saved to SharePoint or a single
@@ -639,7 +640,6 @@ module ap {
         /**
          * @ngdoc function
          * @name ListItem.setPristine
-         * @methodOf ListItem
          * @param {ListItem} [listItem] Optionally pass initial list item object back to the list item constructor to 
          * run any initialization logic.  Otherwise we just overwrite existing values on the object with a copy from the
          * original object.
@@ -664,7 +664,6 @@ module ap {
         /**
          * @ngdoc function
          * @name ListItem.startWorkflow
-         * @methodOf ListItem
          * @description
          * Given a workflow name or templateId we initiate a given workflow using apDataService.startWorkflow.
          * @param {object} options Params for method and pass through options to apDataService.startWorkflow.
@@ -712,7 +711,6 @@ module ap {
         /**
          * @ngdoc function
          * @name ListItem.validateEntity
-         * @methodOf ListItem
          * @description
          * Helper function that passes the current item to Model.validateEntity
          * @param {object} [options] Optionally pass params to the dataService.

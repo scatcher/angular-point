@@ -1,0 +1,93 @@
+<h1><code ng:non-bindable="">apLogger</code>
+<div><span class="hint"></span>
+</div>
+</h1>
+<div><h2 id="description">Description</h2>
+<div class="description"><div class="aplogger-page"><p>Common definitions used in the application.</p>
+<p>HOW TO USE
+1. Create a logging model for logs to be stored
+2. Ensure everyone has write access to the list
+3. Add the model as one of the dependencies in your .run so it&#39;ll be instantiated immediately
+4. Subscribe to change events from on the model</p>
+</div></div>
+<div class="member method"><h2 id="methods">Methods</h2>
+<ul class="methods"><li><h3 id="methods_exception">exception(exception, [cause], optionsOverride)</h3>
+<div class="exception"><h5 id="methods_exception_parameters">Parameters</h5><table class="variables-matrix table table-bordered table-striped"><thead><tr><th>Param</th><th>Type</th><th>Details</th></tr></thead><tbody><tr><td>exception</td><td><a href="" class="label type-hint type-hint-error">Error</a></td><td><div class="aplogger-exception-page"><p>Error which caused event.</p>
+</div></td></tr><tr><td>[cause]</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="aplogger-exception-page"><p>Angular sometimes provides cause.</p>
+</div></td></tr><tr><td>optionsOverride</td><td><a href="" class="label type-hint type-hint-ilogger">ILogger</a></td><td><div class="aplogger-exception-page"><p>Override any log options.</p>
+</div></td></tr></tbody></table></div>
+</li>
+<li><h3 id="methods_subscribe">subscribe(callback)</h3>
+<div class="subscribe"><div class="aplogger-subscribe-page"><p>Callback fired when log event occurs</p>
+</div><h5 id="methods_subscribe_parameters">Parameters</h5><table class="variables-matrix table table-bordered table-striped"><thead><tr><th>Param</th><th>Type</th><th>Details</th></tr></thead><tbody><tr><td>callback</td><td><a href="" class="label type-hint type-hint-function">Function</a></td><td><div class="aplogger-subscribe-page"><p>Callend when event occurs.</p>
+</div></td></tr></tbody></table></div>
+</li>
+</ul>
+</div>
+<h2 id="example">Example</h2>
+<div class="example"><div class="aplogger-page"><pre class="prettyprint linenums">
+export class Log extends ap.ListItem{
+    cause: string;
+    event: string;
+    formattedStackTrace: string;
+    json: Object;
+    message: string;
+    stackTrace: string[];
+    type: string;
+    url: string;
+    constructor(obj){
+        _.assign(this, obj);
+        // Create a formatted representation of the stacktrace to display in email notification
+        if(this.stackTrace && !this.formattedStackTrace) {
+            this.formattedStackTrace = '';
+            _.each(this.stackTrace, (traceEntry) =&gt; {
+                this.formattedStackTrace += `${traceEntry}
+            `;
+            });
+        }
+    }
+}
+var logCounter = 0;
+var maxLogsPerSesssion = 5;
+export class LogsModel extends ap.Model{
+    constructor(apLogger: ap.Logger) {
+        model = this;
+        super({
+            factory: Log,
+            list: {
+                title: 'Logs',
+                guid: '{LOG LIST GUID...CHANGE ME}',
+                customFields: [
+                    {staticName: 'Message', objectType: 'Note', mappedName: 'message', readOnly: false},
+                    {staticName: 'Title', objectType: 'Text', mappedName: 'url', readOnly: false},
+                    {staticName: 'LogType', objectType: 'Text', mappedName: 'type', readOnly: false},
+                    {staticName: 'StackTrace', objectType: 'JSON', mappedName: 'stackTrace', readOnly: false},
+                    {staticName: 'Cause', objectType: 'Text', mappedName: 'cause', readOnly: false},
+                    {staticName: 'JSON', objectType: 'JSON', mappedName: 'json', readOnly: false},
+                    {staticName: 'Event', objectType: 'Text', mappedName: 'event', readOnly: false},
+                    {
+                        staticName: 'FormattedStackTrace',
+                        objectType: 'Note',
+                        mappedName: 'formattedStackTrace',
+                        readOnly: false,
+                        description: 'Trace formatted to be readable in email notification.'
+                    }
+                ]
+            }
+        });
+        // Register this model as the list where all logs will be stored
+        apLogger.subscribe(function (event: ap.ILogEvent) {
+            // Ensure we keep logging under control, prevents spamming server if loop occurs
+            if(logCounter &lt; maxLogsPerSesssion) {
+                var newLog = model.createEmptyItem(event);
+                console.log(newLog);
+                newLog.saveChanges();
+                logCounter++;
+            }
+        });
+    }
+}
+
+</pre>
+</div></div>
+</div>

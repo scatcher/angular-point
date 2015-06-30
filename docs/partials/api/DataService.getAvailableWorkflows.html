@@ -1,0 +1,27 @@
+<h1><code ng:non-bindable="">getAvailableWorkflows</code>
+<div><span class="hint">service in module <code ng:non-bindable="">DataService</code>
+</span>
+</div>
+</h1>
+<div><h2 id="description">Description</h2>
+<div class="description"><div class="dataservice-getavailableworkflows-page"><p>Given a list item or document, return an array of all available workflows.  This is used in combination with
+DataService.startWorkflow because it requires the template GUID for the target workflow.</p>
+</div></div>
+<h2 id="usage">Usage</h2>
+<div class="usage"><pre class="prettyprint linenums">getAvailableWorkflows(fileRefString);</pre>
+<h4 id="usage_parameters">Parameters</h4><table class="variables-matrix table table-bordered table-striped"><thead><tr><th>Param</th><th>Type</th><th>Details</th></tr></thead><tbody><tr><td>fileRefString</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="dataservice-getavailableworkflows-page"><p>Relative or static url referencing the item.</p>
+</div></td></tr></tbody></table><h4 id="usage_returns">Returns</h4><table class="variables-matrix"><tr><td><a href="" class="label type-hint type-hint-object">object</a></td><td><div class="dataservice-getavailableworkflows-page"><p>Resolves with an array of objects defining each of the available workflows for the item.</p>
+</div></td></tr></table></div>
+<h2 id="example">Example</h2>
+<div class="example"><div class="dataservice-getavailableworkflows-page"><pre class="prettyprint linenums">
+DataService.getAvailableWorkflows(listItem.fileRef.lookupValue)
+    .then(function(templateArray) {
+         ....templateArray = [{
+             "name": "WidgetApproval",
+             "instantiationUrl": "https: //sharepoint.mycompany.com/_layouts/IniWrkflIP.aspx?List=fc17890e-8c0…311-cea9-40d1-a183-6edde9333815}&Web={ec744d8e-ae0a-45dd-bcd1-8a63b9b399bd}",
+             "templateId": "59062311-cea9-40d1-a183-6edde9333815"
+         }]
+    });
+</pre>
+</div></div>
+</div>
