@@ -11,8 +11,7 @@ module.exports = function (projectDir) {
         devjs: [
             bower + "chance/chance.js",
             bower + "angular-mocks/angular-mocks.js",
-            "./test/mock/app.module.mock.js",
-            "./test/mock/**/*.js"
+            "./test/mock/app.module.mock.js"
         ],
         tsFiles: './src/**/*.ts'
     };

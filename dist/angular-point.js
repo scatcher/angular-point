@@ -890,7 +890,7 @@ var ap;
          * @param {object|number} listItem Entity to remove or ID of listItem to be removed.
          */
         IndexedCache.prototype.removeEntity = function (listItem) {
-            if (_.isObject && listItem.id && this[listItem.id]) {
+            if (_.isObject(listItem) && listItem.id && this[listItem.id]) {
                 delete this[listItem.id];
             }
             else if (_.isNumber(listItem)) {
@@ -1663,16 +1663,24 @@ var ap;
          * @ngdoc function
          * @name ListItem.setPristine
          * @methodOf ListItem
+         * @param {ListItem} [listItem] Optionally pass initial list item object back to the list item constructor to
+         * run any initialization logic.  Otherwise we just overwrite existing values on the object with a copy from the
+         * original object.
          * @description
          * Resets all list item properties back to a pristine state but doesn't update any properties added
          * manually to the list item.
          */
-        ListItem.prototype.setPristine = function () {
+        ListItem.prototype.setPristine = function (listItem) {
             if (!this.id || !_.isFunction(this.getPristine)) {
                 throw new Error('Unable to find the pristine state for this list item.');
             }
             var pristineState = this.getPristine();
-            _.assign(this, pristineState);
+            if (listItem) {
+                listItem.constructor(pristineState);
+            }
+            else {
+                _.assign(this, pristineState);
+            }
         };
         /**
          * @ngdoc function
@@ -3036,11 +3044,10 @@ var ap;
 })(ap || (ap = {}));
 
 /// <reference path="../app.module.ts" />
-var __extends = this.__extends || function (d, b) {
+var __extends = (this && this.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
-    __.prototype = b.prototype;
-    d.prototype = new __();
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 };
 var ap;
 (function (ap) {

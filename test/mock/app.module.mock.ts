@@ -1,9 +1,10 @@
 /// <reference path="../../typings/ap.d.ts" />
 /// <reference path="../../typings/tsd.d.ts" />
-var ap;
-(function (ap) {
+
+module ap {
     'use strict';
-    //TODO: Remove dependency on toastr
+
+//TODO: Remove dependency on toastr
     /** Check to see if dependent modules exist */
     try {
         angular.module('toastr');
@@ -12,14 +13,15 @@ var ap;
         /** Toastr wasn't found so redirect all toastr requests to $log */
         angular.module('toastr', [])
             .factory('toastr', function ($log) {
-            return {
-                error: $log.error,
-                info: $log.info,
-                success: $log.info,
-                warning: $log.warn
-            };
-        });
+                return {
+                    error: $log.error,
+                    info: $log.info,
+                    success: $log.info,
+                    warning: $log.warn
+                };
+            });
     }
+
     /**
      * @ngdoc overview
      * @module
@@ -33,9 +35,9 @@ var ap;
         'toastr',
         'ngMock'
     ])
-        .constant('mockUser', { lookupId: 100, lookupValue: 'Joe User' })
-        .run(function (apListItemFactory, apModelFactory) {
-    });
-})(ap || (ap = {}));
-
-//# sourceMappingURL=../mock/app.module.mock.js.map
+    .constant('mockUser', {lookupId: 100, lookupValue: 'Joe User'})
+    /** Bootstrap everything that needs to be immediately instantiated */
+    .run((apListItemFactory: ListItemFactory, apModelFactory: ModelFactory) => {
+        
+    })
+}
