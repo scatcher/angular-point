@@ -188,7 +188,6 @@ module ap {
             return model.getListItemById(this.id);
         }
 
-
         /**
          * @ngdoc function
          * @name ListItem.getFieldChoices
