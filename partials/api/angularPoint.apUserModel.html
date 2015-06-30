@@ -15,13 +15,16 @@
 <div class="checkifmember"><div class="angularpoint-apusermodel-page angularpoint-apusermodel-checkifmember-page"><p>Checks to see if current user is a member of the specified group.</p>
 </div><h5 id="methods_checkifmember_parameters">Parameters</h5><table class="variables-matrix table table-bordered table-striped"><thead><tr><th>Param</th><th>Type</th><th>Details</th></tr></thead><tbody><tr><td>groupName</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="angularpoint-apusermodel-page angularpoint-apusermodel-checkifmember-page"><p>Name of the group.</p>
 </div></td></tr><tr><td>force</td><td><a href="" class="label type-hint type-hint-boolean">boolean</a></td><td><div class="angularpoint-apusermodel-page angularpoint-apusermodel-checkifmember-page"><p>Ignore any cached value.</p>
-</div> <p><em>(default: false)</em></p></td></tr></tbody></table><h5 id="methods_checkifmember_returns">Returns</h5><table class="variables-matrix"><tr><td><a href="" class="label type-hint type-hint-boolean">boolean</a></td><td><div class="angularpoint-apusermodel-page angularpoint-apusermodel-checkifmember-page"><p>Is the user a member of the group?</p>
-</div></td></tr></table></div>
+</div> <p><em>(default: false)</em></p></td></tr></tbody></table><h5 id="methods_checkifmember_returns">Returns</h5><table class="variables-matrix"><tr><td><a href="" class="label type-hint type-hint-object">object</a></td><td><div class="angularpoint-apusermodel-page angularpoint-apusermodel-checkifmember-page"><p>Returns the group definition if the user is a member. {ID:string, Name:string, Description:string, OwnerId:string, OwnerIsUser:string}</p>
+</div></td></tr></table><h4 id="methods_checkifmember_example">Example</h4>
+<div class="example"><div class="angularpoint-apusermodel-page angularpoint-apusermodel-checkifmember-page"><pre class="prettyprint linenums">{ID: "190", Name: "Blog Contributors", Description: "We are bloggers...", OwnerID: "126", OwnerIsUser: "False"}</pre>
+</div></div>
+</div>
 </li>
 <li><h3 id="methods_getgroupcollection">getGroupCollection(force)</h3>
-<div class="getgroupcollection"><div class="angularpoint-apusermodel-page angularpoint-apusermodel-getgroupcollection-page"><p>Returns the group names for the current user and caches results.</p>
+<div class="getgroupcollection"><div class="angularpoint-apusermodel-page angularpoint-apusermodel-getgroupcollection-page"><p>Returns the group definitions for the current user and caches results.</p>
 </div><h5 id="methods_getgroupcollection_parameters">Parameters</h5><table class="variables-matrix table table-bordered table-striped"><thead><tr><th>Param</th><th>Type</th><th>Details</th></tr></thead><tbody><tr><td>force</td><td><a href="" class="label type-hint type-hint-boolean">boolean</a></td><td><div class="angularpoint-apusermodel-page angularpoint-apusermodel-getgroupcollection-page"><p>Ignore any cached value.</p>
-</div> <p><em>(default: false)</em></p></td></tr></tbody></table><h5 id="methods_getgroupcollection_returns">Returns</h5><table class="variables-matrix"><tr><td><a href="" class="label type-hint type-hint-string">string[]</a></td><td><div class="angularpoint-apusermodel-page angularpoint-apusermodel-getgroupcollection-page"><p>Promise which resolves with the array of groups the user belongs to.</p>
+</div> <p><em>(default: false)</em></p></td></tr></tbody></table><h5 id="methods_getgroupcollection_returns">Returns</h5><table class="variables-matrix"><tr><td><a href="" class="label type-hint type-hint-igroupdefinition">IGroupDefinition[]</a></td><td><div class="angularpoint-apusermodel-page angularpoint-apusermodel-getgroupcollection-page"><p>Promise which resolves with the array of groups the user belongs to.</p>
 </div></td></tr></table></div>
 </li>
 <li><h3 id="methods_getuserprofile">getUserProfile(force)</h3>

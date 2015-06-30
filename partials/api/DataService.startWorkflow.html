@@ -1,0 +1,34 @@
+<h1><code ng:non-bindable="">startWorkflow</code>
+<div><span class="hint">service in module <code ng:non-bindable="">DataService</code>
+</span>
+</div>
+</h1>
+<div><h2 id="description">Description</h2>
+<div class="description"><div class="dataservice-startworkflow-page"><p>Initiate a workflow for a given list item or document.  You can view additional info at
+[StartWorkflow](http: //spservices.codeplex.com/wikipage?title=StartWorkflow&amp;referringTitle=Workflow).</p>
+</div></div>
+<h2 id="usage">Usage</h2>
+<div class="usage"><pre class="prettyprint linenums">startWorkflow(options);</pre>
+<h4 id="usage_parameters">Parameters</h4><table class="variables-matrix table table-bordered table-striped"><thead><tr><th>Param</th><th>Type</th><th>Details</th></tr></thead><tbody><tr><td>options</td><td><a href="" class="label type-hint type-hint-object">object</a></td><td><div class="dataservice-startworkflow-page"><p>Configuration options.</p>
+</div></td></tr><tr><td>options.item</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="dataservice-startworkflow-page"><p>Full fileRef for the given list item/document.</p>
+</div></td></tr><tr><td>options.templateId</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="dataservice-startworkflow-page"><p>The workflow template GUID.  You can use dataService.getAvailableWorkflows
+to locate to appropriate one.</p>
+</div></td></tr><tr><td>options.workflowParameters</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="dataservice-startworkflow-page"><p>Optionally provide paramaters to the workflow.</p>
+</div> <p><em>(default: '<root />')</em></p></td></tr><tr><td>[options.fileRef]</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="dataservice-startworkflow-page"><p>Optionally pass in the relative fileRef of an listItem and then we can
+convert it to options.item.</p>
+</div></td></tr></tbody></table><h4 id="usage_returns">Returns</h4><table class="variables-matrix"><tr><td><a href="" class="label type-hint type-hint-object">object</a></td><td><div class="dataservice-startworkflow-page"><p>Deferred object that resolves once complete.</p>
+</div></td></tr></table></div>
+<h2 id="example">Example</h2>
+<div class="example"><div class="dataservice-startworkflow-page"><pre class="prettyprint linenums">
+DataService.startWorkflow({
+    item: "https: //server/site/Lists/item" + idData + "_.000",
+    templateId: "{c29c1291-a25c-47d7-9345-8fb1de2a1fa3}",
+    workflowParameters: "&lt;Data&gt;&lt;monthName&gt;" + txtBox.value + "&lt;/monthName&gt;&lt;/Data&gt;",
+  ...}).then(function() {
+      //Success
+  }, function(err) {
+      //Error
+  })
+</pre>
+</div></div>
+</div>

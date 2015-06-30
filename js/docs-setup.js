@@ -5,11 +5,20 @@ NG_DOCS={
   "pages": [
     {
       "section": "api",
+      "id": "angularPoint",
+      "shortName": "angularPoint",
+      "type": "overview",
+      "moduleName": "angularPoint",
+      "shortDescription": "This is the primary angularPoint module and needs to be listed in your app.js dependencies to gain use of AngularPoint",
+      "keywords": "angularpoint api app dependencies functionality gain js listed module overview primary project"
+    },
+    {
+      "section": "api",
       "id": "angularPoint.apCacheService",
       "shortName": "angularPoint.apCacheService",
       "type": "service",
       "moduleName": "angularPoint",
-      "shortDescription": "Stores a reference for all list items based on list GUID and list item id.  Allows us to then register promises that",
+      "shortDescription": "Stores a reference for all list items based on list GUID and list item id.  Allows us to then register promises",
       "keywords": "add allows angularpoint apcacheservice api assuming based belongs cache cached call create created creates deferred deletes entities entity entitycontainer entityid equaling eventually existing exists extend fulfills function future guid indexed instance item items key keystring list listid local lookup lowercase model modelcache newly object optionally pass pending point promises provide reference references register registered registers removes requested requests resolve resolves retrieve return returns secondary service single stored stores synchronise title undefined updated withing"
     },
     {
@@ -32,21 +41,12 @@ NG_DOCS={
     },
     {
       "section": "api",
-      "id": "angularPoint.apDataService",
-      "shortName": "angularPoint.apDataService",
-      "type": "service",
-      "moduleName": "angularPoint",
-      "shortDescription": "Handles all interaction with SharePoint&#39;s SOAP web services.  Mostly a wrapper for SPServices functionality.",
-      "keywords": "additional anderson angularpoint apconfig apdataservice apfieldservice api aputilityservice calls codeplex documentation functionality handles interaction marc service services sharepoint soap spservices web wrapper"
-    },
-    {
-      "section": "api",
       "id": "angularPoint.apDecodeService",
       "shortName": "angularPoint.apDecodeService",
       "type": "service",
       "moduleName": "angularPoint",
       "shortDescription": "Processes the XML received from SharePoint and converts it into JavaScript objects based on predefined field types.",
-      "keywords": "additional allow allows anderson angularpoint apcacheservice apconfig apdecodeservice api aputilityservice array attributes attributetypes based batch build cached call camlcase capital change checks child code codeplex coming configuration constructors container convenience conversions convert converts copies correctly corresponding customfields data define defined definition definitions directly don element elements empty entities entity error errors errorstring exists extend extended extends factory fetch field fielddefinition fielddefinitions fields filter find formatted function future getcache getlist getlistitems getlistitemssincetoken includeallattrs incredible indexedcache info initial instantiated instantiates item items iterate javascript js keeping key large leading letter list listitemprovider lists ll location majority mappedname mapping marc metadata method minor model modified needed newly node note null object objects objecttype operations optional optionally options opts ows_ parent parse parsed pass post predefined prevent processed processes processing project promise properties property propertyname provided push pushing query received reference references registers removeows representation representing requesting resolved resolves response responsexml responsible retrieve return returned returning returns rows scope server service set sharepoint simple slowdowns spservices spxmltojson start stored str string stripped takes target text throw true tweaking type typed types typically ui update updating val values version versions web webservice work xhr xml xmlentities xmlentity xmlobject"
+      "keywords": "additional allow allows anderson angularpoint apcacheservice apconfig apdecodeservice api aputilityservice array attributes attributetypes based batch build cache cached call camlcase capital change checks child code codeplex coming configuration constructors container convenience conversions convert converts copies correctly corresponding customfields data define defined definition definitions directly don element elements empty entities entity error errors errorstring exists extend extended extends factory fetch field fielddefinition fielddefinitions fields filter find formatted function future getcache getlist getlistitems getlistitemssincetoken includeallattrs incredible indexedcache inedexed info initial instantiated item items iterate javascript js keeping key large leading letter list listitemprovider lists ll location majority mappedname mapping marc metadata method minor model modified needed newly node note null object objects objecttype operations optional optionally options ows_ parent parse parsed pass post predefined prevent processed processes processing project promise properties property propertyname provided push pushing query received reference references registers removeows representation representing requesting resolved resolves response responsexml responsible retrieve return returned returning returns rows scope server service set sharepoint simple slowdowns spservices spxmltojson start stored str string stripped takes target text throw true tweaking type typed types typically ui update updating val values version versions web webservice work xhr xml xmlentities xmlentity xmlobject"
     },
     {
       "section": "api",
@@ -64,7 +64,7 @@ NG_DOCS={
       "type": "service",
       "moduleName": "angularPoint",
       "shortDescription": "Processes JavaScript objects and converts them to a format SharePoint expects.",
-      "keywords": "angularpoint apconfig apencodeservice api aputilityservice array attempt convert converts current defined definition definitions delimited doesn entity expects field fielddefinition fielddefinitions fields fieldvalue find format function hand iso8601 item iterate javascript js lastname list ll lookup lookupid lookupvalue mappedname model modified multi multiselectvalue non-readonly object objects objecttype offset pairs pass passed prior processes properly properties property readonly save saving select selection service sharepoint someid somevalue spservices staticname stored string submission text timezone title turns typically user valid values"
+      "keywords": "angularpoint apencodeservice api aputilityservice array attempt convert converts current defined definition definitions delimited doesn encoded entity expects field fielddefinition fielddefinitions fields fieldtype fieldvalue fieldvalue1 fieldvalue2 find format function hand iso8601 item iterate javascript js lastname list listitem ll lookup lookupid lookupvalue mappedname model modified multi multiselectvalue non-readonly object objects objecttype offset pairs pass passed prior processes properly properties property readonly ready save saving select selection server service sharepoint someid somevalue spservices staticname stored string submission text timezone title turns types typically user valid values"
     },
     {
       "section": "api",
@@ -73,7 +73,7 @@ NG_DOCS={
       "type": "service",
       "moduleName": "angularPoint",
       "shortDescription": "Tools to assist with development.",
-      "keywords": "angularpoint apexportservice api aputilityservice array arrays assist assume based big capitalized column comment comments concatenated config console console-save convenience convert converts csv custom customdelimiter data dataset default defining definition delim delimiter description development document download downloaded dump easily enddate entities eventtype field fielddefinition fields file function generatecsv getval github io js json label local located location logic lookupid machine method multiple myfile myobject named names object objects optional optionally original overrides parse parsed parsedcsv parsing pass project property representing return row save savecsv savejson savexml separate service settings simple start startdate str string stringify strings subsequent text title tools type user users valid values var viewed work xml"
+      "keywords": "angularpoint apexportservice api aputilityservice array arrays assist assume based big capitalized column comment comments concatenated config console console-save convenience convert converts csv custom customdelimiter data dataset default defining definition delim delimiter description development document download downloaded dump easily enddate entities eventtype field fielddefinition fields file filetype function generatecsv getval github io js json label local located location logic lookupid machine method multiple myfile myobject named names object objects optional optionally original overrides parse parsed parsedcsv parsing pass project property representing return row save savecsv savejson savexml separate service settings simple start startdate str string stringify strings subsequent text title tools type user users valid values var viewed work xml"
     },
     {
       "section": "api",
@@ -122,15 +122,6 @@ NG_DOCS={
     },
     {
       "section": "api",
-      "id": "angularPoint.apListItemFactory",
-      "shortName": "angularPoint.apListItemFactory",
-      "type": "object",
-      "moduleName": "angularPoint",
-      "shortDescription": "Exposes the ListItem prototype and a constructor to instantiate a new ListItem.",
-      "keywords": "allow angularpoint apcacheservice apdataservice api aplistitemfactory aputilityservice details event exposes factory function inherit instantiate instantiates isn listitem methods object prototype returns standard"
-    },
-    {
-      "section": "api",
       "id": "angularPoint.apLookupFactory",
       "shortName": "angularPoint.apLookupFactory",
       "type": "function",
@@ -140,21 +131,12 @@ NG_DOCS={
     },
     {
       "section": "api",
-      "id": "angularPoint.apModelFactory",
-      "shortName": "angularPoint.apModelFactory",
-      "type": "service",
-      "moduleName": "angularPoint",
-      "shortDescription": "Exposes the model prototype and a constructor to instantiate a new Model.",
-      "keywords": "angularpoint apcacheservice apdataservice api aplistfactory aplistitemfactory apmodalservice apmodelfactory apqueryfactory aputilityservice array assignedto config create customfields description designer dev estimatedeffort exposes factory false field file folder function guid instantiate instantiates integer item list mappedname mapping model object objects objecttype offline options percentcomplete priority properties property prototype readonly requestedby returns service sharepoint spaces status task tasks text title user var xml"
-    },
-    {
-      "section": "api",
       "id": "angularPoint.apQueryFactory",
       "shortName": "angularPoint.apQueryFactory",
       "type": "object",
       "moduleName": "angularPoint",
       "shortDescription": "Exposes the Query prototype and a constructor to instantiate a new Query.",
-      "keywords": "angularpoint apcacheservice apconfig apdataservice api apqueryfactory config exposes function instantiate instantiates model object options prototype query reference returns"
+      "keywords": "angularpoint apconfig apdataservice api apqueryfactory config exposes function instantiate instantiates model object options prototype query reference returns"
     },
     {
       "section": "api",
@@ -172,7 +154,7 @@ NG_DOCS={
       "type": "service",
       "moduleName": "angularPoint",
       "shortDescription": "Simple service that allows us to request and cache both the current user and their group memberships.",
-      "keywords": "allows angularpoint apdataservice api apusermodel array belongs cache cached caches checks codeplex current function group groupname groups http ignore info member memberships names object parse profile promise pull request requested resolves returns service simple user"
+      "keywords": "allows angularpoint apdataservice api apusermodel array belongs blog bloggers cache cached caches checks codeplex contributors current definition definitions description false function group groupname groups http ignore info member memberships object ownerid ownerisuser parse profile promise pull request requested resolves returns service simple user"
     },
     {
       "section": "api",
@@ -181,16 +163,7 @@ NG_DOCS={
       "type": "service",
       "moduleName": "angularPoint",
       "shortDescription": "Provides shared utility functionality across the application.",
-      "keywords": "$q actual add addandcustomizepages adddelprivatewebparts addlistitems admin angularpoint apconfig api application applystylesheets applythemeandborder approveitems aputilityservice array article aspx assigned attribute based batches batchprocess bit break browsedirectories browser browseuserinfo buildprojectsummary camel cancelcheckout capitalized case change character chunks codeplex comparison complete context convert converts cooresponding create createalerts creategroups createsscsite current cuts dates datetocheck defaults defer deferred delay deletelistitems deleteversions delimited desired determine digit directly don dvwps easier easily editlistitems editmyuserinfo effectivepermmask element enddate entities enumeratepermissions evaluate evaluates event example executed extendprojectsummary fall falls false fictitious firebase flags formatted fullmask function functionality getalllistitems getlistitemssincetoken group hang humanized identifying info int integer intensive ints item iterate iterating javascript js leading length letter level list listitem lock long managealerts managelists managepermissions managesubwebs manageweb mask masks maximum microsoft milliseconds model module names nczonline net notify null number object online open openitems operation passed pausing performing perm permission permissionmask permissionsmask permmask permmaskname personalviews portion problem process processed processing projectmodel projects projectsmodel promise properties provided range reference remove resolve resolvepermissions return returned returns rights running security service set shared sharepoint simple single site source space specifies splookupaddnew spservices startdate starting string stringified stuff sufficient summary summaryobject sync thread time trimming typically ui unnecessary unsigned updatepersonalwebparts usable user useremoteapis users utility val var version viewformpages viewlistitems viewpages viewusagedata viewversions whitespace word wss xml yyyymmdd"
-    },
-    {
-      "section": "api",
-      "id": "angularPoint.apXMLListAttributeTypes",
-      "shortName": "angularPoint.apXMLListAttributeTypes",
-      "type": "object",
-      "moduleName": "angularPoint",
-      "shortDescription": "Constant object map which contains many common XML attributes found on a field definition with their",
-      "keywords": "angularpoint api apxmllistattributetypes attributes common constant corresponding definition field map object type xml"
+      "keywords": "$q actual add addandcustomizepages adddelprivatewebparts addlistitems admin angularpoint apconfig api application applystylesheets applythemeandborder approveitems aputilityservice array article aspx assigned attribute based batches batchprocess bit break browsedirectories browser browseuserinfo buildprojectsummary camel cancelcheckout capitalized case change character chunks codeplex comparison complete context convert converts cooresponding create createalerts creategroups createsscsite current cuts dates datetocheck defaults defer deferred delay deletelistitems deleteversions delimited desired determine digit directly don dvwps easier easily editlistitems editmyuserinfo effectivepermmask element enddate entities enumeratepermissions evaluate evaluates event example executed extendprojectsummary fall falls false fictitious firebase flags formatted fullmask function functionality getalllistitems getlistitemssincetoken group hang humanized identifying info int integer intensive ints item iterate iterating javascript js leading length letter level list listitem lock long managealerts managelists managepermissions managesubwebs manageweb mask masks maximum microsoft milliseconds model module names nczonline net notify null number object online open openitems operation passed pausing performing perm permission permissionmask permissionsmask permmask permmaskname personalviews portion problem process processed processing projectmodel projects projectsmodel promise properties provided range reference remove resolve resolvepermissions return returned returns rights running security service set shared sharepoint simple single site source space specifies splookupaddnew spservices startdate starting str string stringified stuff sufficient summary summaryobject sync thread time trimming typically ui unnecessary unsigned updatepersonalwebparts usable user useremoteapis users utility val var version viewformpages viewlistitems viewpages viewusagedata viewversions whitespace word wss xml yyyymmdd"
     },
     {
       "section": "api",
@@ -200,6 +173,15 @@ NG_DOCS={
       "moduleName": "angularPoint",
       "shortDescription": "Constant object map which contains many common XML attributes found on a list definition with their",
       "keywords": "angularpoint api apxmllistattributetypes attributes common constant corresponding definition list map object type xml"
+    },
+    {
+      "section": "api",
+      "id": "angularPoint.apXMLListAttributeTypes",
+      "shortName": "angularPoint.apXMLListAttributeTypes",
+      "type": "object",
+      "moduleName": "angularPoint",
+      "shortDescription": "Constant object map which contains many common XML attributes found on a field definition with their",
+      "keywords": "angularpoint api apxmllistattributetypes attributes common constant corresponding definition field map object type xml"
     },
     {
       "section": "api",
@@ -221,192 +203,219 @@ NG_DOCS={
     },
     {
       "section": "api",
-      "id": "apDataService.createListItem",
-      "shortName": "apDataService.createListItem",
+      "id": "apChangeService",
+      "shortName": "apChangeService",
+      "type": "service",
+      "moduleName": "apChangeService",
+      "shortDescription": "Primarily used for apMockBackend so we can know what to expect before an attempt to update a list",
+      "keywords": "apchangeservice api apmockbackend attempt expect intercepted item list service update"
+    },
+    {
+      "section": "api",
+      "id": "apListItemFactory",
+      "shortName": "apListItemFactory",
+      "type": "object",
+      "moduleName": "apListItemFactory",
+      "shortDescription": "Exposes the ListItem prototype and a constructor to instantiate a new ListItem.",
+      "keywords": "allow apcacheservice apdataservice api aplistitemfactory aputilityservice create creategenericfactory details event exposes factory function inherit instantiate instantiates isn listitem methods object prototype returns standard"
+    },
+    {
+      "section": "api",
+      "id": "apLogger",
+      "shortName": "apLogger",
+      "type": "service",
+      "moduleName": "apLogger",
+      "shortDescription": "Common definitions used in the application.",
+      "keywords": "access add angular ap api aplogger application assign callback callend caused change class common console control create createemptyitem customfields definitions dependencies description display email ensure error event events exception export extends factory false fired formatted formattedstacktrace function guid ilogevent instantiated json list listitem ll log logcounter logger logging logs logsmodel logtype loop mappedname maxlogspersesssion message model newlog note notification obj object objecttype occurs options optionsoverride override prevents readable readonly register representation savechanges server service spamming stacktrace staticname stored string subscribe super text title trace type url var write"
+    },
+    {
+      "section": "api",
+      "id": "DataService.createListItem",
+      "shortName": "DataService.createListItem",
       "type": "function",
-      "moduleName": "apDataService",
+      "moduleName": "DataService",
       "shortDescription": "Creates a new list item for the provided model.",
-      "keywords": "apdataservice api automatically based buildvaluepairs configuration created createlistitem creates defined entities entity field fields function generate generating identified item javascript list model newly object optional pairs params precomputed promise provided reference representing resolves sharepoint valuepairs"
+      "keywords": "api automatically based buildvaluepairs configuration created createlistitem creates dataservice defined entities field fields function generate generating identified item javascript list listitem model newly object optional pairs params precomputed promise provided reference representing resolves sharepoint valuepairs"
     },
     {
       "section": "api",
-      "id": "apDataService.deleteAttachment",
-      "shortName": "apDataService.deleteAttachment",
+      "id": "DataService.deleteAttachment",
+      "shortName": "DataService.deleteAttachment",
       "type": "function",
-      "moduleName": "apDataService",
+      "moduleName": "DataService",
       "shortDescription": "Deletes and attachment on a list item.  Most commonly used by ListItem.deleteAttachment which is shown",
-      "keywords": "apdataservice api attachment best collection commonly configuration delete deleteattachment deletes example function getlistid getmodel guid item list listitem listitemid listname option options parameters promise prototype requires resolves return updated url var"
+      "keywords": "api attachment best collection commonly configuration dataservice delete deleteattachment deletes example function getlistid getmodel guid item list listitem listitemid listname option options parameters promise prototype requires resolves return updated url var"
     },
     {
       "section": "api",
-      "id": "apDataService.deleteListItem",
-      "shortName": "apDataService.deleteListItem",
+      "id": "DataService.deleteListItem",
+      "shortName": "DataService.deleteListItem",
       "type": "function",
-      "moduleName": "apDataService",
+      "moduleName": "DataService",
       "shortDescription": "Typically called directly from a list item, removes the list item from SharePoint",
-      "keywords": "apdataservice api cache cached called complete configuration copy deletelistitem directly entities entity function getcache item javascript list local location model object operation optional params promise reference remove removes representing resolves returned search sharepoint target typically"
+      "keywords": "api cache cached called complete configuration copy dataservice deletelistitem directly entities function getcache item javascript list listitem local location model object operation optional params promise reference remove removes representing resolves returned search sharepoint target typically"
     },
     {
       "section": "api",
-      "id": "apDataService.executeQuery",
-      "shortName": "apDataService.executeQuery",
+      "id": "DataService.executeQuery",
+      "shortName": "DataService.executeQuery",
       "type": "function",
-      "moduleName": "apDataService",
+      "moduleName": "DataService",
       "shortDescription": "Primary method of retrieving list items from SharePoint.  Look at Query and Model for specifics.",
-      "keywords": "apdataservice api call configuration custom destination entities entity executequery file function getcache hash include item items key list location making method model offline offlinexml optional optionally parameters primary query reference resides retrieving returned sharepoint specifics target title xml"
+      "keywords": "api call configuration dataservice destination entities executequery function getcache hash item items key list listitem making method model optional parameters primary query reference resides retrieving returned sharepoint specifics target"
     },
     {
       "section": "api",
-      "id": "apDataService.generateWebServiceUrl",
-      "shortName": "apDataService.generateWebServiceUrl",
+      "id": "DataService.generateWebServiceUrl",
+      "shortName": "DataService.generateWebServiceUrl",
       "type": "function",
-      "moduleName": "apDataService",
+      "moduleName": "DataService",
       "shortDescription": "Builds the appropriate SharePoint resource URL.  If a URL isn&#39;t provided and it hasn&#39;t already been cached",
-      "keywords": "apdataservice api appropriate builds cached call don find function future generatewebserviceurl hasn isn operation optionally provide provided requests resolves resource root server service sharepoint soap url"
+      "keywords": "api appropriate builds cached call dataservice don find function future generatewebserviceurl hasn isn operation optionally provide provided requests resolves resource root server service sharepoint soap url"
     },
     {
       "section": "api",
-      "id": "apDataService.getAvailableWorkflows",
-      "shortName": "apDataService.getAvailableWorkflows",
+      "id": "DataService.getAvailableWorkflows",
+      "shortName": "DataService.getAvailableWorkflows",
       "type": "function",
-      "moduleName": "apDataService",
+      "moduleName": "DataService",
       "shortDescription": "Given a list item or document, return an array of all available workflows.  This is used in combination with",
-      "keywords": "apdataservice api array aspx combination defining document fileref filerefstring function getavailableworkflows guid https instantiationurl item list lookupvalue mycompany objects referencing relative requires resolves return startworkflow static target template templatearray templateid url widgetapproval workflow workflows"
+      "keywords": "api array aspx combination dataservice defining document fileref filerefstring function getavailableworkflows guid https instantiationurl item list lookupvalue mycompany objects referencing relative requires resolves return startworkflow static target template templatearray templateid url widgetapproval workflow workflows"
     },
     {
       "section": "api",
-      "id": "apDataService.getCollection",
-      "shortName": "apDataService.getCollection",
+      "id": "DataService.getCollection",
+      "shortName": "DataService.getCollection",
       "type": "function",
-      "moduleName": "apDataService",
+      "moduleName": "DataService",
       "shortDescription": "Used to handle any of the Get[filterNode]Collection calls to SharePoint",
-      "keywords": "$scope apdataservice api array attributes calls collection extend extracted filternode function getattachmentcollection getcollection getgroupcollectionfromsite getgroupcollectionfromuser getlistcollection getusercollectionfromgroup getusercollectionfromsite getviewcollection groupname handle include iterate listname loginname object objects operation options payload postprocessfunction promise provided representing requested required resolved returned selecteduser sharepoint spservices user userloginname xml"
+      "keywords": "$scope api array attributes calls collection dataservice extend extracted filternode function getattachmentcollection getcollection getgroupcollectionfromsite getgroupcollectionfromuser getlistcollection getusercollectionfromgroup getusercollectionfromsite getviewcollection groupname handle include iterate listname loginname object objects operation options payload postprocessfunction promise provided representing requested required resolved returned selecteduser sharepoint spservices user userloginname xml"
     },
     {
       "section": "api",
-      "id": "apDataService.getCurrentSite",
-      "shortName": "apDataService.getCurrentSite",
+      "id": "DataService.getCurrentSite",
+      "shortName": "DataService.getCurrentSite",
       "type": "function",
-      "moduleName": "apDataService",
+      "moduleName": "DataService",
       "shortDescription": "Requests and caches the root url for the current site.  It caches the response so any future calls receive",
-      "keywords": "apdataservice api cached caches calls current function future getcurrentsite promise receive requests resolves response root site url"
+      "keywords": "api cached caches calls current dataservice function future getcurrentsite promise receive requests resolves response root site url"
     },
     {
       "section": "api",
-      "id": "apDataService.getFieldVersionHistory",
-      "shortName": "apDataService.getFieldVersionHistory",
+      "id": "DataService.getFieldVersionHistory",
+      "shortName": "DataService.getFieldVersionHistory",
       "type": "function",
-      "moduleName": "apDataService",
+      "moduleName": "DataService",
       "shortDescription": "Returns the version history for a field in a list item.",
-      "keywords": "apconfig apdataservice api array changes configuration defaulturl definition field fielddefinition function getfieldversionhistory getlistid getversioncollection history item list listitem model object operation options passed promise resolves returns spservices staticname strfieldname strlistid strlistitemid var version weburl"
+      "keywords": "apconfig api array changes configuration dataservice defaulturl definition field fielddefinition function getfieldversionhistory getlistid getversioncollection history item list listitem model object operation options passed promise resolves returns spservices staticname strfieldname strlistid strlistitemid var version weburl"
     },
     {
       "section": "api",
-      "id": "apDataService.getGroupCollectionFromUser",
-      "shortName": "apDataService.getGroupCollectionFromUser",
+      "id": "DataService.getGroupCollectionFromUser",
+      "shortName": "DataService.getGroupCollectionFromUser",
       "type": "function",
-      "moduleName": "apDataService",
+      "moduleName": "DataService",
       "shortDescription": "Fetches an array of group names the user is a member of.  If no user is provided we use the current user.",
-      "keywords": "apdataservice api array belongs current fetches function getgroupcollectionfromuser group groups login member names optional param profile promise provided resolves return user"
+      "keywords": "api array belongs current dataservice fetches function getgroupcollectionfromuser group groups login member names optional param profile promise provided resolves return user"
     },
     {
       "section": "api",
-      "id": "apDataService.getList",
-      "shortName": "apDataService.getList",
+      "id": "DataService.getList",
+      "shortName": "DataService.getList",
       "type": "function",
-      "moduleName": "apDataService",
+      "moduleName": "DataService",
       "shortDescription": "Returns all list details including field and list config.",
-      "keywords": "apdataservice api array config configuration definitions details field function getlist guid including list listname options parameters promise resolves returns"
+      "keywords": "api config configuration dataservice defining details field function getlist guid including list listname object options parameters promise resolves returns"
     },
     {
       "section": "api",
-      "id": "apDataService.getListFields",
-      "shortName": "apDataService.getListFields",
+      "id": "DataService.getListFields",
+      "shortName": "DataService.getListFields",
       "type": "function",
-      "moduleName": "apDataService",
+      "moduleName": "DataService",
       "shortDescription": "Returns field definitions for a specified list.",
-      "keywords": "apdataservice api array configuration definitions field function getlistfields guid list listname options parameters promise resolves returns"
+      "keywords": "api array configuration dataservice definitions field function getlistfields guid list listname options parameters promise resolves returns"
     },
     {
       "section": "api",
-      "id": "apDataService.getUserProfile",
-      "shortName": "apDataService.getUserProfile",
+      "id": "DataService.getUserProfile",
+      "shortName": "DataService.getUserProfile",
       "type": "function",
-      "moduleName": "apDataService",
+      "moduleName": "DataService",
       "shortDescription": "Returns the profile for an optional user, but defaults the the current user if one isn&#39;t provided.",
-      "keywords": "apdataservice api codeplex current defaults function getuserprofile http info isn login object optional param parse profile promise provided pull requested resolves return returns user"
+      "keywords": "api codeplex current dataservice defaults function getuserprofile http info isn login object optional param parse profile promise provided pull requested resolves return returns user"
     },
     {
       "section": "api",
-      "id": "apDataService.processChangeTokenXML",
-      "shortName": "apDataService.processChangeTokenXML",
+      "id": "DataService.processChangeTokenXML",
+      "shortName": "DataService.processChangeTokenXML",
       "type": "function",
-      "moduleName": "apDataService",
+      "moduleName": "DataService",
       "shortDescription": "The initial call to GetListItemChangesSinceToken also includes the field definitions for the",
-      "keywords": "apdataservice api built call change changes config defined definitions existing extend field function getlistitemchangessincetoken includes initial list model object options opts permissions processchangetokenxml query response responsexml server store token user valid xml"
+      "keywords": "api built call change changes config dataservice defined definitions existing extend field function getlistitemchangessincetoken includes initial list model object options opts permissions processchangetokenxml query response responsexml server store token user valid xml"
     },
     {
       "section": "api",
-      "id": "apDataService.processDeletionsSinceToken",
-      "shortName": "apDataService.processDeletionsSinceToken",
+      "id": "DataService.processDeletionsSinceToken",
+      "shortName": "DataService.processDeletionsSinceToken",
       "type": "function",
-      "moduleName": "apDataService",
+      "moduleName": "DataService",
       "shortDescription": "GetListItemChangesSinceToken returns items that have been added as well as deleted so we need",
-      "keywords": "apdataservice api array cache cached deleted function getlistitemchangessincetoken indexedcache items list local processdeletionssincetoken query remove response responsexml returns server xml"
+      "keywords": "api cache cached dataservice deleted function getlistitemchangessincetoken indexedcache items key local object pairs processdeletionssincetoken remove response responsexml returns server xml"
     },
     {
       "section": "api",
-      "id": "apDataService.requestData",
-      "shortName": "apDataService.requestData",
+      "id": "DataService.requestData",
+      "shortName": "DataService.requestData",
       "type": "function",
-      "moduleName": "apDataService",
+      "moduleName": "DataService",
       "shortDescription": "The primary function that handles all communication with the server.  This is very low level and isn&#39;t",
-      "keywords": "apdataservice api called communication details directly function handles intended isn level low object opts payload primary promise request requestdata resolves response server"
+      "keywords": "api called communication dataservice details directly function handles intended isn level low object opts payload primary promise request requestdata resolves response server"
     },
     {
       "section": "api",
-      "id": "apDataService.retrieveChangeToken",
-      "shortName": "apDataService.retrieveChangeToken",
+      "id": "DataService.retrieveChangeToken",
+      "shortName": "DataService.retrieveChangeToken",
       "type": "function",
-      "moduleName": "apDataService",
+      "moduleName": "DataService",
       "shortDescription": "Returns the change token from the xml response of a GetListItemChangesSinceToken query",
-      "keywords": "apdataservice api attribute change function getlistitemchangessincetoken note query response responsexml retrievechangetoken returns server token xml"
+      "keywords": "api attribute change dataservice function getlistitemchangessincetoken note query response responsexml retrievechangetoken returns server token xml"
     },
     {
       "section": "api",
-      "id": "apDataService.retrievePermMask",
-      "shortName": "apDataService.retrievePermMask",
+      "id": "DataService.retrievePermMask",
+      "shortName": "DataService.retrievePermMask",
       "type": "function",
-      "moduleName": "apDataService",
+      "moduleName": "DataService",
       "shortDescription": "Returns the text representation of the users permission mask",
-      "keywords": "apdataservice api attribute function getlistitemchangessincetoken mask note permission representation response responsexml retrievepermmask returns server text users xml"
+      "keywords": "api attribute dataservice function getlistitemchangessincetoken mask note permission representation response responsexml retrievepermmask returns server text users xml"
     },
     {
       "section": "api",
-      "id": "apDataService.serviceWrapper",
-      "shortName": "apDataService.serviceWrapper",
+      "id": "DataService.serviceWrapper",
+      "shortName": "DataService.serviceWrapper",
       "type": "function",
-      "moduleName": "apDataService",
+      "moduleName": "DataService",
       "shortDescription": "Generic wrapper for any SPServices web service call.  The big benefit to this function is it allows us",
-      "keywords": "$q allows apdataservice api application benefit big call check clean codeplex consistent continue details directly elements expected experience filter filternode find function generic http implementation items iterate list model node objects operation options parameters params parsed passed payload promise provided raw resolved response returns server service servicewrapper spservices string typically web weburl wrapper xml"
+      "keywords": "$q allows api application benefit big call check clean codeplex consistent continue dataservice details directly elements expected experience filter filternode find function generic http implementation items iterate list model node objects operation options parameters params parsed passed payload promise provided raw resolved response returns row server service servicewrapper spservices string typically web weburl wrapper xml"
     },
     {
       "section": "api",
-      "id": "apDataService.startWorkflow",
-      "shortName": "apDataService.startWorkflow",
+      "id": "DataService.startWorkflow",
+      "shortName": "DataService.startWorkflow",
       "type": "function",
-      "moduleName": "apDataService",
+      "moduleName": "DataService",
       "shortDescription": "Initiate a workflow for a given list item or document.  You can view additional info at",
-      "keywords": "additional apdataservice api appropriate codeplex complete configuration convert dataservice deferred document entity fileref full function getavailableworkflows guid https iddata info initiate item list locate object optionally options paramaters pass provide relative resolves startworkflow template templateid txtbox view workflow workflowparameters"
+      "keywords": "additional api appropriate codeplex complete configuration convert dataservice deferred document fileref full function getavailableworkflows guid https iddata info initiate item list listitem locate object optionally options paramaters pass provide relative resolves startworkflow template templateid txtbox view workflow workflowparameters"
     },
     {
       "section": "api",
-      "id": "apDataService.updateListItem",
-      "shortName": "apDataService.updateListItem",
+      "id": "DataService.updateListItem",
+      "shortName": "DataService.updateListItem",
       "type": "function",
-      "moduleName": "apDataService",
+      "moduleName": "DataService",
       "shortDescription": "Updates an existing list item.",
-      "keywords": "apdataservice api automatically based buildvaluepairs configuration created defined entities entity existing field fields function generate generating identified item javascript list model newly object optional pairs params precomputed promise reference representing resolves sharepoint updatelistitem updates valuepairs"
+      "keywords": "api automatically based buildvaluepairs configuration created dataservice defined entities existing field fields function generate generating identified item javascript list listitem model newly object optional pairs params precomputed promise reference representing resolves sharepoint updatelistitem updates valuepairs"
     },
     {
       "section": "api",
@@ -424,7 +433,7 @@ NG_DOCS={
       "type": "object",
       "moduleName": "IndexedCache",
       "shortDescription": "Cache constructor that is extended to make it easier to work with via prototype methods.  Located in",
-      "keywords": "add addentity adds angularpoint api apindexedcachefactory array based cache cached clear clears count currently easier elements entities entity extend extended function indexedcache item key located methods nthentity number object optionally prototype provided remove removed removeentity removes requested returns strings toarray turns work"
+      "keywords": "add addentity adds angularpoint api apindexedcachefactory array based cache cached clear clears count currently easier elements entities entity extend extended function indexedcache item key listitem located methods nthentity number object optionally prototype provided remove removed removeentity removes requested returns strings toarray turns work"
     },
     {
       "section": "api",
@@ -460,7 +469,7 @@ NG_DOCS={
       "type": "function",
       "moduleName": "ListItem",
       "shortDescription": "Deletes record directly from the object and removes record from user cache.",
-      "keywords": "api cache cached clicked complete currently dataservice default delete deleteitem deletes directly ensure entity function href intensive item iterate link list listitem local longer ng-click ng-repeat object optionally params pass process promise query record remove removed removes request stored task tasks title updateallcaches updated user view"
+      "keywords": "api cache cached clicked complete currently dataservice default delete deleteitem deletes directly ensure function href intensive item iterate link list listitem local longer ng-click ng-repeat object optionally params pass process promise query record remove removed removes request stored task tasks title updateallcaches updated user view"
     },
     {
       "section": "api",
@@ -479,6 +488,15 @@ NG_DOCS={
       "moduleName": "ListItem",
       "shortDescription": "Wrapper for apDataService.getAvailableWorkflows.  Simply passes the current item in.",
       "keywords": "apdataservice api array current defining function getavailableworkflows item listitem objects passes simply workflows wrapper"
+    },
+    {
+      "section": "api",
+      "id": "ListItem.getChanges",
+      "shortName": "ListItem.getChanges",
+      "type": "function",
+      "moduleName": "ListItem",
+      "shortDescription": "Wrapper for model.getListItemById.  Queries server for any changes and extends the existing",
+      "keywords": "api changes existing extends function getchanges getlistitembyid item list listitem model promise queries resolves server updated wrapper"
     },
     {
       "section": "api",
@@ -531,8 +549,8 @@ NG_DOCS={
       "shortName": "ListItem.getFormattedValue",
       "type": "function",
       "moduleName": "ListItem",
-      "shortDescription": "Given the attribute name on an entity, we can lookup the field type and from there return a formatted",
-      "keywords": "apformattedfieldvalueservice api attribute entity field fieldname formatted function getformattedfieldvalue getformattedvalue listitem lookup object pass representation representing return string stringify type"
+      "shortDescription": "Given the attribute name on a listItem, we can lookup the field type and from there return a formatted",
+      "keywords": "apformattedfieldvalueservice api attribute field fieldname formatted function getformattedfieldvalue getformattedvalue listitem lookup object pass representation representing return string stringify type"
     },
     {
       "section": "api",
@@ -540,8 +558,17 @@ NG_DOCS={
       "shortName": "ListItem.getList",
       "type": "function",
       "moduleName": "ListItem",
-      "shortDescription": "Allows us to reference the list definition directly from a given list item.  This is added to the",
+      "shortDescription": "Allows us to reference the list definition directly from the list item.  This is added to the",
       "keywords": "allows api apmodelfactory definition directly documentation factory function getlist info item list listitem model prototype reference"
+    },
+    {
+      "section": "api",
+      "id": "ListItem.getList",
+      "shortName": "ListItem.getList",
+      "type": "function",
+      "moduleName": "ListItem",
+      "shortDescription": "Abstraction to allow logic in model to be used instead of defining the list location in more than one place.",
+      "keywords": "abstraction allow api defining function getlist item list listitem location logic model place"
     },
     {
       "section": "api",
@@ -554,12 +581,21 @@ NG_DOCS={
     },
     {
       "section": "api",
+      "id": "ListItem.getListId",
+      "shortName": "ListItem.getListId",
+      "type": "function",
+      "moduleName": "ListItem",
+      "shortDescription": "Allows us to reference the list ID directly from the model.",
+      "keywords": "allows api directly function getlistid list listitem model reference"
+    },
+    {
+      "section": "api",
       "id": "ListItem.getLookupReference",
       "shortName": "ListItem.getLookupReference",
       "type": "function",
       "moduleName": "ListItem",
-      "shortDescription": "Allows us to retrieve the entity being referenced in a given lookup field.",
-      "keywords": "allows api building cache entity field fieldname function getlookupreference item iterating list listitem location logic lookup lookupid lookups lookupvalue multi-select object project property referenced references referencing retrieve title undefined var"
+      "shortDescription": "Allows us to retrieve the listItem being referenced in a given lookup field.",
+      "keywords": "allows api building cache field fieldname function getlookupreference item iterating list listitem location logic lookup lookupid lookups lookupvalue multi-select object project property referenced references referencing retrieve title undefined var"
     },
     {
       "section": "api",
@@ -577,7 +613,7 @@ NG_DOCS={
       "type": "function",
       "moduleName": "ListItem",
       "shortDescription": "See apModelService.resolvePermissions for details on what we expect to have returned.",
-      "keywords": "addandcustomizepages adddelprivatewebparts addlistitems admin api apmodelservice applystylesheets applythemeandborder approveitems assume browsedirectories browseuserinfo cancelcheckout canuseredit checking createalerts creategroups createsscsite current deletelistitems deleteversions details edit editlistitems editmyuserinfo enumeratepermissions evaluated example expect fullmask function item level list listitem managealerts managelists managepermissions managesubwebs manageweb object open openitems permission personalviews properties resolvepermissions return returned rights site task updatepersonalwebparts user useremoteapis userpermissions var viewformpages viewlistitems viewpages viewusagedata viewversions"
+      "keywords": "addandcustomizepages adddelprivatewebparts addlistitems admin api apmodelservice applystylesheets applythemeandborder approveitems assume browsedirectories browseuserinfo cancelcheckout canuseredit checking createalerts creategroups createsscsite current deletelistitems deleteversions details edit editlistitems editmyuserinfo enumeratepermissions evaluated example expect fullmask function item level list listitem managealerts managelists managepermissions managesubwebs manageweb object open openitems permission personalviews properties resolvepermissions return returned rights site task true updatepersonalwebparts user useremoteapis userpermissions var viewformpages viewlistitems viewpages viewusagedata viewversions"
     },
     {
       "section": "api",
@@ -586,7 +622,7 @@ NG_DOCS={
       "type": "function",
       "moduleName": "ListItem",
       "shortDescription": "Updates record directly from the object",
-      "keywords": "$scope api app cache cached close currently data default directly ensure entity example failure fictitious form function intensive item js list listitem modal object optionally params pass process promise query record resolved save savechanges saved search server service stored task update updateallcaches updated updates"
+      "keywords": "$scope api app cache cached close currently data default directly ensure example failure fictitious form function intensive item js list listitem modal object optionally params pass process promise query record resolved save savechanges saved search server service stored task update updateallcaches updated updates"
     },
     {
       "section": "api",
@@ -595,7 +631,16 @@ NG_DOCS={
       "type": "function",
       "moduleName": "ListItem",
       "shortDescription": "Saves a named subset of fields back to SharePoint.  This is an alternative to saving all fields.",
-      "keywords": "$scope alternative api app array cache cached currently data default ensure entity example failure fictitious field fieldarray fields form function individual intensive internal item js list listitem modal named names notes optionally params pass process promise pushing query resolves save savechanges saved savefields saves saving search server service sharepoint single status stored string subset task update updateallcaches updated updatestatus"
+      "keywords": "$scope alternative api app array cache cached currently data default ensure example failure fictitious field fieldarray fields form function individual intensive internal item js list listitem modal named names notes optionally params pass process promise pushing query resolves save savechanges saved savefields saves saving search server service sharepoint single status stored string subset task update updateallcaches updated updatestatus"
+    },
+    {
+      "section": "api",
+      "id": "ListItem.setPristine",
+      "shortName": "ListItem.setPristine",
+      "type": "function",
+      "moduleName": "ListItem",
+      "shortDescription": "Resets all list item properties back to a pristine state but doesn&#39;t update any properties added",
+      "keywords": "api copy doesn existing function initial initialization item list listitem logic manually object optionally original overwrite pass pristine properties resets setpristine update values"
     },
     {
       "section": "api",
@@ -631,7 +676,7 @@ NG_DOCS={
       "type": "function",
       "moduleName": "Model",
       "shortDescription": "Model Constructor",
-      "keywords": "additional addnewitem adds angular angularpoint api aplistfactory apmodelfactory app array builds call changed choice complete config create creategenericfactory customfields data deferred defined definition definitions description designer details dev display don empty entities examples executed extend factory fetch field fielddefinitionsextended fields file flag folder full function getalllistitems getlistitemchangessincetoken guid individual inherits initially item items list listitem local lookup manager mappedname mapping maps model module named obj object objects objecttype offline operation optional options params passed primary priority process project properties property prototype provided pulls queries query readonly ready records reference registerquery requested requirement return returns server service set sharepoint spaces staticname subsequent task taskermodel tasks text time title updated updates var xml"
+      "keywords": "active additional addnewitem adds ap apconfig api aplistitemfactory application array attachments boolean builds choice class complete config costestimate creategenericfactory currency customer customfields customlist data deferred defined definition definitions denotes description display don dosomething empty entities examples executed export extend extends factory false fictitious field fielddefinitionsextended fields file flag formats full function getalllistitems getlistid getlistitemchangessincetoken group guid identifies individual items list ll lookup mappedname maps model named names obj object objecttype offline offlinexml operation optional options params passed process project projectdescription projectgroup projects projectsmodel provided queries query read readonly ready requested return server set setup sharepoint someexposedmodelmethod spaces staticname status super taskmanager text time title true types unique user var xml"
     },
     {
       "section": "api",
@@ -653,21 +698,12 @@ NG_DOCS={
     },
     {
       "section": "api",
-      "id": "Model.deepGroup",
-      "shortName": "Model.deepGroup",
-      "type": "function",
-      "moduleName": "Model",
-      "shortDescription": "Creates an indexed cache of entities using a provided property path string to find the key for the cache.",
-      "keywords": "api based cache cached creates deepgroup desired dot entities find function indexed key leads model object path property propertypath provided separated string"
-    },
-    {
-      "section": "api",
       "id": "Model.executeQuery",
       "shortName": "Model.executeQuery",
       "type": "function",
       "moduleName": "Model",
       "shortDescription": "The primary method for retrieving data from a query registered on a model.  It returns a promise",
-      "keywords": "$scope api array cache call changes check constructors data defined entities executequery function identify inherit items key list listitem local method model mycustomquery optionally options pass post primary processing project projectmodel promise prototype query reference registered resolves retrieving returns service stored subsetofprojects unique"
+      "keywords": "$scope api array cache call changes check constructors data defaultqueryname defined entities executequery function identify inherit items key list listitem local method model mycustomquery optionally options pass post primary processing project projectmodel promise prototype query reference registered resolves retrieving returns service stored subsetofprojects unique"
     },
     {
       "section": "api",
@@ -703,7 +739,7 @@ NG_DOCS={
       "type": "function",
       "moduleName": "Model",
       "shortDescription": "Helper function that return the local cache for a named query if provided, otherwise",
-      "keywords": "api cache changes check contents current customquery function getcache helper identify key local model named namedquerycache primary primaryquerycache projectmodel provided query resolved return returns sharepoint unique var"
+      "keywords": "api cache changes check contents current customquery defaultqueryname function getcache helper identify key local model named namedquerycache primary primaryquerycache projectmodel provided query resolved return returns sharepoint unique var"
     },
     {
       "section": "api",
@@ -720,8 +756,8 @@ NG_DOCS={
       "shortName": "Model.getCachedEntity",
       "type": "function",
       "moduleName": "Model",
-      "shortDescription": "Attempts to locate a model entity by id.",
-      "keywords": "api attempts entity entityid function getcachedentity locate model requested returns undefined"
+      "shortDescription": "Attempts to locate a model listItem by id.",
+      "keywords": "api attempts function getcachedentity listitem listitemid locate model requested returns undefined"
     },
     {
       "section": "api",
@@ -739,7 +775,7 @@ NG_DOCS={
       "type": "function",
       "moduleName": "Model",
       "shortDescription": "Inherited from Model constructor",
-      "keywords": "$scope apdataservice api attempts defaults entity entityid fictitious function getlistitembyid inherited item js list located model options override project projectmodel projectsmodel promise requested resolves retrieve returns server undefined"
+      "keywords": "$scope apdataservice api attempts defaults fictitious function getlistitembyid inherited item js list listitem listitemid located model options override project projectmodel projectsmodel promise requested resolves retrieve returns server undefined"
     },
     {
       "section": "api",
@@ -748,7 +784,7 @@ NG_DOCS={
       "type": "function",
       "moduleName": "Model",
       "shortDescription": "Helper function that attempts to locate and return a reference to the requested or catchall query.",
-      "keywords": "additional api attempts catchall customquery details function getquery helper identify key locate model namedquery primary primaryquery projectmodel prototype query reference requested return unique var"
+      "keywords": "additional api attempts catchall customquery defaultqueryname details function getquery helper identify key locate model namedquery primary primaryquery projectmodel prototype query reference requested return unique var"
     },
     {
       "section": "api",
@@ -766,7 +802,7 @@ NG_DOCS={
       "type": "function",
       "moduleName": "Model",
       "shortDescription": "Constructor that allows us create a static query with the option to build dynamic queries as seen in the",
-      "keywords": "$scope advanced allow allows api array ascending aspx associated assume build cache cachexml call caml camlrowlimit changes check codeplex construct create creates custom default defaults doesn don dynamic dynamically entities example execute executequery exist false faster field file function functionality getlistitemchangessincetoken good inherit isobject items josh js list listitem lists local lookup lookupid matching mccarty microsoft mock model modifications modified object objects offlinexml operation option optional optionally options param parsed pass passthrough payload permissions pid pre prevents primary project projectid projectmodel projects projecttasksmodel prototype queries query querybyprojectid querykey queryoptions quick recentchanges records reference register registerquery response retrieve return returned returns shared smaller specific static store stored third title true type typically unique user var xml"
+      "keywords": "$scope advanced allow allows api array ascending aspx associated assume build cache cachexml call caml camlrowlimit changes check codeplex construct create creates custom default defaultqueryname defaults doesn don dynamic dynamically entities example execute executequery exist false faster field file function functionality getlistitemchangessincetoken good inherit isobject items josh js list listitem lists local lookup lookupid matching mccarty microsoft mock model modifications modified object objects offlinexml operation option optional optionally options param parsed pass passthrough payload permissions pid prevents primary project projectid projectmodel projects projecttasksmodel prototype queries query querybyprojectid querykey queryoptions quick recentchanges records reference register registerquery response retrieve return returned returns shared smaller specific static store stored third title true type typically unique user var xml"
     },
     {
       "section": "api",
@@ -775,16 +811,7 @@ NG_DOCS={
       "type": "function",
       "moduleName": "Model",
       "shortDescription": "See apModelFactory.resolvePermissions for details on what we expect to have returned.",
-      "keywords": "addandcustomizepages adddelprivatewebparts addlistitems admin api apmodelfactory applystylesheets applythemeandborder approveitems assume browsedirectories browseuserinfo cancelcheckout checking createalerts creategroups createsscsite current deletelistitems deleteversions details edit editlistitems editmyuserinfo enumeratepermissions evaluated example expect fullmask function level list managealerts managelists managepermissions managesubwebs manageweb model object open openitems perm permission personalviews properties resolvepermissions returned rights site tasksmodel updatepersonalwebparts user usercanedit useremoteapis userpermissions var viewformpages viewlistitems viewpages viewusagedata viewversions"
-    },
-    {
-      "section": "api",
-      "id": "Model.searchLocalCache",
-      "shortName": "Model.searchLocalCache",
-      "type": "function",
-      "moduleName": "Model",
-      "shortDescription": "Search functionality that allow for deeply searching an array of objects for the first",
-      "keywords": "additionally allow api array cache cachename calls changed compare currently data deeply dot flag function functionality future getcache ignore indexes items length local localcache lookupid mapping maps matching model object objects optional parameters previous primary project propertypath rebuild rebuildindex rebuilds record required search searching searchlocalcache separated set source speed supplied undefined values"
+      "keywords": "addandcustomizepages adddelprivatewebparts addlistitems admin api apmodelfactory applystylesheets applythemeandborder approveitems assume browsedirectories browseuserinfo cancelcheckout checking createalerts creategroups createsscsite current deletelistitems deleteversions details edit editlistitems editmyuserinfo enumeratepermissions evaluated example expect fullmask function level list managealerts managelists managepermissions managesubwebs manageweb model object open openitems perm permission personalviews properties resolvepermissions returned rights site tasksmodel true updatepersonalwebparts user usercanedit useremoteapis userpermissions var viewformpages viewlistitems viewpages viewusagedata viewversions"
     },
     {
       "section": "api",
@@ -793,7 +820,7 @@ NG_DOCS={
       "type": "function",
       "moduleName": "Model",
       "shortDescription": "Uses the custom fields defined in an model to ensure each field (required = true) is evaluated",
-      "keywords": "alert api based custom defined ensure entity evaluated evaluation field fields function generated issues item list model object optional parameters sharepoint toast toasts true type user validateentity validity"
+      "keywords": "alert api based custom defined ensure evaluated evaluation field fields function generated issues item list listitem model object optional parameters sharepoint toast toasts true type user validateentity validity"
     },
     {
       "section": "api",
@@ -802,7 +829,7 @@ NG_DOCS={
       "type": "function",
       "moduleName": "Query",
       "shortDescription": "Primary constructor that all queries inherit from.",
-      "keywords": "ability allows api array ascending cache cachexml call called calls caml camlrowlimit changes check config control data dataservice default definition doesn don efficient evaluate execute executequery false file fresh function getlistitemchangessincetoken getlistitems inherit initial initialization item larger list local location model modifications modified note object objects offlinexml operation optionally options parameters parent pass passed permissions prevents primary project prototype pull pulls queries query queryoptions receive recentchanges records reference registerquery request response retrieve returned returns scope search searching searchlocalcache set sets shared sharepoint simple specific subsequent time true undefined user wrapper xml"
+      "keywords": "ability allows api array ascending cachexml call called calls caml camlrowlimit changes check config control data dataservice definition doesn don efficient execute executequery false file fresh function getlistitemchangessincetoken getlistitems inherit initial initialization item larger list model modifications modified note objects offlinexml operation optionally options parameters parent passed permissions prevents primary project pull pulls queries query queryoptions receive recentchanges records reference registerquery request response retrieve returned returns scope set shared sharepoint specific subsequent time true user xml"
     },
     {
       "section": "api",
