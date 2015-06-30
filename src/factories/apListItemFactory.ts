@@ -640,7 +640,7 @@ module ap {
         /**
          * @ngdoc function
          * @name ListItem.setPristine
-         * @param {ListItem} [listItem] Optionally pass initial list item object back to the list item constructor to 
+         * @param {ListItem} [listItem] Optionally pass list item object back to the list item constructor to 
          * run any initialization logic.  Otherwise we just overwrite existing values on the object with a copy from the
          * original object.
          * @description
