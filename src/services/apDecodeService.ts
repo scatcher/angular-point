@@ -131,8 +131,11 @@ module ap {
                     this.apCacheService.registerEntity<T>(listItem, indexedCache);
                 }
                 
+                //Store the value instead of just a reference to the original object
+                var pristineValue = _.cloneDeep(rawObject);
+
                 //Allow us to reference the uninstantiated version of this list item
-                listItem.getPristine = () => rawObject;
+                listItem.getPristine = () => pristineValue;
 
                 return indexedCache[rawObject.id];
             }
