@@ -2,7 +2,7 @@
 
 module ap {
     'use strict';
-    
+
     interface IUpdateOptions<T>{
         batchCmd: string;
         buildValuePairs:boolean;
@@ -14,6 +14,10 @@ module ap {
         webURL: string;
     }
 
+    export interface IChangeServiceCallback{
+        (entity: ListItem<any>, options: IUpdateOptions<any>, promise: ng.IPromise<any>): void
+    }
+
     /**
      * @ngdoc service
      * @name apChangeService
@@ -22,13 +26,13 @@ module ap {
      * item is intercepted.
      */
     export class ChangeService {
-        callbackQueue = [];
+        callbackQueue: IChangeServiceCallback[] = [];
         registerListItemUpdate<T>(entity: ListItem<T>, options: IUpdateOptions<T>, promise: ng.IPromise<ListItem<T>>) {
             _.each(this.callbackQueue, (callback) => {
                 callback(entity, options, promise);
             });
         }
-        subscribeToUpdates(callback: (entity: ListItem<any>, options: IUpdateOptions<any>, promise: ng.IPromise<any>) => void ) {
+        subscribeToUpdates(callback: IChangeServiceCallback ) {
             this.callbackQueue.push(callback);
         }
     }

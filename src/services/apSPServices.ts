@@ -2,9 +2,11 @@
 
 module ap {
     'use strict';
-    
+
     // Set up SOAP envelope
     class SOAPEnvelope {
+        opheader: string;
+        opfooter: string;
         header = "<soap:Envelope xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance' " +
         "xmlns:xsd='http://www.w3.org/2001/XMLSchema' " +
         "xmlns:soap='http://schemas.xmlsoap.org/soap/envelope/'><soap:Body>";
@@ -12,21 +14,81 @@ module ap {
         payload = "";
     }
 
+    //Definition file taken from SPServices project on GitHub, look at way to use as depency and link to it
+    interface SPServicesOptions {
+        /** If true, we'll cache the XML results with jQuery's .data() function */
+        cacheXML?: boolean;
+        /** The Web Service operation */
+        operation: string;
+        /** URL of the target Web */
+        webURL?: string;
+        /** true to make the view the default view for the list */
+        makeViewDefault?: boolean;
 
-    /**
-     * @ngdoc service
-     * @name angularPoint.SPServices
-     * @description
-     * This is just a trimmed down version of Marc Anderson's awesome [SPServices](http://spservices.codeplex.com/) library.
-     * We're primarily looking for the ability to create the SOAP envelope and let AngularJS's $http service handle all
-     * communication with the server.
-     *
-     * */
-    angular.module('angularPoint')
-        .factory('SPServices', Service);
+        // For operations requiring CAML, these options will override any abstractions
+
+        /** View name in CAML format. */
+        viewName?: string;
+        /** Query in CAML format */
+        CAMLQuery?: string;
+        /** View fields in CAML format */
+        CAMLViewFields?: string;
+        /** Row limit as a string representation of an integer */
+        CAMLRowLimit?: number;
+        /** Query options in CAML format */
+        CAMLQueryOptions?: string;
+
+        // Abstractions for CAML syntax
+
+        /** Method Cmd for UpdateListItems */
+        batchCmd?: string;
+        /** Fieldname / Fieldvalue pairs for UpdateListItems */
+        valuepairs?: Array<any>;
+
+        // As of v0.7.1, removed all options which were assigned an empty string ("")
+
+        /** Array of destination URLs for copy operations */
+        DestinationUrls?: Array<any>;
+        /** An SPWebServiceBehavior indicating whether the client supports Windows SharePoint Services 2.0 or Windows SharePoint Services 3.0: {Version2 | Version3 } */
+        behavior?: string;
+        /** A Storage value indicating how the Web Part is stored: {None | Personal | Shared} */
+        storage?: string;
+        /** objectType for operations which require it */
+        objectType?: string;
+        /** true to delete a meeting;false to remove its association with a Meeting Workspace site */
+        cancelMeeting?: boolean;
+        /** true if the calendar is set to a format other than Gregorian;otherwise, false. */
+        nonGregorian?: boolean;
+        /** Specifies if the action is a claim or a release. Specifies true for a claim and false for a release. */
+        fClaim?: boolean;
+        /** The recurrence ID for the meeting that needs its association removed. This parameter can be set to 0 for single-instance meetings. */
+        recurrenceId?: number;
+        /** An integer that is used to determine the ordering of updates in case they arrive out of sequence. Updates with a lower-than-current sequence are discarded. If the sequence is equal to the current sequence, the latest update are applied. */
+        sequence?: number;
+        /** SocialDataService maximumItemsToReturn */
+        maximumItemsToReturn?: number;
+        /** SocialDataService startIndex */
+        startIndex?: number;
+        /** SocialDataService isHighPriority */
+        isHighPriority?: boolean;
+        /** SocialDataService isPrivate */
+        isPrivate?: boolean;
+        /** SocialDataService rating */
+        rating?: number;
+        /** Unless otherwise specified, the maximum number of principals that can be returned from a provider is 10. */
+        maxResults?: number;
+        /** Specifies user scope and other information? [None | User | DistributionList | SecurityGroup | SharePointGroup | All] */
+        principalType?: string;
+
+        /** Allow the user to force async */
+        async?: boolean;
+        /** Function to call on completion */
+        completefunc?: (xData: JQueryXHR, status: string) => void;
+    }
+
 
     //TODO Cleanup and convert to TS
-    function Service(apWebServiceOperationConstants, apWebServiceService) {
+    function Service(apWebServiceOperationConstants: IWebServiceOperationConstants, apWebServiceService: WebServiceService) {
 
         /*
          * SPServices - Work with SharePoint's Web Services using jQuery
@@ -110,7 +172,7 @@ module ap {
             SOAPEnvelope: new SOAPEnvelope()
         };
 
-        function generateXMLComponents(options) {
+        function generateXMLComponents(options: SPServicesOptions) {
 
             /** Key/Value mapping of SharePoint properties to SPServices properties */
             var mapping = [
@@ -133,7 +195,7 @@ module ap {
             var SOAPAction;
 
             // If there are no options passed in, use the defaults.  Extend replaces each default with the passed option.
-            var opt = _.assign({}, defaults, options);
+            var opt: SPServicesOptions = _.assign({}, defaults, options);
 
             // Encode options which may contain special character, esp. ampersand
             _.each(encodeOptionList, function(optionName) {
@@ -145,12 +207,12 @@ module ap {
             var service = apWebServiceOperationConstants[opt.operation][0];
 
             // Put together operation header and SOAPAction for the SOAP call based on which Web Service we're calling
-            soapEnvelope.opheader = "<" + opt.operation + " xmlns='" + apWebServiceService.xmlns(service) + "' >";
+            soapEnvelope.opheader = `<${opt.operation} xmlns="${apWebServiceService.xmlns(service) }" >`;
             SOAPAction = apWebServiceService.action(service);
 
             // Add the operation to the SOAPAction and opfooter
             SOAPAction += opt.operation;
-            soapEnvelope.opfooter = "</" + opt.operation + ">";
+            soapEnvelope.opfooter = `</${opt.operation}>`;
 
             // Each operation requires a different set of values.  This switch statement sets them up in the soapEnvelope.payload.
             switch (opt.operation) {
@@ -308,12 +370,12 @@ module ap {
                     if (typeof opt.updates !== "undefined" && opt.updates.length > 0) {
                         addToPayload(opt, ["updates"]);
                     } else {
-                        soapEnvelope.payload += "<updates><Batch OnError='Continue'><Method ID='1' Cmd='" + opt.batchCmd + "'>";
+                        soapEnvelope.payload += `<updates><Batch OnError="Continue"><Method ID="1" Cmd="${opt.batchCmd}">`;
                         for (i = 0; i < opt.valuePairs.length; i++) {
-                            soapEnvelope.payload += "<Field Name='" + opt.valuePairs[i][0] + "'>" + escapeColumnValue(opt.valuePairs[i][1]) + "</Field>";
+                            soapEnvelope.payload += `<Field Name="${opt.valuePairs[i][0]}">${escapeColumnValue(opt.valuePairs[i][1]) }</Field>`;
                         }
                         if (opt.batchCmd !== "New") {
-                            soapEnvelope.payload += "<Field Name='ID'>" + opt.ID + "</Field>";
+                            soapEnvelope.payload += `<Field Name="ID">${opt.ID}</Field>`;
                         }
                         soapEnvelope.payload += "</Method></Batch></updates>";
                     }
@@ -977,7 +1039,7 @@ module ap {
                         soapEnvelope.payload += ((opt[paramArray[i].name] === undefined) || (opt[paramArray[i].name].length === 0)) ? "" : wrapNode(paramArray[i].name, opt[paramArray[i].name]);
                         // something isn't right, so report it
                     } else {
-                        errBox(opt.operation, "paramArray[" + i + "]: " + paramArray[i], "Invalid paramArray element passed to addToPayload()");
+                        console.error(opt.operation, "paramArray[" + i + "]: " + paramArray[i], "Invalid paramArray element passed to addToPayload()");
                     }
                 }
             } // End of function addToPayload
@@ -1041,10 +1103,6 @@ module ap {
             }
         }
 
-        function errBox(msg) {
-            console.error(msg);
-        }
-
         // James Padolsey's Regex Selector for jQuery http://james.padolsey.com/javascript/regex-selector-for-jquery/
         $.expr[':'].regex = function(elem, index, match) {
             var matchParams = match[3].split(','),
@@ -1062,4 +1120,17 @@ module ap {
         return SPServices;
 
     }
+
+
+    /**
+     * @ngdoc service
+     * @name angularPoint.SPServices
+     * @description
+     * This is just a trimmed down version of Marc Anderson's awesome [SPServices](http://spservices.codeplex.com/) library.
+     * We're primarily looking for the ability to create the SOAP envelope and let AngularJS's $http service handle all
+     * communication with the server.
+     *
+     * */
+    angular.module('angularPoint')
+        .factory('SPServices', Service);
 }

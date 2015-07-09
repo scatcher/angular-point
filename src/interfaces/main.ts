@@ -112,7 +112,7 @@ declare module ap {
 }
 
 interface JQuery {
-    SPFilterNode(string);
+    SPFilterNode(string): JQuery[];
 }
 
 // declare module "lodash"  {

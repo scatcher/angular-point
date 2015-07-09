@@ -6065,17 +6065,6 @@ var ap;
         }
         return SOAPEnvelope;
     })();
-    /**
-     * @ngdoc service
-     * @name angularPoint.SPServices
-     * @description
-     * This is just a trimmed down version of Marc Anderson's awesome [SPServices](http://spservices.codeplex.com/) library.
-     * We're primarily looking for the ability to create the SOAP envelope and let AngularJS's $http service handle all
-     * communication with the server.
-     *
-     * */
-    angular.module('angularPoint')
-        .factory('SPServices', Service);
     //TODO Cleanup and convert to TS
     function Service(apWebServiceOperationConstants, apWebServiceService) {
         /*
@@ -6174,7 +6163,7 @@ var ap;
             });
             var service = apWebServiceOperationConstants[opt.operation][0];
             // Put together operation header and SOAPAction for the SOAP call based on which Web Service we're calling
-            soapEnvelope.opheader = "<" + opt.operation + " xmlns='" + apWebServiceService.xmlns(service) + "' >";
+            soapEnvelope.opheader = "<" + opt.operation + " xmlns=\"" + apWebServiceService.xmlns(service) + "\" >";
             SOAPAction = apWebServiceService.action(service);
             // Add the operation to the SOAPAction and opfooter
             SOAPAction += opt.operation;
@@ -6330,12 +6319,12 @@ var ap;
                         addToPayload(opt, ["updates"]);
                     }
                     else {
-                        soapEnvelope.payload += "<updates><Batch OnError='Continue'><Method ID='1' Cmd='" + opt.batchCmd + "'>";
+                        soapEnvelope.payload += "<updates><Batch OnError=\"Continue\"><Method ID=\"1\" Cmd=\"" + opt.batchCmd + "\">";
                         for (i = 0; i < opt.valuePairs.length; i++) {
-                            soapEnvelope.payload += "<Field Name='" + opt.valuePairs[i][0] + "'>" + escapeColumnValue(opt.valuePairs[i][1]) + "</Field>";
+                            soapEnvelope.payload += "<Field Name=\"" + opt.valuePairs[i][0] + "\">" + escapeColumnValue(opt.valuePairs[i][1]) + "</Field>";
                         }
                         if (opt.batchCmd !== "New") {
-                            soapEnvelope.payload += "<Field Name='ID'>" + opt.ID + "</Field>";
+                            soapEnvelope.payload += "<Field Name=\"ID\">" + opt.ID + "</Field>";
                         }
                         soapEnvelope.payload += "</Method></Batch></updates>";
                     }
@@ -6976,7 +6965,7 @@ var ap;
                         soapEnvelope.payload += ((opt[paramArray[i].name] === undefined) || (opt[paramArray[i].name].length === 0)) ? "" : wrapNode(paramArray[i].name, opt[paramArray[i].name]);
                     }
                     else {
-                        errBox(opt.operation, "paramArray[" + i + "]: " + paramArray[i], "Invalid paramArray element passed to addToPayload()");
+                        console.error(opt.operation, "paramArray[" + i + "]: " + paramArray[i], "Invalid paramArray element passed to addToPayload()");
                     }
                 }
             } // End of function addToPayload
@@ -7031,9 +7020,6 @@ var ap;
                 return s;
             }
         }
-        function errBox(msg) {
-            console.error(msg);
-        }
         // James Padolsey's Regex Selector for jQuery http://james.padolsey.com/javascript/regex-selector-for-jquery/
         $.expr[':'].regex = function (elem, index, match) {
             var matchParams = match[3].split(','), validLabels = /^(data|css):/, attr = {
@@ -7045,6 +7031,17 @@ var ap;
         };
         return SPServices;
     }
+    /**
+     * @ngdoc service
+     * @name angularPoint.SPServices
+     * @description
+     * This is just a trimmed down version of Marc Anderson's awesome [SPServices](http://spservices.codeplex.com/) library.
+     * We're primarily looking for the ability to create the SOAP envelope and let AngularJS's $http service handle all
+     * communication with the server.
+     *
+     * */
+    angular.module('angularPoint')
+        .factory('SPServices', Service);
 })(ap || (ap = {}));
 
 /// <reference path="../app.module.ts" />

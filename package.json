@@ -6,21 +6,20 @@
   ],
   "license": "MIT",
   "homepage": "https://github.com/scatcher/angular-point",
-  "version": "3.5.3",
+  "version": "3.5.4",
   "module": "angularPoint",
   "dependencies": {
-    "typescript": "Microsoft/TypeScript"
+    "typescript": "1.5.0-beta"
   },
   "devDependencies": {
     "angular-point-tools": "^2.2.2",
     "gulp": "^3.9.0",
     "gulp-concat": "^2.6.0",
     "gulp-gh-pages": "^0.5.2",
-    "gulp-ngdocs": "^0.2.10",
+    "gulp-ngdocs": "^0.2.13",
     "gulp-sourcemaps": "^1.5.2",
     "gulp-typescript": "^2.7.8",
-    "merge2": "^0.3.6",
-    "typescript": "Microsoft/TypeScript"
+    "merge2": "^0.3.6"
   },
   "engines": {
     "node": ">=0.12.0"

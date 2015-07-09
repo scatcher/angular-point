@@ -2,14 +2,8 @@
 
 module ap {
     'use strict';
-    
-    export interface ICamlFactory{
-        camlContainsQuery(fieldDefinitionsArray: IFieldDefinition[], searchString: string): string;
-        chainCamlSelects(selectStatements: Object[], joinType: string): string;
-        createCamlContainsSelector(fieldDefinition: IFieldDefinition, searchString: string): string;
-    }
 
-    export class CamlFactory implements ICamlFactory {
+    export class CamlFactory {
 
         /**
          * @ngdoc function
