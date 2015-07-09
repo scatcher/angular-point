@@ -3,23 +3,23 @@
 declare module ap {
 
     export interface IXMLGroup {
+        Description: string;
         ID: string;
         Name: string;
-        Description: string;
         OwnerID: string;
         OwnerIsUser: string;
     }
 
     export interface IXMLUser {
-        ID: string;
-        Sid: string;
-        Name: string;
-        LoginName: string;
         Email: string;
-        Notes: string;
-        IsSiteAdmin: string;
-        IsDomainGroup: string;
         Flags: string;
+        ID: string;
+        IsDomainGroup: string;
+        IsSiteAdmin: string;
+        LoginName: string;
+        Name: string;
+        Notes: string;
+        Sid: string;
     }
 
     export interface IListItemCrudOptions<T> {
@@ -32,19 +32,19 @@ declare module ap {
     }
 
     export interface IWorkflowDefinition {
-        name: string;
         instantiationUrl: string;
+        name: string;
         templateId: string;
     }
 
     export interface IStartWorkflowParams {
+        fileRef?: string;
         item: string;
         templateId: string;
-        workflowParameters?: string;
-        fileRef?: string;
         workflowName?: string;
+        workflowParameters?: string;
     }
-    
+
 
     //    export interface IDiscussionThread {
     //        posts: IDiscussionThreadPost[];
@@ -73,39 +73,39 @@ declare module ap {
     //    }
 
     export interface IUserPermissionsObject {
-        ViewListItems: boolean;
-        AddListItems: boolean;
-        EditListItems: boolean;
-        DeleteListItems: boolean;
-        ApproveItems: boolean;
-        OpenItems: boolean;
-        ViewVersions: boolean;
-        DeleteVersions: boolean;
-        CancelCheckout: boolean;
-        PersonalViews: boolean;
-        ManageLists: boolean;
-        ViewFormPages: boolean;
-        Open: boolean;
-        ViewPages: boolean;
         AddAndCustomizePages: boolean;
-        ApplyThemeAndBorder: boolean;
+        AddDelPrivateWebParts: boolean;
+        AddListItems: boolean;
         ApplyStyleSheets: boolean;
-        ViewUsageData: boolean;
-        CreateSSCSite: boolean;
-        ManageSubwebs: boolean;
-        CreateGroups: boolean;
-        ManagePermissions: boolean;
+        ApplyThemeAndBorder: boolean;
+        ApproveItems: boolean;
         BrowseDirectories: boolean;
         BrowseUserInfo: boolean;
-        AddDelPrivateWebParts: boolean;
-        UpdatePersonalWebParts: boolean;
-        ManageWeb: boolean;
-        UseRemoteAPIs: boolean;
-        ManageAlerts: boolean;
+        CancelCheckout: boolean;
         CreateAlerts: boolean;
+        CreateGroups: boolean;
+        CreateSSCSite: boolean;
+        DeleteListItems: boolean;
+        DeleteVersions: boolean;
+        EditListItems: boolean;
         EditMyUserInfo: boolean;
         EnumeratePermissions: boolean;
         FullMask: boolean;
+        ManageAlerts: boolean;
+        ManageLists: boolean;
+        ManagePermissions: boolean;
+        ManageSubwebs: boolean;
+        ManageWeb: boolean;
+        Open: boolean;
+        OpenItems: boolean;
+        PersonalViews: boolean;
+        UpdatePersonalWebParts: boolean;
+        UseRemoteAPIs: boolean;
+        ViewFormPages: boolean;
+        ViewListItems: boolean;
+        ViewPages: boolean;
+        ViewUsageData: boolean;
+        ViewVersions: boolean;
     }
 
 
@@ -143,7 +143,7 @@ declare module ngTable {
         page?: number;
         sorting?: Object;
     }
-    
+
     interface INGTableParamsReference {
         count(): number;
         filter(): Object;

@@ -14,7 +14,75 @@ module ap {
         webURL?: string;
     }
 
-    export interface IList extends IUninstantiatedList {
+    /**
+     * XML List Object gets converted into JSON object with the following properties.
+     */
+    export interface IXMLList {
+        AllowDeletion?: string;
+        AllowMultiResponses?: string;
+        AnonymousPermMask?: string;
+        Author?: string;
+        BaseType?: string;
+        Created?: string;
+        DefaultViewUrl?: string;
+        Description?: string;
+        Direction?: string;
+        DocTemplateUrl?: string;
+        EmailAlias?: string;
+        EnableAttachments?: string;
+        EnableFolderCreation?: string;
+        EnableMinorVersion?: string;
+        EnableModeration?: string;
+        EnablePeopleSelector?: string;
+        EnableResourceSelector?: string;
+        EnableVersioning?: string;
+        EnforceDataValidation?: string;
+        EventSinkAssembly?: string;
+        EventSinkClass?: string;
+        EventSinkData?: string;
+        ExcludeFromOfflineClient?: string;
+        FeatureId?: string;
+        Flags?: string;
+        HasExternalDataSource?: string;
+        HasRelatedLists?: string;
+        HasUniqueScopes?: string;
+        Hidden?: string;
+        ID?: string;
+        ImageUrl?: string;
+        IrmEnabled?: string;
+        IsApplicationList?: string;
+        ItemCount?: string;
+        LastDeleted?: string;
+        MajorVersionLimit?: string;
+        MajorWithMinorVersionsLimit?: string;
+        MaxItemsPerThrottledOperation?: string;
+        Modified?: string;
+        MultipleDataList?: string;
+        Name?: string;
+        NoThrottleListOperations?: string;
+        Ordered?: string;
+        PreserveEmptyValues?: string;
+        ReadSecurity?: string;
+        RequireCheckout?: string;
+        RootFolder?: string;
+        ScopeId?: string;
+        SendToLocation?: string;
+        ServerTemplate?: string;
+        ShowUser?: string;
+        StrictTypeCoercion?: string;
+        ThrottleListOperations?: string;
+        ThumbnailSize?: string;
+        Title?: string;
+        Version?: string;
+        WebFullUrl?: string;
+        WebId?: string;
+        WebImageHeight?: string;
+        WebImageWidth?: string;
+        WorkFlowId?: string;
+        WriteSecurity?: string;
+    }
+
+    export interface IList extends IUninstantiatedList, IXMLList {
         customFields: IFieldDefinition[];
         effectivePermMask?: string;
         environments: { [key: string]: string };
@@ -27,7 +95,6 @@ module ap {
         title: string;
         viewFields?: string;
         webURL?: string;
-        WebFullUrl?: string;
     }
     /**
      * @ngdoc object
