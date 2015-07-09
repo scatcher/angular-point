@@ -373,7 +373,7 @@ module ap {
                 var response = {
                     footer: `</${operation}Result></${operation}Response></soap:Body></soap:Envelope>`,
                     header: `<?xml version="1.0" encoding="utf-8"?><soap:Envelope ${xmlNS.soap}><soap:Body>
-                        <${operation} Response xmlns="http://schemas.microsoft.com/sharepoint/soap/"><${operation}Result>`,
+                        <${operation}Response xmlns="http://schemas.microsoft.com/sharepoint/soap/"><${operation}Result>`,
                     payload: ''
                 };
                 return response;
