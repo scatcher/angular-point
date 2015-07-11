@@ -20,10 +20,10 @@ module ap {
         getCollection(options: { operation: string; userLoginName?: string; groupName?: string; listName?: string; filterNode: string; }): ng.IPromise<Object[]>;
         getCurrentSite(): ng.IPromise<string>;
         getFieldVersionHistory<T>(options: { operation?: string; webURL?: string; strListID: string; strListItemID: number; strFieldName?: string; }, fieldDefinition: IFieldDefinition): ng.IPromise<ap.IListItemVersion<T>[]>;
-        getGroupCollectionFromUser(login?: string): ng.IPromise<IGroupDefinition[]>;
+        getGroupCollectionFromUser(login?: string): ng.IPromise<IXMLGroup[]>;
         getList(options: { listName: string }): ng.IPromise<Object>;
         getListFields(options: { listName: string; }): ng.IPromise<IXMLFieldDefinition[]>;
-        getUserProfileByName(login?: string): ng.IPromise<IUserProfile>;
+        getUserProfileByName(login?: string): ng.IPromise<IXMLUserProfile>;
         processChangeTokenXML<T>(model: Model, query: IQuery<T>, responseXML: XMLDocument, opts): void;
         processDeletionsSinceToken(responseXML: XMLDocument, indexedCache: IndexedCache<any>): void;
         requestData(opts): ng.IPromise<XMLDocument>;
@@ -486,7 +486,7 @@ module ap {
          * @param {string} [login=CurrentUser] Optional param of another user's login to return the profile for.
          * @returns {string[]} Promise which resolves with the array of groups the user belongs to.
          */
-        getGroupCollectionFromUser(login?: string): ng.IPromise<IGroupDefinition[]> {
+        getGroupCollectionFromUser(login?: string): ng.IPromise<IXMLGroup[]> {
             /** Create a new deferred object if not already defined */
             var deferred = $q.defer();
             var getGroupCollection = (userLoginName) => {
@@ -494,7 +494,7 @@ module ap {
                     operation: 'GetGroupCollectionFromUser',
                     userLoginName: userLoginName,
                     filterNode: 'Group'
-                }).then((groupCollection: IGroupDefinition[]) => deferred.resolve(groupCollection));
+                }).then((groupCollection: IXMLGroup[]) => deferred.resolve(groupCollection));
             };
 
             if (!login) {
@@ -555,7 +555,7 @@ module ap {
          * @param {string} [login=CurrentUser] Optional param of another user's login to return the profile for.
          * @returns {object} Promise which resolves with the requested user profile.
          */
-        getUserProfileByName(login?: string): ng.IPromise<IUserProfile> {
+        getUserProfileByName(login?: string): ng.IPromise<IXMLUserProfile> {
             var deferred = $q.defer();
             var payload = {
                 accountName: undefined,
