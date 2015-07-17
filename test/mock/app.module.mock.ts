@@ -1,5 +1,8 @@
 /// <reference path="../../typings/ap.d.ts" />
 /// <reference path="../../typings/tsd.d.ts" />
+/// <reference path="models/mockModel.mock.ts" />
+/// <reference path="models/lookupModel.mock.ts" />
+/// <reference path="apMockUtils.mock.ts" />
 
 module ap {
     'use strict';
@@ -38,6 +41,6 @@ module ap {
     .constant('mockUser', {lookupId: 100, lookupValue: 'Joe User'})
     /** Bootstrap everything that needs to be immediately instantiated */
     .run((apListItemFactory: ListItemFactory, apModelFactory: ModelFactory) => {
-        
+
     })
 }

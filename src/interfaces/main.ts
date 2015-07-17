@@ -1,4 +1,5 @@
 /// <reference path="../app.module.ts" />
+/// <reference path="../../typings/tsd.d.ts" />
 
 declare module ap {
 
@@ -169,10 +170,6 @@ declare module ap {
     }
 
 
-}
-
-interface JQuery {
-    SPFilterNode(string): JQuery[];
 }
 
 // declare module "lodash"  {

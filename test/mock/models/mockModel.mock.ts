@@ -88,7 +88,7 @@ module ap {
         getField(name) {
             return _.find(this.list.fields, { mappedName: name });
         }
-        
+
         importMocks () {
                 var primaryCache = this.getCache('primary');
                 var secondaryCache = this.getCache('secondary');

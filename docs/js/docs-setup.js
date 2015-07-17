@@ -171,8 +171,8 @@ NG_DOCS={
       "shortName": "angularPoint.apXMLListAttributeTypes",
       "type": "object",
       "moduleName": "angularPoint",
-      "shortDescription": "Constant object map which contains many common XML attributes found on a list definition with their",
-      "keywords": "angularpoint api apxmllistattributetypes attributes common constant corresponding definition list map object type xml"
+      "shortDescription": "Constant object map which contains many common XML attributes found on a field definition with their",
+      "keywords": "angularpoint api apxmllistattributetypes attributes common constant corresponding definition field map object type xml"
     },
     {
       "section": "api",
@@ -180,17 +180,8 @@ NG_DOCS={
       "shortName": "angularPoint.apXMLListAttributeTypes",
       "type": "object",
       "moduleName": "angularPoint",
-      "shortDescription": "Constant object map which contains many common XML attributes found on a field definition with their",
-      "keywords": "angularpoint api apxmllistattributetypes attributes common constant corresponding definition field map object type xml"
-    },
-    {
-      "section": "api",
-      "id": "angularPoint.apXMLToJSONService",
-      "shortName": "angularPoint.apXMLToJSONService",
-      "type": "service",
-      "moduleName": "angularPoint",
-      "shortDescription": "This function converts an XML node set into an array of JS objects.",
-      "keywords": "allow anderson angular angularpoint api apxmltojsonservice array codeplex converts essentially function js marc modular node objects service set spxmltojson testing wrapped xml"
+      "shortDescription": "Constant object map which contains many common XML attributes found on a list definition with their",
+      "keywords": "angularpoint api apxmllistattributetypes attributes common constant corresponding definition list map object type xml"
     },
     {
       "section": "api",
@@ -230,12 +221,21 @@ NG_DOCS={
     },
     {
       "section": "api",
+      "id": "apXMLToJSONService",
+      "shortName": "apXMLToJSONService",
+      "type": "service",
+      "moduleName": "apXMLToJSONService",
+      "shortDescription": "This function converts an XML node set into an array of JS objects.",
+      "keywords": "allow anderson angular api apxmltojsonservice array blog codeplex converts details developed essentially filterxmlnodeservice finding function http jquery js marc method modular node nodes object objects parse performance post response returned service set specific spxmltojson steve steveworkman testing values workman wrapped xml xmlobject"
+    },
+    {
+      "section": "api",
       "id": "DataService.createListItem",
       "shortName": "DataService.createListItem",
       "type": "function",
       "moduleName": "DataService",
       "shortDescription": "Creates a new list item for the provided model.",
-      "keywords": "api automatically based buildvaluepairs configuration created createlistitem creates dataservice defined entities field fields function generate generating identified item javascript list listitem model newly object optional pairs params precomputed promise provided reference representing resolves sharepoint valuepairs"
+      "keywords": "api automatically based buildvaluepairs cache configuration create created createlistitem creates dataservice defined entities field fields function generate generating identified indexedcache item javascript list listitem model newly object optional optionally pairs params place precomputed promise provided reference representing resolves sharepoint valuepairs"
     },
     {
       "section": "api",
@@ -289,7 +289,7 @@ NG_DOCS={
       "type": "function",
       "moduleName": "DataService",
       "shortDescription": "Used to handle any of the Get[filterNode]Collection calls to SharePoint",
-      "keywords": "$scope api array attributes calls collection dataservice extend extracted filternode function getattachmentcollection getcollection getgroupcollectionfromsite getgroupcollectionfromuser getlistcollection getusercollectionfromgroup getusercollectionfromsite getviewcollection groupname handle include iterate listname loginname object objects operation options payload postprocessfunction promise provided representing requested required resolved returned selecteduser sharepoint spservices user userloginname xml"
+      "keywords": "$scope api array attributes calls collection collections dataservice extend extracted filternode function getattachmentcollection getcollection getgroupcollectionfromsite getgroupcollectionfromuser getlistcollection getusercollectionfromgroup getusercollectionfromsite getviewcollection groupname handle include iterate listname loginname object objects operation options payload postprocessfunction promise provided representing requested requests required resolved returned selecteduser sharepoint spservices user userloginname valid xml"
     },
     {
       "section": "api",
@@ -397,7 +397,7 @@ NG_DOCS={
       "type": "function",
       "moduleName": "DataService",
       "shortDescription": "Generic wrapper for any SPServices web service call.  The big benefit to this function is it allows us",
-      "keywords": "$q allows api application benefit big call check clean codeplex consistent continue dataservice details directly elements expected experience filter filternode find function generic http implementation items iterate list model node objects operation options parameters params parsed passed payload promise provided raw resolved response returns row server service servicewrapper spservices string typically web weburl wrapper xml"
+      "keywords": "$q allows api application benefit big call check clean codeplex consistent continue dataservice details directly elements expected experience filter filternode find function generic http implementation items iterate list method model node objects operation options parameters params parsed passed payload postprocess prior process promise provided raw resolved response responsexml returning returns row server service servicewrapper spservices string typically web weburl wrapper xml"
     },
     {
       "section": "api",
@@ -640,7 +640,7 @@ NG_DOCS={
       "type": "function",
       "moduleName": "ListItem",
       "shortDescription": "Resets all list item properties back to a pristine state but doesn&#39;t update any properties added",
-      "keywords": "api copy doesn existing function initial initialization item list listitem logic manually object optionally original overwrite pass pristine properties resets setpristine update values"
+      "keywords": "api copy doesn existing function initialization item list listitem logic manually object optionally original overwrite pass pristine properties resets setpristine update values"
     },
     {
       "section": "api",

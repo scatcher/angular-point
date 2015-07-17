@@ -20,7 +20,8 @@ describe("Factory: apListItemFactory", function () {
         $httpBackend = _$httpBackend_;
         apCachedXML = _apCachedXML_;
         mockModel.importMocks();
-        mockListItem = mockModel.getCache('primary')[1];
+        mockListItem = mockModel.getCache('primary').first();
+        if (!mockListItem) throw new Error("List item not found");
         utils = apMockUtils;
 
     }));
@@ -295,7 +296,7 @@ describe("Factory: apListItemFactory", function () {
             mockListItem.setPristine(mockListItem);
             expect(JSON.stringify(mockListItem.lookupMulti)).toEqual(initialLookupValue);
         });
-        
+
         it('restores any changes of a referenced object back to the pristine state when optional list item is not provided', function () {
             expect(JSON.stringify(mockListItem.lookupMulti)).toEqual(initialLookupValue);
             mockListItem.lookupMulti.splice(0, 1);

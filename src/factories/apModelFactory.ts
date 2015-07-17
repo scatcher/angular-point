@@ -46,7 +46,7 @@ module ap {
         [key: string]: IQuery<any>
     }
 
-    interface IModelFactory{
+    interface IModelFactory {
         new <T>(rawObject: Object): ListItem<T>;
     }
 
@@ -338,7 +338,7 @@ module ap {
          * @param {boolean} [options.staticValue=false] By default all mock data is dynamically created but if set,
          * this will cause static data to be used instead.
          */
-        generateMockData<T>(options?: Object): ListItem<T>[] {
+        generateMockData<T>(options?: IMockDataOptions): ListItem<T>[] {
             var mockData = [],
                 model = this;
 
@@ -349,7 +349,7 @@ module ap {
             };
 
             /** Extend defaults with any provided options */
-            var opts = _.assign({}, defaults, options);
+            var opts: IMockDataOptions = _.assign({}, defaults, options);
 
             _.times(opts.quantity, (count) => {
                 var mock = {
@@ -384,7 +384,8 @@ module ap {
          */
         getAllListItems<T>(): ng.IPromise<IndexedCache<T>> {
             var model = this;
-            return apDataService.executeQuery<T>(model, model.queries.getAllListItems);
+            var query = model.queries.getAllListItems;
+            return apDataService.executeQuery<T>(model, query, { target: query.indexedCache });
         }
 
         /**
@@ -865,7 +866,7 @@ module ap {
                 return _.isObject(fieldValue) && _.isNumber(fieldValue.lookupId);
             };
 
-            _.each(model.list.customFields, (fieldDefinition: IFieldDefinition) => {
+            _.each(model.list.customFields, (fieldDefinition: IExtendedFieldDefinition) => {
                 var fieldValue = listItem[fieldDefinition.mappedName];
                 var fieldDescriptor = '"' + fieldDefinition.objectType + '" value.';
                 /** Only evaluate required fields */
@@ -939,7 +940,10 @@ module ap {
 
     }
 
-
+    interface IMockDataOptions{
+        permissionLevel?: string;
+        quantity?: number;
+    }
 
     angular
         .module('angularPoint')

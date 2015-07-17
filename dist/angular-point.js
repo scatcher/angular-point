@@ -2166,7 +2166,8 @@ var ap;
          */
         Model.prototype.getAllListItems = function () {
             var model = this;
-            return apDataService.executeQuery(model, model.queries.getAllListItems);
+            var query = model.queries.getAllListItems;
+            return apDataService.executeQuery(model, query, { target: query.indexedCache });
         };
         /**
          * @ngdoc function
@@ -2956,100 +2957,7 @@ var ap;
 })(ap || (ap = {}));
 
 /// <reference path="../app.module.ts" />
-
-/// <reference path="../app.module.ts" />
-var ap;
-(function (ap) {
-    'use strict';
-    /** Local references to cached promises */
-    var _getGroupCollection, _getUserProfile;
-    var UserModel = (function () {
-        function UserModel($q, apDataService) {
-            this.$q = $q;
-            this.apDataService = apDataService;
-        }
-        /**
-         * @ngdoc function
-         * @name angularPoint.apUserModel:checkIfMember
-         * @methodOf angularPoint.apUserModel
-         * @description
-         * Checks to see if current user is a member of the specified group.
-         * @param {string} groupName Name of the group.
-         * @param {boolean} [force=false] Ignore any cached value.
-         * @returns {object} Returns the group definition if the user is a member. {ID:string, Name:string, Description:string, OwnerId:string, OwnerIsUser:string}
-         * @example
-         * <pre>{ID: "190", Name: "Blog Contributors", Description: "We are bloggers...", OwnerID: "126", OwnerIsUser: "False"}</pre>
-         */
-        UserModel.prototype.checkIfMember = function (groupName, force) {
-            if (force === void 0) { force = false; }
-            //Allow function to be called before group collection is ready
-            var deferred = this.$q.defer();
-            //Initially ensure groups are ready, any future calls will receive the return
-            this.getGroupCollection(force).then(function (groupCollection) {
-                var groupDefinition = _.find(groupCollection, { Name: groupName });
-                deferred.resolve(groupDefinition);
-            });
-            return deferred.promise;
-        };
-        /**
-         * @ngdoc function
-         * @name angularPoint.apUserModel:getGroupCollection
-         * @methodOf angularPoint.apUserModel
-         * @description
-         * Returns the group definitions for the current user and caches results.
-         * @param {boolean} [force=false] Ignore any cached value.
-         * @returns {IGroupDefinition[]} Promise which resolves with the array of groups the user belongs to.
-         */
-        UserModel.prototype.getGroupCollection = function (force) {
-            var _this = this;
-            if (force === void 0) { force = false; }
-            if (!_getGroupCollection || force) {
-                /** Create a new deferred object if not already defined */
-                var deferred = this.$q.defer();
-                this.getUserProfile(force).then(function (userProfile) {
-                    _this.apDataService.getGroupCollectionFromUser(userProfile.userLoginName)
-                        .then(function (groupCollection) {
-                        deferred.resolve(groupCollection);
-                    });
-                });
-                _getGroupCollection = deferred.promise;
-            }
-            return _getGroupCollection;
-        };
-        /**
-         * @ngdoc function
-         * @name angularPoint.apUserModel:getUserProfile
-         * @methodOf angularPoint.apUserModel
-         * @description
-         * Returns the user profile for the current user and caches results.
-         * Pull user profile info and parse into a profile object
-         * http://spservices.codeplex.com/wikipage?title=GetUserProfileByName
-         * @param {boolean} [force=false] Ignore any cached value.
-         * @returns {object} Promise which resolves with the requested user profile.
-         */
-        UserModel.prototype.getUserProfile = function (force) {
-            if (force === void 0) { force = false; }
-            if (!_getUserProfile || force) {
-                /** Create a new deferred object if not already defined */
-                _getUserProfile = this.apDataService.getUserProfileByName();
-            }
-            return _getUserProfile;
-        };
-        UserModel.$inject = ['$q', 'apDataService'];
-        return UserModel;
-    })();
-    /**
-     * @ngdoc service
-     * @name angularPoint.apUserModel
-     * @description
-     * Simple service that allows us to request and cache both the current user and their group memberships.
-     *
-     * @requires apDataService
-     *
-     */
-    angular.module('angularPoint')
-        .service('apUserModel', UserModel);
-})(ap || (ap = {}));
+/// <reference path="../../typings/tsd.d.ts" />
 
 /// <reference path="../app.module.ts" />
 var __extends = (this && this.__extends) || function (d, b) {
@@ -3469,6 +3377,7 @@ var ap;
          * @param {object} listItem JavaScript object representing the SharePoint list item.
          * @param {object} [options] Optional configuration params.
          * @param {boolean} [options.buildValuePairs=true] Automatically generate pairs based on fields defined in model.
+         * @param {object} [options.indexedCache=apIndexedCacheFactory.create({})] Optionally place new item in a specified cache.
          * @param {Array[]} [options.valuePairs] Precomputed value pairs to use instead of generating them for each
          * field identified in the model.
          * @returns {object} Promise which resolves with the newly created item.
@@ -3483,14 +3392,16 @@ var ap;
                 target: undefined,
                 valuePairs: [],
                 webURL: model.list.identifyWebURL()
-            }, deferred = $q.defer();
+            };
+            var deferred = $q.defer();
             defaults.target = defaults.indexedCache;
             var opts = _.assign({}, defaults, options);
+            //Method gets added onto new list item and allows access to parent cache
+            opts.getCache = function () { return opts.indexedCache; };
             if (opts.buildValuePairs === true) {
                 var editableFields = _.where(model.list.fields, { readOnly: false });
                 opts.valuePairs = apEncodeService.generateValuePairs(editableFields, listItem);
             }
-            opts.getCache = function () { return opts.indexedCache; };
             /** Overload the function then pass anything past the first parameter to the supporting methods */
             this.serviceWrapper(opts)
                 .then(function (response) {
@@ -3597,7 +3508,7 @@ var ap;
          * @param {object} model Reference to the model where the Query resides.
          * @param {object} query Reference to the Query making the call.
          * @param {object} [options] Optional configuration parameters.
-         * @param {Array} [options.target=model.getCache()] The target destination for returned entities
+         * @param {object} [options.target=model.getCache()] The target destination for returned entities
          * @returns {object} - Key value hash containing all list item id's as keys with the listItem as the value.
          */
         DataService.prototype.executeQuery = function (model, query, options) {
@@ -3609,12 +3520,12 @@ var ap;
             /** Extend defaults **/
             var opts = _.assign({}, defaults, options);
             this.serviceWrapper(query)
-                .then(function (response) {
+                .then(function (responseXML) {
                 if (query.operation === 'GetListItemChangesSinceToken') {
-                    _this.processChangeTokenXML(model, query, response, opts);
+                    _this.processChangeTokenXML(model, query, responseXML, opts);
                 }
                 /** Convert the XML into JS objects */
-                var entities = apDecodeService.processListItems(model, query, response, opts);
+                var entities = apDecodeService.processListItems(model, query, responseXML, opts);
                 deferred.resolve(entities);
                 /** Set date time to allow for time based updates */
                 query.lastRun = new Date();
@@ -3675,7 +3586,7 @@ var ap;
                 item: itemUrl
             }).then(function (responseXML) {
                 var workflowTemplates = [];
-                var xmlTemplates = $(responseXML).SPFilterNode('WorkflowTemplate');
+                var xmlTemplates = apXMLToJSONService.filterNodes(responseXML, 'WorkflowTemplate');
                 _.each(xmlTemplates, function (xmlTemplate) {
                     var template = {
                         name: $(xmlTemplate).attr('Name'),
@@ -3695,18 +3606,21 @@ var ap;
          * Used to handle any of the Get[filterNode]Collection calls to SharePoint
          *
          * @param {Object} options - object used to extend payload and needs to include all SPServices required attributes
-         * @param {string} [options.operation] GetUserCollectionFromSite
-         * @param {string} [options.operation] GetGroupCollectionFromSite
-         * @param {string} [options.operation] GetGroupCollectionFromUser @requires options.userLoginName
-         * @param {string} [options.operation] GetUserCollectionFromGroup @requires options.groupName
-         * @param {string} [options.operation] GetListCollection
-         * @param {string} [options.operation] GetViewCollection @requires options.listName
-         * @param {string} [options.operation] GetAttachmentCollection @requires options.listName & options.ID
-         * @param {string} [options.filterNode] - Value to iterate over in returned XML
+         * @param {string} options.operation Can be any of the below or any other requests for collections:
+         *  - GetAttachmentCollection @requires options.listName & options.ID
+         *  - GetGroupCollectionFromSite
+         *  - GetGroupCollectionFromUser @requires options.userLoginName
+         *  - GetListCollection
+         *  - GetUserCollectionFromGroup @requires options.groupName
+         *  - GetUserCollectionFromSite
+         *  - GetViewCollection @requires options.listName
+         * @param {string} options.filterNode Value to iterate over in returned XML
          *         if not provided it's extracted from the name of the operation
          *         ex: Get[User]CollectionFromSite, "User" is used as the filterNode
-         *
-         * @returns {object[]} Promise which when resolved will contain an array of objects representing the
+         * @param {string} [options.groupName] Valid for 'GetUserCollectionFromGroup'
+         * @param {string} [options.listName] Valid for 'GetViewCollection' or 'GetAttachmentCollection'
+         * @param {string} [options.userLoginName] Valid for 'GetGroupCollectionFromUser'
+         * @returns {Promise<object[]>} Promise which when resolved will contain an array of objects representing the
          * requested collection.
          *
          * @example
@@ -3728,18 +3642,16 @@ var ap;
             var filterNode = opts.filterNode || opts.operation.split('Get')[1].split('Collection')[0];
             var deferred = $q.defer();
             /** Convert the xml returned from the server into an array of js objects */
-            function processXML(serverResponse) {
+            function processXML(responseXML) {
                 var convertedItems = [];
+                var filteredNodes = apXMLToJSONService.filterNodes(responseXML, filterNode);
                 /** Get attachments only returns the links associated with a list item */
                 if (opts.operation === 'GetAttachmentCollection') {
                     /** Unlike other call, get attachments only returns strings instead of an object with attributes */
-                    $(serverResponse).SPFilterNode(filterNode).each(function () {
-                        convertedItems.push($(this).text());
-                    });
+                    _.each(filteredNodes, function (node) { return convertedItems.push($(node).text()); });
                 }
                 else {
-                    var nodes = $(serverResponse).SPFilterNode(filterNode);
-                    convertedItems = apXMLToJSONService.parse(nodes, { includeAllAttrs: true, removeOws: false });
+                    convertedItems = apXMLToJSONService.parse(filteredNodes, { includeAllAttrs: true, removeOws: false });
                 }
                 return convertedItems;
             }
@@ -3889,9 +3801,9 @@ var ap;
         DataService.prototype.getListFields = function (options) {
             var deferred = $q.defer();
             this.getList(options)
-                .then(function (responseXml) {
-                var nodes = $(responseXml).SPFilterNode('Field');
-                var fields = apXMLToJSONService.parse(nodes, { includeAllAttrs: true, removeOws: false });
+                .then(function (responseXML) {
+                var filteredNodes = apXMLToJSONService.filterNodes(responseXML, 'Field');
+                var fields = apXMLToJSONService.parse(filteredNodes, { includeAllAttrs: true, removeOws: false });
                 deferred.resolve(fields);
             });
             return deferred.promise;
@@ -3916,15 +3828,16 @@ var ap;
                 payload.accountName = login;
             }
             this.serviceWrapper(payload)
-                .then(function (serverResponse) {
+                .then(function (responseXML) {
                 var userProfile = {
                     AccountName: undefined,
                     userLoginName: undefined
                 };
                 //Not formatted like a normal SP response so need to manually parse
-                $(serverResponse).SPFilterNode('PropertyData').each(function () {
-                    var nodeName = $(this).SPFilterNode('Name');
-                    var nodeValue = $(this).SPFilterNode('Value');
+                var filteredNodes = apXMLToJSONService.filterNodes(responseXML, 'PropertyData');
+                _.each(filteredNodes, function (node) {
+                    var nodeName = apXMLToJSONService.filterNodes(node, 'Name');
+                    var nodeValue = apXMLToJSONService.filterNodes(node, 'Value');
                     if (nodeName.length > 0 && nodeValue.length > 0) {
                         userProfile[nodeName.text().trim()] = nodeValue.text().trim();
                     }
@@ -3979,11 +3892,12 @@ var ap;
          */
         DataService.prototype.processDeletionsSinceToken = function (responseXML, indexedCache) {
             /** Remove any locally cached entities that were deleted from the server */
-            $(responseXML).SPFilterNode('Id').each(function () {
+            var filteredNodes = apXMLToJSONService.filterNodes(responseXML, 'Id');
+            _.each(filteredNodes, function (node) {
                 /** Check for the type of change */
-                var changeType = $(this).attr('ChangeType');
+                var changeType = $(node).attr('ChangeType');
                 if (changeType === 'Delete') {
-                    var listItemId = parseInt($(this).text(), 10);
+                    var listItemId = parseInt($(node).text(), 10);
                     /** Remove from local data array */
                     indexedCache.removeEntity(listItemId);
                 }
@@ -4068,9 +3982,10 @@ var ap;
          * Check http: //spservices.codeplex.com/documentation for details on expected parameters for each operation.
          *
          * @param {object} options Payload params that is directly passed to SPServices.
-         * @param {string} [options.webURL] XML filter string used to find the elements to iterate over.
          * @param {string} [options.filterNode] XML filter string used to find the elements to iterate over.
          * This is typically 'z: row' for list items.
+         * @param {Function} [options.postProcess] Method to process responseXML prior to returning.
+         * @param {string} [options.webURL] XML filter string used to find the elements to iterate over.
          * @returns {object} Returns a promise which when resolved either returns clean objects parsed by the value
          * in options.filterNode or the raw XML response if a options.filterNode
          *
@@ -4085,24 +4000,24 @@ var ap;
             var opts = _.assign({}, defaults, options);
             var deferred = $q.defer();
             /** Convert the xml returned from the server into an array of js objects */
-            function processXML(serverResponse) {
+            function processXML(responseXML) {
                 if (opts.filterNode) {
-                    var nodes = $(serverResponse).SPFilterNode(opts.filterNode);
-                    return apXMLToJSONService.parse(nodes, { includeAllAttrs: true, removeOws: false });
+                    var filteredNodes = apXMLToJSONService.filterNodes(responseXML, opts.filterNode);
+                    return apXMLToJSONService.parse(filteredNodes, { includeAllAttrs: true, removeOws: false });
                 }
                 else {
-                    return serverResponse;
+                    return responseXML;
                 }
             }
             this.requestData(opts)
-                .then(function (response) {
+                .then(function (responseXML) {
                 /** Failure */
-                var data = opts.postProcess(response);
+                var data = opts.postProcess(responseXML);
                 deferred.resolve(data);
-            }, function (response) {
+            }, function (err) {
                 /** Failure */
                 toastr.error('Failed to complete the requested ' + opts.operation + ' operation.');
-                deferred.reject(response);
+                deferred.reject(err);
             });
             return deferred.promise;
         };
@@ -4251,13 +4166,14 @@ var ap;
      * @requires angularPoint.apCacheService
      */
     var DecodeService = (function () {
-        function DecodeService(apCacheService, apLookupFactory, apUserFactory, apFieldService, apXMLListAttributeTypes, apXMLFieldAttributeTypes) {
+        function DecodeService(apCacheService, apLookupFactory, apUserFactory, apFieldService, apXMLListAttributeTypes, apXMLFieldAttributeTypes, apXMLToJSONService) {
             this.apCacheService = apCacheService;
             this.apLookupFactory = apLookupFactory;
             this.apUserFactory = apUserFactory;
             this.apFieldService = apFieldService;
             this.apXMLListAttributeTypes = apXMLListAttributeTypes;
             this.apXMLFieldAttributeTypes = apXMLFieldAttributeTypes;
+            this.apXMLToJSONService = apXMLToJSONService;
         }
         /**
          * @ngdoc function
@@ -4354,8 +4270,8 @@ var ap;
                 }
             });
             /** Iterate over each of the field nodes */
-            var fields = $(responseXML).SPFilterNode('Field');
-            _.each(fields, function (xmlField) {
+            var filteredNodes = this.apXMLToJSONService.filterNodes(responseXML, 'Field');
+            _.each(filteredNodes, function (xmlField) {
                 var staticName = $(xmlField).attr('StaticName');
                 var fieldDefinition = fieldMap[staticName];
                 /** If we've defined this field then we should extend it */
@@ -4782,7 +4698,7 @@ var ap;
             };
             var opts = _.assign({}, defaults, options);
             /** Map returned XML to JS objects based on mapping from model */
-            var filteredNodes = $(responseXML).SPFilterNode(opts.filter);
+            var filteredNodes = this.apXMLToJSONService.filterNodes(responseXML, opts.filter);
             /** Prepare constructor for XML entities with references to the query and cached container */
             var listItemProvider = this.createListItemProvider(model, query, opts.target);
             /** Convert XML entities into JS objects and register in cache with listItemProvider, this returns an
@@ -4827,13 +4743,10 @@ var ap;
             return parsedEntities;
         };
         DecodeService.$inject = ['apCacheService', 'apLookupFactory', 'apUserFactory', 'apFieldService',
-            'apXMLListAttributeTypes', 'apXMLFieldAttributeTypes'];
+            'apXMLListAttributeTypes', 'apXMLFieldAttributeTypes', 'apXMLToJSONService'];
         return DecodeService;
     })();
     ap.DecodeService = DecodeService;
-    /**********************PRIVATE*********************/
-    /**Constructors for user and lookup fields*/
-    /**Allows for easier distinction when debugging if object type is shown as either Lookup or User**/
     angular.module('angularPoint')
         .service('apDecodeService', DecodeService);
 })(ap || (ap = {}));
@@ -6979,15 +6892,6 @@ var ap;
             } // End of function siteDataFixSOAPEnvelope
         }
         ; // End SPServices.generateXMLComponents
-        //TODO Move this somewhere else, it's too buried down here
-        // This method for finding specific nodes in the returned XML was developed by Steve Workman. See his blog post
-        // http://www.steveworkman.com/html5-2/javascript/2011/improving-javascript-xml-node-finding-performance-by-2000/
-        // for performance details.
-        $.fn.SPFilterNode = function (name) {
-            return this.find('*').filter(function () {
-                return this.nodeName === name;
-            });
-        }; // End $.fn.SPFilterNode
         ////// PRIVATE FUNCTIONS ////////
         // Wrap an XML node (n) around a value (v)
         function wrapNode(n, v) {
@@ -7555,11 +7459,43 @@ var ap;
 (function (ap) {
     'use strict';
     var XMLToJSONService = (function () {
-        function XMLToJSONService(apDecodeService) {
-            this.apDecodeService = apDecodeService;
+        function XMLToJSONService($injector) {
+            this.$injector = $injector;
         }
+        /**
+         * @ngdoc function
+         * @name apXMLToJSONService.filterXMLNodeService
+         * @methodOf apXMLToJSONService
+         * @param {JQuery|Object} xmlObject Object to parse, can either be a jQuery object or an xml response.
+         * @param {string} name Name of node we're looking for.
+         * @description
+         * This method for finding specific nodes in the returned XML was developed by Steve Workman. See his blog post
+         * http://www.steveworkman.com/html5-2/javascript/2011/improving-javascript-xml-node-finding-performance-by-2000/
+         * for performance details.
+         * @returns {JQuery} Object with jQuery values.
+         */
+        XMLToJSONService.prototype.filterNodes = function (xmlObject, name) {
+            //Convert to jQuery object if not already
+            var jQueryObject = xmlObject instanceof jQuery ? xmlObject : $(xmlObject);
+            return jQueryObject.find('*').filter(function () {
+                return this.nodeName === name;
+            });
+        };
+        /**
+         * @ngdoc function
+         * @name apXMLToJSONService.parse
+         * @methodOf apXMLToJSONService
+         * @param {JQuery|XMLDocument} xmlObject Object to parse, can either be a jQuery object or an xml response.
+         * @param {string} name Name of node we're looking for.
+         * @description
+         * This method for finding specific nodes in the returned XML was developed by Steve Workman. See his blog post
+         * http://www.steveworkman.com/html5-2/javascript/2011/improving-javascript-xml-node-finding-performance-by-2000/
+         * for performance details.
+         * @returns {JQuery} Object with jQuery values.
+         */
         XMLToJSONService.prototype.parse = function (xmlNodeSet, options) {
-            var _this = this;
+            //Need to use injector because apDecode service also relies on this service so we'd otherwise have a circular dependency.
+            var apDecodeService = this.$injector.get('apDecodeService');
             var defaults = {
                 includeAllAttrs: false,
                 mapping: {},
@@ -7581,7 +7517,7 @@ var ap;
                     var objectName = typeof columnMapping !== "undefined" ? columnMapping.mappedName : opts.removeOws ? attributeName.split("ows_")[1] : attributeName;
                     var objectType = typeof columnMapping !== "undefined" ? columnMapping.objectType : undefined;
                     if (opts.includeAllAttrs || columnMapping !== undefined) {
-                        row[objectName] = _this.apDecodeService.parseStringValue(rowAttribute.value, objectType);
+                        row[objectName] = apDecodeService.parseStringValue(rowAttribute.value, objectType);
                     }
                 });
                 // Push this item into the JSON Object
@@ -7590,13 +7526,13 @@ var ap;
             // Return the JSON object
             return jsonObjectArray;
         };
-        XMLToJSONService.$inject = ['apDecodeService'];
+        XMLToJSONService.$inject = ['$injector'];
         return XMLToJSONService;
     })();
     ap.XMLToJSONService = XMLToJSONService;
     /**
      * @ngdoc service
-     * @name angularPoint.apXMLToJSONService
+     * @name apXMLToJSONService
      * @description
      * This function converts an XML node set into an array of JS objects.
      * This is essentially Marc Anderson's [SPServices](http://spservices.codeplex.com/) SPXmlTOJson function wrapped in
@@ -7605,6 +7541,101 @@ var ap;
      */
     angular.module('angularPoint')
         .service('apXMLToJSONService', XMLToJSONService);
+})(ap || (ap = {}));
+
+/// <reference path="../app.module.ts" />
+var ap;
+(function (ap) {
+    'use strict';
+    /** Local references to cached promises */
+    var _getGroupCollection, _getUserProfile;
+    var UserModel = (function () {
+        function UserModel($q, apDataService) {
+            this.$q = $q;
+            this.apDataService = apDataService;
+        }
+        /**
+         * @ngdoc function
+         * @name angularPoint.apUserModel:checkIfMember
+         * @methodOf angularPoint.apUserModel
+         * @description
+         * Checks to see if current user is a member of the specified group.
+         * @param {string} groupName Name of the group.
+         * @param {boolean} [force=false] Ignore any cached value.
+         * @returns {object} Returns the group definition if the user is a member. {ID:string, Name:string, Description:string, OwnerId:string, OwnerIsUser:string}
+         * @example
+         * <pre>{ID: "190", Name: "Blog Contributors", Description: "We are bloggers...", OwnerID: "126", OwnerIsUser: "False"}</pre>
+         */
+        UserModel.prototype.checkIfMember = function (groupName, force) {
+            if (force === void 0) { force = false; }
+            //Allow function to be called before group collection is ready
+            var deferred = this.$q.defer();
+            //Initially ensure groups are ready, any future calls will receive the return
+            this.getGroupCollection(force).then(function (groupCollection) {
+                var groupDefinition = _.find(groupCollection, { Name: groupName });
+                deferred.resolve(groupDefinition);
+            });
+            return deferred.promise;
+        };
+        /**
+         * @ngdoc function
+         * @name angularPoint.apUserModel:getGroupCollection
+         * @methodOf angularPoint.apUserModel
+         * @description
+         * Returns the group definitions for the current user and caches results.
+         * @param {boolean} [force=false] Ignore any cached value.
+         * @returns {IGroupDefinition[]} Promise which resolves with the array of groups the user belongs to.
+         */
+        UserModel.prototype.getGroupCollection = function (force) {
+            var _this = this;
+            if (force === void 0) { force = false; }
+            if (!_getGroupCollection || force) {
+                /** Create a new deferred object if not already defined */
+                var deferred = this.$q.defer();
+                this.getUserProfile(force).then(function (userProfile) {
+                    _this.apDataService.getGroupCollectionFromUser(userProfile.userLoginName)
+                        .then(function (groupCollection) {
+                        deferred.resolve(groupCollection);
+                    });
+                });
+                _getGroupCollection = deferred.promise;
+            }
+            return _getGroupCollection;
+        };
+        /**
+         * @ngdoc function
+         * @name angularPoint.apUserModel:getUserProfile
+         * @methodOf angularPoint.apUserModel
+         * @description
+         * Returns the user profile for the current user and caches results.
+         * Pull user profile info and parse into a profile object
+         * http://spservices.codeplex.com/wikipage?title=GetUserProfileByName
+         * @param {boolean} [force=false] Ignore any cached value.
+         * @returns {object} Promise which resolves with the requested user profile.
+         */
+        UserModel.prototype.getUserProfile = function (force) {
+            if (force === void 0) { force = false; }
+            if (!_getUserProfile || force) {
+                /** Create a new deferred object if not already defined */
+                _getUserProfile = this.apDataService.getUserProfileByName();
+            }
+            return _getUserProfile;
+        };
+        UserModel.$inject = ['$q', 'apDataService'];
+        return UserModel;
+    })();
+    ap.UserModel = UserModel;
+    /**
+     * @ngdoc service
+     * @name angularPoint.apUserModel
+     * @description
+     * Simple service that allows us to request and cache both the current user and their group memberships.
+     *
+     * @requires apDataService
+     *
+     */
+    angular.module('angularPoint')
+        .service('apUserModel', UserModel);
 })(ap || (ap = {}));
 
 //# sourceMappingURL=angular-point.js.map

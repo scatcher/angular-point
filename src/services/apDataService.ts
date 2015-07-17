@@ -3,11 +3,11 @@
 module ap {
     'use strict';
 
-    var service: DataService, $q: ng.IQService, $timeout, $http: ng.IHttpService, apConfig: IAPConfig,
+    var service: DataService, $q: ng.IQService, $timeout: ng.ITimeoutService, $http: ng.IHttpService, apConfig: IAPConfig,
         apUtilityService: UtilityService, apCacheService: CacheService, apDecodeService: DecodeService,
         apEncodeService: EncodeService, apFieldService: FieldService, apIndexedCacheFactory: IndexedCacheFactory,
-        toastr, SPServices, apDefaultListItemQueryOptions, apWebServiceOperationConstants, apXMLToJSONService,
-        apChangeService: ChangeService;
+        toastr, SPServices, apDefaultListItemQueryOptions: DefaultListItemQueryOptions, apWebServiceOperationConstants: WebServiceOperationConstants,
+        apXMLToJSONService: XMLToJSONService, apChangeService: ChangeService;
 
     export interface IDataService {
         createListItem<T>(model: Model, listItem: Object, options?: { buildValuePairs: boolean; valuePairs: [string, any][] }): ng.IPromise<ListItem<T>>;
@@ -39,11 +39,11 @@ module ap {
         queryForCurrentSite: ng.IPromise<string>;
         static $inject = ['$http', '$q', '$timeout', 'apCacheService', 'apChangeService', 'apConfig', 'apDecodeService',
             'apDefaultListItemQueryOptions', 'apEncodeService', 'apFieldService', 'apIndexedCacheFactory',
-            'apUtilityService', 'apWebServiceOperationConstants', 'apXMLToJSONService', 'SPServices', 'toastr' ];
+            'apUtilityService', 'apWebServiceOperationConstants', 'apXMLToJSONService', 'SPServices', 'toastr'];
 
         constructor(_$http_, _$q_, _$timeout_, _apCacheService_, _apChangeService_, _apConfig_, _apDecodeService_,
-                    _apDefaultListItemQueryOptions_, _apEncodeService_, _apFieldService_, _apIndexedCacheFactory_,
-                    _apUtilityService_, _apWebServiceOperationConstants_, _apXMLToJSONService_, _SPServices_, _toastr_) {
+            _apDefaultListItemQueryOptions_, _apEncodeService_, _apFieldService_, _apIndexedCacheFactory_,
+            _apUtilityService_, _apWebServiceOperationConstants_, _apXMLToJSONService_, _SPServices_, _toastr_) {
             service = this;
 
             $http = _$http_;
@@ -73,11 +73,12 @@ module ap {
          * @param {object} listItem JavaScript object representing the SharePoint list item.
          * @param {object} [options] Optional configuration params.
          * @param {boolean} [options.buildValuePairs=true] Automatically generate pairs based on fields defined in model.
+         * @param {object} [options.indexedCache=apIndexedCacheFactory.create({})] Optionally place new item in a specified cache.
          * @param {Array[]} [options.valuePairs] Precomputed value pairs to use instead of generating them for each
          * field identified in the model.
          * @returns {object} Promise which resolves with the newly created item.
          */
-        createListItem<T>(model: Model, listItem: Object, options?: { buildValuePairs: boolean; valuePairs: [string, any][] }): ng.IPromise<ListItem<T>> {
+        createListItem<T>(model: Model, listItem: ListItem<T>, options?: ICreateListItemOptions<T>): ng.IPromise<ListItem<T>> {
             var defaults = {
                 batchCmd: 'New',
                 buildValuePairs: true,
@@ -87,28 +88,30 @@ module ap {
                 target: undefined,
                 valuePairs: [],
                 webURL: model.list.identifyWebURL()
-            },
-                deferred = $q.defer();
+            };
+            var deferred = $q.defer();
 
             defaults.target = defaults.indexedCache;
-            var opts: { buildValuePairs: boolean; valuePairs: [string, any][]; getCache(): IndexedCache<T>; indexedCache: IndexedCache<T> }
-                = _.assign({}, defaults, options);
+
+            var opts: ICreateListItemOptions<T> = _.assign({}, defaults, options);
+
+            //Method gets added onto new list item and allows access to parent cache
+            opts.getCache = () => opts.indexedCache;
 
             if (opts.buildValuePairs === true) {
                 var editableFields: IFieldDefinition[] = _.where(model.list.fields, { readOnly: false });
                 opts.valuePairs = apEncodeService.generateValuePairs(editableFields, listItem);
             }
 
-            opts.getCache = () => opts.indexedCache;
 
             /** Overload the function then pass anything past the first parameter to the supporting methods */
             this.serviceWrapper(opts)
                 .then((response) => {
-                /** Online this should return an XML object */
-                var indexedCache = apDecodeService.processListItems(model, opts, response, opts);
-                /** Return reference to last listItem in cache because it will have the new highest id */
-                deferred.resolve(indexedCache.last());
-            }, (err) => {
+                    /** Online this should return an XML object */
+                    var indexedCache = apDecodeService.processListItems(model, opts, response, opts);
+                    /** Return reference to last listItem in cache because it will have the new highest id */
+                    deferred.resolve(indexedCache.last());
+                }, (err) => {
                     deferred.reject(err);
                 });
             return deferred.promise;
@@ -200,10 +203,10 @@ module ap {
 
             this.serviceWrapper(opts)
                 .then(() => {
-                /** Success */
-                apCacheService.deleteEntity(opts.listName, listItem.id);
-                deferred.resolve();
-            }, (outcome) => {
+                    /** Success */
+                    apCacheService.deleteEntity(opts.listName, listItem.id);
+                    deferred.resolve();
+                }, (outcome) => {
                     //In the event of an error, display toast
                     toastr.error('There was an error deleting a list item from ' + model.list.title);
                     deferred.reject(outcome);
@@ -220,10 +223,10 @@ module ap {
          * @param {object} model Reference to the model where the Query resides.
          * @param {object} query Reference to the Query making the call.
          * @param {object} [options] Optional configuration parameters.
-         * @param {Array} [options.target=model.getCache()] The target destination for returned entities
+         * @param {object} [options.target=model.getCache()] The target destination for returned entities
          * @returns {object} - Key value hash containing all list item id's as keys with the listItem as the value.
          */
-        executeQuery<T>(model: Model, query: IQuery<T>, options?: { target: IndexedCache<T>; }): ng.IPromise<IndexedCache<T>> {
+        executeQuery<T>(model: Model, query: IQuery<T>, options?: IExecuteQueryOptions): ng.IPromise<IndexedCache<T>> {
 
             var defaults = {
                 target: model.getCache()
@@ -232,21 +235,21 @@ module ap {
             var deferred = $q.defer();
 
             /** Extend defaults **/
-            var opts = _.assign({}, defaults, options);
+            var opts: IExecuteQueryOptions = _.assign({}, defaults, options);
 
             this.serviceWrapper(query)
-                .then((response) => {
-                if (query.operation === 'GetListItemChangesSinceToken') {
-                    this.processChangeTokenXML<T>(model, query, response, opts);
-                }
+                .then((responseXML) => {
+                    if (query.operation === 'GetListItemChangesSinceToken') {
+                        this.processChangeTokenXML<T>(model, query, responseXML, opts);
+                    }
 
-                /** Convert the XML into JS objects */
-                var entities = apDecodeService.processListItems(model, query, response, opts);
-                deferred.resolve(entities);
+                    /** Convert the XML into JS objects */
+                    var entities = apDecodeService.processListItems<T>(model, query, responseXML, opts);
+                    deferred.resolve(entities);
 
-                /** Set date time to allow for time based updates */
-                query.lastRun = new Date();
-            });
+                    /** Set date time to allow for time based updates */
+                    query.lastRun = new Date();
+                });
 
             return deferred.promise;
         }
@@ -308,8 +311,8 @@ module ap {
                 item: itemUrl
             }).then(function(responseXML) {
                 var workflowTemplates = [];
-                var xmlTemplates = $(responseXML).SPFilterNode('WorkflowTemplate');
-                _.each(xmlTemplates, function(xmlTemplate) {
+                var xmlTemplates = apXMLToJSONService.filterNodes(responseXML, 'WorkflowTemplate');
+                _.each(xmlTemplates, function(xmlTemplate: JQuery) {
                     var template = {
                         name: $(xmlTemplate).attr('Name'),
                         instantiationUrl: $(xmlTemplate).attr('InstantiationUrl'),
@@ -331,18 +334,21 @@ module ap {
          * Used to handle any of the Get[filterNode]Collection calls to SharePoint
          *
          * @param {Object} options - object used to extend payload and needs to include all SPServices required attributes
-         * @param {string} [options.operation] GetUserCollectionFromSite
-         * @param {string} [options.operation] GetGroupCollectionFromSite
-         * @param {string} [options.operation] GetGroupCollectionFromUser @requires options.userLoginName
-         * @param {string} [options.operation] GetUserCollectionFromGroup @requires options.groupName
-         * @param {string} [options.operation] GetListCollection
-         * @param {string} [options.operation] GetViewCollection @requires options.listName
-         * @param {string} [options.operation] GetAttachmentCollection @requires options.listName & options.ID
-         * @param {string} [options.filterNode] - Value to iterate over in returned XML
+         * @param {string} options.operation Can be any of the below or any other requests for collections:
+         *  - GetAttachmentCollection @requires options.listName & options.ID
+         *  - GetGroupCollectionFromSite
+         *  - GetGroupCollectionFromUser @requires options.userLoginName
+         *  - GetListCollection
+         *  - GetUserCollectionFromGroup @requires options.groupName
+         *  - GetUserCollectionFromSite
+         *  - GetViewCollection @requires options.listName
+         * @param {string} options.filterNode Value to iterate over in returned XML
          *         if not provided it's extracted from the name of the operation
          *         ex: Get[User]CollectionFromSite, "User" is used as the filterNode
-         *
-         * @returns {object[]} Promise which when resolved will contain an array of objects representing the
+         * @param {string} [options.groupName] Valid for 'GetUserCollectionFromGroup'
+         * @param {string} [options.listName] Valid for 'GetViewCollection' or 'GetAttachmentCollection'
+         * @param {string} [options.userLoginName] Valid for 'GetGroupCollectionFromUser'
+         * @returns {Promise<object[]>} Promise which when resolved will contain an array of objects representing the
          * requested collection.
          *
          * @example
@@ -355,11 +361,11 @@ module ap {
          *       });
          * </pre>
          */
-        getCollection(options: { operation: string; userLoginName?: string; groupName?: string; listName?: string; filterNode: string; }): ng.IPromise<Object[]> {
+        getCollection(options: IGetCollectionOptions): ng.IPromise<Object[]> {
             var defaults = {
                 postProcess: processXML
             };
-            var opts = _.assign({}, defaults, options);
+            var opts: IGetCollectionOptions = _.assign({}, defaults, options);
 
             /** Determine the XML node to iterate over if filterNode isn't provided */
             var filterNode = opts.filterNode || opts.operation.split('Get')[1].split('Collection')[0];
@@ -367,17 +373,15 @@ module ap {
             var deferred = $q.defer();
 
             /** Convert the xml returned from the server into an array of js objects */
-            function processXML(serverResponse) {
-                var convertedItems = [];
+            function processXML(responseXML: XMLDocument) {
+                var convertedItems: Object[] = [];
+                var filteredNodes = apXMLToJSONService.filterNodes(responseXML, filterNode);
                 /** Get attachments only returns the links associated with a list item */
                 if (opts.operation === 'GetAttachmentCollection') {
                     /** Unlike other call, get attachments only returns strings instead of an object with attributes */
-                    $(serverResponse).SPFilterNode(filterNode).each(function() {
-                        convertedItems.push($(this).text());
-                    });
+                    _.each(filteredNodes, (node: JQuery) => convertedItems.push($(node).text()));
                 } else {
-                    var nodes = $(serverResponse).SPFilterNode(filterNode);
-                    convertedItems = apXMLToJSONService.parse(nodes, { includeAllAttrs: true, removeOws: false });
+                    convertedItems = apXMLToJSONService.parse(filteredNodes, { includeAllAttrs: true, removeOws: false });
                 }
                 return convertedItems;
             }
@@ -386,8 +390,8 @@ module ap {
             if (validPayload) {
                 this.serviceWrapper(opts)
                     .then((response) => {
-                    deferred.resolve(response);
-                });
+                        deferred.resolve(response);
+                    });
             } else {
                 toastr.error('Invalid payload: ', opts);
                 deferred.reject();
@@ -430,10 +434,10 @@ module ap {
                     apConfig.defaultUrl = $(response.data).find("WebUrlFromPageUrlResult").text();
                     deferred.resolve(apConfig.defaultUrl)
                 }, (response) => {
-                        /** Error */
-                        var error = apDecodeService.checkResponseForErrors(response.data);
-                        deferred.reject(error);
-                    });
+                    /** Error */
+                    var error = apDecodeService.checkResponseForErrors(response.data);
+                    deferred.reject(error);
+                });
             }
             return this.queryForCurrentSite;
         }
@@ -466,11 +470,11 @@ module ap {
 
             this.serviceWrapper(opts)
                 .then((response) => {
-                /** Parse XML response */
-                var versions = apDecodeService.parseFieldVersions(response, fieldDefinition);
-                /** Resolve with an array of all field versions */
-                deferred.resolve(versions);
-            }, (outcome) => {
+                    /** Parse XML response */
+                    var versions = apDecodeService.parseFieldVersions(response, fieldDefinition);
+                    /** Resolve with an array of all field versions */
+                    deferred.resolve(versions);
+                }, (outcome) => {
                     /** Failure */
                     toastr.error('Failed to fetch version history.');
                     deferred.reject(outcome);
@@ -537,11 +541,11 @@ module ap {
         getListFields(options: { listName: string; }): ng.IPromise<IXMLFieldDefinition[]> {
             var deferred = $q.defer();
             this.getList(options)
-                .then((responseXml) => {
-                var nodes = $(responseXml).SPFilterNode('Field');
-                var fields = apXMLToJSONService.parse(nodes, { includeAllAttrs: true, removeOws: false });
-                deferred.resolve(fields);
-            });
+                .then((responseXML) => {
+                    var filteredNodes = apXMLToJSONService.filterNodes(responseXML, 'Field');
+                    var fields = apXMLToJSONService.parse(filteredNodes, { includeAllAttrs: true, removeOws: false });
+                    deferred.resolve(fields);
+                });
             return deferred.promise;
         }
 
@@ -566,24 +570,26 @@ module ap {
             }
 
             this.serviceWrapper(payload)
-                .then((serverResponse) => {
-                var userProfile = {
-                    AccountName: undefined,
-                    userLoginName: undefined
-                };
-                //Not formatted like a normal SP response so need to manually parse
-                $(serverResponse).SPFilterNode('PropertyData').each(function() {
-                    var nodeName = $(this).SPFilterNode('Name');
-                    var nodeValue = $(this).SPFilterNode('Value');
-                    if (nodeName.length > 0 && nodeValue.length > 0) {
-                        userProfile[nodeName.text().trim()] = nodeValue.text().trim();
-                    }
+                .then((responseXML) => {
+                    var userProfile = {
+                        AccountName: undefined,
+                        userLoginName: undefined
+                    };
+                    //Not formatted like a normal SP response so need to manually parse
+                    var filteredNodes = apXMLToJSONService.filterNodes(responseXML, 'PropertyData');
+                    _.each(filteredNodes, (node: JQuery) => {
+                        var nodeName = apXMLToJSONService.filterNodes(node, 'Name');
+                        var nodeValue = apXMLToJSONService.filterNodes(node, 'Value');
+                        if (nodeName.length > 0 && nodeValue.length > 0) {
+                            userProfile[nodeName.text().trim()] = nodeValue.text().trim();
+                        }
+                    });
+
+                    /** Optionally specify a necessary prefix that should appear before the user login */
+                    userProfile.userLoginName = apConfig.userLoginNamePrefix ?
+                        (apConfig.userLoginNamePrefix + userProfile.AccountName) : userProfile.AccountName;
+                    deferred.resolve(userProfile);
                 });
-                /** Optionally specify a necessary prefix that should appear before the user login */
-                userProfile.userLoginName = apConfig.userLoginNamePrefix ?
-                    (apConfig.userLoginNamePrefix + userProfile.AccountName) : userProfile.AccountName;
-                deferred.resolve(userProfile);
-            });
             return deferred.promise;
         }
 
@@ -636,12 +642,13 @@ module ap {
          */
         processDeletionsSinceToken(responseXML: XMLDocument, indexedCache: IndexedCache<any>): void {
             /** Remove any locally cached entities that were deleted from the server */
-            $(responseXML).SPFilterNode('Id').each(function() {
+            var filteredNodes = apXMLToJSONService.filterNodes(responseXML, 'Id');
+            _.each(filteredNodes, (node: JQuery) => {
                 /** Check for the type of change */
-                var changeType = $(this).attr('ChangeType');
+                var changeType = $(node).attr('ChangeType');
 
                 if (changeType === 'Delete') {
-                    var listItemId = parseInt($(this).text(), 10);
+                    var listItemId = parseInt($(node).text(), 10);
                     /** Remove from local data array */
                     indexedCache.removeEntity(listItemId);
                 }
@@ -664,35 +671,35 @@ module ap {
             var service = apWebServiceOperationConstants[opts.operation][0];
             this.generateWebServiceUrl(service, opts.webURL)
                 .then((url) => {
-                $http.post(url, soapData.msg, {
-                    responseType: "document",
-                    headers: {
-                        "Content-Type": "text/xml;charset='utf-8'",
-                        SOAPAction: () => soapData.SOAPAction ? soapData.SOAPAction : null
-                    },
-                    transformResponse: (data, headersGetter) => {
-                        if (_.isString(data)) {
-                            data = $.parseXML(data);
+                    $http.post(url, soapData.msg, {
+                        responseType: "document",
+                        headers: {
+                            "Content-Type": "text/xml;charset='utf-8'",
+                            SOAPAction: () => soapData.SOAPAction ? soapData.SOAPAction : null
+                        },
+                        transformResponse: (data, headersGetter) => {
+                            if (_.isString(data)) {
+                                data = $.parseXML(data);
+                            }
+                            return data;
                         }
-                        return data;
-                    }
-                }).then((response) => {
-                    /** Success */
-                    /** Errors can still be resolved without throwing an error so check the XML */
-                    var error = apDecodeService.checkResponseForErrors(response.data);
-                    if (error) {
-                        console.error(error, opts);
-                        deferred.reject(error);
-                    } else {
-                        deferred.resolve(response.data);
-                    }
-                }, (response) => {
+                    }).then((response) => {
+                        /** Success */
+                        /** Errors can still be resolved without throwing an error so check the XML */
+                        var error = apDecodeService.checkResponseForErrors(response.data);
+                        if (error) {
+                            console.error(error, opts);
+                            deferred.reject(error);
+                        } else {
+                            deferred.resolve(response.data);
+                        }
+                    }, (response) => {
                         /** Failure */
                         var error = apDecodeService.checkResponseForErrors(response.data);
                         console.error(response.statusText, opts);
                         deferred.reject(response.statusText + ': ' + error);
                     });
-            });
+                });
 
             return deferred.promise;
         }
@@ -731,42 +738,43 @@ module ap {
          * Check http: //spservices.codeplex.com/documentation for details on expected parameters for each operation.
          *
          * @param {object} options Payload params that is directly passed to SPServices.
-         * @param {string} [options.webURL] XML filter string used to find the elements to iterate over.
          * @param {string} [options.filterNode] XML filter string used to find the elements to iterate over.
          * This is typically 'z: row' for list items.
+         * @param {Function} [options.postProcess] Method to process responseXML prior to returning.
+         * @param {string} [options.webURL] XML filter string used to find the elements to iterate over.
          * @returns {object} Returns a promise which when resolved either returns clean objects parsed by the value
          * in options.filterNode or the raw XML response if a options.filterNode
          *
          *      If options.filterNode is provided, returns XML parsed by node name
          *      Otherwise returns the server response
          */
-        serviceWrapper(options): ng.IPromise<any> {
+        serviceWrapper(options: IServiceWrapperOptions): ng.IPromise<any> {
             var defaults = {
                 postProcess: processXML,
                 webURL: apConfig.defaultUrl
             };
-            var opts = _.assign({}, defaults, options);
+            var opts: IServiceWrapperOptions = _.assign({}, defaults, options);
             var deferred = $q.defer();
 
             /** Convert the xml returned from the server into an array of js objects */
-            function processXML(serverResponse) {
+            function processXML(responseXML: Object) {
                 if (opts.filterNode) {
-                    var nodes = $(serverResponse).SPFilterNode(opts.filterNode);
-                    return apXMLToJSONService.parse(nodes, { includeAllAttrs: true, removeOws: false });
+                    var filteredNodes = apXMLToJSONService.filterNodes(responseXML, opts.filterNode);
+                    return apXMLToJSONService.parse(filteredNodes, { includeAllAttrs: true, removeOws: false });
                 } else {
-                    return serverResponse;
+                    return responseXML;
                 }
             }
 
             this.requestData(opts)
-                .then((response) => {
-                /** Failure */
-                var data = opts.postProcess(response);
-                deferred.resolve(data);
-            }, (response) => {
+                .then(function(responseXML) {
+                    /** Failure */
+                    var data = opts.postProcess(responseXML);
+                    deferred.resolve(data);
+                }, function(err) {
                     /** Failure */
                     toastr.error('Failed to complete the requested ' + opts.operation + ' operation.');
-                    deferred.reject(response);
+                    deferred.reject(err);
                 });
 
             return deferred.promise;
@@ -831,7 +839,7 @@ module ap {
          * field identified in the model.
          * @returns {object} Promise which resolves with the newly created item.
          */
-        updateListItem<T>(model: Model, listItem: ListItem<T>, options): ng.IPromise<ListItem<T>> {
+        updateListItem<T>(model: Model, listItem: ListItem<T>, options?: IUpdateListitemOptions): ng.IPromise<ListItem<T>> {
             var defaults = {
                 batchCmd: 'Update',
                 buildValuePairs: true,
@@ -861,10 +869,10 @@ module ap {
             //this.serviceWrapper(opts, listItem, model)
             this.serviceWrapper(opts)
                 .then(function(response) {
-                var indexedCache = apDecodeService.processListItems(model, listItem.getQuery(), response, opts);
-                /** Return reference to updated listItem  */
-                deferred.resolve(indexedCache[listItem.id]);
-            }, function(err) {
+                    var indexedCache = apDecodeService.processListItems(model, listItem.getQuery(), response, opts);
+                    /** Return reference to updated listItem  */
+                    deferred.resolve(indexedCache[listItem.id]);
+                }, function(err) {
                     deferred.reject(err);
                 });
 
@@ -907,6 +915,41 @@ module ap {
         }
 
 
+    }
+
+    interface ICreateListItemOptions<T> {
+        buildValuePairs?: boolean;
+        indexedCache?: IndexedCache<T>;
+        getCache?: () => IndexedCache<T>;
+        valuePairs?: [string, any][];
+    }
+
+    export interface IExecuteQueryOptions {
+        factory?: Function;
+        filter?: string;
+        mapping?: IFieldDefinition[];
+        target?: IndexedCache<any>;
+        [key: string]: any;
+    }
+
+    interface IGetCollectionOptions {
+        filterNode: string;
+        groupName?: string;
+        listName?: string;
+        operation: string;
+        userLoginName?: string;
+    }
+
+    interface IServiceWrapperOptions {
+        filterNode?: string;
+        operation: string;
+        postProcess?: (responseXML: Object) => any;
+        webURL?: string;
+    }
+
+    interface IUpdateListitemOptions {
+        buildValuePairs?: boolean;
+        valuePairs?: [string, any][];
     }
 
 

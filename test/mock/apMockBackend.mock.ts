@@ -60,7 +60,8 @@ module ap {
 
     export class MockBackend {
         constructor($httpBackend: ng.IHttpBackendService, apCachedXML: ICachedXML, apCacheService: CacheService, apWebServiceService: WebServiceService,
-            apUtilityService: UtilityService, $injector: ng.auto.IInjectorService, apEncodeService: EncodeService, apChangeService: ChangeService) {
+            apUtilityService: UtilityService, $injector: ng.auto.IInjectorService, apEncodeService: EncodeService, apChangeService: ChangeService,
+            apXMLToJSONService: XMLToJSONService) {
 
 
 
@@ -168,11 +169,11 @@ module ap {
                 return match;
             }
 
-            function getZRows(request: JQuery): JQuery[] {
+            function getZRows(request: JQuery): JQuery {
                 var responseXML = getNamedListItems('GetListItems', request);
 
                 var parsedXML = $.parseXML(responseXML);
-                return $(parsedXML).SPFilterNode('z:row');
+                return apXMLToJSONService.filterNodes(parsedXML, 'z:row');
             }
 
             function convertUpdateRequestToResponse(request: JQuery, optionalAttributes): string {

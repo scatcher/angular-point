@@ -20,7 +20,6 @@
 /// <reference path="../src/factories/apQueryFactory.ts" />
 /// <reference path="../src/factories/apUserFactory.ts" />
 /// <reference path="../src/interfaces/main.ts" />
-/// <reference path="../src/models/apUserModel.ts" />
 /// <reference path="../src/services/apCacheService.ts" />
 /// <reference path="../src/services/apChangeService.ts" />
 /// <reference path="../src/services/apDataService.ts" />
@@ -35,4 +34,5 @@
 /// <reference path="../src/services/apUtilityService.ts" />
 /// <reference path="../src/services/apWebServiceService.ts" />
 /// <reference path="../src/services/apXMLToJSONService.ts" />
+/// <reference path="../src/models/apUserModel.ts" />
 //}

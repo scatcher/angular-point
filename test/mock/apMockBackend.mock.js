@@ -24,7 +24,7 @@ var ap;
         return mockId++;
     }
     var MockBackend = (function () {
-        function MockBackend($httpBackend, apCachedXML, apCacheService, apWebServiceService, apUtilityService, $injector, apEncodeService, apChangeService) {
+        function MockBackend($httpBackend, apCachedXML, apCacheService, apWebServiceService, apUtilityService, $injector, apEncodeService, apChangeService, apXMLToJSONService) {
             /** Listen for each of the standard services being called and try to return a cached XML response for the
              * operation */
             _.each(apWebServiceService.webServices, function (service) {
@@ -115,7 +115,7 @@ var ap;
             function getZRows(request) {
                 var responseXML = getNamedListItems('GetListItems', request);
                 var parsedXML = $.parseXML(responseXML);
-                return $(parsedXML).SPFilterNode('z:row');
+                return apXMLToJSONService.filterNodes(parsedXML, 'z:row');
             }
             function convertUpdateRequestToResponse(request, optionalAttributes) {
                 var fields = $(request).find('Field');

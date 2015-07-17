@@ -12,9 +12,10 @@ Check http: //spservices.codeplex.com/documentation for details on expected para
 <h2 id="usage">Usage</h2>
 <div class="usage"><pre class="prettyprint linenums">serviceWrapper(options);</pre>
 <h4 id="usage_parameters">Parameters</h4><table class="variables-matrix table table-bordered table-striped"><thead><tr><th>Param</th><th>Type</th><th>Details</th></tr></thead><tbody><tr><td>options</td><td><a href="" class="label type-hint type-hint-object">object</a></td><td><div class="dataservice-servicewrapper-page"><p>Payload params that is directly passed to SPServices.</p>
-</div></td></tr><tr><td>[options.webURL]</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="dataservice-servicewrapper-page"><p>XML filter string used to find the elements to iterate over.</p>
 </div></td></tr><tr><td>[options.filterNode]</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="dataservice-servicewrapper-page"><p>XML filter string used to find the elements to iterate over.
 This is typically &#39;z: row&#39; for list items.</p>
+</div></td></tr><tr><td>[options.postProcess]</td><td><a href="" class="label type-hint type-hint-function">Function</a></td><td><div class="dataservice-servicewrapper-page"><p>Method to process responseXML prior to returning.</p>
+</div></td></tr><tr><td>[options.webURL]</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="dataservice-servicewrapper-page"><p>XML filter string used to find the elements to iterate over.</p>
 </div></td></tr></tbody></table><h4 id="usage_returns">Returns</h4><table class="variables-matrix"><tr><td><a href="" class="label type-hint type-hint-object">object</a></td><td><div class="dataservice-servicewrapper-page"><p>Returns a promise which when resolved either returns clean objects parsed by the value
 in options.filterNode or the raw XML response if a options.filterNode</p>
 <pre><code> If options.filterNode is provided, returns XML parsed by node name

@@ -1057,16 +1057,6 @@ module ap {
         }; // End SPServices.generateXMLComponents
 
 
-        //TODO Move this somewhere else, it's too buried down here
-        // This method for finding specific nodes in the returned XML was developed by Steve Workman. See his blog post
-        // http://www.steveworkman.com/html5-2/javascript/2011/improving-javascript-xml-node-finding-performance-by-2000/
-        // for performance details.
-        $.fn.SPFilterNode = function(name) {
-            return this.find('*').filter(function() {
-                return this.nodeName === name;
-            });
-        }; // End $.fn.SPFilterNode
-
         ////// PRIVATE FUNCTIONS ////////
         // Wrap an XML node (n) around a value (v)
         function wrapNode(n, v) {

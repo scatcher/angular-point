@@ -3,7 +3,7 @@
 module ap {
     'use strict';
 
-    export var DefaultListItemQueryOptions: string = '' +
+     export var DefaultListItemQueryOptions: string = '' +
         '<QueryOptions>' +
         '   <IncludeMandatoryColumns>FALSE</IncludeMandatoryColumns>' +
         '   <IncludeAttachmentUrls>TRUE</IncludeAttachmentUrls>' +
@@ -11,7 +11,7 @@ module ap {
         '   <ExpandUserField>FALSE</ExpandUserField>' +
         '</QueryOptions>';
 
-    angular
+     angular
         .module('angularPoint')
         .constant('apDefaultListItemQueryOptions', DefaultListItemQueryOptions);
 
