@@ -3,7 +3,7 @@
 module ap {
     'use strict';
 
-    interface IUpdateOptions<T>{
+    interface IUpdateOptions<T extends ListItem<any>>{
         batchCmd: string;
         buildValuePairs:boolean;
         ID: number;
@@ -27,7 +27,7 @@ module ap {
      */
     export class ChangeService {
         callbackQueue: IChangeServiceCallback[] = [];
-        registerListItemUpdate<T>(entity: ListItem<T>, options: IUpdateOptions<T>, promise: ng.IPromise<ListItem<T>>) {
+        registerListItemUpdate<T extends ListItem<any>>(entity: T, options: IUpdateOptions<T>, promise: ng.IPromise<T>) {
             _.each(this.callbackQueue, (callback) => {
                 callback(entity, options, promise);
             });

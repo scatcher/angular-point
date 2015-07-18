@@ -10,28 +10,28 @@ module ap {
         apXMLToJSONService: XMLToJSONService, apChangeService: ChangeService;
 
     export interface IDataService {
-        createListItem<T>(model: Model, listItem: Object, options?: { buildValuePairs: boolean; valuePairs: [string, any][] }): ng.IPromise<ListItem<T>>;
+        createListItem<T extends ListItem<any>>(model: Model, listItem: Object, options?: { buildValuePairs: boolean; valuePairs: [string, any][] }): ng.IPromise<T>;
         createItemUrlFromFileRef(fileRefString: string): string;
         deleteAttachment(options: { listItemID: number; url: string; listName: string; }): ng.IPromise<any>;
         deleteListItem(model: Model, listItem: ListItem<any>, options?: { target: IndexedCache<any> }): ng.IPromise<any>;
-        executeQuery<T>(model: Model, query: IQuery<T>, options?: { target: IndexedCache<T>; }): ng.IPromise<IndexedCache<T>>;
+        executeQuery<T extends ListItem<any>>(model: Model, query: IQuery<T>, options?: IExecuteQueryOptions): ng.IPromise<IndexedCache<T>>
         generateWebServiceUrl(service: string, webURL?: string): ng.IPromise<string>;
         getAvailableWorkflows(fileRefString: string): ng.IPromise<IWorkflowDefinition[]>;
         getCollection(options: { operation: string; userLoginName?: string; groupName?: string; listName?: string; filterNode: string; }): ng.IPromise<Object[]>;
         getCurrentSite(): ng.IPromise<string>;
-        getFieldVersionHistory<T>(options: { operation?: string; webURL?: string; strListID: string; strListItemID: number; strFieldName?: string; }, fieldDefinition: IFieldDefinition): ng.IPromise<ap.IListItemVersion<T>[]>;
+        getFieldVersionHistory<T extends ListItem<any>>(options: { operation?: string; webURL?: string; strListID: string; strListItemID: number; strFieldName?: string; }, fieldDefinition: IFieldDefinition): ng.IPromise<ap.IListItemVersion<T>[]>;
         getGroupCollectionFromUser(login?: string): ng.IPromise<IXMLGroup[]>;
         getList(options: { listName: string }): ng.IPromise<Object>;
         getListFields(options: { listName: string; }): ng.IPromise<IXMLFieldDefinition[]>;
         getUserProfileByName(login?: string): ng.IPromise<IXMLUserProfile>;
-        processChangeTokenXML<T>(model: Model, query: IQuery<T>, responseXML: XMLDocument, opts): void;
+        processChangeTokenXML<T extends ListItem<any>>(model: Model, query: IQuery<T>, responseXML: XMLDocument, opts): void;
         processDeletionsSinceToken(responseXML: XMLDocument, indexedCache: IndexedCache<any>): void;
         requestData(opts): ng.IPromise<XMLDocument>;
         retrieveChangeToken(responseXML: XMLDocument): string;
         retrievePermMask(responseXML: XMLDocument): string;
         serviceWrapper(options): ng.IPromise<any>;
         startWorkflow(options: { item: string; templateId: string; workflowParameters?: string; fileRef?: string; }): ng.IPromise<any>;
-        updateListItem<T>(model: Model, listItem: ListItem<T>, options): ng.IPromise<ListItem<T>>;
+        updateListItem<T extends ListItem<any>>(model: Model, listItem: T, options): ng.IPromise<T>;
         validateCollectionPayload(opts): boolean;
     }
 
@@ -78,7 +78,7 @@ module ap {
          * field identified in the model.
          * @returns {object} Promise which resolves with the newly created item.
          */
-        createListItem<T>(model: Model, listItem: ListItem<T>, options?: ICreateListItemOptions<T>): ng.IPromise<ListItem<T>> {
+        createListItem<T extends ListItem<any>>(model: Model, listItem: T, options?: ICreateListItemOptions<T>): ng.IPromise<T> {
             var defaults = {
                 batchCmd: 'New',
                 buildValuePairs: true,
@@ -226,7 +226,7 @@ module ap {
          * @param {object} [options.target=model.getCache()] The target destination for returned entities
          * @returns {object} - Key value hash containing all list item id's as keys with the listItem as the value.
          */
-        executeQuery<T>(model: Model, query: IQuery<T>, options?: IExecuteQueryOptions): ng.IPromise<IndexedCache<T>> {
+        executeQuery<T extends ListItem<any>>(model: Model, query: IQuery<T>, options?: IExecuteQueryOptions): ng.IPromise<IndexedCache<T>> {
 
             var defaults = {
                 target: model.getCache()
@@ -460,7 +460,7 @@ module ap {
          * @param {object} fieldDefinition Field definition object from the model.
          * @returns {object[]} Promise which resolves with an array of list item changes for the specified field.
          */
-        getFieldVersionHistory<T>(options: { operation?: string; webURL?: string; strListID: string; strListItemID: number; strFieldName?: string; }, fieldDefinition: IFieldDefinition): ng.IPromise<ap.IListItemVersion<T>[]> {
+        getFieldVersionHistory<T extends ListItem<any>>(options: { operation?: string; webURL?: string; strListID: string; strListItemID: number; strFieldName?: string; }, fieldDefinition: IFieldDefinition): ng.IPromise<ap.IListItemVersion<T>[]> {
             var defaults = {
                 operation: 'GetVersionCollection'
             };
@@ -605,7 +605,7 @@ module ap {
          * @param {XMLDocument} responseXML XML response from the server.
          * @param {object} opts Config options built up along the way.
          */
-        processChangeTokenXML<T>(model: Model, query: IQuery<T>, responseXML: XMLDocument, opts): void {
+        processChangeTokenXML<T extends ListItem<any>>(model: Model, query: IQuery<T>, responseXML: XMLDocument, opts): void {
             if (!model.deferredListDefinition) {
                 var deferred = $q.defer();
 
@@ -839,7 +839,7 @@ module ap {
          * field identified in the model.
          * @returns {object} Promise which resolves with the newly created item.
          */
-        updateListItem<T>(model: Model, listItem: ListItem<T>, options?: IUpdateListitemOptions): ng.IPromise<ListItem<T>> {
+        updateListItem<T extends ListItem<any>>(model: Model, listItem: T, options?: IUpdateListitemOptions): ng.IPromise<T> {
             var defaults = {
                 batchCmd: 'Update',
                 buildValuePairs: true,
@@ -917,7 +917,7 @@ module ap {
 
     }
 
-    interface ICreateListItemOptions<T> {
+    interface ICreateListItemOptions<T extends ListItem<any>> {
         buildValuePairs?: boolean;
         indexedCache?: IndexedCache<T>;
         getCache?: () => IndexedCache<T>;

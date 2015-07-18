@@ -83,12 +83,12 @@ declare module ap {
         "SPS-EmailOptin": string;
     }
 
-    export interface IListItemCrudOptions<T> {
+    export interface IListItemCrudOptions<T extends ListItem<any>> {
         target: IndexedCache<T>;
     }
 
 
-    export interface IListItemVersion<T> extends ListItem<T> {
+    export interface IListItemVersion<T extends ListItem<any>> extends ListItem<T> {
         version: Date;
     }
 

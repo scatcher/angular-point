@@ -6,7 +6,7 @@ module ap {
     var $q, apIndexedCacheFactory: IndexedCacheFactory, apConfig: IAPConfig, apDefaultListItemQueryOptions,
         apDataService: DataService;
 
-    export interface IQuery<T> {
+    export interface IQuery<T extends ListItem<any>> {
         cacheXML?: boolean;
         changeToken?: string;
         execute(options?: Object): ng.IPromise<IndexedCache<T>>;
@@ -90,7 +90,7 @@ module ap {
          * });
      * </pre>
      */
-    export class Query<T> implements IQuery<T> {
+    export class Query<T extends ListItem<any>> implements IQuery<T> {
         /** Very memory intensive to enable cacheXML which is disabled by default*/
         cacheXML: boolean = false;
         /** Reference to the most recent query when performing GetListItemChangesSinceToken */
@@ -226,7 +226,7 @@ module ap {
          * @description
          * Instantiates and returns a new Query.
          */
-        create<T>(config, model): IQuery<T> {
+        create<T extends ListItem<any>>(config, model): IQuery<T> {
             return new Query<T>(config, model);
         }
     }

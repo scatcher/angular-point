@@ -9,30 +9,30 @@ module ap {
         apDecodeService: DecodeService, $q: ng.IQService, toastr: toastr;
 
     export interface IModel {
-        addNewItem<T>(entity: Object, options?: Object): ng.IPromise<ListItem<T>>;
-        createEmptyItem<T>(overrides?: Object): ListItem<T>;
+        addNewItem<T extends ListItem<any>>(entity: Object, options?: Object): ng.IPromise<T>;
+        createEmptyItem<T extends ListItem<any>>(overrides?: Object): T;
         deferredListDefinition: ng.IPromise<Object>;
-        executeQuery<T>(queryName?: string, options?: Object): ng.IPromise<IndexedCache<T>>;
+        executeQuery<T extends ListItem<any>>(queryName?: string, options?: Object): ng.IPromise<IndexedCache<T>>;
         extendListMetadata(options?: Object): ng.IPromise<any>;
         factory: IModelFactory;
-        generateMockData<T>(options?: Object): ListItem<T>[];
-        getAllListItems<T>(): ng.IPromise<IndexedCache<T>>;
-        getCache<T>(queryName?: string): IndexedCache<T>;
-        getCachedEntities<T>(): IndexedCache<T>;
-        getCachedEntity<T>(listItemId: number): ListItem<T>;
+        generateMockData<T extends ListItem<any>>(options?: Object): T[];
+        getAllListItems<T extends ListItem<any>>(): ng.IPromise<IndexedCache<T>>;
+        getCache<T extends ListItem<any>>(queryName?: string): IndexedCache<T>;
+        getCachedEntities<T extends ListItem<any>>(): IndexedCache<T>;
+        getCachedEntity<T extends ListItem<any>>(listItemId: number): T;
         getFieldDefinition(fieldName: string): IExtendedFieldDefinition | IFieldDefinition;
         getList(): List;
         getListId(): string;
-        getListItemById<T>(listItemId: number, options?: Object): ng.IPromise<ListItem<T>>;
+        getListItemById<T extends ListItem<any>>(listItemId: number, options?: Object): ng.IPromise<T>;
         getModel(): Model;
-        getQuery<T>(queryName: string): IQuery<T>;
+        getQuery<T extends ListItem<any>>(queryName: string): IQuery<T>;
         isInitialised(): boolean;
         lastServerUpdate: Date;
         list: List;
         queries: IQueriesContainer;
-        registerQuery<T>(queryOptions: IQueryOptions): IQuery<T>;
+        registerQuery<T extends ListItem<any>>(queryOptions: IQueryOptions): IQuery<T>;
         resolvePermissions(): IUserPermissionsObject;
-        validateEntity<T>(listItem: ListItem<T>, options?: Object): boolean;
+        validateEntity<T extends ListItem<any>>(listItem: T, options?: Object): boolean;
     }
 
     export interface IUninitializedModel {
@@ -47,7 +47,7 @@ module ap {
     }
 
     interface IModelFactory {
-        new <T>(rawObject: Object): ListItem<T>;
+        new <T extends ListItem<any>>(rawObject: Object): T;
     }
 
 
@@ -167,9 +167,7 @@ module ap {
         deferredListDefinition;
         list: List;
         factory: IModelFactory;
-        // factory: <T>(rawObject: Object) => void;
         fieldDefinitionsExtended: boolean = false;
-        /** Date/Time of last communication with server */
         lastServerUpdate: Date;
         queries: IQueriesContainer = {};
         requestForFieldDefinitions;
@@ -221,7 +219,7 @@ module ap {
          * </file>
          * </pre>
          */
-        addNewItem<T>(entity: Object, options?: Object): ng.IPromise<ListItem<T>> {
+        addNewItem<T extends ListItem<any>>(entity: Object, options?: Object): ng.IPromise<T> {
             var model = this,
                 deferred = $q.defer();
 
@@ -248,7 +246,7 @@ module ap {
          * @param {object} [overrides] - Optionally extend the new empty item with specific values.
          * @returns {object} Newly created list item.
          */
-        createEmptyItem<T>(overrides?: Object): ListItem<T> {
+        createEmptyItem<T extends ListItem<any>>(overrides?: Object): T {
             var model = this;
             var newItem = {};
             _.each(model.list.customFields, (fieldDefinition) => {
@@ -285,7 +283,7 @@ module ap {
          *  });
          * </pre>
          */
-        executeQuery<T>(queryName?: string, options?: Object): ng.IPromise<IndexedCache<T>> {
+        executeQuery<T extends ListItem<any>>(queryName?: string, options?: Object): ng.IPromise<IndexedCache<T>> {
             var model = this;
             var query = model.getQuery(queryName);
             if (query) {
@@ -338,7 +336,7 @@ module ap {
          * @param {boolean} [options.staticValue=false] By default all mock data is dynamically created but if set,
          * this will cause static data to be used instead.
          */
-        generateMockData<T>(options?: IMockDataOptions): ListItem<T>[] {
+        generateMockData<T extends ListItem<any>>(options?: IMockDataOptions): T[] {
             var mockData = [],
                 model = this;
 
@@ -382,7 +380,7 @@ module ap {
          * };
          * </pre>
          */
-        getAllListItems<T>(): ng.IPromise<IndexedCache<T>> {
+        getAllListItems<T extends ListItem<any>>(): ng.IPromise<IndexedCache<T>> {
             var model = this;
             var query = model.queries.getAllListItems;
             return apDataService.executeQuery<T>(model, query, { target: query.indexedCache });
@@ -413,7 +411,7 @@ module ap {
          * var namedQueryCache = projectModel.getCache('customQuery');
          * </pre>
          */
-        getCache<T>(queryName?: string): IndexedCache<T> {
+        getCache<T extends ListItem<any>>(queryName?: string): IndexedCache<T> {
             var model = this, query, cache;
             query = model.getQuery(queryName);
             if (query && query.indexedCache) {
@@ -430,7 +428,7 @@ module ap {
          * Returns all entities registered for this model regardless of query.
          * @returns {IndexedCache<T>} All registered entities for this model.
          */
-        getCachedEntities<T>(): IndexedCache<T> {
+        getCachedEntities<T extends ListItem<any>>(): IndexedCache<T> {
             var model = this;
             return apCacheService.getCachedEntities<T>(model.list.getListId());
         }
@@ -445,7 +443,7 @@ module ap {
          * @param {number} listItemId The ID of the requested listItem.
          * @returns {object} Returns either the requested listItem or undefined if it's not found.
          */
-        getCachedEntity<T>(listItemId: number): ListItem<T> {
+        getCachedEntity<T extends ListItem<any>>(listItemId: number): T {
             var model = this;
             return apCacheService.getCachedEntity<T>(model.list.getListId(), listItemId);
         }
@@ -521,7 +519,7 @@ module ap {
          * };
          * </pre>
          */
-        getListItemById<T>(listItemId: number, options?: Object): ng.IPromise<ListItem<T>> {
+        getListItemById<T extends ListItem<any>>(listItemId: number, options?: Object): ng.IPromise<T> {
             var deferred = $q.defer(),
                 model = this,
                 /** Unique Query Name */
@@ -595,7 +593,7 @@ module ap {
          * var namedQuery = projectModel.getQuery('customQuery');
          * </pre>
          */
-        getQuery<T>(queryName: string): IQuery<T> {
+        getQuery<T extends ListItem<any>>(queryName: string): IQuery<T> {
             var model = this, query;
             if (_.isObject(model.queries[queryName])) {
                 /** The named query exists */
@@ -756,7 +754,7 @@ module ap {
          * };
          * </pre>
          */
-        registerQuery<T>(queryOptions: IQueryOptions): IQuery<T> {
+        registerQuery<T extends ListItem<any>>(queryOptions: IQueryOptions): IQuery<T> {
             var model = this;
 
             var defaults = {
@@ -851,7 +849,7 @@ module ap {
          * @param {boolean} [options.toast=true] Should toasts be generated to alert the user of issues.
          * @returns {boolean} Evaluation of validity.
          */
-        validateEntity<T>(listItem: ListItem<T>, options?: Object): boolean {
+        validateEntity<T extends ListItem<any>>(listItem: T, options?: Object): boolean {
             var valid = true,
                 model = this;
 
@@ -940,7 +938,7 @@ module ap {
 
     }
 
-    interface IMockDataOptions{
+    interface IMockDataOptions {
         permissionLevel?: string;
         quantity?: number;
     }

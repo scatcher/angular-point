@@ -6,7 +6,7 @@ module ap {
     var $q, toastr, apCacheService: CacheService, apDataService: DataService, apEncodeService: EncodeService,
         apUtilityService: UtilityService, apFormattedFieldValueService: FormattedFieldValueService, apConfig: IAPConfig;
 
-    export interface IListItem<T> {
+    export interface IListItem<T extends ListItem<any>> {
         author?: IUser;
         created?: Date;
         editor?: IUser;
@@ -21,7 +21,7 @@ module ap {
         getAttachmentCollection: () => ng.IPromise<string[]>;
         getAvailableWorkflows: () => ng.IPromise<IWorkflowDefinition[]>;
         getCache?: () => IndexedCache<T>;
-        getChanges(): ng.IPromise<ListItem<T>>;
+        getChanges(): ng.IPromise<T>;
         getFieldChoices: (fieldName: string) => string[];
         getFieldDefinition: (fieldName: string) => IFieldDefinition | IExtendedFieldDefinition;
         getFieldDescription: (fieldName: string) => string;
@@ -30,10 +30,10 @@ module ap {
         getFormattedValue: (fieldName: string, options?: Object) => string;
         getList: () => List;
         getListId: () => string;
-        getLookupReference: <T2>(fieldName: string, lookupId?: number) => ListItem<T2>;
+        getLookupReference: <T2 extends ListItem<any>>(fieldName: string, lookupId?: number) => T2;
         resolvePermissions: () => IUserPermissionsObject;
-        saveChanges: (options?: IListItemCrudOptions<T>) => ng.IPromise<ListItem<T>>;
-        saveFields: (fieldArray: string[], options?: IListItemCrudOptions<T>) => ng.IPromise<ListItem<T>>;
+        saveChanges: (options?: IListItemCrudOptions<T>) => ng.IPromise<T>;
+        saveFields: (fieldArray: string[], options?: IListItemCrudOptions<T>) => ng.IPromise<T>;
         setPristine: () => void;
         startWorkflow: (options: IStartWorkflowParams) => ng.IPromise<any>;
         validateEntity: (options?: Object) => boolean;
@@ -54,14 +54,14 @@ module ap {
      * functionality can be called directly from a given list item.
      * @constructor
      */
-    export class ListItem<T> implements IListItem<T> {
+    export class ListItem<T extends ListItem<any>> implements IListItem<T> {
         author: IUser;
         created: Date;
         editor: IUser;
         fileRef: ILookup;
         getCache: () => IndexedCache<T>;
         getModel: () => Model;
-        getPristine: () => Object;        
+        getPristine: () => Object;
         getQuery: () => IQuery<T>;
         id: number;
         modified: Date;
@@ -173,8 +173,8 @@ module ap {
             var listItem = this;
             return apDataService.getAvailableWorkflows(listItem.fileRef.lookupValue);
         }
-        
-        
+
+
         /**
          * @ngdoc function
          * @name ListItem.getChanges
@@ -183,7 +183,7 @@ module ap {
          * list item with those changes.
          * @returns {promise} Promise which resolves with the updated list item.
          */
-        getChanges(): ng.IPromise<ListItem<T>> {
+        getChanges(): ng.IPromise<T> {
             var model = this.getModel();
             return model.getListItemById(this.id);
         }
@@ -298,7 +298,7 @@ module ap {
             var listItem = this;
             var model = listItem.getModel();
             var promiseArray = [];
-            
+
             /** Constructor that creates a promise for each field */
             var createPromise = (fieldName) => {
 
@@ -548,7 +548,7 @@ module ap {
          * }
          * </pre>
          */
-        saveChanges(options?: IListItemCrudOptions<T>): ng.IPromise<ListItem<T>> {
+        saveChanges(options?: IListItemCrudOptions<T>): ng.IPromise<T> {
             var listItem = this;
             var model = listItem.getModel();
             var deferred = $q.defer();
@@ -601,7 +601,7 @@ module ap {
          * }
          * </pre>
          */
-        saveFields(fieldArray: string[], options?: IListItemCrudOptions<T>): ng.IPromise<ListItem<T>> {
+        saveFields(fieldArray: string[], options?: IListItemCrudOptions<T>): ng.IPromise<T> {
 
             var listItem = this;
             var model = listItem.getModel();
@@ -634,24 +634,24 @@ module ap {
 
             return deferred.promise;
         }
-        
-        
+
+
         /**
          * @ngdoc function
          * @name ListItem.setPristine
-         * @param {ListItem} [listItem] Optionally pass list item object back to the list item constructor to 
+         * @param {ListItem} [listItem] Optionally pass list item object back to the list item constructor to
          * run any initialization logic.  Otherwise we just overwrite existing values on the object with a copy from the
          * original object.
          * @description
-         * Resets all list item properties back to a pristine state but doesn't update any properties added 
+         * Resets all list item properties back to a pristine state but doesn't update any properties added
          * manually to the list item.
-         */ 
+         */
         setPristine(listItem?: ListItem<any>): void {
             if(!this.id || !_.isFunction(this.getPristine)) {
                 throw new Error('Unable to find the pristine state for this list item.');
             }
             var pristineState = this.getPristine();
-            
+
             if (listItem) {
                 listItem.constructor(pristineState);
             } else {
@@ -768,7 +768,7 @@ module ap {
          * @description
          * Instantiates and returns a new ListItem.
          */
-        create<T>(): ListItem<T> {
+        create<T extends ListItem<any>>(): T {
             return new ListItem<T>();
         }
 

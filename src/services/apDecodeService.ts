@@ -75,9 +75,9 @@ module ap {
          * @returns {Function} Returns a function that takes the new list item while keeping model, query,
          * and container in scope for future reference.
          */
-        createListItemProvider<T>(model: Model, query: IQuery<T>, indexedCache: IndexedCache<T>): (rawObject: Object) => ListItem<T> {
+        createListItemProvider<T extends ListItem<any>>(model: Model, query: IQuery<T>, indexedCache: IndexedCache<T>): (rawObject: Object) => T {
             return (rawObject: { [key: string]: any, getCache(): IndexedCache<T>, getQuery(): IQuery<T>, id: number }) => {
-                var listItem: ListItem<T>;
+                var listItem: T;
 
                 if (indexedCache[rawObject.id]) {
                     //Object already exists in cache so we just need to update properties
@@ -534,7 +534,7 @@ module ap {
          * @param {boolean} [options.removeOws=true] Specifically for GetListItems, if true, the leading ows_ will
          * @returns {object} New entity using the factory on the model.
          */
-        parseXMLEntity<T>(xmlEntity: JQuery, options: { mapping: IFieldDefinition[]; includeAllAttrs?: boolean; listItemProvider?: Function; removeOws?: boolean; target?: IndexedCache<T> }): Object {
+        parseXMLEntity<T extends ListItem<any>>(xmlEntity: JQuery, options: { mapping: IFieldDefinition[]; includeAllAttrs?: boolean; listItemProvider?: Function; removeOws?: boolean; target?: IndexedCache<T> }): Object {
             var entity = {};
             var rowAttrs = xmlEntity.attributes;
 
@@ -578,7 +578,7 @@ module ap {
          * @param {Array} [options.target=model.getCache()] Optionally pass in array to update after processing.
          * @returns {Object} Inedexed Cache.
          */
-        processListItems<T>(model: Model, query: IQuery<T>, responseXML: XMLDocument, options?: IExecuteQueryOptions): IndexedCache<T> {
+        processListItems<T extends ListItem<any>>(model: Model, query: IQuery<T>, responseXML: XMLDocument, options?: IExecuteQueryOptions): IndexedCache<T> {
             var defaults = {
                 factory: model.factory,
                 filter: 'z:row',
@@ -621,7 +621,7 @@ module ap {
          * @param {array} [options.target] Optional location to push parsed entities.
          * @returns {object[]} An array of JavaScript objects.
          */
-        xmlToJson<T>(xmlEntities: JQuery, listItemProvider: (Object) => ListItem<T>, options: IXMLToJsonOptions<T>): ListItem<T>[] {
+        xmlToJson<T extends ListItem<any>>(xmlEntities: JQuery, listItemProvider: (Object) => T, options: IXMLToJsonOptions<T>): T[] {
 
             var defaults = {
                 mapping: {},
@@ -649,7 +649,7 @@ module ap {
 
 
 
-    interface IXMLToJsonOptions<T> extends IExecuteQueryOptions {
+    interface IXMLToJsonOptions<T extends ListItem<any>> extends IExecuteQueryOptions {
         includeAllAttrs?: boolean;
         listItemProvider?: Function;
         mapping: IFieldDefinition[];

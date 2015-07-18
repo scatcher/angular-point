@@ -5,14 +5,14 @@ module ap {
 
     interface ICacheService {
         deleteEntity(listId: string, entityId: number): void;
-        getCachedEntities<T>(listId: string): IndexedCache<T>;
-        getCachedEntity<T>(listId: string, entityId: number): ListItem<T>;
-        getEntity<T>(listId: string, entityId: number): ng.IPromise<T>;
+        getCachedEntities<T extends ListItem<any>>(listId: string): IndexedCache<T>;
+        getCachedEntity<T extends ListItem<any>>(listId: string, entityId: number): T;
+        getEntity<T extends ListItem<any>>(listId: string, entityId: number): ng.IPromise<T>;
         getListId(keyString: string): string;
         getListIdFromListName(name: string): string;
         getModel(listId: string): Model;
         getModelCache(listId: string): ModelCache;
-        registerEntity<T>(entity: ListItem<T>, targetCache?: IndexedCache<T>): ListItem<T>;
+        registerEntity<T extends ListItem<any>>(entity: T, targetCache?: IndexedCache<T>): T;
         registerModel(model: Model): void;
         removeEntity(listId: string, entityId: number): void;
     }
@@ -181,7 +181,7 @@ module ap {
          * @param {string} listId GUID for list the list item belongs to.
          * @returns {object} Indexed cache containing all entities for a model.
          */
-        getCachedEntities<T>(listId: string): IndexedCache<T> {
+        getCachedEntities<T extends ListItem<any>>(listId: string): IndexedCache<T> {
             var modelCache = this.getModelCache(listId),
                 allEntities = apIndexedCacheFactory.create<T>();
             _.each(modelCache, (entityContainer: EntityContainer) => {
@@ -202,7 +202,7 @@ module ap {
          * @param {number} entityId The entity.id.
          * @returns {object} entity || undefined
          */
-        getCachedEntity<T>(listId: string, entityId: number): ListItem<T> {
+        getCachedEntity<T extends ListItem<any>>(listId: string, entityId: number): T {
             return this.getEntityContainer(listId, entityId).entity;
         }
 
@@ -217,7 +217,7 @@ module ap {
          * @param {number} entityId The entity.id.
          * @returns {promise} entity
          */
-        getEntity<T>(listId: string, entityId: number): ng.IPromise<ListItem<T>> {
+        getEntity<T extends ListItem<any>>(listId: string, entityId: number): ng.IPromise<T> {
             var entityContainer = this.getEntityContainer(listId, entityId);
             return entityContainer.getEntity();
         }
@@ -304,7 +304,7 @@ module ap {
          * @param {object} entity Pass in a newly created entity to add to the cache.
          * @param {object} [targetCache] Optionally pass in a secondary cache to add a reference to this entity.
          */
-        registerEntity<T>(entity: ListItem<T>, targetCache?: IndexedCache<T>): ListItem<T> {
+        registerEntity<T extends ListItem<any>>(entity: T, targetCache?: IndexedCache<T>): T {
             var model = entity.getModel();
             var entityContainer = this.getEntityContainer(model.list.getListId(), entity.id);
             /** Maintain a single object in cache for this entity */
