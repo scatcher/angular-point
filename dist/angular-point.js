@@ -1196,11 +1196,18 @@ var ap;
             var listItem = this;
             var model = listItem.getModel();
             var deferred = $q.defer();
-            apDataService.deleteListItem(model, listItem, options).then(function (response) {
-                deferred.resolve(response);
-                /** Optionally broadcast change event */
-                apUtilityService.registerChange(model, 'delete', listItem.id);
-            });
+            if (_.isFunction(listItem.preDeleteAction) && !listItem.preDeleteAction()) {
+                //preDeleteAction exists but returned false so we don't delete
+                deferred.reject('Pre-Delete Action Returned False');
+            }
+            else {
+                apDataService.deleteListItem(model, listItem, options)
+                    .then(function (response) {
+                    deferred.resolve(response);
+                    /** Optionally broadcast change event */
+                    apUtilityService.registerChange(model, 'delete', listItem.id);
+                });
+            }
             return deferred.promise;
         };
         /**
@@ -1501,6 +1508,55 @@ var ap;
         };
         /**
          * @ngdoc function
+         * @name ListItem.registerPreDeleteAction
+         * @param {Function} action Function that accepts no arguments and returns a boolean determining if delete can continue.
+         * @returns {Function} Function that can be called to unregister.
+         * @description
+         * Register a function on the list item prototype that is executed prior to deleting.  Good use case
+         * is to perform cleanup prior to deleting or determining if user can delete.  Method returns boolean and if
+         * true delete will continue, otherwise delete is prevented. There is no ListItem.registerPostDeleteAction because
+         * the list item no longer exists.
+         */
+        ListItem.prototype.registerPreDeleteAction = function (action) {
+            var _this = this;
+            this.preDeleteAction = action;
+            //Return function to unregister
+            return function () { return delete _this.preDeleteAction; };
+        };
+        /**
+         * @ngdoc function
+         * @name ListItem.registerPreSaveAction
+         * @param {Function} action Function that accepts no arguments and returns a boolean determining is save can continue.
+         * @returns {Function} Function that can be called to unregister.
+         * @description
+         * Register a function on the list item prototype that is executed prior to saving.  Good use case
+         * is to validate list item or perform cleanup prior to saving.  Method returns boolean and if
+         * true save will continue, otherwise save is prevented.
+         */
+        ListItem.prototype.registerPreSaveAction = function (action) {
+            var _this = this;
+            this.preSaveAction = action;
+            //Return function to unregister
+            return function () { return delete _this.preSaveAction; };
+        };
+        /**
+         * @ngdoc function
+         * @name ListItem.registerPostSaveAction
+         * @param {Function} action Callback function that accepts no arguments, returns nothing, and is called
+         * after a list item has completed saving.
+         * @returns {Function} Function that can be called to unregister.
+         * @description
+         * Register a function on the model prototype that is executed after saving.  Good use case
+         * is to perform cleanup after save.
+         */
+        ListItem.prototype.registerPostSaveAction = function (action) {
+            var _this = this;
+            this.postSaveAction = action;
+            //Return function to unregister
+            return function () { return delete _this.postSaveAction; };
+        };
+        /**
+         * @ngdoc function
          * @name ListItem.resolvePermissions
          * @description
          * See apModelService.resolvePermissions for details on what we expect to have returned.
@@ -1586,18 +1642,30 @@ var ap;
             var listItem = this;
             var model = listItem.getModel();
             var deferred = $q.defer();
-            /** Redirect if the request is actually creating a new list item.  This can occur if we create
-             * an empty item that is instantiated from the model and then attempt to save instead of using
-             * model.addNewItem */
-            if (!listItem.id) {
-                return model.addNewItem(listItem, options);
+            if (_.isFunction(listItem.preSaveAction) && !listItem.preSaveAction()) {
+                //preSaveAction exists but returned false so we don't save
+                deferred.reject('Pre-Save Action Returned False');
             }
-            apDataService.updateListItem(model, listItem, options)
-                .then(function (updatedListItem) {
-                deferred.resolve(updatedListItem);
-                /** Optionally broadcast change event */
-                apUtilityService.registerChange(model, 'update', updatedListItem.id);
-            });
+            else {
+                //Either no preSaveAction registered or it passed validation
+                /** Redirect if the request is actually creating a new list item.  This can occur if we create
+                 * an empty item that is instantiated from the model and then attempt to save instead of using
+                 * model.addNewItem */
+                if (!listItem.id) {
+                    return model.addNewItem(listItem, options);
+                }
+                apDataService.updateListItem(model, listItem, options)
+                    .then(function (updatedListItem) {
+                    deferred.resolve(updatedListItem);
+                    /** Optionally broadcast change event */
+                    apUtilityService.registerChange(model, 'update', updatedListItem.id);
+                    //Optionally perform any post save cleanup if registered
+                    if (_.isFunction(listItem.postSaveAction)) {
+                        listItem.postSaveAction();
+                    }
+                    ;
+                });
+            }
             return deferred.promise;
         };
         /**
@@ -1978,7 +2046,6 @@ var ap;
         function Model(config) {
             var _this = this;
             this.data = [];
-            // factory: <T>(rawObject: Object) => void;
             this.fieldDefinitionsExtended = false;
             this.queries = {};
             /** Assign all properties of config to the model */

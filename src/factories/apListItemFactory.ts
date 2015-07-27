@@ -3,7 +3,7 @@
 module ap {
     'use strict';
 
-    var $q, toastr, apCacheService: CacheService, apDataService: DataService, apEncodeService: EncodeService,
+    var $q: ng.IQService, toastr, apCacheService: CacheService, apDataService: DataService, apEncodeService: EncodeService,
         apUtilityService: UtilityService, apFormattedFieldValueService: FormattedFieldValueService, apConfig: IAPConfig;
 
     export interface IListItem<T extends ListItem<any>> {
@@ -66,6 +66,9 @@ module ap {
         id: number;
         modified: Date;
         permMask: string;
+        private preDeleteAction: () => boolean;
+        private preSaveAction: () => boolean;
+        private postSaveAction: () => void;
         uniqueId: string;
 
         /**
@@ -123,11 +126,18 @@ module ap {
             var model = listItem.getModel();
             var deferred = $q.defer();
 
-            apDataService.deleteListItem(model, listItem, options).then((response) => {
-                deferred.resolve(response);
-                /** Optionally broadcast change event */
-                apUtilityService.registerChange(model, 'delete', listItem.id);
-            });
+            if (_.isFunction(listItem.preDeleteAction) && !listItem.preDeleteAction()) {
+                //preDeleteAction exists but returned false so we don't delete
+                deferred.reject('Pre-Delete Action Returned False');
+            } else {
+
+                apDataService.deleteListItem(model, listItem, options)
+                    .then((response) => {
+                        deferred.resolve(response);
+                        /** Optionally broadcast change event */
+                        apUtilityService.registerChange(model, 'delete', listItem.id);
+                    });
+            }
 
             return deferred.promise;
         }
@@ -293,7 +303,7 @@ module ap {
          *      };
          * </pre>
          */
-        getFieldVersionHistory(fieldNames?: string[] | string): ng.IPromise<IListItemVersion<T>[]> {
+        getFieldVersionHistory(fieldNames?: string[]| string): ng.IPromise<IListItemVersion<T>[]> {
             var deferred = $q.defer();
             var listItem = this;
             var model = listItem.getModel();
@@ -462,6 +472,56 @@ module ap {
 
         }
 
+        /**
+         * @ngdoc function
+         * @name ListItem.registerPreDeleteAction
+         * @param {Function} action Function that accepts no arguments and returns a boolean determining if delete can continue.
+         * @returns {Function} Function that can be called to unregister.
+         * @description
+         * Register a function on the list item prototype that is executed prior to deleting.  Good use case
+         * is to perform cleanup prior to deleting or determining if user can delete.  Method returns boolean and if
+         * true delete will continue, otherwise delete is prevented. There is no ListItem.registerPostDeleteAction because
+         * the list item no longer exists.
+         */
+        registerPreDeleteAction(action: () => boolean): () => void {
+            this.preDeleteAction = action;
+            //Return function to unregister
+            return () => delete this.preDeleteAction;
+        }
+        
+       
+        /**
+         * @ngdoc function
+         * @name ListItem.registerPreSaveAction
+         * @param {Function} action Function that accepts no arguments and returns a boolean determining is save can continue.
+         * @returns {Function} Function that can be called to unregister.
+         * @description
+         * Register a function on the list item prototype that is executed prior to saving.  Good use case
+         * is to validate list item or perform cleanup prior to saving.  Method returns boolean and if
+         * true save will continue, otherwise save is prevented. 
+         */
+        registerPreSaveAction(action: () => boolean): () => void {
+            this.preSaveAction = action;
+            //Return function to unregister
+            return () => delete this.preSaveAction;
+        }
+        
+        /**
+         * @ngdoc function
+         * @name ListItem.registerPostSaveAction
+         * @param {Function} action Callback function that accepts no arguments, returns nothing, and is called
+         * after a list item has completed saving.
+         * @returns {Function} Function that can be called to unregister.
+         * @description
+         * Register a function on the model prototype that is executed after saving.  Good use case
+         * is to perform cleanup after save. 
+         */
+        registerPostSaveAction(action: () => void): () => void {
+            this.postSaveAction = action;
+            //Return function to unregister
+            return () => delete this.postSaveAction;
+        }
+
 
         /**
          * @ngdoc function
@@ -553,19 +613,31 @@ module ap {
             var model = listItem.getModel();
             var deferred = $q.defer();
 
-            /** Redirect if the request is actually creating a new list item.  This can occur if we create
-             * an empty item that is instantiated from the model and then attempt to save instead of using
-             * model.addNewItem */
-            if (!listItem.id) {
-                return model.addNewItem(listItem, options);
-            }
+            if (_.isFunction(listItem.preSaveAction) && !listItem.preSaveAction()) {
+                //preSaveAction exists but returned false so we don't save
+                deferred.reject('Pre-Save Action Returned False');
+            } else {
+                //Either no preSaveAction registered or it passed validation
+                
+                /** Redirect if the request is actually creating a new list item.  This can occur if we create
+                 * an empty item that is instantiated from the model and then attempt to save instead of using
+                 * model.addNewItem */
+                if (!listItem.id) {
+                    return model.addNewItem(listItem, options);
+                }
 
-            apDataService.updateListItem<T>(model, listItem, options)
-                .then((updatedListItem) => {
-                    deferred.resolve(updatedListItem);
-                    /** Optionally broadcast change event */
-                    apUtilityService.registerChange(model, 'update', updatedListItem.id);
-                });
+                apDataService.updateListItem<T>(model, listItem, options)
+                    .then((updatedListItem) => {
+                        deferred.resolve(updatedListItem);
+                        /** Optionally broadcast change event */
+                        apUtilityService.registerChange(model, 'update', updatedListItem.id);
+                        
+                        //Optionally perform any post save cleanup if registered
+                        if (_.isFunction(listItem.postSaveAction)) {
+                            listItem.postSaveAction();
+                        };
+                    });
+            }
 
             return deferred.promise;
         }
@@ -647,7 +719,7 @@ module ap {
          * manually to the list item.
          */
         setPristine(listItem?: ListItem<any>): void {
-            if(!this.id || !_.isFunction(this.getPristine)) {
+            if (!this.id || !_.isFunction(this.getPristine)) {
                 throw new Error('Unable to find the pristine state for this list item.');
             }
             var pristineState = this.getPristine();
