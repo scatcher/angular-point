@@ -576,8 +576,8 @@ NG_DOCS={
       "shortName": "ListItem.getListId",
       "type": "function",
       "moduleName": "ListItem",
-      "shortDescription": "Allows us to reference the list ID directly from the list item.  This is added to the",
-      "keywords": "allows api apmodelfactory directly factory function getlistid item list listitem model prototype reference"
+      "shortDescription": "Allows us to reference the list ID directly from the model.",
+      "keywords": "allows api directly function getlistid list listitem model reference"
     },
     {
       "section": "api",
@@ -585,8 +585,8 @@ NG_DOCS={
       "shortName": "ListItem.getListId",
       "type": "function",
       "moduleName": "ListItem",
-      "shortDescription": "Allows us to reference the list ID directly from the model.",
-      "keywords": "allows api directly function getlistid list listitem model reference"
+      "shortDescription": "Allows us to reference the list ID directly from the list item.  This is added to the",
+      "keywords": "allows api apmodelfactory directly factory function getlistid item list listitem model prototype reference"
     },
     {
       "section": "api",
@@ -605,6 +605,33 @@ NG_DOCS={
       "moduleName": "ListItem",
       "shortDescription": "Allows us to reference the parent model directly from the list item.  This is added to the",
       "keywords": "allows api apmodelfactory directly documentation factory function getmodel info item list listitem model parent prototype reference"
+    },
+    {
+      "section": "api",
+      "id": "ListItem.registerPostSaveAction",
+      "shortName": "ListItem.registerPostSaveAction",
+      "type": "function",
+      "moduleName": "ListItem",
+      "shortDescription": "Register a function on the model prototype that is executed after saving.  Good use case",
+      "keywords": "accepts action ap api arguments assign attributes callback called case class cleanup completed event example executed expected export extends function future good item list listitem longer method model obj perform point project projectsmodel prototype register registerpostsaveaction returns save saving string super title type unregister user users"
+    },
+    {
+      "section": "api",
+      "id": "ListItem.registerPreDeleteAction",
+      "shortName": "ListItem.registerPreDeleteAction",
+      "type": "function",
+      "moduleName": "ListItem",
+      "shortDescription": "Register a function on the list item prototype that is executed prior to deleting.  Good use case",
+      "keywords": "accepts action ap api arguments assign attributes boolean called case class cleanup continue delete deleting determining example executed exists expected export extends false function future good item list listitem longer method obj perform point prevent prevented prior project projectsmodel prototype register registerpostdeleteaction registerpredeleteaction return returns string super title true unregister user users validation"
+    },
+    {
+      "section": "api",
+      "id": "ListItem.registerPreSaveAction",
+      "shortName": "ListItem.registerPreSaveAction",
+      "type": "function",
+      "moduleName": "ListItem",
+      "shortDescription": "Register a function on the list item prototype that is executed prior to saving.  Good use case",
+      "keywords": "accepts action ap api arguments assign attributes boolean called case class cleanup continue determining example executed expected export extends false function future good item list listitem longer method obj perform point prevent prevented prior project projectsmodel prototype register registerpresaveaction return returns save saving string super title true unregister user users validate validation"
     },
     {
       "section": "api",
