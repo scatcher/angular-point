@@ -3,7 +3,27 @@
 module ap {
     'use strict';
 
-    export class MockListItem extends ap.ListItem<Mock>{
+    export class MockListItem extends ap.ListItem<MockListItem>{
+        attachments: string[];
+        boolean: boolean;
+        calculated: string;
+        choice: string;
+        currency: number;
+        date: Date;
+        dateTime: Date;
+        integer: number;
+        float: number;
+        html: string;
+        hyperlink: string;
+        json: Object;
+        lookup: ILookup;
+        lookupMulti: ILookup[];
+        multiChoice: string[];
+        note: string;
+        picture: string;
+        title: string;
+        user: IUser;
+        userMulti: IUser[];
         constructor(obj) {
             super();
             _.assign(this, obj);

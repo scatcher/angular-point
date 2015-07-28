@@ -1516,6 +1516,29 @@ var ap;
          * is to perform cleanup prior to deleting or determining if user can delete.  Method returns boolean and if
          * true delete will continue, otherwise delete is prevented. There is no ListItem.registerPostDeleteAction because
          * the list item no longer exists.
+         *
+         * @example
+         * <pre>
+         * //In example projectsModel.ts
+         *  export class Project extends ap.ListItem<Project>{
+         *      title: string;
+         *      users: User[];
+         *      ...some other expected attributes
+         *      constructor(obj) {
+         *          super(obj);
+         *          _.assign(this, obj);
+         *      }
+         *  }
+         *
+         *  let unregister = Project.prototype.registerPreDeleteAction(function() {
+         *      //Do some validation here and return true if user can delete
+         *      //otherwise return false to prevent delete action
+         *  });
+         *
+         *  //At some point in the future if no longer necessary
+         *  unregister();
+         *
+         * </pre>
          */
         ListItem.prototype.registerPreDeleteAction = function (action) {
             var _this = this;
@@ -1532,6 +1555,29 @@ var ap;
          * Register a function on the list item prototype that is executed prior to saving.  Good use case
          * is to validate list item or perform cleanup prior to saving.  Method returns boolean and if
          * true save will continue, otherwise save is prevented.
+         *
+         * @example
+         * <pre>
+         * //In example projectsModel.ts
+         *  export class Project extends ap.ListItem<Project>{
+         *      title: string;
+         *      users: User[];
+         *      ...some other expected attributes
+         *      constructor(obj) {
+         *          super(obj);
+         *          _.assign(this, obj);
+         *      }
+         *  }
+         *
+         *  let unregister = Project.prototype.registerPreSaveAction(function() {
+         *      //Do some validation here and return true if user can save
+         *      //otherwise return false to prevent save action
+         *  });
+         *
+         *  //At some point in the future if no longer necessary
+         *  unregister();
+         *
+         * </pre>
          */
         ListItem.prototype.registerPreSaveAction = function (action) {
             var _this = this;
@@ -1548,6 +1594,29 @@ var ap;
          * @description
          * Register a function on the model prototype that is executed after saving.  Good use case
          * is to perform cleanup after save.
+         *
+         * @example
+         * <pre>
+         * //In example projectsModel.ts
+         *  export class Project extends ap.ListItem<Project>{
+         *      title: string;
+         *      users: User[];
+         *      ...some other expected attributes
+         *      constructor(obj) {
+         *          super(obj);
+         *          _.assign(this, obj);
+         *      }
+         *  }
+         *
+         *  let unregister Project.prototype.registerPostSaveAction(function() {
+         *      //Use this method to perform any cleanup after save event
+         *      //for any list item of this type
+         *  });
+         *
+         *  //At some point in the future if no longer necessary
+         *  unregister();
+         *
+         * </pre>
          */
         ListItem.prototype.registerPostSaveAction = function (action) {
             var _this = this;

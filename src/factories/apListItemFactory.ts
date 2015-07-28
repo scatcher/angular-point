@@ -448,7 +448,7 @@ module ap {
          * </pre>
          * @returns {object} The listItem the lookup is referencing or undefined if not in the cache.
          */
-        getLookupReference<T2>(fieldName: string, lookupId?: number): ListItem<T2> {
+        getLookupReference<T2 extends ListItem<any>>(fieldName: string, lookupId?: number): T2 {
             var listItem = this;
             var lookupReference;
             if (_.isUndefined(fieldName)) {
@@ -482,6 +482,29 @@ module ap {
          * is to perform cleanup prior to deleting or determining if user can delete.  Method returns boolean and if
          * true delete will continue, otherwise delete is prevented. There is no ListItem.registerPostDeleteAction because
          * the list item no longer exists.
+         * 
+         * @example
+         * <pre>
+         * //In example projectsModel.ts
+         *  export class Project extends ap.ListItem<Project>{
+         *      title: string;
+         *      users: User[];
+         *      ...some other expected attributes
+         *      constructor(obj) {
+         *          super(obj);
+         *          _.assign(this, obj);
+         *      }
+         *  }
+         * 
+         *  let unregister = Project.prototype.registerPreDeleteAction(function() {
+         *      //Do some validation here and return true if user can delete
+         *      //otherwise return false to prevent delete action
+         *  });
+         * 
+         *  //At some point in the future if no longer necessary
+         *  unregister();
+         * 
+         * </pre>
          */
         registerPreDeleteAction(action: () => boolean): () => void {
             this.preDeleteAction = action;
@@ -499,6 +522,29 @@ module ap {
          * Register a function on the list item prototype that is executed prior to saving.  Good use case
          * is to validate list item or perform cleanup prior to saving.  Method returns boolean and if
          * true save will continue, otherwise save is prevented. 
+         * 
+         * @example
+         * <pre>
+         * //In example projectsModel.ts
+         *  export class Project extends ap.ListItem<Project>{
+         *      title: string;
+         *      users: User[];
+         *      ...some other expected attributes
+         *      constructor(obj) {
+         *          super(obj);
+         *          _.assign(this, obj);
+         *      }
+         *  }
+         * 
+         *  let unregister = Project.prototype.registerPreSaveAction(function() {
+         *      //Do some validation here and return true if user can save
+         *      //otherwise return false to prevent save action
+         *  });
+         * 
+         *  //At some point in the future if no longer necessary
+         *  unregister();
+         * 
+         * </pre>
          */
         registerPreSaveAction(action: () => boolean): () => void {
             this.preSaveAction = action;
@@ -515,6 +561,29 @@ module ap {
          * @description
          * Register a function on the model prototype that is executed after saving.  Good use case
          * is to perform cleanup after save. 
+         * 
+         * @example
+         * <pre>
+         * //In example projectsModel.ts
+         *  export class Project extends ap.ListItem<Project>{
+         *      title: string;
+         *      users: User[];
+         *      ...some other expected attributes
+         *      constructor(obj) {
+         *          super(obj);
+         *          _.assign(this, obj);
+         *      }
+         *  }
+         * 
+         *  let unregister Project.prototype.registerPostSaveAction(function() {
+         *      //Use this method to perform any cleanup after save event
+         *      //for any list item of this type
+         *  });
+         * 
+         *  //At some point in the future if no longer necessary
+         *  unregister();
+         * 
+         * </pre>
          */
         registerPostSaveAction(action: () => void): () => void {
             this.postSaveAction = action;
