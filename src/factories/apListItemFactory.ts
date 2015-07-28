@@ -474,7 +474,7 @@ module ap {
 
         /**
          * @ngdoc function
-         * @name ListItem.registerPreDeleteAction
+         * @name ListItem.prototype.registerPreDeleteAction
          * @param {Function} action Function that accepts no arguments and returns a boolean determining if delete can continue.
          * @returns {Function} Function that can be called to unregister.
          * @description
@@ -515,7 +515,7 @@ module ap {
        
         /**
          * @ngdoc function
-         * @name ListItem.registerPreSaveAction
+         * @name ListItem.prototype.registerPreSaveAction
          * @param {Function} action Function that accepts no arguments and returns a boolean determining is save can continue.
          * @returns {Function} Function that can be called to unregister.
          * @description
@@ -554,7 +554,7 @@ module ap {
         
         /**
          * @ngdoc function
-         * @name ListItem.registerPostSaveAction
+         * @name ListItem.prototype.registerPostSaveAction
          * @param {Function} action Callback function that accepts no arguments, returns nothing, and is called
          * after a list item has completed saving.
          * @returns {Function} Function that can be called to unregister.
@@ -575,7 +575,7 @@ module ap {
          *      }
          *  }
          * 
-         *  let unregister Project.prototype.registerPostSaveAction(function() {
+         *  let unregister = Project.prototype.registerPostSaveAction(function() {
          *      //Use this method to perform any cleanup after save event
          *      //for any list item of this type
          *  });
