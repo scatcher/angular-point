@@ -5173,9 +5173,10 @@ var ap;
             var idProp = idProperty || 'lookupId';
             var valProp = valueProperty || 'lookupValue';
             _.each(multiSelectValue, function (lookupObject, iteration) {
-                /** Need to format string of id's in following format [ID0];#[VAL0];#[ID1];#[VAL1];# */
+                /** Need to format string of id's in following format [ID0];#[VAL0];#[ID1];#[VAL1] */
                 stringifiedValues += lookupObject[idProp] + ';#' + (lookupObject[valProp] || '');
-                if (iteration < multiSelectValue.length) {
+                /** Append delim after all but last because we don't want trailing ';#' at end of string */
+                if (iteration < (multiSelectValue.length - 1)) {
                     stringifiedValues += ';#';
                 }
             });

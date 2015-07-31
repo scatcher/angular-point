@@ -52,7 +52,7 @@ describe("Factory: apEncodeService", function () {
                 {lookupId: 1101, lookupValue: 'Jane'}
             ];
             expect(service.createValuePair(mockDefinition('UserMulti'), validUsers))
-                .toEqual([ 'UserMulti', '1100;#Bill;#1101;#Jane;#' ]);
+                .toEqual([ 'UserMulti', '1100;#Bill;#1101;#Jane' ]);
         });
 
         it('correctly handles a LookupMulti field', function () {
@@ -61,7 +61,7 @@ describe("Factory: apEncodeService", function () {
                 {lookupId: 2, lookupValue: 'Widget'}
             ];
             expect(service.createValuePair(mockDefinition('LookupMulti'), validUsers))
-                .toEqual([ 'LookupMulti', '1;#Cog;#2;#Widget;#' ]);
+                .toEqual([ 'LookupMulti', '1;#Cog;#2;#Widget' ]);
         });
 
         it('correctly handles a true Boolean field', function () {
