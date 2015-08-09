@@ -6,7 +6,7 @@
   ],
   "license": "MIT",
   "homepage": "https://github.com/scatcher/angular-point",
-  "version": "3.6.1",
+  "version": "3.6.2",
   "module": "angularPoint",
   "dependencies": {
     "typescript": "1.5.3"

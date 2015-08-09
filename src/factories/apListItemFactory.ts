@@ -3,8 +3,9 @@
 module ap {
     'use strict';
 
-    var $q: ng.IQService, toastr, apCacheService: CacheService, apDataService: DataService, apEncodeService: EncodeService,
-        apUtilityService: UtilityService, apFormattedFieldValueService: FormattedFieldValueService, apConfig: IAPConfig;
+    var $q: ng.IQService, toastr, apCacheService: CacheService, apDataService: DataService, apDecodeService: DecodeService,
+        apEncodeService: EncodeService, apUtilityService: UtilityService, apFormattedFieldValueService: FormattedFieldValueService,
+        apConfig: IAPConfig;
 
     export interface IListItem<T extends ListItem<any>> {
         author?: IUser;
@@ -289,9 +290,10 @@ module ap {
          * version.  If no fields are provided, we look at the field definitions in the model and pull all non-readonly
          * fields.  The only way to do this that I've been able to get working is to get the version history for each
          * field independently and then build the history by combining the server responses for each requests into a
-         * snapshot of the object.
+         * snapshot of the object.  Each version has the standard modified date but also includes a version property with
+         * the version number.
          * @param {string[]} [fieldNames] An array of field names that we're interested in.
-         * @returns {object} promise - containing array of changes
+         * @returns {ng.IPromise<IListItemVersion<T>>} Promise which resolves with an array of list item versions.
          * @example
          * Assuming we have a modal form where we want to display each version of the title and project fields
          * of a given list item.
@@ -355,6 +357,7 @@ module ap {
                 _.each(changes, (fieldVersions) => {
 
                     _.each(fieldVersions, (fieldVersion) => {
+                        /** Create a new version object if it doesn't already exist */
                         versionHistory[fieldVersion.modified.toJSON()] =
                         versionHistory[fieldVersion.modified.toJSON()] || {};
 
@@ -363,10 +366,15 @@ module ap {
                     });
                 });
 
-                var versionArray = [];
+                var versionArray: IListItemVersion<T>[] = [];
+                var versionCounter = 1;
+                
                 /** Add a version prop on each version to identify the numeric sequence */
-                _.each(versionHistory, (ver, num) => {
-                    ver.version = num;
+                _.each(versionHistory, (ver: IListItemVersion<T>) => {
+                    ver.version = versionCounter;
+                    versionCounter++;
+                    /** Convert JSON date into JS Date */
+                    ver.modified = apDecodeService.jsDate(ver.modified);
                     versionArray.push(ver);
                 });
 
@@ -889,13 +897,14 @@ module ap {
 
     export class ListItemFactory {
         ListItem = ListItem;
-        static $inject = ['$q', 'apCacheService', 'apConfig', 'apDataService', 'apEncodeService', 'apFormattedFieldValueService', 'apUtilityService', 'toastr'];
+        static $inject = ['$q', 'apCacheService', 'apConfig', 'apDataService', 'apDecodeService', 'apEncodeService', 'apFormattedFieldValueService', 'apUtilityService', 'toastr'];
 
-        constructor(_$q_, _apCacheService_, _apConfig_, _apDataService_, _apEncodeService_, _apFormattedFieldValueService_, _apUtilityService_, _toastr_) {
+        constructor(_$q_, _apCacheService_, _apConfig_, _apDataService_, _apDecodeService_, _apEncodeService_, _apFormattedFieldValueService_, _apUtilityService_, _toastr_) {
             $q = _$q_;
             apCacheService = _apCacheService_;
             apConfig = _apConfig_;
             apDataService = _apDataService_;
+            apDecodeService = _apDecodeService_;
             apEncodeService = _apEncodeService_;
             apFormattedFieldValueService = _apFormattedFieldValueService_;
             apUtilityService = _apUtilityService_;

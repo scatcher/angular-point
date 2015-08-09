@@ -89,7 +89,9 @@ declare module ap {
 
 
     export interface IListItemVersion<T extends ListItem<any>> extends ListItem<T> {
-        version: Date;
+        modified: Date;
+        version: number;
+        [key: string]: any;
     }
 
     export interface IWorkflowDefinition {

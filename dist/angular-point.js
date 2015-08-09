@@ -1132,7 +1132,7 @@ var ap;
 var ap;
 (function (ap) {
     'use strict';
-    var $q, toastr, apCacheService, apDataService, apEncodeService, apUtilityService, apFormattedFieldValueService, apConfig;
+    var $q, toastr, apCacheService, apDataService, apDecodeService, apEncodeService, apUtilityService, apFormattedFieldValueService, apConfig;
     /**
      * @ngdoc object
      * @name ListItem
@@ -1343,9 +1343,10 @@ var ap;
          * version.  If no fields are provided, we look at the field definitions in the model and pull all non-readonly
          * fields.  The only way to do this that I've been able to get working is to get the version history for each
          * field independently and then build the history by combining the server responses for each requests into a
-         * snapshot of the object.
+         * snapshot of the object.  Each version has the standard modified date but also includes a version property with
+         * the version number.
          * @param {string[]} [fieldNames] An array of field names that we're interested in.
-         * @returns {object} promise - containing array of changes
+         * @returns {ng.IPromise<IListItemVersion<T>>} Promise which resolves with an array of list item versions.
          * @example
          * Assuming we have a modal form where we want to display each version of the title and project fields
          * of a given list item.
@@ -1400,6 +1401,7 @@ var ap;
                 /** All fields should have the same number of versions */
                 _.each(changes, function (fieldVersions) {
                     _.each(fieldVersions, function (fieldVersion) {
+                        /** Create a new version object if it doesn't already exist */
                         versionHistory[fieldVersion.modified.toJSON()] =
                             versionHistory[fieldVersion.modified.toJSON()] || {};
                         /** Add field to the version history for this version */
@@ -1407,9 +1409,13 @@ var ap;
                     });
                 });
                 var versionArray = [];
+                var versionCounter = 1;
                 /** Add a version prop on each version to identify the numeric sequence */
-                _.each(versionHistory, function (ver, num) {
-                    ver.version = num;
+                _.each(versionHistory, function (ver) {
+                    ver.version = versionCounter;
+                    versionCounter++;
+                    /** Convert JSON date into JS Date */
+                    ver.modified = apDecodeService.jsDate(ver.modified);
                     versionArray.push(ver);
                 });
                 deferred.resolve(versionArray);
@@ -1896,12 +1902,13 @@ var ap;
      * @requires apUtilityService
      */
     var ListItemFactory = (function () {
-        function ListItemFactory(_$q_, _apCacheService_, _apConfig_, _apDataService_, _apEncodeService_, _apFormattedFieldValueService_, _apUtilityService_, _toastr_) {
+        function ListItemFactory(_$q_, _apCacheService_, _apConfig_, _apDataService_, _apDecodeService_, _apEncodeService_, _apFormattedFieldValueService_, _apUtilityService_, _toastr_) {
             this.ListItem = ListItem;
             $q = _$q_;
             apCacheService = _apCacheService_;
             apConfig = _apConfig_;
             apDataService = _apDataService_;
+            apDecodeService = _apDecodeService_;
             apEncodeService = _apEncodeService_;
             apFormattedFieldValueService = _apFormattedFieldValueService_;
             apUtilityService = _apUtilityService_;
@@ -1928,7 +1935,7 @@ var ap;
         ListItemFactory.prototype.createGenericFactory = function () {
             return new StandardListItem();
         };
-        ListItemFactory.$inject = ['$q', 'apCacheService', 'apConfig', 'apDataService', 'apEncodeService', 'apFormattedFieldValueService', 'apUtilityService', 'toastr'];
+        ListItemFactory.$inject = ['$q', 'apCacheService', 'apConfig', 'apDataService', 'apDecodeService', 'apEncodeService', 'apFormattedFieldValueService', 'apUtilityService', 'toastr'];
         return ListItemFactory;
     })();
     ap.ListItemFactory = ListItemFactory;
