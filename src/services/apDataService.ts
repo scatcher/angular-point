@@ -19,7 +19,7 @@ module ap {
         getAvailableWorkflows(fileRefString: string): ng.IPromise<IWorkflowDefinition[]>;
         getCollection(options: { operation: string; userLoginName?: string; groupName?: string; listName?: string; filterNode: string; }): ng.IPromise<Object[]>;
         getCurrentSite(): ng.IPromise<string>;
-        getFieldVersionHistory<T extends ListItem<any>>(options: { operation?: string; webURL?: string; strListID: string; strListItemID: number; strFieldName?: string; }, fieldDefinition: IFieldDefinition): ng.IPromise<ap.IListItemVersion<T>[]>;
+        getFieldVersionHistory<T extends ListItem<any>>(options: { operation?: string; webURL?: string; strListID: string; strListItemID: number; strFieldName?: string; }, fieldDefinition: FieldDefinition): ng.IPromise<ap.IListItemVersion<T>[]>;
         getGroupCollectionFromUser(login?: string): ng.IPromise<IXMLGroup[]>;
         getList(options: { listName: string }): ng.IPromise<Object>;
         getListFields(options: { listName: string; }): ng.IPromise<IXMLFieldDefinition[]>;
@@ -99,7 +99,7 @@ module ap {
             opts.getCache = () => opts.indexedCache;
 
             if (opts.buildValuePairs === true) {
-                var editableFields: IFieldDefinition[] = _.where(model.list.fields, { readOnly: false });
+                var editableFields: FieldDefinition[] = _.where(model.list.fields, { readOnly: false });
                 opts.valuePairs = apEncodeService.generateValuePairs(editableFields, listItem);
             }
 
@@ -460,7 +460,7 @@ module ap {
          * @param {object} fieldDefinition Field definition object from the model.
          * @returns {object[]} Promise which resolves with an array of list item changes for the specified field.
          */
-        getFieldVersionHistory<T extends ListItem<any>>(options: { operation?: string; webURL?: string; strListID: string; strListItemID: number; strFieldName?: string; }, fieldDefinition: IFieldDefinition): ng.IPromise<ap.IListItemVersion<T>[]> {
+        getFieldVersionHistory<T extends ListItem<any>>(options: { operation?: string; webURL?: string; strListID: string; strListItemID: number; strFieldName?: string; }, fieldDefinition: FieldDefinition): ng.IPromise<ap.IListItemVersion<T>[]> {
             var defaults = {
                 operation: 'GetVersionCollection'
             };
@@ -927,7 +927,7 @@ module ap {
     export interface IExecuteQueryOptions {
         factory?: Function;
         filter?: string;
-        mapping?: IFieldDefinition[];
+        mapping?: FieldDefinition[];
         target?: IndexedCache<any>;
         [key: string]: any;
     }

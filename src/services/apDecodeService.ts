@@ -122,7 +122,7 @@ module ap {
          * @param {object[]} fieldDefinitions Field definitions from the model.
          * @param {object} responseXML XML response from the server.
          */
-        extendFieldDefinitionsFromXML(fieldDefinitions: IFieldDefinition[], responseXML: XMLDocument): IExtendedFieldDefinition[] {
+        extendFieldDefinitionsFromXML(fieldDefinitions: FieldDefinition[], responseXML: XMLDocument): IExtendedFieldDefinition[] {
             var fieldMap = {};
 
             /** Map all custom fields with keys of the staticName and values = field definition */
@@ -412,7 +412,7 @@ module ap {
          *
          * @returns {Array} Array objects containing the various version of a field for each change.
          */
-        parseFieldVersions(responseXML: XMLDocument, fieldDefinition: IFieldDefinition): IListItemVersion[] {
+        parseFieldVersions(responseXML: XMLDocument, fieldDefinition: FieldDefinition): IListItemVersion<any>[] {
             var versions = [];
             var xmlVersions = $(responseXML).find('Version');
             var versionCount = xmlVersions.length;
@@ -534,7 +534,7 @@ module ap {
          * @param {boolean} [options.removeOws=true] Specifically for GetListItems, if true, the leading ows_ will
          * @returns {object} New entity using the factory on the model.
          */
-        parseXMLEntity<T extends ListItem<any>>(xmlEntity: JQuery, options: { mapping: IFieldDefinition[]; includeAllAttrs?: boolean; listItemProvider?: Function; removeOws?: boolean; target?: IndexedCache<T> }): Object {
+        parseXMLEntity<T extends ListItem<any>>(xmlEntity: JQuery, options: { mapping: FieldDefinition[]; includeAllAttrs?: boolean; listItemProvider?: Function; removeOws?: boolean; target?: IndexedCache<T> }): Object {
             var entity = {};
             var rowAttrs = xmlEntity.attributes;
 
@@ -652,7 +652,7 @@ module ap {
     interface IXMLToJsonOptions<T extends ListItem<any>> extends IExecuteQueryOptions {
         includeAllAttrs?: boolean;
         listItemProvider?: Function;
-        mapping: IFieldDefinition[];
+        mapping: FieldDefinition[];
         removeOws?: boolean;
         target?: IndexedCache<T>;
     }

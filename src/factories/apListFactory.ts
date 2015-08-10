@@ -83,10 +83,10 @@ module ap {
     }
 
     export interface IList extends IUninstantiatedList, IXMLList {
-        customFields: IFieldDefinition[];
+        customFields: FieldDefinition[];
         effectivePermMask?: string;
         environments: { [key: string]: string };
-        fields: IFieldDefinition[];
+        fields: FieldDefinition[];
         getListId(): string;
         guid: string;
         identifyWebURL(): string;

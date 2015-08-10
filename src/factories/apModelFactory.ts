@@ -20,7 +20,7 @@ module ap {
         getCache<T extends ListItem<any>>(queryName?: string): IndexedCache<T>;
         getCachedEntities<T extends ListItem<any>>(): IndexedCache<T>;
         getCachedEntity<T extends ListItem<any>>(listItemId: number): T;
-        getFieldDefinition(fieldName: string): IExtendedFieldDefinition | IFieldDefinition;
+        getFieldDefinition(fieldName: string): IExtendedFieldDefinition | FieldDefinition;
         getList(): List;
         getListId(): string;
         getListItemById<T extends ListItem<any>>(listItemId: number, options?: Object): ng.IPromise<T>;
@@ -354,7 +354,7 @@ module ap {
                     id: count + 1
                 };
                 /** Create an attribute with mock data for each field */
-                _.each(model.list.fields, (field: IFieldDefinition) => {
+                _.each(model.list.fields, (field: FieldDefinition) => {
                     mock[field.mappedName] = field.getMockData(opts);
                 });
 

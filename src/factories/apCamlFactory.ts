@@ -33,7 +33,7 @@ module ap {
          * </Contains></Or></Or></Or>
          * </pre>
          */
-        camlContainsQuery(fieldDefinitionsArray: IFieldDefinition[], searchString: string): string {
+        camlContainsQuery(fieldDefinitionsArray: FieldDefinition[], searchString: string): string {
             var selectStatements = [];
 
             /** Create a select statement for each field */
@@ -88,7 +88,7 @@ module ap {
          * </Contains>
          * </pre>
          */
-        createCamlContainsSelector(fieldDefinition: IFieldDefinition, searchString: string): string {
+        createCamlContainsSelector(fieldDefinition: FieldDefinition, searchString: string): string {
             var camlSelector;
             switch (fieldDefinition.objectType) {
                 case 'HTML':

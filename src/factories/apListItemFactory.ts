@@ -23,7 +23,7 @@ module ap {
         getCache?: () => IndexedCache<T>;
         getChanges(): ng.IPromise<T>;
         getFieldChoices: (fieldName: string) => string[];
-        getFieldDefinition: (fieldName: string) => IFieldDefinition | IExtendedFieldDefinition;
+        getFieldDefinition: (fieldName: string) => FieldDefinition | IExtendedFieldDefinition;
         getFieldDescription: (fieldName: string) => string;
         getFieldLabel: (fieldName: string) => string;
         getFieldVersionHistory: (fieldNames: string[]) => ng.IPromise<IListItemVersion<T>[]>;
@@ -367,7 +367,7 @@ module ap {
 
                 var versionArray: IListItemVersion<T>[] = [];
                 var versionCounter = 1;
-                
+
                 /** Add a version prop on each version to identify the numeric sequence */
                 _.each(versionHistory, (ver: IListItemVersion<T>) => {
                     ver.version = versionCounter;
@@ -489,7 +489,7 @@ module ap {
          * is to perform cleanup prior to deleting or determining if user can delete.  Method returns boolean and if
          * true delete will continue, otherwise delete is prevented. There is no ListItem.registerPostDeleteAction because
          * the list item no longer exists.
-         * 
+         *
          * @example
          * <pre>
          * //In example projectsModel.ts
@@ -502,15 +502,15 @@ module ap {
          *          _.assign(this, obj);
          *      }
          *  }
-         * 
+         *
          *  let unregister = Project.prototype.registerPreDeleteAction(function() {
          *      //Do some validation here and return true if user can delete
          *      //otherwise return false to prevent delete action
          *  });
-         * 
+         *
          *  //At some point in the future if no longer necessary
          *  unregister();
-         * 
+         *
          * </pre>
          */
         registerPreDeleteAction(action: () => boolean): () => void {
@@ -518,8 +518,8 @@ module ap {
             //Return function to unregister
             return () => delete this.preDeleteAction;
         }
-        
-       
+
+
         /**
          * @ngdoc function
          * @name ListItem.prototype.registerPreSaveAction
@@ -528,8 +528,8 @@ module ap {
          * @description
          * Register a function on the list item prototype that is executed prior to saving.  Good use case
          * is to validate list item or perform cleanup prior to saving.  Method returns boolean and if
-         * true save will continue, otherwise save is prevented. 
-         * 
+         * true save will continue, otherwise save is prevented.
+         *
          * @example
          * <pre>
          * //In example projectsModel.ts
@@ -542,15 +542,15 @@ module ap {
          *          _.assign(this, obj);
          *      }
          *  }
-         * 
+         *
          *  let unregister = Project.prototype.registerPreSaveAction(function() {
          *      //Do some validation here and return true if user can save
          *      //otherwise return false to prevent save action
          *  });
-         * 
+         *
          *  //At some point in the future if no longer necessary
          *  unregister();
-         * 
+         *
          * </pre>
          */
         registerPreSaveAction(action: () => boolean): () => void {
@@ -558,7 +558,7 @@ module ap {
             //Return function to unregister
             return () => delete this.preSaveAction;
         }
-        
+
         /**
          * @ngdoc function
          * @name ListItem.prototype.registerPostSaveAction
@@ -567,8 +567,8 @@ module ap {
          * @returns {Function} Function that can be called to unregister.
          * @description
          * Register a function on the model prototype that is executed after saving.  Good use case
-         * is to perform cleanup after save. 
-         * 
+         * is to perform cleanup after save.
+         *
          * @example
          * <pre>
          * //In example projectsModel.ts
@@ -581,15 +581,15 @@ module ap {
          *          _.assign(this, obj);
          *      }
          *  }
-         * 
+         *
          *  let unregister = Project.prototype.registerPostSaveAction(function() {
          *      //Use this method to perform any cleanup after save event
          *      //for any list item of this type
          *  });
-         * 
+         *
          *  //At some point in the future if no longer necessary
          *  unregister();
-         * 
+         *
          * </pre>
          */
         registerPostSaveAction(action: () => void): () => void {
@@ -694,7 +694,7 @@ module ap {
                 deferred.reject('Pre-Save Action Returned False');
             } else {
                 //Either no preSaveAction registered or it passed validation
-                
+
                 /** Redirect if the request is actually creating a new list item.  This can occur if we create
                  * an empty item that is instantiated from the model and then attempt to save instead of using
                  * model.addNewItem */
@@ -707,7 +707,7 @@ module ap {
                         deferred.resolve(updatedListItem);
                         /** Optionally broadcast change event */
                         apUtilityService.registerChange(model, 'update', updatedListItem.id);
-                        
+
                         //Optionally perform any post save cleanup if registered
                         if (_.isFunction(listItem.postSaveAction)) {
                             listItem.postSaveAction();

@@ -37,11 +37,7 @@ module ap {
         choices?: string[];
         description?: string;
         displayName?: string;
-        formatter?: (listItem: ListItem<any>, fieldDefinition: IFieldDefinition, options?: Object) => string;
-        getDefaultValueForType?: () => string;
-        getDefinition?: () => string;
-        getFormattedValue: (listItem: ListItem<any>, options?: Object) => string
-        getMockData?: (options?: Object) => any;
+        formatter?: (listItem: ListItem<any>, fieldDefinition: FieldDefinition, options?: Object) => string;
         label?: string;
         mappedName: string;
         objectType: string;
@@ -141,7 +137,7 @@ module ap {
      */
     export class FieldDefinition implements IFieldDefinition {
         displayName: string;
-        formatter: (listItem: ListItem<any>, fieldDefinition: IFieldDefinition, options?: Object) => string;
+        formatter: (listItem: ListItem<any>, fieldDefinition: FieldDefinition, options?: Object) => string;
         internalName: string;
         label: string;
         mappedName: string;
@@ -151,7 +147,7 @@ module ap {
         constructor(obj) {
             _.assign(this, obj);
             this.displayName = this.displayName ? this.displayName : apUtilityService.fromCamelCase(this.mappedName);
-            
+
             /** Deprecated internal name and replace with staticName but maintain compatibility */
             this.staticName = this.staticName || this.internalName;
         }
@@ -179,14 +175,14 @@ module ap {
         getDefaultValueForType() {
             return apFieldService.getDefaultValueForType(this.objectType);
         }
-        
+
         /**
          * @ngdoc function
          * @name Field:getFormattedValue
          * @methodOf Field
          * @description
          * By default uses the formatted field service to convert a field value into a formatted string
-         * readable by user.  Optionally can override in field definition with formatter property to return 
+         * readable by user.  Optionally can override in field definition with formatter property to return
          * custom formatted value. A good example of this would be to stringify a discussion thread.
          * @param {ListItem<any>} listItem List used to generate field value.
          * @param {object} [options] Pass through to apFormattedFieldValueService.getFormattedFieldValue.
@@ -209,7 +205,7 @@ module ap {
             return _.isFunction(this.formatter) ? this.formatter(listItem, this, options) :
                 apFormattedFieldValueService
                     .getFormattedFieldValue(listItem[this.mappedName], this.objectType, options);
-        }        
+        }
 
         /**
          * @ngdoc function
