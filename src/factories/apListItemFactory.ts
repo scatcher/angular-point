@@ -4,8 +4,7 @@ module ap {
     'use strict';
 
     var $q: ng.IQService, toastr, apCacheService: CacheService, apDataService: DataService, apDecodeService: DecodeService,
-        apEncodeService: EncodeService, apUtilityService: UtilityService, apFormattedFieldValueService: FormattedFieldValueService,
-        apConfig: IAPConfig;
+        apEncodeService: EncodeService, apUtilityService: UtilityService, apConfig: IAPConfig;
 
     export interface IListItem<T extends ListItem<any>> {
         author?: IUser;
@@ -392,17 +391,17 @@ module ap {
          * Given the attribute name on a listItem, we can lookup the field type and from there return a formatted
          * string representation of that value.
          * @param {string} fieldName Attribute name on the object that contains the value to stringify.
-         * @param {object} [options] Pass through to apFormattedFieldValueService.getFormattedFieldValue.
+         * @param {object} [options] Pass through to apFormattedFieldValueService.getFormattedFieldValue or any
+         * custom method specified on the field definition.
          * @returns {string} Formatted string representing the field value.
          */
         getFormattedValue(fieldName: string, options?: Object): string {
             var listItem = this;
             var fieldDefinition = listItem.getFieldDefinition(fieldName);
             if (!fieldDefinition) {
-                throw 'A field definition for a field named ' + fieldName + ' wasn\'t found.';
+                throw `A field definition for a field named ${fieldName} wasn't found.`;
             }
-            return apFormattedFieldValueService
-                .getFormattedFieldValue(listItem[fieldName], fieldDefinition.objectType, options);
+            return fieldDefinition.getFormattedValue(this, options);
         }
 
 
@@ -897,16 +896,15 @@ module ap {
 
     export class ListItemFactory {
         ListItem = ListItem;
-        static $inject = ['$q', 'apCacheService', 'apConfig', 'apDataService', 'apDecodeService', 'apEncodeService', 'apFormattedFieldValueService', 'apUtilityService', 'toastr'];
+        static $inject = ['$q', 'apCacheService', 'apConfig', 'apDataService', 'apDecodeService', 'apEncodeService', 'apUtilityService', 'toastr'];
 
-        constructor(_$q_, _apCacheService_, _apConfig_, _apDataService_, _apDecodeService_, _apEncodeService_, _apFormattedFieldValueService_, _apUtilityService_, _toastr_) {
+        constructor(_$q_, _apCacheService_, _apConfig_, _apDataService_, _apDecodeService_, _apEncodeService_, _apUtilityService_, _toastr_) {
             $q = _$q_;
             apCacheService = _apCacheService_;
             apConfig = _apConfig_;
             apDataService = _apDataService_;
             apDecodeService = _apDecodeService_;
             apEncodeService = _apEncodeService_;
-            apFormattedFieldValueService = _apFormattedFieldValueService_;
             apUtilityService = _apUtilityService_;
             toastr = _toastr_;
         }

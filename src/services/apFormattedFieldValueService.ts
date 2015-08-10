@@ -3,7 +3,7 @@
 module ap {
     'use strict';
 
-    var service: FormattedFieldValueService, $filter;
+    var service: FormattedFieldValueService, $filter: ng.IFilterService;
 
     /**
      * @ngdoc service

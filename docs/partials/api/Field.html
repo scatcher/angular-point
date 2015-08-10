@@ -95,6 +95,28 @@ on field type.</p>
 the staticValue param will instead return a hard coded type specific value.</p>
 </div></div>
 </li>
+<li><h3 id="methods_getformattedvalue">getFormattedValue(listItem, [options])</h3>
+<div class="getformattedvalue"><div class="field-page field-getformattedvalue-page"><p>By default uses the formatted field service to convert a field value into a formatted string
+readable by user.  Optionally can override in field definition with formatter property to return
+custom formatted value. A good example of this would be to stringify a discussion thread.</p>
+</div><h5 id="methods_getformattedvalue_parameters">Parameters</h5><table class="variables-matrix table table-bordered table-striped"><thead><tr><th>Param</th><th>Type</th><th>Details</th></tr></thead><tbody><tr><td>listItem</td><td><a href="" class="label type-hint type-hint-listitem">ListItem&lt;any&gt;</a></td><td><div class="field-page field-getformattedvalue-page"><p>List used to generate field value.</p>
+</div></td></tr><tr><td>[options]</td><td><a href="" class="label type-hint type-hint-object">object</a></td><td><div class="field-page field-getformattedvalue-page"><p>Pass through to apFormattedFieldValueService.getFormattedFieldValue.</p>
+</div></td></tr></tbody></table><h5 id="methods_getformattedvalue_returns">Returns</h5><table class="variables-matrix"><tr><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="field-page field-getformattedvalue-page"><p>Formatted field value suitable for outputting to user.</p>
+</div></td></tr></table><h4 id="methods_getformattedvalue_example">Example</h4>
+<div class="example"><div class="field-page field-getformattedvalue-page"><pre class="prettyprint linenums">
+//In model.list.customFields defining a field
+{
+  mappedName: 'lookup',
+  objectType: 'Lookup',
+  staticName: 'MyAwesomeLookup',
+  formatter: (listItem: ListItem&lt;any&gt;, fieldDefinition: IFieldDefinition, options?: Object) =&gt; {
+  	 return listItem[fieldDefinition.mappedName].lookupValue.toUpperCase();
+  }
+}
+</pre>
+</div></div>
+</div>
+</li>
 <li><h3 id="methods_getmockdata">getMockData([options])</h3>
 <div class="getmockdata"><h5 id="methods_getmockdata_parameters">Parameters</h5><table class="variables-matrix table table-bordered table-striped"><thead><tr><th>Param</th><th>Type</th><th>Details</th></tr></thead><tbody><tr><td>[options]</td><td><a href="" class="label type-hint type-hint-object">object</a></td><td><div class="field-page field-getmockdata-page"><p>Optional params passed to apFieldService.getMockData.</p>
 </div></td></tr><tr><td>options.staticValue</td><td><a href="" class="label type-hint type-hint-boolean">boolean</a></td><td><div class="field-page field-getmockdata-page"><p>Default to dynamically build mock data.</p>

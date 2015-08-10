@@ -3,9 +3,9 @@
 module ap {
     'use strict';
 
-    var apFieldService: FieldService, apUtilityService: UtilityService;
+    var apFieldService: FieldService, apUtilityService: UtilityService, apFormattedFieldValueService: FormattedFieldValueService;
 
-    export interface IXMLFieldDefinition{
+    export interface IXMLFieldDefinition {
         ID: string;
         Type: string;
         ReadOnly: string;
@@ -37,8 +37,10 @@ module ap {
         choices?: string[];
         description?: string;
         displayName?: string;
+        formatter?: (listItem: ListItem<any>, fieldDefinition: IFieldDefinition, options?: Object) => string;
         getDefaultValueForType?: () => string;
         getDefinition?: () => string;
+        getFormattedValue: (listItem: ListItem<any>, options?: Object) => string
         getMockData?: (options?: Object) => any;
         label?: string;
         mappedName: string;
@@ -49,7 +51,7 @@ module ap {
     }
 
     //An extended field definition combines the user defined field definition with the XML returned by SharePoint
-    export interface IExtendedFieldDefinition extends IXMLFieldDefinition, IFieldDefinition{
+    export interface IExtendedFieldDefinition extends IXMLFieldDefinition, IFieldDefinition {
 
     }
 
@@ -138,22 +140,20 @@ module ap {
      * @constructor
      */
     export class FieldDefinition implements IFieldDefinition {
-        displayName;
-        internalName;
-        label;
-        mappedName;
-        objectType;
-        staticName;
+        displayName: string;
+        formatter: (listItem: ListItem<any>, fieldDefinition: IFieldDefinition, options?: Object) => string;
+        internalName: string;
+        label: string;
+        mappedName: string;
+        objectType = 'Text';
+        readOnly = false;
+        staticName: string;
         constructor(obj) {
-            var self = this;
-            var defaults = {
-                readOnly: false,
-                objectType: 'Text'
-            };
-            _.assign(self, defaults, obj);
-            self.displayName = self.displayName ? self.displayName : apUtilityService.fromCamelCase(self.mappedName);
+            _.assign(this, obj);
+            this.displayName = this.displayName ? this.displayName : apUtilityService.fromCamelCase(this.mappedName);
+            
             /** Deprecated internal name and replace with staticName but maintain compatibility */
-            self.staticName = self.staticName || self.internalName;
+            this.staticName = this.staticName || this.internalName;
         }
 
         /**
@@ -179,6 +179,37 @@ module ap {
         getDefaultValueForType() {
             return apFieldService.getDefaultValueForType(this.objectType);
         }
+        
+        /**
+         * @ngdoc function
+         * @name Field:getFormattedValue
+         * @methodOf Field
+         * @description
+         * By default uses the formatted field service to convert a field value into a formatted string
+         * readable by user.  Optionally can override in field definition with formatter property to return 
+         * custom formatted value. A good example of this would be to stringify a discussion thread.
+         * @param {ListItem<any>} listItem List used to generate field value.
+         * @param {object} [options] Pass through to apFormattedFieldValueService.getFormattedFieldValue.
+         * @returns {string} Formatted field value suitable for outputting to user.
+         * @example
+         * <pre>
+         *  //In model.list.customFields defining a field
+         * {
+		 * 	  mappedName: 'lookup',
+		 * 	  objectType: 'Lookup',
+         *    staticName: 'MyAwesomeLookup',
+		 * 	  formatter: (listItem: ListItem<any>, fieldDefinition: IFieldDefinition, options?: Object) => {
+		 * 	  	 return listItem[fieldDefinition.mappedName].lookupValue.toUpperCase();
+		 * 	  }
+		 * }
+         * </pre>
+         */
+        getFormattedValue(listItem: ListItem<any>, options?: Object): string {
+            //Optionally provide a custom method to convert a field value into a formatted string
+            return _.isFunction(this.formatter) ? this.formatter(listItem, this, options) :
+                apFormattedFieldValueService
+                    .getFormattedFieldValue(listItem[this.mappedName], this.objectType, options);
+        }        
 
         /**
          * @ngdoc function
@@ -191,6 +222,7 @@ module ap {
         getMockData(options) {
             return apFieldService.getMockData(this.objectType, options);
         }
+
     }
 
     /**
@@ -206,10 +238,11 @@ module ap {
      */
     export class FieldFactory {
         FieldDefinition = FieldDefinition;
-        static $inject = ['apFieldService', 'apUtilityService'];
-        constructor(_apFieldService_, _apUtilityService_) {
+        static $inject = ['apFieldService', 'apUtilityService', 'apFormattedFieldValueService'];
+        constructor(_apFieldService_, _apUtilityService_, _apFormattedFieldValueService_) {
             apFieldService = _apFieldService_;
             apUtilityService = _apUtilityService_;
+            apFormattedFieldValueService = _apFormattedFieldValueService_;
         }
     }
 

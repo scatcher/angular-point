@@ -615,7 +615,7 @@ var ap;
 var ap;
 (function (ap) {
     'use strict';
-    var apFieldService, apUtilityService;
+    var apFieldService, apUtilityService, apFormattedFieldValueService;
     /**
      * @ngdoc object
      * @name Field
@@ -701,15 +701,12 @@ var ap;
      */
     var FieldDefinition = (function () {
         function FieldDefinition(obj) {
-            var self = this;
-            var defaults = {
-                readOnly: false,
-                objectType: 'Text'
-            };
-            _.assign(self, defaults, obj);
-            self.displayName = self.displayName ? self.displayName : apUtilityService.fromCamelCase(self.mappedName);
+            this.objectType = 'Text';
+            this.readOnly = false;
+            _.assign(this, obj);
+            this.displayName = this.displayName ? this.displayName : apUtilityService.fromCamelCase(this.mappedName);
             /** Deprecated internal name and replace with staticName but maintain compatibility */
-            self.staticName = self.staticName || self.internalName;
+            this.staticName = this.staticName || this.internalName;
         }
         /**
          * @ngdoc function
@@ -732,6 +729,36 @@ var ap;
          */
         FieldDefinition.prototype.getDefaultValueForType = function () {
             return apFieldService.getDefaultValueForType(this.objectType);
+        };
+        /**
+         * @ngdoc function
+         * @name Field:getFormattedValue
+         * @methodOf Field
+         * @description
+         * By default uses the formatted field service to convert a field value into a formatted string
+         * readable by user.  Optionally can override in field definition with formatter property to return
+         * custom formatted value. A good example of this would be to stringify a discussion thread.
+         * @param {ListItem<any>} listItem List used to generate field value.
+         * @param {object} [options] Pass through to apFormattedFieldValueService.getFormattedFieldValue.
+         * @returns {string} Formatted field value suitable for outputting to user.
+         * @example
+         * <pre>
+         *  //In model.list.customFields defining a field
+         * {
+         * 	  mappedName: 'lookup',
+         * 	  objectType: 'Lookup',
+         *    staticName: 'MyAwesomeLookup',
+         * 	  formatter: (listItem: ListItem<any>, fieldDefinition: IFieldDefinition, options?: Object) => {
+         * 	  	 return listItem[fieldDefinition.mappedName].lookupValue.toUpperCase();
+         * 	  }
+         * }
+         * </pre>
+         */
+        FieldDefinition.prototype.getFormattedValue = function (listItem, options) {
+            //Optionally provide a custom method to convert a field value into a formatted string
+            return _.isFunction(this.formatter) ? this.formatter(listItem, this, options) :
+                apFormattedFieldValueService
+                    .getFormattedFieldValue(listItem[this.mappedName], this.objectType, options);
         };
         /**
          * @ngdoc function
@@ -759,12 +786,13 @@ var ap;
      *
      */
     var FieldFactory = (function () {
-        function FieldFactory(_apFieldService_, _apUtilityService_) {
+        function FieldFactory(_apFieldService_, _apUtilityService_, _apFormattedFieldValueService_) {
             this.FieldDefinition = FieldDefinition;
             apFieldService = _apFieldService_;
             apUtilityService = _apUtilityService_;
+            apFormattedFieldValueService = _apFormattedFieldValueService_;
         }
-        FieldFactory.$inject = ['apFieldService', 'apUtilityService'];
+        FieldFactory.$inject = ['apFieldService', 'apUtilityService', 'apFormattedFieldValueService'];
         return FieldFactory;
     })();
     ap.FieldFactory = FieldFactory;
@@ -1132,7 +1160,7 @@ var ap;
 var ap;
 (function (ap) {
     'use strict';
-    var $q, toastr, apCacheService, apDataService, apDecodeService, apEncodeService, apUtilityService, apFormattedFieldValueService, apConfig;
+    var $q, toastr, apCacheService, apDataService, apDecodeService, apEncodeService, apUtilityService, apConfig;
     /**
      * @ngdoc object
      * @name ListItem
@@ -1429,17 +1457,17 @@ var ap;
          * Given the attribute name on a listItem, we can lookup the field type and from there return a formatted
          * string representation of that value.
          * @param {string} fieldName Attribute name on the object that contains the value to stringify.
-         * @param {object} [options] Pass through to apFormattedFieldValueService.getFormattedFieldValue.
+         * @param {object} [options] Pass through to apFormattedFieldValueService.getFormattedFieldValue or any
+         * custom method specified on the field definition.
          * @returns {string} Formatted string representing the field value.
          */
         ListItem.prototype.getFormattedValue = function (fieldName, options) {
             var listItem = this;
             var fieldDefinition = listItem.getFieldDefinition(fieldName);
             if (!fieldDefinition) {
-                throw 'A field definition for a field named ' + fieldName + ' wasn\'t found.';
+                throw "A field definition for a field named " + fieldName + " wasn't found.";
             }
-            return apFormattedFieldValueService
-                .getFormattedFieldValue(listItem[fieldName], fieldDefinition.objectType, options);
+            return fieldDefinition.getFormattedValue(this, options);
         };
         /**
          * @ngdoc function
@@ -1902,7 +1930,7 @@ var ap;
      * @requires apUtilityService
      */
     var ListItemFactory = (function () {
-        function ListItemFactory(_$q_, _apCacheService_, _apConfig_, _apDataService_, _apDecodeService_, _apEncodeService_, _apFormattedFieldValueService_, _apUtilityService_, _toastr_) {
+        function ListItemFactory(_$q_, _apCacheService_, _apConfig_, _apDataService_, _apDecodeService_, _apEncodeService_, _apUtilityService_, _toastr_) {
             this.ListItem = ListItem;
             $q = _$q_;
             apCacheService = _apCacheService_;
@@ -1910,7 +1938,6 @@ var ap;
             apDataService = _apDataService_;
             apDecodeService = _apDecodeService_;
             apEncodeService = _apEncodeService_;
-            apFormattedFieldValueService = _apFormattedFieldValueService_;
             apUtilityService = _apUtilityService_;
             toastr = _toastr_;
         }
@@ -1935,7 +1962,7 @@ var ap;
         ListItemFactory.prototype.createGenericFactory = function () {
             return new StandardListItem();
         };
-        ListItemFactory.$inject = ['$q', 'apCacheService', 'apConfig', 'apDataService', 'apDecodeService', 'apEncodeService', 'apFormattedFieldValueService', 'apUtilityService', 'toastr'];
+        ListItemFactory.$inject = ['$q', 'apCacheService', 'apConfig', 'apDataService', 'apDecodeService', 'apEncodeService', 'apUtilityService', 'toastr'];
         return ListItemFactory;
     })();
     ap.ListItemFactory = ListItemFactory;
