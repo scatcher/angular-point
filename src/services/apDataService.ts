@@ -460,7 +460,7 @@ module ap {
          * @param {object} fieldDefinition Field definition object from the model.
          * @returns {object[]} Promise which resolves with an array of list item changes for the specified field.
          */
-        getFieldVersionHistory<T extends ListItem<any>>(options: { operation?: string; webURL?: string; strListID: string; strListItemID: number; strFieldName?: string; }, fieldDefinition: FieldDefinition): ng.IPromise<ap.IListItemVersion<T>[]> {
+        getFieldVersionHistory<T extends ListItem<any>>(options: { operation?: string; webURL?: string; strListID: string; strListItemID: number; strFieldName?: string; }, fieldDefinition: FieldDefinition): ng.IPromise<FieldVersionCollection> {
             var defaults = {
                 operation: 'GetVersionCollection'
             };
@@ -471,9 +471,9 @@ module ap {
             this.serviceWrapper(opts)
                 .then((response) => {
                     /** Parse XML response */
-                    var versions = apDecodeService.parseFieldVersions(response, fieldDefinition);
+                    var fieldVersionCollection = apDecodeService.parseFieldVersions(response, fieldDefinition );
                     /** Resolve with an array of all field versions */
-                    deferred.resolve(versions);
+                    deferred.resolve(fieldVersionCollection);
                 }, (outcome) => {
                     /** Failure */
                     toastr.error('Failed to fetch version history.');

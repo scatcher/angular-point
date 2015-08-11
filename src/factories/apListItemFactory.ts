@@ -4,7 +4,7 @@ module ap {
     'use strict';
 
     var $q: ng.IQService, toastr, apCacheService: CacheService, apDataService: DataService, apDecodeService: DecodeService,
-        apEncodeService: EncodeService, apUtilityService: UtilityService, apConfig: IAPConfig;
+        apEncodeService: EncodeService, apUtilityService: UtilityService, apConfig: IAPConfig, apListItemVersionFactory: ListItemVersionFactory;
 
     export interface IListItem<T extends ListItem<any>> {
         author?: IUser;
@@ -311,7 +311,7 @@ module ap {
             var promiseArray = [];
 
             /** Constructor that creates a promise for each field */
-            var createPromise = (fieldName) => {
+            var createPromise = (fieldName: string) => {
 
                 var fieldDefinition = _.find(model.list.fields, { mappedName: fieldName });
 
@@ -349,8 +349,8 @@ module ap {
             });
 
             /** Pause until all requests are resolved */
-            $q.all(promiseArray).then((changes) => {
-                var versionHistory = {};
+            $q.all(promiseArray).then((changes: IFieldVersionCollection[][]) => {
+                var versionHistory = apListItemVersionFactory.generateVersionsFromFieldVersionCollection(changes);
 
                 /** All fields should have the same number of versions */
                 _.each(changes, (fieldVersions) => {
@@ -366,12 +366,14 @@ module ap {
                 });
 
                 var versionArray: IListItemVersion<T>[] = [];
-                var versionCounter = 1;
+                //Store the number of available versions
+                var versionCounter = _.keys(versionHistory).length;
 
                 /** Add a version prop on each version to identify the numeric sequence */
                 _.each(versionHistory, (ver: IListItemVersion<T>) => {
                     ver.version = versionCounter;
-                    versionCounter++;
+                    //Ordered newest to oldest so decrease the version number with each version
+                    versionCounter--;
                     /** Convert JSON date into JS Date */
                     ver.modified = apDecodeService.jsDate(ver.modified);
                     versionArray.push(ver);
@@ -896,9 +898,9 @@ module ap {
 
     export class ListItemFactory {
         ListItem = ListItem;
-        static $inject = ['$q', 'apCacheService', 'apConfig', 'apDataService', 'apDecodeService', 'apEncodeService', 'apUtilityService', 'toastr'];
+        static $inject = ['$q', 'apCacheService', 'apConfig', 'apDataService', 'apDecodeService', 'apEncodeService', 'apUtilityService', 'toastr', 'apListItemVersionFactory'];
 
-        constructor(_$q_, _apCacheService_, _apConfig_, _apDataService_, _apDecodeService_, _apEncodeService_, _apUtilityService_, _toastr_) {
+        constructor(_$q_, _apCacheService_, _apConfig_, _apDataService_, _apDecodeService_, _apEncodeService_, _apUtilityService_, _toastr_, _apListItemVersionFactory_) {
             $q = _$q_;
             apCacheService = _apCacheService_;
             apConfig = _apConfig_;
@@ -907,6 +909,7 @@ module ap {
             apEncodeService = _apEncodeService_;
             apUtilityService = _apUtilityService_;
             toastr = _toastr_;
+            apListItemVersionFactory = _apListItemVersionFactory_;
         }
 
         /**

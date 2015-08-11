@@ -410,38 +410,36 @@ module ap {
          * @param {xml} responseXML Returned XML from web service call.
          * @param {object} fieldDefinition Field definition from the model.
          *
-         * @returns {Array} Array objects containing the various version of a field for each change.
+         * @returns {FieldVersionCollection} FieldVersionCollection object with all versions included.
          */
-        parseFieldVersions(responseXML: XMLDocument, fieldDefinition: FieldDefinition): IListItemVersion<any>[] {
-            var versions = [];
+        parseFieldVersions(responseXML: XMLDocument, fieldDefinition: FieldDefinition): FieldVersionCollection {
+            // var versions = {};
             var xmlVersions = $(responseXML).find('Version');
             var versionCount = xmlVersions.length;
+            
+            var fieldVersionCollection = new FieldVersionCollection(fieldDefinition);
 
             _.each(xmlVersions, (xmlVersion, index) => {
 
                 /** Bug in SOAP Web Service returns time in UTC time for version history
                  *  Details: https://spservices.codeplex.com/discussions/391879
                  */
-                var utcDate = this.parseStringValue($(xmlVersion).attr('Modified'), 'DateTime');
-
+                let utcDate = this.parseStringValue($(xmlVersion).attr('Modified'), 'DateTime');
+                
                 /** Parse the xml and create a representation of the version as a js object */
-                var version = {
-                    editor: this.parseStringValue($(xmlVersion).attr('Editor'), 'User'),
-                    /** Turn the SharePoint formatted date into a valid date object */
-                    modified: this.convertUTCDateToLocalDate(utcDate),
-                    /** Returns records in desc order so compute the version number from index */
-                    version: versionCount - index
-                };
-
+                let editor = this.parseStringValue($(xmlVersion).attr('Editor'), 'User');
+                /** Turn the SharePoint formatted date into a valid date object */
+                let modified = this.convertUTCDateToLocalDate(utcDate);
                 /** Properly format field based on definition from model */
-                version[fieldDefinition.mappedName] =
-                this.parseStringValue($(xmlVersion).attr(fieldDefinition.staticName), fieldDefinition.objectType);
+                let value = this.parseStringValue($(xmlVersion).attr(fieldDefinition.staticName), fieldDefinition.objectType);
+                let version = versionCount - index;
+                
+                /** Add each distict version to the version collection */
+                fieldVersionCollection.addVersion(editor, modified, value, version);
 
-                /** Push to beginning of array */
-                versions.unshift(version);
             });
 
-            return versions;
+            return fieldVersionCollection;
         }
 
         /**

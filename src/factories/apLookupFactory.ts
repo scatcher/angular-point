@@ -3,7 +3,7 @@
 module ap {
     'use strict';
 
-    var $q, apUtilityService;
+    var $q: ng.IQService, apUtilityService: UtilityService;
 
     export interface ILookup {
         lookupValue: string;
