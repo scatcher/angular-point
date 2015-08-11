@@ -3,10 +3,13 @@
 module ap {
     'use strict';
 
+    var apDefaultListItemQueryOptions = DefaultListItemQueryOptions;
+    var apWebServiceOperationConstants = WebServiceOperationConstants;
+
     var service: DataService, $q: ng.IQService, $timeout: ng.ITimeoutService, $http: ng.IHttpService, apConfig: IAPConfig,
         apUtilityService: UtilityService, apCacheService: CacheService, apDecodeService: DecodeService,
         apEncodeService: EncodeService, apFieldService: FieldService, apIndexedCacheFactory: IndexedCacheFactory,
-        toastr, SPServices, apDefaultListItemQueryOptions: DefaultListItemQueryOptions, apWebServiceOperationConstants: WebServiceOperationConstants,
+        toastr, SPServices,
         apXMLToJSONService: XMLToJSONService, apChangeService: ChangeService;
 
     export interface IDataService {
@@ -19,7 +22,7 @@ module ap {
         getAvailableWorkflows(fileRefString: string): ng.IPromise<IWorkflowDefinition[]>;
         getCollection(options: { operation: string; userLoginName?: string; groupName?: string; listName?: string; filterNode: string; }): ng.IPromise<Object[]>;
         getCurrentSite(): ng.IPromise<string>;
-        getFieldVersionHistory<T extends ListItem<any>>(options: { operation?: string; webURL?: string; strListID: string; strListItemID: number; strFieldName?: string; }, fieldDefinition: FieldDefinition): ng.IPromise<ap.IListItemVersion<T>[]>;
+        getFieldVersionHistory<T extends ListItem<any>>(options: { operation?: string; webURL?: string; strListID: string; strListItemID: number; strFieldName?: string; }, fieldDefinition: FieldDefinition): ng.IPromise<IFieldVersionCollection>;
         getGroupCollectionFromUser(login?: string): ng.IPromise<IXMLGroup[]>;
         getList(options: { listName: string }): ng.IPromise<Object>;
         getListFields(options: { listName: string; }): ng.IPromise<IXMLFieldDefinition[]>;

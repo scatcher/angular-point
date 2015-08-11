@@ -26,7 +26,7 @@ module ap {
         getFieldDefinition: (fieldName: string) => FieldDefinition | IExtendedFieldDefinition;
         getFieldDescription: (fieldName: string) => string;
         getFieldLabel: (fieldName: string) => string;
-        getFieldVersionHistory: (fieldNames: string[]) => ng.IPromise<IListItemVersion<T>[]>;
+        getFieldVersionHistory: (fieldNames: string[]) => ng.IPromise<VersionHistory<T>>;
         getFormattedValue: (fieldName: string, options?: Object) => string;
         getList: () => List;
         getListId: () => string;
@@ -304,7 +304,7 @@ module ap {
          *      };
          * </pre>
          */
-        getFieldVersionHistory(fieldNames?: string[]| string): ng.IPromise<IListItemVersion<T>[]> {
+        getFieldVersionHistory(fieldNames?: string[]| string): ng.IPromise<VersionHistory<T>> {
             var deferred = $q.defer();
             var listItem = this;
             var model = listItem.getModel();
@@ -313,7 +313,7 @@ module ap {
             /** Constructor that creates a promise for each field */
             var createPromise = (fieldName: string) => {
 
-                var fieldDefinition = _.find(model.list.fields, { mappedName: fieldName });
+                var fieldDefinition = listItem.getFieldDefinition(fieldName)
 
                 var payload = {
                     operation: 'GetVersionCollection',
@@ -349,37 +349,16 @@ module ap {
             });
 
             /** Pause until all requests are resolved */
-            $q.all(promiseArray).then((changes: IFieldVersionCollection[][]) => {
-                var versionHistory = apListItemVersionFactory.generateVersionsFromFieldVersionCollection(changes);
+            $q.all(promiseArray).then((fieldVersionCollections: FieldVersionCollection[]) => {
 
-                /** All fields should have the same number of versions */
-                _.each(changes, (fieldVersions) => {
+                var versionHistory = new VersionHistory<T>(model.factory);
 
-                    _.each(fieldVersions, (fieldVersion) => {
-                        /** Create a new version object if it doesn't already exist */
-                        versionHistory[fieldVersion.modified.toJSON()] =
-                        versionHistory[fieldVersion.modified.toJSON()] || {};
-
-                        /** Add field to the version history for this version */
-                        _.assign(versionHistory[fieldVersion.modified.toJSON()], fieldVersion);
-                    });
+                /** Iterate through each of the field version collections */
+                _.each(fieldVersionCollections, (fieldVersionCollection) => {
+                    versionHistory.addFieldCollection(fieldVersionCollection);
                 });
 
-                var versionArray: IListItemVersion<T>[] = [];
-                //Store the number of available versions
-                var versionCounter = _.keys(versionHistory).length;
-
-                /** Add a version prop on each version to identify the numeric sequence */
-                _.each(versionHistory, (ver: IListItemVersion<T>) => {
-                    ver.version = versionCounter;
-                    //Ordered newest to oldest so decrease the version number with each version
-                    versionCounter--;
-                    /** Convert JSON date into JS Date */
-                    ver.modified = apDecodeService.jsDate(ver.modified);
-                    versionArray.push(ver);
-                });
-
-                deferred.resolve(versionArray);
+                deferred.resolve(versionHistory);
             });
 
             return deferred.promise;

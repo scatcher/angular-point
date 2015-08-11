@@ -8,13 +8,19 @@ module ap {
         version: number;
         [key: string]: any;
     }
-    
+
     export interface IFieldVersion{
         editor: IUser;
         modified: Date;
         value: any;
     }
-    
+
+    export interface IFieldVersionCollection{
+        modified: string;
+        [key: string]: string;
+    }
+
+
     export class FieldVersionCollection{
         fieldDefinition: FieldDefinition;
         versions: {[key: number]: IFieldVersion}
@@ -52,20 +58,19 @@ module ap {
         }
     }
 
-    class VersionSummary {
+    class VersionSummary<T extends ListItem<any>> {
         changeCount: number;
         changes: { [key: string]: FieldChange; } = {};
         modified: string;
         modifiedBy: string;
-        version: number;
-        constructor(newerVersion: IListItemVersion<any>, previousVersion: IListItemVersion<any> | Object = {}) {
+        version: IListItemVersion<any>;
+        versionNumber: number;
+        constructor(newerVersion: IListItemVersion<T>, previousVersion: IListItemVersion<T> | Object = {}) {
             _.each(newerVersion, (val, propertyName) => {
                 var fieldDefinition = newerVersion.getFieldDefinition(propertyName);
                 //Only log non-readonly fields that aren't the same
                 if (fieldDefinition && !fieldDefinition.readOnly &&
                     JSON.stringify(newerVersion[propertyName]) !== JSON.stringify(previousVersion[propertyName])) {
-                    // JSON.stringify(newerVersion[propertyName]) !== JSON.stringify(previousVersion[propertyName]) &&
-                    // newerVersion[propertyName] !== previousVersion[propertyName] ) {
                     let fieldChange = new FieldChange(propertyName, fieldDefinition, newerVersion, previousVersion);
                     if (fieldChange.newValue !== fieldChange.oldValue) {
                         this.changes[propertyName] = fieldChange;
@@ -75,23 +80,23 @@ module ap {
             this.changeCount = _.keys(this.changes).length;
             this.modified = moment(newerVersion.modified).format('MM/DD/YYYY h:mm a');
             this.modifiedBy = newerVersion.editor.lookupValue;
-            this.version = newerVersion.version;
+            this.versionNumber = newerVersion.version;
         }
         get hasMajorChanges(): boolean {
             return _.isNumber(this.changeCount) && this.changeCount > 0;
         }
     }
 
-    class ChangeSummary {
+    class ChangeSummary<T extends ListItem<any>> {
         significantVersionCount = 0;
         versionCount = 0;
-        versions: VersionSummary[] = [];
-        constructor(factory: IModelFactory, changes: Object) {
+        versions: VersionSummary<T>[] = [];
+        constructor(factory: IModelFactory, versions: VersionHistoryVersions<T>) {
             let previousVersion;
             let summaryArray = [];
-            _.each(changes, (version) => {
+            _.each(versions, (version: IListItemVersion<T>) => {
                 var instantiatedVersion = new factory(version);
-                var versionSummary = new VersionSummary(instantiatedVersion, previousVersion);
+                var versionSummary = new VersionSummary<T>(instantiatedVersion, previousVersion);
                 if (versionSummary.hasMajorChanges) {
                     this.significantVersionCount++;
                 }
@@ -102,12 +107,31 @@ module ap {
 
         }
     }
-    
-    export interface IFieldVersionCollection{
-        modified: string;
-        [key: string]: string;
+
+    interface VersionHistoryVersions<T extends ListItem<any>>{
+        [key: number]: IListItemVersion<T>
     }
-    
+
+    export class VersionHistory<T extends ListItem<any>>{
+        factory: IModelFactory;
+        versions: VersionHistoryVersions<T>;
+        constructor(factory: IModelFactory) {
+            this.factory = factory;
+        }
+        addFieldCollection(fieldVersionCollection: FieldVersionCollection) {
+            /** Iterate through each version of this field */
+            _.each(fieldVersionCollection.versions, (fieldVersion: IFieldVersion, versionNumber) => {
+                /** Create a new version object if it doesn't already exist */
+                this.versions[versionNumber] = this.versions[versionNumber] || {};
+
+                /** Add field to the version history for this version */
+                _.assign(this.versions[versionNumber][fieldVersionCollection.mappedName], fieldVersion.value);
+            });
+        }
+        generateChangeSummary() {
+            return new ChangeSummary<T>(this.factory, this.versions);
+        }
+    }
 
     export class ListItemVersionFactory {
         // static $inject = ['$q', 'apUtilityService'];
@@ -118,27 +142,19 @@ module ap {
          * @ngdoc
          * @name angularPoint.apListItemVersionFactory.generateVersionsFromFieldVersionCollection
          * @methodOf angularPoint.apListItemVersionFactory
-         * @param {IFieldVersionCollection[][]} fieldVersionCollections 
-         * 
+         * @param {IFieldVersionCollection[][]} fieldVersionCollections
+         *
          */
-        generateVersionsFromFieldVersionCollection(fieldVersionCollections: IFieldVersionCollection[][]) {
-                var versionHistory = {};
+        // generateVersionsFromFieldVersionCollection<T extends ListItem<any>>(fieldVersionCollections: FieldVersionCollection[]) {
+        //         var versionHistory = new VersionHistory();
 
-                /** Iterate through each of the field version collections */
-                _.each(fieldVersionCollections, (fieldVersions) => {
-                    /** Iterate through each version of this field */
-                    _.each(fieldVersions, (fieldVersion: IFieldVersionCollection) => {
-                        /** Create a new version object if it doesn't already exist */
-                        versionHistory[fieldVersion.modified.toJSON()] =
-                        versionHistory[fieldVersion.modified.toJSON()] || {};
+        //         /** Iterate through each of the field version collections */
+        //         _.each(fieldVersionCollections, (fieldVersionCollection) => {
+        //             versionHistory.addFieldCollection(fieldVersionCollection);
+        //         });
 
-                        /** Add field to the version history for this version */
-                        _.assign(versionHistory[fieldVersion.modified.toJSON()], fieldVersion);
-                    });
-                });
-
-                return versionHistory;
-        }
+        //         return versionHistory;
+        // }
 
     }
 
