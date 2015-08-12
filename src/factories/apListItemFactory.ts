@@ -4,7 +4,7 @@ module ap {
     'use strict';
 
     var $q: ng.IQService, toastr, apCacheService: CacheService, apDataService: DataService, apDecodeService: DecodeService,
-        apEncodeService: EncodeService, apUtilityService: UtilityService, apConfig: IAPConfig, apListItemVersionFactory: ListItemVersionFactory;
+        apEncodeService: EncodeService, apUtilityService: UtilityService, apConfig: IAPConfig;
 
     export interface IListItem<T extends ListItem<any>> {
         author?: IUser;
@@ -26,7 +26,7 @@ module ap {
         getFieldDefinition: (fieldName: string) => FieldDefinition | IExtendedFieldDefinition;
         getFieldDescription: (fieldName: string) => string;
         getFieldLabel: (fieldName: string) => string;
-        getFieldVersionHistory: (fieldNames: string[]) => ng.IPromise<VersionHistory<T>>;
+        getFieldVersionHistory: (fieldNames: string[]) => ng.IPromise<VersionHistoryCollection<T>>;
         getFormattedValue: (fieldName: string, options?: Object) => string;
         getList: () => List;
         getListId: () => string;
@@ -304,8 +304,7 @@ module ap {
          *      };
          * </pre>
          */
-        getFieldVersionHistory(fieldNames?: string[]| string): ng.IPromise<VersionHistory<T>> {
-            var deferred = $q.defer();
+        getFieldVersionHistory(fieldNames?: string[]| string): ng.IPromise<VersionHistoryCollection<T>> {
             var listItem = this;
             var model = listItem.getModel();
             var promiseArray = [];
@@ -349,19 +348,12 @@ module ap {
             });
 
             /** Pause until all requests are resolved */
-            $q.all(promiseArray).then((fieldVersionCollections: FieldVersionCollection[]) => {
-
-                var versionHistory = new VersionHistory<T>(model.factory);
-
-                /** Iterate through each of the field version collections */
-                _.each(fieldVersionCollections, (fieldVersionCollection) => {
-                    versionHistory.addFieldCollection(fieldVersionCollection);
+            return $q.all(promiseArray)
+                .then((fieldVersionCollections: FieldVersionCollection[]) => {
+                    let versionHistoryCollection = new VersionHistoryCollection<T>(fieldVersionCollections, model.factory);
+                    versionHistoryCollection.generateChangeSummary();
+                    return versionHistoryCollection;
                 });
-
-                deferred.resolve(versionHistory);
-            });
-
-            return deferred.promise;
         }
 
 
@@ -734,7 +726,6 @@ module ap {
 
             var listItem = this;
             var model = listItem.getModel();
-            var deferred = $q.defer();
             var definitions = [];
             /** Allow a string to be passed in to save a single field */
             var fieldNames = _.isString(fieldArray) ? [fieldArray] : fieldArray;
@@ -754,14 +745,12 @@ module ap {
             /** Extend defaults with any provided options */
             var opts = _.assign({}, defaults, options);
 
-            apDataService.updateListItem<T>(model, listItem, opts)
+            return apDataService.updateListItem<T>(model, listItem, opts)
                 .then((updatedListItem) => {
-                    deferred.resolve(updatedListItem);
                     /** Optionally broadcast change event */
                     apUtilityService.registerChange(model, 'update', updatedListItem.id);
+                    return updatedListItem;
                 });
-
-            return deferred.promise;
         }
 
 
@@ -877,9 +866,9 @@ module ap {
 
     export class ListItemFactory {
         ListItem = ListItem;
-        static $inject = ['$q', 'apCacheService', 'apConfig', 'apDataService', 'apDecodeService', 'apEncodeService', 'apUtilityService', 'toastr', 'apListItemVersionFactory'];
+        static $inject = ['$q', 'apCacheService', 'apConfig', 'apDataService', 'apDecodeService', 'apEncodeService', 'apUtilityService', 'toastr'];
 
-        constructor(_$q_, _apCacheService_, _apConfig_, _apDataService_, _apDecodeService_, _apEncodeService_, _apUtilityService_, _toastr_, _apListItemVersionFactory_) {
+        constructor(_$q_, _apCacheService_, _apConfig_, _apDataService_, _apDecodeService_, _apEncodeService_, _apUtilityService_, _toastr_) {
             $q = _$q_;
             apCacheService = _apCacheService_;
             apConfig = _apConfig_;
@@ -888,7 +877,6 @@ module ap {
             apEncodeService = _apEncodeService_;
             apUtilityService = _apUtilityService_;
             toastr = _toastr_;
-            apListItemVersionFactory = _apListItemVersionFactory_;
         }
 
         /**

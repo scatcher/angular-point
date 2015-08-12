@@ -1,3 +1,4 @@
+/// <reference path="../../mock/app.module.mock.ts" />
 var ap;
 (function (ap) {
     'use strict';
@@ -16,6 +17,10 @@ var ap;
                 throw new Error("List item not found");
             utils = apMockUtils;
         }));
+        afterEach(function () {
+            $httpBackend.verifyNoOutstandingExpectation();
+            $httpBackend.verifyNoOutstandingRequest();
+        });
         describe('Function create', function () {
             it("instantiates a new List item using constructor", function () {
                 expect(factory.create()).toEqual(new factory.ListItem);
@@ -282,18 +287,16 @@ var ap;
         });
         describe('Method: getFieldVersionHistory', function () {
             it('parses the version history for a field and returns all 3 versions', function () {
-                //mockXMLService.xhrStub('GetVersionCollection');
                 mockListItem.getFieldVersionHistory('integer')
                     .then(function (response) {
-                    expect(response.length).toEqual(3);
+                    expect(response.count()).toEqual(3);
                 });
                 $httpBackend.flush();
             });
             it('works without passing any any fields to dynamically build field array', function () {
-                //mockXMLService.xhrStub('GetVersionCollection');
                 mockListItem.getFieldVersionHistory()
                     .then(function (response) {
-                    expect(response.length).toEqual(3);
+                    expect(response.count()).toEqual(3);
                 });
                 $httpBackend.flush();
             });

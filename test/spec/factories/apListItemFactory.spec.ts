@@ -1,3 +1,4 @@
+/// <reference path="../../mock/app.module.mock.ts" />
 module ap {
     'use strict';
 
@@ -26,6 +27,11 @@ module ap {
             utils = apMockUtils;
 
         }));
+
+        afterEach(function() {
+            $httpBackend.verifyNoOutstandingExpectation();
+            $httpBackend.verifyNoOutstandingRequest();
+        });
 
         describe('Function create', function() {
             it("instantiates a new List item using constructor", function() {
@@ -330,19 +336,17 @@ module ap {
         });
 
         describe('Method: getFieldVersionHistory', function() {
-            it('parses the version history for a field and returns all 3 versions', function() {
-                //mockXMLService.xhrStub('GetVersionCollection');
+            it('parses the version history for a field and returns all 3 versions', () => {
                 mockListItem.getFieldVersionHistory('integer')
                     .then(function(response) {
-                        expect(response.length).toEqual(3);
+                        expect(response.count()).toEqual(3);
                     });
                 $httpBackend.flush();
             });
-            it('works without passing any any fields to dynamically build field array', function() {
-                //mockXMLService.xhrStub('GetVersionCollection');
+            it('works without passing any any fields to dynamically build field array', () => {
                 mockListItem.getFieldVersionHistory()
                     .then(function(response) {
-                        expect(response.length).toEqual(3);
+                        expect(response.count()).toEqual(3);
                     });
                 $httpBackend.flush();
             });
@@ -370,7 +374,7 @@ module ap {
                         console.log(response);
                     });
             });
-            
+
             it('deletes if validation action returns true', function() {
                 unregister = MockListItem.prototype.registerPreDeleteAction(function() {
                     expect(this).toEqual(mockListItem);
@@ -383,7 +387,7 @@ module ap {
                 $httpBackend.flush();
 
             });
-            
+
             it('returns an unregister function', function() {
                 unregister = MockListItem.prototype.registerPreDeleteAction(function() {
                     //Would prevent delete but gets unregistered
@@ -460,7 +464,7 @@ module ap {
             });
 
         });
-        
+
         describe('Method: registerPostSaveAction', function() {
 
             it('exectues callback after save event', function() {
@@ -480,7 +484,7 @@ module ap {
             });
 
         });
-            
+
 
     });
 }

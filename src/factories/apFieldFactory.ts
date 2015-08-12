@@ -47,7 +47,7 @@ module ap {
     }
 
     //An extended field definition combines the user defined field definition with the XML returned by SharePoint
-    export interface IExtendedFieldDefinition extends IXMLFieldDefinition, IFieldDefinition {
+    export interface IExtendedFieldDefinition extends IXMLFieldDefinition, FieldDefinition {
 
     }
 
