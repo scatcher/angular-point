@@ -111,6 +111,32 @@ module ap {
     interface VersionHistoryVersions<T extends ListItem<any>>{
         [key: number]: IListItemVersion<T>
     }
+    
+    export class VersionHistoryCollection<T extends ListItem<any>>{
+        [key: number]: IListItemVersion<T>;
+        constructor(fieldVersionCollections: FieldVersionCollection[], private factory: IModelFactory) {
+            /** Iterate through each of the field version collections */
+            _.each(fieldVersionCollections, (fieldVersionCollection) => {
+                this.addFieldCollection(fieldVersionCollection);
+            });
+        }
+        addFieldCollection(fieldVersionCollection: FieldVersionCollection) {
+            /** Iterate through each version of this field */
+            _.each(fieldVersionCollection.versions, (fieldVersion: IFieldVersion, versionNumber) => {
+                /** Create a new version object if it doesn't already exist */
+                this[versionNumber] = this[versionNumber] || new this.factory<T>({
+                    modified: fieldVersion.modified,
+                    version: versionNumber
+                });
+
+                /** Add field to the version history for this version */
+                this[versionNumber][fieldVersionCollection.mappedName] = fieldVersion.value;
+            });
+        }
+        generateChangeSummary() {
+            return new ChangeSummary<T>(this.factory, this);
+        }
+    }
 
     export class VersionHistory<T extends ListItem<any>>{
         factory: IModelFactory;
