@@ -46,7 +46,7 @@ module ap {
         [key: string]: IQuery<any>
     }
 
-    interface IModelFactory {
+    export interface IModelFactory {
         new <T extends ListItem<any>>(rawObject: Object): T;
     }
 

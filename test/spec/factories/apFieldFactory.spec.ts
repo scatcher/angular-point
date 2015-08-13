@@ -1,3 +1,4 @@
+/// <reference path="../../mock/app.module.mock.ts" />
 module ap {
     'use strict';
 

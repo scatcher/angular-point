@@ -3,7 +3,7 @@
 module ap {
     'use strict';
 
-    var apUtilityService;
+    var apUtilityService: UtilityService;
 
     export interface IUser {
         email?:string;

@@ -87,13 +87,6 @@ declare module ap {
         target: IndexedCache<T>;
     }
 
-
-    export interface IListItemVersion<T extends ListItem<any>> extends ListItem<T> {
-        modified: Date;
-        version: number;
-        [key: string]: any;
-    }
-
     export interface IWorkflowDefinition {
         instantiationUrl: string;
         name: string;
