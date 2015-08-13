@@ -1,0 +1,32 @@
+<h1><code ng:non-bindable="">getVersionHistory</code>
+<div><span class="hint">service in module <code ng:non-bindable="">ListItem</code>
+</span>
+</div>
+</h1>
+<div><h2 id="description">Description</h2>
+<div class="description"><div class="listitem-getversionhistory-page"><p>Takes an array of field names, finds the version history for field, and returns a snapshot of the object at each
+version.  If no fields are provided, we look at the field definitions in the model and pull all non-readonly
+fields.  The only way to do this that I&#39;ve been able to get working is to get the version history for each
+field independently and then build the history by combining the server responses for each requests into a
+snapshot of the object.  Each version has the standard modified date but also includes a version property with
+the version number.</p>
+</div></div>
+<h2 id="usage">Usage</h2>
+<div class="usage"><pre class="prettyprint linenums">getVersionHistory([fieldNames]);</pre>
+<h4 id="usage_parameters">Parameters</h4><table class="variables-matrix table table-bordered table-striped"><thead><tr><th>Param</th><th>Type</th><th>Details</th></tr></thead><tbody><tr><td>[fieldNames]</td><td><a href="" class="label type-hint type-hint-string">string[]</a></td><td><div class="listitem-getversionhistory-page"><p>An array of field names or single field name of properties on the list item
+that we&#39;re interested in.</p>
+</div></td></tr></tbody></table><h4 id="usage_returns">Returns</h4><table class="variables-matrix"><tr><td><a href="" class="label type-hint type-hint-ng">ng.IPromise&lt;VersionHistoryCollection&lt;T&gt;&gt;</a></td><td><div class="listitem-getversionhistory-page"><p>Promise which resolves with an object with keys=version
+and values = ListItemVersion.</p>
+</div></td></tr></table></div>
+<h2 id="example">Example</h2>
+<div class="example"><div class="listitem-getversionhistory-page"><p>Assuming we have a modal form where we want to display each version of the title and project fields
+of a given list item.
+<pre class="prettyprint linenums">
+myGenericListItem.getVersionHistory(['title', 'project'])
+    .then(function(versionHistory) {
+           // We now have an array of every version of these fields
+           vm.versionHistory = versionHistory;
+     };
+</pre>
+</div></div>
+</div>
