@@ -46,7 +46,7 @@ NG_DOCS={
       "type": "service",
       "moduleName": "angularPoint",
       "shortDescription": "Processes the XML received from SharePoint and converts it into JavaScript objects based on predefined field types.",
-      "keywords": "additional allow allows anderson angularpoint apcacheservice apconfig apdecodeservice api aputilityservice array attributes attributetypes based batch build cache cached call camlcase capital change checks child code codeplex coming configuration constructors container convenience conversions convert converts copies correctly corresponding customfields data define defined definition definitions directly don element elements empty entities entity error errors errorstring exists extend extended extends factory fetch field fielddefinition fielddefinitions fields filter find formatted function future getcache getlist getlistitems getlistitemssincetoken includeallattrs incredible indexedcache inedexed info initial instantiated item items iterate javascript js keeping key large leading letter list listitemprovider lists ll location majority mappedname mapping marc metadata method minor model modified needed newly node note null object objects objecttype operations optional optionally options ows_ parent parse parsed pass post predefined prevent processed processes processing project promise properties property propertyname provided push pushing query received reference references registers removeows representation representing requesting resolved resolves response responsexml responsible retrieve return returned returning returns rows scope server service set sharepoint simple slowdowns spservices spxmltojson start stored str string stripped takes target text throw true tweaking type typed types typically ui update updating val values version versions web webservice work xhr xml xmlentities xmlentity xmlobject"
+      "keywords": "additional allow allows anderson angularpoint apcacheservice apconfig apdecodeservice api aputilityservice array attributes attributetypes based batch build cache cached call camlcase capital checks child code codeplex coming configuration constructors container convenience conversions convert converts copies correctly corresponding customfields data define defined definition definitions directly don element elements empty entities entity error errors errorstring exists extend extended extends factory fetch field fielddefinition fielddefinitions fields fieldversioncollection filter find formatted function future getcache getlist getlistitems getlistitemssincetoken includeallattrs included incredible indexedcache inedexed info initial instantiated item items iterate javascript js keeping key large leading letter list listitemprovider lists ll location majority mappedname mapping marc metadata method minor model modified needed newly node note null object objects objecttype operations optional optionally options ows_ parent parse parsed pass post predefined prevent processed processes processing project promise properties property propertyname provided push pushing query received reference references registers removeows representation representing requesting resolved resolves response responsexml responsible retrieve return returned returning returns rows scope server service set sharepoint simple slowdowns spservices spxmltojson start stored str string stripped takes target text throw true tweaking type typed types typically ui update updating val values version versions web webservice work xhr xml xmlentities xmlentity xmlobject"
     },
     {
       "section": "api",
@@ -500,6 +500,15 @@ NG_DOCS={
     },
     {
       "section": "api",
+      "id": "ListItem.getChangeSummary",
+      "shortName": "ListItem.getChangeSummary",
+      "type": "function",
+      "moduleName": "ListItem",
+      "shortDescription": "Uses ListItem.getVersionHistory and determines what information changed between each list item",
+      "keywords": "api array assuming changed changesummary determines display fetch field fields form function getchangesummary getversionhistory history ipromise item list listitem modal mygenericlistitem names project promise resolves string title version versions vm"
+    },
+    {
+      "section": "api",
       "id": "ListItem.getFieldChoices",
       "shortName": "ListItem.getFieldChoices",
       "type": "function",
@@ -536,15 +545,6 @@ NG_DOCS={
     },
     {
       "section": "api",
-      "id": "ListItem.getFieldVersionHistory",
-      "shortName": "ListItem.getFieldVersionHistory",
-      "type": "function",
-      "moduleName": "ListItem",
-      "shortDescription": "Takes an array of field names, finds the version history for field, and returns a snapshot of the object at each",
-      "keywords": "$scope api array assuming build combining definitions display field fields finds form function getfieldversionhistory history includes independently interested ipromise item list listitem modal model modified mygenericlistitem names non-readonly number object project promise property provided pull requests resolves responses returns server snapshot standard takes title ve version versionhistory versions working"
-    },
-    {
-      "section": "api",
       "id": "ListItem.getFormattedValue",
       "shortName": "ListItem.getFormattedValue",
       "type": "function",
@@ -576,8 +576,8 @@ NG_DOCS={
       "shortName": "ListItem.getListId",
       "type": "function",
       "moduleName": "ListItem",
-      "shortDescription": "Allows us to reference the list ID directly from the model.",
-      "keywords": "allows api directly function getlistid list listitem model reference"
+      "shortDescription": "Allows us to reference the list ID directly from the list item.  This is added to the",
+      "keywords": "allows api apmodelfactory directly factory function getlistid item list listitem model prototype reference"
     },
     {
       "section": "api",
@@ -585,8 +585,8 @@ NG_DOCS={
       "shortName": "ListItem.getListId",
       "type": "function",
       "moduleName": "ListItem",
-      "shortDescription": "Allows us to reference the list ID directly from the list item.  This is added to the",
-      "keywords": "allows api apmodelfactory directly factory function getlistid item list listitem model prototype reference"
+      "shortDescription": "Allows us to reference the list ID directly from the model.",
+      "keywords": "allows api directly function getlistid list listitem model reference"
     },
     {
       "section": "api",
@@ -605,6 +605,15 @@ NG_DOCS={
       "moduleName": "ListItem",
       "shortDescription": "Allows us to reference the parent model directly from the list item.  This is added to the",
       "keywords": "allows api apmodelfactory directly documentation factory function getmodel info item list listitem model parent prototype reference"
+    },
+    {
+      "section": "api",
+      "id": "ListItem.getVersionHistory",
+      "shortName": "ListItem.getVersionHistory",
+      "type": "function",
+      "moduleName": "ListItem",
+      "shortDescription": "Takes an array of field names, finds the version history for field, and returns a snapshot of the object at each",
+      "keywords": "api array assuming build combining definitions display field fields finds form function getversionhistory history includes independently interested ipromise item list listitem listitemversion modal model modified mygenericlistitem names non-readonly number object project promise properties property provided pull requests resolves responses returns server single snapshot standard takes title values ve version versionhistory vm working"
     },
     {
       "section": "api",
@@ -877,8 +886,7 @@ NG_DOCS={
     "scripts": [
       "js/angular.min.js",
       "js/angular-animate.min.js",
-      "js/marked.js",
-      "js/prettify.js"
+      "js/marked.js"
     ],
     "styles": [],
     "title": "angular-point",
@@ -895,17 +903,15 @@ NG_DOCS={
     "loadDefaults": {
       "angular": true,
       "angularAnimate": true,
-      "marked": true,
-      "prettify": true
+      "marked": true
     }
   },
   "html5Mode": false,
   "editExample": true,
   "startPage": "/api",
   "scripts": [
-    "angular.min.js",
-    "angular-animate.min.js",
-    "marked.js",
-    "prettify.js"
+    "js/angular.min.js",
+    "js/angular-animate.min.js",
+    "js/marked.js"
   ]
 };

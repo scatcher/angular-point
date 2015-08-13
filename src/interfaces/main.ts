@@ -102,32 +102,6 @@ declare module ap {
     }
 
 
-    //    export interface IDiscussionThread {
-    //        posts: IDiscussionThreadPost[];
-    //        nextId: number;
-    //        getNextId(): number;
-    //        createPost(parentId: number, content: string): IDiscussionThreadPost;
-    //        getListItem(): IListItem;
-    //        prune(): void;
-    //        saveChanges(): ng.IPromise<IListItem>;
-    //    }
-
-    //    export interface IDiscussionThreadPost {
-    //        content: string;
-    //        id: number;
-    //        parentId: number;
-    //        created: Date;
-    //        user: IUser;
-    //        removePost(): void;
-    //        deletePost(): ng.IPromise<IListItem>;
-    //        savePost(): ng.IPromise<IListItem>;
-    //        reply(): ng.IPromise<IListItem>;
-    //    }
-
-    //    export interface ICache<T> extends IndexedCache<T>{
-    //        //TODO Populate me!
-    //    }
-
     export interface IUserPermissionsObject {
         AddAndCustomizePages: boolean;
         AddDelPrivateWebParts: boolean;
@@ -167,12 +141,6 @@ declare module ap {
 
 }
 
-// declare module "lodash"  {
-//     isGuid(string): boolean;
-//     deepIn(Object, string): boolean;
-//     deepGet(Object, string): any;
-//     isDefined(val: any): boolean;
-// }
 
 interface IToast {
     toastId: number;

@@ -491,9 +491,6 @@ var ap;
 })(ap || (ap = {}));
 
 /// <reference path="../app.module.ts" />
-/// <reference path="../../typings/tsd.d.ts" />
-
-/// <reference path="../app.module.ts" />
 var ap;
 (function (ap) {
     'use strict';
@@ -3307,6 +3304,9 @@ var ap;
     angular.module('angularPoint')
         .service('apUserFactory', UserFactory);
 })(ap || (ap = {}));
+
+/// <reference path="../app.module.ts" />
+/// <reference path="../../typings/tsd.d.ts" />
 
 /// <reference path="../app.module.ts" />
 var ap;

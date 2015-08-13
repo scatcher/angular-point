@@ -11,14 +11,16 @@
 <h4 id="usage_parameters">Parameters</h4><table class="variables-matrix table table-bordered table-striped"><thead><tr><th>Param</th><th>Type</th><th>Details</th></tr></thead><tbody><tr><td>options</td><td><a href="" class="label type-hint type-hint-object">Object</a></td><td><div class="dataservice-getcollection-page"><ul>
 <li>object used to extend payload and needs to include all SPServices required attributes</li>
 </ul>
-</div></td></tr><tr><td>options.operation</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="dataservice-getcollection-page"><p>Can be any of the below or any other requests for collections:
-- GetAttachmentCollection @requires options.listName &amp; options.ID
-- GetGroupCollectionFromSite
-- GetGroupCollectionFromUser @requires options.userLoginName
-- GetListCollection
-- GetUserCollectionFromGroup @requires options.groupName
-- GetUserCollectionFromSite
-- GetViewCollection @requires options.listName</p>
+</div></td></tr><tr><td>options.operation</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="dataservice-getcollection-page"><p>Can be any of the below or any other requests for collections:</p>
+<ul>
+<li>GetAttachmentCollection @requires options.listName &amp; options.ID</li>
+<li>GetGroupCollectionFromSite</li>
+<li>GetGroupCollectionFromUser @requires options.userLoginName</li>
+<li>GetListCollection</li>
+<li>GetUserCollectionFromGroup @requires options.groupName</li>
+<li>GetUserCollectionFromSite</li>
+<li>GetViewCollection @requires options.listName</li>
+</ul>
 </div></td></tr><tr><td>options.filterNode</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="dataservice-getcollection-page"><p>Value to iterate over in returned XML
 if not provided it&#39;s extracted from the name of the operation
 ex: Get[User]CollectionFromSite, &quot;User&quot; is used as the filterNode</p>

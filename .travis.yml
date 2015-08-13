@@ -1,11 +1,13 @@
 language: node_js
 node_js:
-  - "0.12"
+    - "0.12"
 before_install:
-- export DISPLAY=:99.0
-- npm install -qg bower gulp
-- npm install -q
-- bower install --force
+    - export DISPLAY=:99.0
 before_script:
-  - echo 'Canada/Pacific' | sudo tee /etc/timezone
-  - sudo dpkg-reconfigure --frontend noninteractive tzdata
+    - echo 'Canada/Pacific' | sudo tee /etc/timezone
+    - sudo dpkg-reconfigure --frontend noninteractive tzdata
+    - npm install -qg bower gulp
+    - npm install -q
+    - bower install --force
+script:
+    - gulp test
