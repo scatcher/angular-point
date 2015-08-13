@@ -416,8 +416,8 @@ module ap {
             // var versions = {};
             var xmlVersions = $(responseXML).find('Version');
             var versionCount = xmlVersions.length;
-            
-            var fieldVersionCollection = new FieldVersionCollection(fieldDefinition);
+
+            var fieldVersionCollection = new ap.FieldVersionCollection(fieldDefinition);
 
             _.each(xmlVersions, (xmlVersion, index) => {
 
@@ -425,7 +425,7 @@ module ap {
                  *  Details: https://spservices.codeplex.com/discussions/391879
                  */
                 let utcDate = this.parseStringValue($(xmlVersion).attr('Modified'), 'DateTime');
-                
+
                 /** Parse the xml and create a representation of the version as a js object */
                 let editor = this.parseStringValue($(xmlVersion).attr('Editor'), 'User');
                 /** Turn the SharePoint formatted date into a valid date object */
@@ -433,7 +433,7 @@ module ap {
                 /** Properly format field based on definition from model */
                 let value = this.parseStringValue($(xmlVersion).attr(fieldDefinition.staticName), fieldDefinition.objectType);
                 let version = versionCount - index;
-                
+
                 /** Add each distict version to the version collection */
                 fieldVersionCollection.addVersion(editor, modified, value, version);
 

@@ -1,7 +1,7 @@
 module.exports = function (projectDir) {
     var app = projectDir + 'src/';
-    var test = projectDir + 'test/';
-    var tmp = projectDir + '.tmp/';
+    //var test = projectDir + 'test/';
+    //var tmp = projectDir + '.tmp/';
     var bower = './bower_components/';
 
     var config = {
@@ -13,6 +13,7 @@ module.exports = function (projectDir) {
             bower + "angular-mocks/angular-mocks.js",
             "./test/mock/app.module.mock.js"
         ],
+        offlineXMLSrc: [projectDir + 'xml-cache/'],
         tsFiles: './src/**/*.ts'
     };
 

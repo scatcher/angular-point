@@ -2,5 +2,8 @@
 	"compilerOptions": {
 		// "sourceMap": true,
 		"target": "ES5"
-	}
+	},
+    "files": [
+        "../typings/ap.d.ts"
+    ]
 }

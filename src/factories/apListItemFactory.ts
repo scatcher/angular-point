@@ -6,7 +6,7 @@ module ap {
     var $q: ng.IQService, toastr, apCacheService: CacheService, apDataService: DataService, apDecodeService: DecodeService,
         apEncodeService: EncodeService, apUtilityService: UtilityService, apConfig: IAPConfig;
 
-    export interface IListItem<T extends ListItem<any>> {
+    interface IListItem<T extends ListItem<any>> {
         author?: IUser;
         created?: Date;
         editor?: IUser;
@@ -21,16 +21,17 @@ module ap {
         getAttachmentCollection: () => ng.IPromise<string[]>;
         getAvailableWorkflows: () => ng.IPromise<IWorkflowDefinition[]>;
         getCache?: () => IndexedCache<T>;
-        getChanges(): ng.IPromise<T>;
+        getChanges: () => ng.IPromise<T>;
+        getChangeSummary: (fieldNames: string[] | string) => ng.IPromise<ChangeSummary<T>>;
         getFieldChoices: (fieldName: string) => string[];
         getFieldDefinition: (fieldName: string) => FieldDefinition | IExtendedFieldDefinition;
         getFieldDescription: (fieldName: string) => string;
         getFieldLabel: (fieldName: string) => string;
-        getFieldVersionHistory: (fieldNames: string[]) => ng.IPromise<VersionHistoryCollection<T>>;
         getFormattedValue: (fieldName: string, options?: Object) => string;
         getList: () => List;
         getListId: () => string;
         getLookupReference: <T2 extends ListItem<any>>(fieldName: string, lookupId?: number) => T2;
+        getVersionHistory: (fieldNames: string[] | string) => ng.IPromise<VersionHistoryCollection<T>>;
         resolvePermissions: () => IUserPermissionsObject;
         saveChanges: (options?: IListItemCrudOptions<T>) => ng.IPromise<T>;
         saveFields: (fieldArray: string[], options?: IListItemCrudOptions<T>) => ng.IPromise<T>;
@@ -38,7 +39,7 @@ module ap {
         startWorkflow: (options: IStartWorkflowParams) => ng.IPromise<any>;
         validateEntity: (options?: Object) => boolean;
 
-        //Added by Model Instantiation
+        // Added by Model Instantiation
         getModel?: () => Model;
         getPristine?: () => Object;
         getQuery?: () => IQuery<T>;
@@ -66,10 +67,10 @@ module ap {
         id: number;
         modified: Date;
         permMask: string;
+        uniqueId: string;
         private preDeleteAction: () => boolean;
         private preSaveAction: () => boolean;
         private postSaveAction: () => void;
-        uniqueId: string;
 
         /**
          * @ngdoc function
@@ -81,13 +82,13 @@ module ap {
          * @example
          * <pre>
          * $scope.deleteAttachment = function (attachment) {
-             *     var confirmation = window.confirm("Are you sure you want to delete this file?");
-             *     if (confirmation) {
-             *         scope.listItem.deleteAttachment(attachment).then(function () {
-             *             alert("Attachment successfully deleted");
-             *         });
-             *     }
-             * };
+         *     var confirmation = window.confirm("Are you sure you want to delete this file?");
+         *     if (confirmation) {
+         *         scope.listItem.deleteAttachment(attachment).then(function () {
+         *             alert("Attachment successfully deleted");
+         *         });
+         *     }
+         * };
          * </pre>
          */
         deleteAttachment(url: string): ng.IPromise<any> {
@@ -153,11 +154,11 @@ module ap {
          * <pre>
          * //Pull down all attachments for the current list item
          * var fetchAttachments = function (listItem) {
-             *     listItem.getAttachmentCollection()
-             *         .then(function (attachments) {
-             *             scope.attachments = attachments;
-             *         });
-             * };
+         *     listItem.getAttachmentCollection()
+         *         .then(function (attachments) {
+         *             scope.attachments = attachments;
+         *         });
+         * };
          * </pre>
          */
         getAttachmentCollection(): ng.IPromise<string[]> {
@@ -198,6 +199,32 @@ module ap {
             return model.getListItemById(this.id);
         }
 
+
+        /**
+         * @ngdoc function
+         * @name ListItem.getChangeSummary
+         * @description
+         * Uses ListItem.getVersionHistory and determines what information changed between each list item
+         * version.
+         * @param {string[] | string} [fieldNames] An array/single string of field names on the list item to fetch a version
+         * history for.
+         * @returns {ng.IPromise<ChangeSummary<T>>} Promise which resolves with an array of list item versions.
+         * @example
+         * Assuming we have a modal form where we want to display each version of the title and project fields
+         * of a given list item.
+         * <pre>
+         * myGenericListItem.getChangeSummary(['title', 'project'])
+         *     .then(function(changeSummary: ChangeSummary) {
+         *            // We now have an array of every version of these fields
+         *            vm.changeSummary = changeSummary;
+         *      };
+         * </pre>
+         */
+        getChangeSummary(fieldNames: string[] | string): ng.IPromise<ChangeSummary<T>> {
+            return this.getVersionHistory<T>(fieldNames)
+                .then((versionHistoryCollection: VersionHistoryCollection) => versionHistoryCollection.generateChangeSummary());
+        }
+
         /**
          * @ngdoc function
          * @name ListItem.getFieldChoices
@@ -225,12 +252,12 @@ module ap {
          * @example
          * <pre>
          * var project = {
-             *    title: 'Project 1',
-             *    location: {
-             *        lookupId: 5,
-             *        lookupValue: 'Some Building'
-             *    }
-             * };
+         *    title: 'Project 1',
+         *    location: {
+         *        lookupId: 5,
+         *        lookupValue: 'Some Building'
+         *    }
+         * };
          *
          * //To get field metadata
          * var locationDefinition = project.getFieldDefinition('location');
@@ -283,82 +310,6 @@ module ap {
 
         /**
          * @ngdoc function
-         * @name ListItem.getFieldVersionHistory
-         * @description
-         * Takes an array of field names, finds the version history for field, and returns a snapshot of the object at each
-         * version.  If no fields are provided, we look at the field definitions in the model and pull all non-readonly
-         * fields.  The only way to do this that I've been able to get working is to get the version history for each
-         * field independently and then build the history by combining the server responses for each requests into a
-         * snapshot of the object.  Each version has the standard modified date but also includes a version property with
-         * the version number.
-         * @param {string[]} [fieldNames] An array of field names that we're interested in.
-         * @returns {ng.IPromise<IListItemVersion<T>>} Promise which resolves with an array of list item versions.
-         * @example
-         * Assuming we have a modal form where we want to display each version of the title and project fields
-         * of a given list item.
-         * <pre>
-         * myGenericListItem.getFieldVersionHistory(['title', 'project'])
-         *     .then(function(versionHistory) {
-         *            // We now have an array of every version of these fields
-         *            $scope.versionHistory = versionHistory;
-         *      };
-         * </pre>
-         */
-        getFieldVersionHistory(fieldNames?: string[]| string): ng.IPromise<VersionHistoryCollection<T>> {
-            var listItem = this;
-            var model = listItem.getModel();
-            var promiseArray = [];
-
-            /** Constructor that creates a promise for each field */
-            var createPromise = (fieldName: string) => {
-
-                var fieldDefinition = listItem.getFieldDefinition(fieldName)
-
-                var payload = {
-                    operation: 'GetVersionCollection',
-                    strlistID: model.list.getListId(),
-                    strlistItemID: listItem.id,
-                    strFieldName: fieldDefinition.staticName,
-                    webURL: undefined
-                };
-
-                /** Manually set site url if defined, prevents SPServices from making a blocking call to fetch it. */
-                if (apConfig.defaultUrl) {
-                    payload.webURL = apConfig.defaultUrl;
-                }
-
-                promiseArray.push(apDataService.getFieldVersionHistory(payload, fieldDefinition));
-            };
-
-            if (!fieldNames) {
-                /** If fields aren't provided, pull the version history for all NON-readonly fields */
-                var targetFields = _.where(model.list.fields, { readOnly: false });
-                fieldNames = [];
-                _.each(targetFields, (field) => {
-                    fieldNames.push(field.mappedName);
-                });
-            } else if (_.isString(fieldNames)) {
-                /** If a single field name is provided, add it to an array so we can process it more easily */
-                fieldNames = [fieldNames];
-            }
-
-            /** Generate promises for each field */
-            _.each(fieldNames, (fieldName) => {
-                createPromise(fieldName);
-            });
-
-            /** Pause until all requests are resolved */
-            return $q.all(promiseArray)
-                .then((fieldVersionCollections: FieldVersionCollection[]) => {
-                    let versionHistoryCollection = new VersionHistoryCollection<T>(fieldVersionCollections, model.factory);
-                    versionHistoryCollection.generateChangeSummary();
-                    return versionHistoryCollection;
-                });
-        }
-
-
-        /**
-         * @ngdoc function
          * @name ListItem.getFormattedValue
          * @description
          * Given the attribute name on a listItem, we can lookup the field type and from there return a formatted
@@ -372,7 +323,7 @@ module ap {
             var listItem = this;
             var fieldDefinition = listItem.getFieldDefinition(fieldName);
             if (!fieldDefinition) {
-                throw `A field definition for a field named ${fieldName} wasn't found.`;
+                throw new Error(`A field definition for a field named ${fieldName} wasn't found.`);
             }
             return fieldDefinition.getFormattedValue(this, options);
         }
@@ -416,12 +367,12 @@ module ap {
          * @example
          * <pre>
          * var project = {
-             *    title: 'Project 1',
-             *    location: {
-             *        lookupId: 5,
-             *        lookupValue: 'Some Building'
-             *    }
-             * };
+         *    title: 'Project 1',
+         *    location: {
+         *        lookupId: 5,
+         *        lookupValue: 'Some Building'
+         *    }
+         * };
          *
          * //To get the location listItem
          * var listItem = project.getLookupReference('location');
@@ -451,6 +402,85 @@ module ap {
             return lookupReference;
 
         }
+
+
+        /**
+         * @ngdoc function
+         * @name ListItem.getVersionHistory
+         * @description
+         * Takes an array of field names, finds the version history for field, and returns a snapshot of the object at each
+         * version.  If no fields are provided, we look at the field definitions in the model and pull all non-readonly
+         * fields.  The only way to do this that I've been able to get working is to get the version history for each
+         * field independently and then build the history by combining the server responses for each requests into a
+         * snapshot of the object.  Each version has the standard modified date but also includes a version property with
+         * the version number.
+         * @param {string[]} [fieldNames] An array of field names or single field name of properties on the list item
+         * that we're interested in.
+         * @returns {ng.IPromise<VersionHistoryCollection<T>>} Promise which resolves with an object with keys=version
+         * and values = ListItemVersion.
+         * @example
+         * Assuming we have a modal form where we want to display each version of the title and project fields
+         * of a given list item.
+         * <pre>
+         * myGenericListItem.getVersionHistory(['title', 'project'])
+         *     .then(function(versionHistory) {
+         *            // We now have an array of every version of these fields
+         *            vm.versionHistory = versionHistory;
+         *      };
+         * </pre>
+         */
+        getVersionHistory(fieldNames?: string[]| string): ng.IPromise<VersionHistoryCollection<T>> {
+            var listItem = this;
+            var model = listItem.getModel();
+            var promiseArray = [];
+
+            if (!fieldNames) {
+                /** If fields aren't provided, pull the version history for all NON-readonly fields */
+                var targetFields = _.where(model.list.fields, { readOnly: false });
+                fieldNames = [];
+                _.each(targetFields, (field) => {
+                    fieldNames.push(field.mappedName);
+                });
+            } else if (_.isString(fieldNames)) {
+                /** If a single field name is provided, add it to an array so we can process it more easily */
+                fieldNames = [fieldNames];
+            }
+
+            /** Generate promises for each field */
+            _.each(fieldNames, (fieldName) => {
+                var promise = createPromise(fieldName);
+                promiseArray.push(promise);
+            });
+
+            /** Pause until all requests are resolved */
+            return $q.all(promiseArray)
+                .then((fieldVersionCollections: FieldVersionCollection[]) => {
+                    let versionHistoryCollection = new ap.VersionHistoryCollection<T>(fieldVersionCollections, model.factory);
+                    return versionHistoryCollection;
+                });
+
+            /** Constructor that creates a promise for each field */
+            function createPromise(fieldName: string) {
+
+                var fieldDefinition = listItem.getFieldDefinition(fieldName);
+
+                var payload = {
+                    operation: 'GetVersionCollection',
+                    strlistID: model.list.getListId(),
+                    strlistItemID: listItem.id,
+                    strFieldName: fieldDefinition.staticName,
+                    webURL: undefined
+                };
+
+                /** Manually set site url if defined, prevents SPServices from making a blocking call to fetch it. */
+                if (apConfig.defaultUrl) {
+                    payload.webURL = apConfig.defaultUrl;
+                }
+
+                return apDataService.getFieldVersionHistory(payload, fieldDefinition);
+            }
+        }
+
 
         /**
          * @ngdoc function
@@ -489,7 +519,7 @@ module ap {
         registerPreDeleteAction(action: () => boolean): () => void {
             this.preDeleteAction = action;
             //Return function to unregister
-            return () => delete this.preDeleteAction;
+            return () => this.preDeleteAction = undefined;
         }
 
 
@@ -529,7 +559,7 @@ module ap {
         registerPreSaveAction(action: () => boolean): () => void {
             this.preSaveAction = action;
             //Return function to unregister
-            return () => delete this.preSaveAction;
+            return () => this.preSaveAction = undefined;
         }
 
         /**
@@ -796,7 +826,7 @@ module ap {
             options.fileRef = listItem.fileRef.lookupValue;
 
             if (!options.templateId && !options.workflowName) {
-                throw 'Either a templateId or workflowName is required to initiate a workflow.';
+                throw new Error('Either a templateId or workflowName is required to initiate a workflow.');
             } else if (options.templateId) {
                 /** The templateId is already provided so we don't need to look for it */
                 initiateRequest();
@@ -806,7 +836,7 @@ module ap {
                     .then((workflows) => {
                         var targetWorklow = _.findWhere(workflows, { name: options.workflowName });
                         if (!targetWorklow) {
-                            throw 'A workflow with the specified name wasn\'t found.';
+                            throw new Error('A workflow with the specified name wasn\'t found.');
                         }
                         /** Create an extended set of options to pass any overrides to apDataService */
                         options.templateId = targetWorklow.templateId;

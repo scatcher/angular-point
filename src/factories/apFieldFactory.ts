@@ -77,7 +77,6 @@ module ap {
      *                                      or
      *     ```var fieldDefinition = MODELNAME.getFieldDefinition('CHOICE_FIELD_NAME');```
      *     ```var choices = fieldDefinition.Choices;```
-
      *     </dd>
      *     <dt>Counter</dt>
      *     <dd>Same as Integer. Generally used only for the internal ID field. Its integer
@@ -233,8 +232,8 @@ module ap {
      *
      */
     export class FieldFactory {
-        FieldDefinition = FieldDefinition;
         static $inject = ['apFieldService', 'apUtilityService', 'apFormattedFieldValueService'];
+        FieldDefinition = FieldDefinition;
         constructor(_apFieldService_, _apUtilityService_, _apFormattedFieldValueService_) {
             apFieldService = _apFieldService_;
             apUtilityService = _apUtilityService_;

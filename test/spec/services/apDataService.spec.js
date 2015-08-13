@@ -194,12 +194,12 @@ var ap;
                 $httpBackend.flush();
             });
         });
-        describe('Function: getFieldVersionHistory', function () {
-            it('returns an array containing 3 versions of the mock.integer field', function () {
+        describe('Function: getVersionHistory', function () {
+            it('returns an array containing 4 versions of the mock.integer field', function () {
                 var fieldDefinition = mockModel.getField('integer');
                 service.getFieldVersionHistory({}, fieldDefinition)
                     .then(function (response) {
-                    expect(response.length).toEqual(3);
+                    expect(response.count()).toEqual(4);
                 });
                 $httpBackend.flush();
             });

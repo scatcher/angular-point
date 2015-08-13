@@ -17,10 +17,6 @@ var ap;
                 throw new Error("List item not found");
             utils = apMockUtils;
         }));
-        afterEach(function () {
-            $httpBackend.verifyNoOutstandingExpectation();
-            $httpBackend.verifyNoOutstandingRequest();
-        });
         describe('Function create', function () {
             it("instantiates a new List item using constructor", function () {
                 expect(factory.create()).toEqual(new factory.ListItem);
@@ -43,6 +39,15 @@ var ap;
             it('rejects an invalid entity.', function () {
                 mockListItem.boolean = 'this is a test';
                 expect(mockListItem.validateEntity()).toBe(false);
+            });
+        });
+        describe('Method: getChanges', function () {
+            it('returns a promise which resolves with a ChangeSummary object', function () {
+                mockListItem.getChangeSummary('integer')
+                    .then(function (response) {
+                    expect(response.constructor.name).toEqual('ChangeSummary');
+                });
+                $httpBackend.flush();
             });
         });
         describe('Method: getFieldDefinition', function () {
@@ -285,18 +290,26 @@ var ap;
                 $httpBackend.flush();
             });
         });
-        describe('Method: getFieldVersionHistory', function () {
+        describe('Method: getVersionHistory', function () {
             it('parses the version history for a field and returns all 3 versions', function () {
-                mockListItem.getFieldVersionHistory('integer')
+                mockListItem.getVersionHistory('integer')
                     .then(function (response) {
-                    expect(response.count()).toEqual(3);
+                    expect(response.count()).toEqual(4);
                 });
                 $httpBackend.flush();
             });
             it('works without passing any any fields to dynamically build field array', function () {
-                mockListItem.getFieldVersionHistory()
+                mockListItem.getVersionHistory()
                     .then(function (response) {
-                    expect(response.count()).toEqual(3);
+                    expect(response.count()).toEqual(4);
+                });
+                $httpBackend.flush();
+            });
+            it('contains the correct version number', function () {
+                //mockXMLService.xhrStub('GetVersionCollection');
+                mockListItem.getVersionHistory()
+                    .then(function (response) {
+                    expect(response[0].version).toEqual(2);
                 });
                 $httpBackend.flush();
             });
@@ -318,7 +331,6 @@ var ap;
                 unregister = mockListItem.deleteItem()
                     .then(function (response) { }, function (response) {
                     expect(mockModel.getCachedEntity(mockListItem.id)).toBeDefined();
-                    console.log(response);
                 });
             });
             it('deletes if validation action returns true', function () {

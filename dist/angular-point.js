@@ -491,6 +491,9 @@ var ap;
 })(ap || (ap = {}));
 
 /// <reference path="../app.module.ts" />
+/// <reference path="../../typings/tsd.d.ts" />
+
+/// <reference path="../app.module.ts" />
 var ap;
 (function (ap) {
     'use strict';
@@ -641,7 +644,6 @@ var ap;
      *                                      or
      *     ```var fieldDefinition = MODELNAME.getFieldDefinition('CHOICE_FIELD_NAME');```
      *     ```var choices = fieldDefinition.Choices;```
-
      *     </dd>
      *     <dt>Counter</dt>
      *     <dd>Same as Integer. Generally used only for the internal ID field. Its integer
@@ -1182,13 +1184,13 @@ var ap;
          * @example
          * <pre>
          * $scope.deleteAttachment = function (attachment) {
-             *     var confirmation = window.confirm("Are you sure you want to delete this file?");
-             *     if (confirmation) {
-             *         scope.listItem.deleteAttachment(attachment).then(function () {
-             *             alert("Attachment successfully deleted");
-             *         });
-             *     }
-             * };
+         *     var confirmation = window.confirm("Are you sure you want to delete this file?");
+         *     if (confirmation) {
+         *         scope.listItem.deleteAttachment(attachment).then(function () {
+         *             alert("Attachment successfully deleted");
+         *         });
+         *     }
+         * };
          * </pre>
          */
         ListItem.prototype.deleteAttachment = function (url) {
@@ -1248,11 +1250,11 @@ var ap;
          * <pre>
          * //Pull down all attachments for the current list item
          * var fetchAttachments = function (listItem) {
-             *     listItem.getAttachmentCollection()
-             *         .then(function (attachments) {
-             *             scope.attachments = attachments;
-             *         });
-             * };
+         *     listItem.getAttachmentCollection()
+         *         .then(function (attachments) {
+         *             scope.attachments = attachments;
+         *         });
+         * };
          * </pre>
          */
         ListItem.prototype.getAttachmentCollection = function () {
@@ -1290,6 +1292,30 @@ var ap;
         };
         /**
          * @ngdoc function
+         * @name ListItem.getChangeSummary
+         * @description
+         * Uses ListItem.getVersionHistory and determines what information changed between each list item
+         * version.
+         * @param {string[] | string} [fieldNames] An array/single string of field names on the list item to fetch a version
+         * history for.
+         * @returns {ng.IPromise<ChangeSummary<T>>} Promise which resolves with an array of list item versions.
+         * @example
+         * Assuming we have a modal form where we want to display each version of the title and project fields
+         * of a given list item.
+         * <pre>
+         * myGenericListItem.getChangeSummary(['title', 'project'])
+         *     .then(function(changeSummary: ChangeSummary) {
+         *            // We now have an array of every version of these fields
+         *            vm.changeSummary = changeSummary;
+         *      };
+         * </pre>
+         */
+        ListItem.prototype.getChangeSummary = function (fieldNames) {
+            return this.getVersionHistory(fieldNames)
+                .then(function (versionHistoryCollection) { return versionHistoryCollection.generateChangeSummary(); });
+        };
+        /**
+         * @ngdoc function
          * @name ListItem.getFieldChoices
          * @param {string} fieldName Internal field name.
          * @description
@@ -1313,12 +1339,12 @@ var ap;
          * @example
          * <pre>
          * var project = {
-             *    title: 'Project 1',
-             *    location: {
-             *        lookupId: 5,
-             *        lookupValue: 'Some Building'
-             *    }
-             * };
+         *    title: 'Project 1',
+         *    location: {
+         *        lookupId: 5,
+         *        lookupValue: 'Some Building'
+         *    }
+         * };
          *
          * //To get field metadata
          * var locationDefinition = project.getFieldDefinition('location');
@@ -1365,93 +1391,6 @@ var ap;
         };
         /**
          * @ngdoc function
-         * @name ListItem.getFieldVersionHistory
-         * @description
-         * Takes an array of field names, finds the version history for field, and returns a snapshot of the object at each
-         * version.  If no fields are provided, we look at the field definitions in the model and pull all non-readonly
-         * fields.  The only way to do this that I've been able to get working is to get the version history for each
-         * field independently and then build the history by combining the server responses for each requests into a
-         * snapshot of the object.  Each version has the standard modified date but also includes a version property with
-         * the version number.
-         * @param {string[]} [fieldNames] An array of field names that we're interested in.
-         * @returns {ng.IPromise<IListItemVersion<T>>} Promise which resolves with an array of list item versions.
-         * @example
-         * Assuming we have a modal form where we want to display each version of the title and project fields
-         * of a given list item.
-         * <pre>
-         * myGenericListItem.getFieldVersionHistory(['title', 'project'])
-         *     .then(function(versionHistory) {
-         *            // We now have an array of every version of these fields
-         *            $scope.versionHistory = versionHistory;
-         *      };
-         * </pre>
-         */
-        ListItem.prototype.getFieldVersionHistory = function (fieldNames) {
-            var deferred = $q.defer();
-            var listItem = this;
-            var model = listItem.getModel();
-            var promiseArray = [];
-            /** Constructor that creates a promise for each field */
-            var createPromise = function (fieldName) {
-                var fieldDefinition = _.find(model.list.fields, { mappedName: fieldName });
-                var payload = {
-                    operation: 'GetVersionCollection',
-                    strlistID: model.list.getListId(),
-                    strlistItemID: listItem.id,
-                    strFieldName: fieldDefinition.staticName,
-                    webURL: undefined
-                };
-                /** Manually set site url if defined, prevents SPServices from making a blocking call to fetch it. */
-                if (apConfig.defaultUrl) {
-                    payload.webURL = apConfig.defaultUrl;
-                }
-                promiseArray.push(apDataService.getFieldVersionHistory(payload, fieldDefinition));
-            };
-            if (!fieldNames) {
-                /** If fields aren't provided, pull the version history for all NON-readonly fields */
-                var targetFields = _.where(model.list.fields, { readOnly: false });
-                fieldNames = [];
-                _.each(targetFields, function (field) {
-                    fieldNames.push(field.mappedName);
-                });
-            }
-            else if (_.isString(fieldNames)) {
-                /** If a single field name is provided, add it to an array so we can process it more easily */
-                fieldNames = [fieldNames];
-            }
-            /** Generate promises for each field */
-            _.each(fieldNames, function (fieldName) {
-                createPromise(fieldName);
-            });
-            /** Pause until all requests are resolved */
-            $q.all(promiseArray).then(function (changes) {
-                var versionHistory = {};
-                /** All fields should have the same number of versions */
-                _.each(changes, function (fieldVersions) {
-                    _.each(fieldVersions, function (fieldVersion) {
-                        /** Create a new version object if it doesn't already exist */
-                        versionHistory[fieldVersion.modified.toJSON()] =
-                            versionHistory[fieldVersion.modified.toJSON()] || {};
-                        /** Add field to the version history for this version */
-                        _.assign(versionHistory[fieldVersion.modified.toJSON()], fieldVersion);
-                    });
-                });
-                var versionArray = [];
-                var versionCounter = 1;
-                /** Add a version prop on each version to identify the numeric sequence */
-                _.each(versionHistory, function (ver) {
-                    ver.version = versionCounter;
-                    versionCounter++;
-                    /** Convert JSON date into JS Date */
-                    ver.modified = apDecodeService.jsDate(ver.modified);
-                    versionArray.push(ver);
-                });
-                deferred.resolve(versionArray);
-            });
-            return deferred.promise;
-        };
-        /**
-         * @ngdoc function
          * @name ListItem.getFormattedValue
          * @description
          * Given the attribute name on a listItem, we can lookup the field type and from there return a formatted
@@ -1465,7 +1404,7 @@ var ap;
             var listItem = this;
             var fieldDefinition = listItem.getFieldDefinition(fieldName);
             if (!fieldDefinition) {
-                throw "A field definition for a field named " + fieldName + " wasn't found.";
+                throw new Error("A field definition for a field named " + fieldName + " wasn't found.");
             }
             return fieldDefinition.getFormattedValue(this, options);
         };
@@ -1503,12 +1442,12 @@ var ap;
          * @example
          * <pre>
          * var project = {
-             *    title: 'Project 1',
-             *    location: {
-             *        lookupId: 5,
-             *        lookupValue: 'Some Building'
-             *    }
-             * };
+         *    title: 'Project 1',
+         *    location: {
+         *        lookupId: 5,
+         *        lookupValue: 'Some Building'
+         *    }
+         * };
          *
          * //To get the location listItem
          * var listItem = project.getLookupReference('location');
@@ -1539,6 +1478,75 @@ var ap;
                 }
             }
             return lookupReference;
+        };
+        /**
+         * @ngdoc function
+         * @name ListItem.getVersionHistory
+         * @description
+         * Takes an array of field names, finds the version history for field, and returns a snapshot of the object at each
+         * version.  If no fields are provided, we look at the field definitions in the model and pull all non-readonly
+         * fields.  The only way to do this that I've been able to get working is to get the version history for each
+         * field independently and then build the history by combining the server responses for each requests into a
+         * snapshot of the object.  Each version has the standard modified date but also includes a version property with
+         * the version number.
+         * @param {string[]} [fieldNames] An array of field names or single field name of properties on the list item
+         * that we're interested in.
+         * @returns {ng.IPromise<VersionHistoryCollection<T>>} Promise which resolves with an object with keys=version
+         * and values = ListItemVersion.
+         * @example
+         * Assuming we have a modal form where we want to display each version of the title and project fields
+         * of a given list item.
+         * <pre>
+         * myGenericListItem.getVersionHistory(['title', 'project'])
+         *     .then(function(versionHistory) {
+         *            // We now have an array of every version of these fields
+         *            vm.versionHistory = versionHistory;
+         *      };
+         * </pre>
+         */
+        ListItem.prototype.getVersionHistory = function (fieldNames) {
+            var listItem = this;
+            var model = listItem.getModel();
+            var promiseArray = [];
+            if (!fieldNames) {
+                /** If fields aren't provided, pull the version history for all NON-readonly fields */
+                var targetFields = _.where(model.list.fields, { readOnly: false });
+                fieldNames = [];
+                _.each(targetFields, function (field) {
+                    fieldNames.push(field.mappedName);
+                });
+            }
+            else if (_.isString(fieldNames)) {
+                /** If a single field name is provided, add it to an array so we can process it more easily */
+                fieldNames = [fieldNames];
+            }
+            /** Generate promises for each field */
+            _.each(fieldNames, function (fieldName) {
+                var promise = createPromise(fieldName);
+                promiseArray.push(promise);
+            });
+            /** Pause until all requests are resolved */
+            return $q.all(promiseArray)
+                .then(function (fieldVersionCollections) {
+                var versionHistoryCollection = new ap.VersionHistoryCollection(fieldVersionCollections, model.factory);
+                return versionHistoryCollection;
+            });
+            /** Constructor that creates a promise for each field */
+            function createPromise(fieldName) {
+                var fieldDefinition = listItem.getFieldDefinition(fieldName);
+                var payload = {
+                    operation: 'GetVersionCollection',
+                    strlistID: model.list.getListId(),
+                    strlistItemID: listItem.id,
+                    strFieldName: fieldDefinition.staticName,
+                    webURL: undefined
+                };
+                /** Manually set site url if defined, prevents SPServices from making a blocking call to fetch it. */
+                if (apConfig.defaultUrl) {
+                    payload.webURL = apConfig.defaultUrl;
+                }
+                return apDataService.getFieldVersionHistory(payload, fieldDefinition);
+            }
         };
         /**
          * @ngdoc function
@@ -1578,7 +1586,7 @@ var ap;
             var _this = this;
             this.preDeleteAction = action;
             //Return function to unregister
-            return function () { return delete _this.preDeleteAction; };
+            return function () { return _this.preDeleteAction = undefined; };
         };
         /**
          * @ngdoc function
@@ -1617,7 +1625,7 @@ var ap;
             var _this = this;
             this.preSaveAction = action;
             //Return function to unregister
-            return function () { return delete _this.preSaveAction; };
+            return function () { return _this.preSaveAction = undefined; };
         };
         /**
          * @ngdoc function
@@ -1804,7 +1812,6 @@ var ap;
         ListItem.prototype.saveFields = function (fieldArray, options) {
             var listItem = this;
             var model = listItem.getModel();
-            var deferred = $q.defer();
             var definitions = [];
             /** Allow a string to be passed in to save a single field */
             var fieldNames = _.isString(fieldArray) ? [fieldArray] : fieldArray;
@@ -1820,13 +1827,12 @@ var ap;
             var defaults = { buildValuePairs: false, valuePairs: valuePairs };
             /** Extend defaults with any provided options */
             var opts = _.assign({}, defaults, options);
-            apDataService.updateListItem(model, listItem, opts)
+            return apDataService.updateListItem(model, listItem, opts)
                 .then(function (updatedListItem) {
-                deferred.resolve(updatedListItem);
                 /** Optionally broadcast change event */
                 apUtilityService.registerChange(model, 'update', updatedListItem.id);
+                return updatedListItem;
             });
-            return deferred.promise;
         };
         /**
          * @ngdoc function
@@ -1865,7 +1871,7 @@ var ap;
             /** Set the relative file reference */
             options.fileRef = listItem.fileRef.lookupValue;
             if (!options.templateId && !options.workflowName) {
-                throw 'Either a templateId or workflowName is required to initiate a workflow.';
+                throw new Error('Either a templateId or workflowName is required to initiate a workflow.');
             }
             else if (options.templateId) {
                 /** The templateId is already provided so we don't need to look for it */
@@ -1877,7 +1883,7 @@ var ap;
                     .then(function (workflows) {
                     var targetWorklow = _.findWhere(workflows, { name: options.workflowName });
                     if (!targetWorklow) {
-                        throw 'A workflow with the specified name wasn\'t found.';
+                        throw new Error('A workflow with the specified name wasn\'t found.');
                     }
                     /** Create an extended set of options to pass any overrides to apDataService */
                     options.templateId = targetWorklow.templateId;
@@ -1969,6 +1975,182 @@ var ap;
     angular
         .module('angularPoint')
         .service('apListItemFactory', ListItemFactory);
+})(ap || (ap = {}));
+
+/// <reference path="../app.module.ts" />
+var ap;
+(function (ap) {
+    'use strict';
+    var FieldVersionCollection = (function () {
+        function FieldVersionCollection(fieldDefinition) {
+            this.versions = {};
+            this.fieldDefinition = fieldDefinition;
+        }
+        FieldVersionCollection.prototype.addVersion = function (editor, modified, value, version) {
+            this.versions[version] = {
+                editor: editor,
+                modified: modified,
+                value: value,
+                version: version
+            };
+        };
+        Object.defineProperty(FieldVersionCollection.prototype, "mappedName", {
+            get: function () {
+                return this.fieldDefinition.mappedName;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(FieldVersionCollection.prototype, "length", {
+            get: function () {
+                return _.keys(this.versions).length;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        return FieldVersionCollection;
+    })();
+    ap.FieldVersionCollection = FieldVersionCollection;
+    var FieldChange = (function () {
+        function FieldChange(propertyName, fieldDefinition, newerVersion, previousVersion) {
+            if (previousVersion === void 0) { previousVersion = {}; }
+            this.fieldName = fieldDefinition.displayName;
+            this.newerVersion = newerVersion;
+            /** Need to set property name before calling this.getFormattedValue */
+            this.propertyName = propertyName;
+            this.newValue = this.getFormattedValue(newerVersion);
+            this.oldValue = this.getFormattedValue(previousVersion);
+            this.previousVersion = previousVersion;
+        }
+        FieldChange.prototype.getFormattedValue = function (version) {
+            var propertyValue = '';
+            if (version.getFormattedValue) {
+                propertyValue = version.getFormattedValue(this.propertyName);
+            }
+            return propertyValue;
+        };
+        return FieldChange;
+    })();
+    var VersionSummary = (function () {
+        function VersionSummary(newerVersion, previousVersion) {
+            var _this = this;
+            if (previousVersion === void 0) { previousVersion = {}; }
+            this.fieldsChanged = {};
+            /** Loop through each of the properties on the newer list item */
+            _.each(newerVersion, function (val, propertyName) {
+                var fieldDefinition = newerVersion.getFieldDefinition(propertyName);
+                /** Only log non-readonly fields that aren't the same */
+                if (fieldDefinition && !fieldDefinition.readOnly &&
+                    JSON.stringify(newerVersion[propertyName]) !== JSON.stringify(previousVersion[propertyName])) {
+                    var fieldChange = new FieldChange(propertyName, fieldDefinition, newerVersion, previousVersion);
+                    if (fieldChange.newValue !== fieldChange.oldValue) {
+                        /** This field has changed */
+                        _this.fieldsChanged[propertyName] = fieldChange;
+                    }
+                }
+            });
+            this.changeCount = _.keys(this.fieldsChanged).length;
+            this.listItemVersion = newerVersion;
+            this.version = newerVersion.version;
+        }
+        Object.defineProperty(VersionSummary.prototype, "editor", {
+            get: function () {
+                return this.listItemVersion.editor;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(VersionSummary.prototype, "modified", {
+            get: function () {
+                return this.listItemVersion.modified;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(VersionSummary.prototype, "hasMajorChanges", {
+            get: function () {
+                return _.isNumber(this.changeCount) && this.changeCount > 0;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        return VersionSummary;
+    })();
+    ap.VersionSummary = VersionSummary;
+    var ChangeSummary = (function () {
+        function ChangeSummary(versions) {
+            var _this = this;
+            /** The number of versions where list item data actually changed */
+            this.significantVersionCount = 0;
+            this.versionSummaryCollection = {};
+            /** First version won't have a previous version */
+            var previousVersion;
+            _.each(versions, function (version) {
+                var versionSummary = new VersionSummary(version, previousVersion);
+                if (versionSummary.hasMajorChanges) {
+                    _this.significantVersionCount++;
+                }
+                _this.versionSummaryCollection[versionSummary.version] = versionSummary;
+                /** Store this version so we can compare to the next version */
+                previousVersion = version;
+            });
+        }
+        Object.defineProperty(ChangeSummary.prototype, "count", {
+            get: function () {
+                return _.keys(this.versionSummaryCollection).length;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(ChangeSummary.prototype, "toArray", {
+            get: function () {
+                return _.toArray(this.versionSummaryCollection);
+            },
+            enumerable: true,
+            configurable: true
+        });
+        return ChangeSummary;
+    })();
+    ap.ChangeSummary = ChangeSummary;
+    var VersionHistoryCollection = (function () {
+        // getFactory: () => IModelFactory;
+        function VersionHistoryCollection(fieldVersionCollections, factory) {
+            var _this = this;
+            /** Iterate through each of the field version collections */
+            _.each(fieldVersionCollections, function (fieldVersionCollection) {
+                _this.addFieldCollection(fieldVersionCollection, factory);
+            });
+        }
+        VersionHistoryCollection.prototype.addFieldCollection = function (fieldVersionCollection, factory) {
+            var _this = this;
+            /** Iterate through each version of this field */
+            _.each(fieldVersionCollection.versions, function (fieldVersion, versionNumber) {
+                /** Create a new version object if it doesn't already exist */
+                _this[versionNumber] = _this[versionNumber] || new factory((_a = {
+                        editor: fieldVersion.editor
+                    },
+                    /** Add field to the version history for this version with computed property name */
+                    _a[fieldVersionCollection.mappedName] = fieldVersion.value,
+                    _a.modified = fieldVersion.modified,
+                    /** Iterating over object properties which converts everything to string so convert back */
+                    _a.version = parseInt(versionNumber),
+                    _a
+                ));
+                var _a;
+            });
+        };
+        VersionHistoryCollection.prototype.count = function () {
+            return _.keys(this).length;
+        };
+        VersionHistoryCollection.prototype.generateChangeSummary = function () {
+            return new ChangeSummary(this);
+        };
+        VersionHistoryCollection.prototype.toArray = function () {
+            return _.toArray(this);
+        };
+        return VersionHistoryCollection;
+    })();
+    ap.VersionHistoryCollection = VersionHistoryCollection;
 })(ap || (ap = {}));
 
 /// <reference path="../app.module.ts" />
@@ -3127,9 +3309,6 @@ var ap;
 })(ap || (ap = {}));
 
 /// <reference path="../app.module.ts" />
-/// <reference path="../../typings/tsd.d.ts" />
-
-/// <reference path="../app.module.ts" />
 var ap;
 (function (ap) {
     'use strict';
@@ -3228,8 +3407,7 @@ var ap;
 var __extends = (this && this.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
-    __.prototype = b.prototype;
-    d.prototype = new __();
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 };
 var ap;
 (function (ap) {
@@ -3613,7 +3791,9 @@ var ap;
 var ap;
 (function (ap) {
     'use strict';
-    var service, $q, $timeout, $http, apConfig, apUtilityService, apCacheService, apDecodeService, apEncodeService, apFieldService, apIndexedCacheFactory, toastr, SPServices, apDefaultListItemQueryOptions, apWebServiceOperationConstants, apXMLToJSONService, apChangeService;
+    var apDefaultListItemQueryOptions = ap.DefaultListItemQueryOptions;
+    var apWebServiceOperationConstants = ap.WebServiceOperationConstants;
+    var service, $q, $timeout, $http, apConfig, apUtilityService, apCacheService, apDecodeService, apEncodeService, apFieldService, apIndexedCacheFactory, toastr, SPServices, apXMLToJSONService, apChangeService;
     var DataService = (function () {
         function DataService(_$http_, _$q_, _$timeout_, _apCacheService_, _apChangeService_, _apConfig_, _apDecodeService_, _apDefaultListItemQueryOptions_, _apEncodeService_, _apFieldService_, _apIndexedCacheFactory_, _apUtilityService_, _apWebServiceOperationConstants_, _apXMLToJSONService_, _SPServices_, _toastr_) {
             service = this;
@@ -3659,7 +3839,6 @@ var ap;
                 valuePairs: [],
                 webURL: model.list.identifyWebURL()
             };
-            var deferred = $q.defer();
             defaults.target = defaults.indexedCache;
             var opts = _.assign({}, defaults, options);
             //Method gets added onto new list item and allows access to parent cache
@@ -3669,16 +3848,16 @@ var ap;
                 opts.valuePairs = apEncodeService.generateValuePairs(editableFields, listItem);
             }
             /** Overload the function then pass anything past the first parameter to the supporting methods */
-            this.serviceWrapper(opts)
+            return this.serviceWrapper(opts)
                 .then(function (response) {
                 /** Online this should return an XML object */
                 var indexedCache = apDecodeService.processListItems(model, opts, response, opts);
                 /** Return reference to last listItem in cache because it will have the new highest id */
-                deferred.resolve(indexedCache.last());
+                return indexedCache.last();
+                // deferred.resolve(indexedCache.last());
             }, function (err) {
-                deferred.reject(err);
+                // deferred.reject(err);
             });
-            return deferred.promise;
         };
         DataService.prototype.createItemUrlFromFileRef = function (fileRefString) {
             return window.location.protocol + '//' + window.location.hostname + '/' + fileRefString;
@@ -3753,18 +3932,15 @@ var ap;
                     opts.valuePairs = [['FileRef', listItem.fileRef.lookupValue]];
                 }
             }
-            var deferred = $q.defer();
-            this.serviceWrapper(opts)
+            return this.serviceWrapper(opts)
                 .then(function () {
                 /** Success */
-                apCacheService.deleteEntity(opts.listName, listItem.id);
-                deferred.resolve();
+                return apCacheService.deleteEntity(opts.listName, listItem.id);
             }, function (outcome) {
                 //In the event of an error, display toast
                 toastr.error('There was an error deleting a list item from ' + model.list.title);
-                deferred.reject(outcome);
+                return outcome;
             });
-            return deferred.promise;
         };
         /**
          * @ngdoc function
@@ -3782,21 +3958,19 @@ var ap;
             var defaults = {
                 target: model.getCache()
             };
-            var deferred = $q.defer();
             /** Extend defaults **/
             var opts = _.assign({}, defaults, options);
-            this.serviceWrapper(query)
+            return this.serviceWrapper(query)
                 .then(function (responseXML) {
                 if (query.operation === 'GetListItemChangesSinceToken') {
                     _this.processChangeTokenXML(model, query, responseXML, opts);
                 }
                 /** Convert the XML into JS objects */
                 var entities = apDecodeService.processListItems(model, query, responseXML, opts);
-                deferred.resolve(entities);
                 /** Set date time to allow for time based updates */
                 query.lastRun = new Date();
+                return entities;
             });
-            return deferred.promise;
         };
         /**
          * @ngdoc function
@@ -3844,10 +4018,9 @@ var ap;
          * @returns {object} Resolves with an array of objects defining each of the available workflows for the item.
          */
         DataService.prototype.getAvailableWorkflows = function (fileRefString) {
-            var deferred = $q.defer();
             /** Build the full url for the fileRef if not already provided.  FileRef for an item defaults to a relative url */
             var itemUrl = fileRefString.indexOf(': //') > -1 ? fileRefString : this.createItemUrlFromFileRef(fileRefString);
-            this.serviceWrapper({
+            return this.serviceWrapper({
                 operation: 'GetTemplatesForItem',
                 item: itemUrl
             }).then(function (responseXML) {
@@ -3861,9 +4034,8 @@ var ap;
                     };
                     workflowTemplates.push(template);
                 });
-                deferred.resolve(workflowTemplates);
+                return workflowTemplates;
             });
-            return deferred.promise;
         };
         /**
          * @ngdoc function
@@ -3996,19 +4168,17 @@ var ap;
                 operation: 'GetVersionCollection'
             };
             var opts = _.assign({}, defaults, options);
-            var deferred = $q.defer();
-            this.serviceWrapper(opts)
+            return this.serviceWrapper(opts)
                 .then(function (response) {
                 /** Parse XML response */
-                var versions = apDecodeService.parseFieldVersions(response, fieldDefinition);
+                var fieldVersionCollection = apDecodeService.parseFieldVersions(response, fieldDefinition);
                 /** Resolve with an array of all field versions */
-                deferred.resolve(versions);
+                return fieldVersionCollection;
             }, function (outcome) {
                 /** Failure */
                 toastr.error('Failed to fetch version history.');
-                deferred.reject(outcome);
+                return outcome;
             });
-            return deferred.promise;
         };
         /**
          * @ngdoc function
@@ -4065,14 +4235,12 @@ var ap;
          * @returns {Promise} Promise which resolves with an array of field definitions for the list.
          */
         DataService.prototype.getListFields = function (options) {
-            var deferred = $q.defer();
-            this.getList(options)
+            return this.getList(options)
                 .then(function (responseXML) {
                 var filteredNodes = apXMLToJSONService.filterNodes(responseXML, 'Field');
                 var fields = apXMLToJSONService.parse(filteredNodes, { includeAllAttrs: true, removeOws: false });
-                deferred.resolve(fields);
+                return fields;
             });
-            return deferred.promise;
         };
         /**
          * @ngdoc function
@@ -4085,7 +4253,6 @@ var ap;
          * @returns {object} Promise which resolves with the requested user profile.
          */
         DataService.prototype.getUserProfileByName = function (login) {
-            var deferred = $q.defer();
             var payload = {
                 accountName: undefined,
                 operation: 'GetUserProfileByName'
@@ -4093,7 +4260,7 @@ var ap;
             if (login) {
                 payload.accountName = login;
             }
-            this.serviceWrapper(payload)
+            return this.serviceWrapper(payload)
                 .then(function (responseXML) {
                 var userProfile = {
                     AccountName: undefined,
@@ -4111,9 +4278,8 @@ var ap;
                 /** Optionally specify a necessary prefix that should appear before the user login */
                 userProfile.userLoginName = apConfig.userLoginNamePrefix ?
                     (apConfig.userLoginNamePrefix + userProfile.AccountName) : userProfile.AccountName;
-                deferred.resolve(userProfile);
+                return userProfile;
             });
-            return deferred.promise;
         };
         /**
          * @ngdoc function
@@ -4179,12 +4345,11 @@ var ap;
          * @returns {promise} Promise that resolves with the server response.
          */
         DataService.prototype.requestData = function (opts) {
-            var deferred = $q.defer();
             var soapData = SPServices.generateXMLComponents(opts);
             var service = apWebServiceOperationConstants[opts.operation][0];
-            this.generateWebServiceUrl(service, opts.webURL)
+            return this.generateWebServiceUrl(service, opts.webURL)
                 .then(function (url) {
-                $http.post(url, soapData.msg, {
+                return $http.post(url, soapData.msg, {
                     responseType: "document",
                     headers: {
                         "Content-Type": "text/xml;charset='utf-8'",
@@ -4202,19 +4367,18 @@ var ap;
                     var error = apDecodeService.checkResponseForErrors(response.data);
                     if (error) {
                         console.error(error, opts);
-                        deferred.reject(error);
+                        return error;
                     }
                     else {
-                        deferred.resolve(response.data);
+                        return response.data;
                     }
                 }, function (response) {
                     /** Failure */
                     var error = apDecodeService.checkResponseForErrors(response.data);
                     console.error(response.statusText, opts);
-                    deferred.reject(response.statusText + ': ' + error);
+                    return response.statusText + ': ' + error;
                 });
             });
-            return deferred.promise;
         };
         /**
          * @ngdoc function
@@ -4264,7 +4428,6 @@ var ap;
                 webURL: apConfig.defaultUrl
             };
             var opts = _.assign({}, defaults, options);
-            var deferred = $q.defer();
             /** Convert the xml returned from the server into an array of js objects */
             function processXML(responseXML) {
                 if (opts.filterNode) {
@@ -4275,17 +4438,16 @@ var ap;
                     return responseXML;
                 }
             }
-            this.requestData(opts)
+            return this.requestData(opts)
                 .then(function (responseXML) {
                 /** Failure */
                 var data = opts.postProcess(responseXML);
-                deferred.resolve(data);
+                return data;
             }, function (err) {
                 /** Failure */
                 toastr.error('Failed to complete the requested ' + opts.operation + ' operation.');
-                deferred.reject(err);
+                return err;
             });
-            return deferred.promise;
         };
         /**
          * @ngdoc function
@@ -4351,7 +4513,7 @@ var ap;
                 target: listItem.getCache(),
                 valuePairs: [],
                 webURL: model.list.identifyWebURL()
-            }, deferred = $q.defer(), opts = _.assign({}, defaults, options);
+            }, opts = _.assign({}, defaults, options);
             if (opts.buildValuePairs === true) {
                 var editableFields = _.where(model.list.fields, { readOnly: false });
                 opts.valuePairs = apEncodeService.generateValuePairs(editableFields, listItem);
@@ -4359,19 +4521,17 @@ var ap;
             if (model.list.webURL && !opts.webURL) {
                 opts.webURL = model.list.webURL;
             }
-            /** Notify any listeners to expect a change */
-            apChangeService.registerListItemUpdate(listItem, opts, deferred.promise);
             ///** Overload the function then pass anything past the first parameter to the supporting methods */
             //this.serviceWrapper(opts, listItem, model)
-            this.serviceWrapper(opts)
+            var request = this.serviceWrapper(opts)
                 .then(function (response) {
                 var indexedCache = apDecodeService.processListItems(model, listItem.getQuery(), response, opts);
                 /** Return reference to updated listItem  */
-                deferred.resolve(indexedCache[listItem.id]);
-            }, function (err) {
-                deferred.reject(err);
+                return indexedCache[listItem.id];
             });
-            return deferred.promise;
+            /** Notify any listeners to expect a change */
+            apChangeService.registerListItemUpdate(listItem, opts, request);
+            return request;
         };
         /**
          * @description
@@ -4801,33 +4961,30 @@ var ap;
          * @param {xml} responseXML Returned XML from web service call.
          * @param {object} fieldDefinition Field definition from the model.
          *
-         * @returns {Array} Array objects containing the various version of a field for each change.
+         * @returns {FieldVersionCollection} FieldVersionCollection object with all versions included.
          */
         DecodeService.prototype.parseFieldVersions = function (responseXML, fieldDefinition) {
             var _this = this;
-            var versions = [];
+            // var versions = {};
             var xmlVersions = $(responseXML).find('Version');
             var versionCount = xmlVersions.length;
+            var fieldVersionCollection = new ap.FieldVersionCollection(fieldDefinition);
             _.each(xmlVersions, function (xmlVersion, index) {
                 /** Bug in SOAP Web Service returns time in UTC time for version history
                  *  Details: https://spservices.codeplex.com/discussions/391879
                  */
                 var utcDate = _this.parseStringValue($(xmlVersion).attr('Modified'), 'DateTime');
                 /** Parse the xml and create a representation of the version as a js object */
-                var version = {
-                    editor: _this.parseStringValue($(xmlVersion).attr('Editor'), 'User'),
-                    /** Turn the SharePoint formatted date into a valid date object */
-                    modified: _this.convertUTCDateToLocalDate(utcDate),
-                    /** Returns records in desc order so compute the version number from index */
-                    version: versionCount - index
-                };
+                var editor = _this.parseStringValue($(xmlVersion).attr('Editor'), 'User');
+                /** Turn the SharePoint formatted date into a valid date object */
+                var modified = _this.convertUTCDateToLocalDate(utcDate);
                 /** Properly format field based on definition from model */
-                version[fieldDefinition.mappedName] =
-                    _this.parseStringValue($(xmlVersion).attr(fieldDefinition.staticName), fieldDefinition.objectType);
-                /** Push to beginning of array */
-                versions.unshift(version);
+                var value = _this.parseStringValue($(xmlVersion).attr(fieldDefinition.staticName), fieldDefinition.objectType);
+                var version = versionCount - index;
+                /** Add each distict version to the version collection */
+                fieldVersionCollection.addVersion(editor, modified, value, version);
             });
-            return versions;
+            return fieldVersionCollection;
         };
         /**
          * @ngdoc function
