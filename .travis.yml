@@ -9,4 +9,5 @@ before_script:
     - echo 'Canada/Pacific' | sudo tee /etc/timezone
     - sudo dpkg-reconfigure --frontend noninteractive tzdata
 script:
+    - gulp gen-ts-refs
     - gulp test
