@@ -10,4 +10,5 @@ before_script:
     - sudo dpkg-reconfigure --frontend noninteractive tzdata
 script:
     - gulp cacheXML
+    - gulp gen-ts-refs
     - gulp test
