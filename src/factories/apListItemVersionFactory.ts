@@ -113,7 +113,7 @@ module ap {
     export class ChangeSummary<T extends ListItem<any>> {
         /** The number of versions where list item data actually changed */
         significantVersionCount = 0;
-        versionSummaryCollection: { [key: number]: VersionSummary<T> } = {};
+        private versionSummaryCollection: { [key: number]: VersionSummary<T> } = {};
 
         constructor(versions: {[key: number]: IListItemVersion<T>}) {
             /** First version won't have a previous version */
@@ -128,6 +128,10 @@ module ap {
                 previousVersion = version;
             });
         }
+        //Use getter in case we need to alter the way we store this in future
+        get changes() {
+            return this.versionSummaryCollection;
+        }        
         get count(): number {
             return _.keys(this.versionSummaryCollection).length;
         }
