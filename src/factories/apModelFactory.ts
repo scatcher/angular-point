@@ -827,9 +827,15 @@ module ap {
         resolvePermissions(): IUserPermissionsObject {
             var model = this;
             if (model.list && model.list.effectivePermMask) {
-                /** Get the permission mask from the permission mask name */
+                /** If request has been made to GetListItemChangesSinceToken we have already stored the 
+                 * permission for this list.  Get the permission mask from the permission mask name. */
                 var permissionMask = apUtilityService.convertEffectivePermMask(model.list.effectivePermMask);
                 return apUtilityService.resolvePermissions(permissionMask);
+            } else if (model.getCachedEntities().first()) {
+                /** Next option is to use the same permission as one of the 
+                 * already cached list items for this model. */
+                var sampleListItem = model.getCachedEntities().first();
+                return apUtilityService.resolvePermissions(sampleListItem.permMask);
             } else {
                 window.console.error('Attempted to resolve permissions of a model that hasn\'t been initialized.', model);
                 return apUtilityService.resolvePermissions(null);
