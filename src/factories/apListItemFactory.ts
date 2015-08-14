@@ -220,9 +220,9 @@ module ap {
          *      };
          * </pre>
          */
-        getChangeSummary(fieldNames: string[] | string): ng.IPromise<ChangeSummary<T>> {
-            return this.getVersionHistory<T>(fieldNames)
-                .then((versionHistoryCollection: VersionHistoryCollection) => versionHistoryCollection.generateChangeSummary());
+        getChangeSummary(fieldNames?: string[] | string): ng.IPromise<ChangeSummary<T>> {
+            return this.getVersionHistory(fieldNames)
+                .then((versionHistoryCollection: VersionHistoryCollection<T>) => versionHistoryCollection.generateChangeSummary());
         }
 
         /**
@@ -429,7 +429,7 @@ module ap {
          *      };
          * </pre>
          */
-        getVersionHistory(fieldNames?: string[]| string): ng.IPromise<VersionHistoryCollection<T>> {
+        getVersionHistory(fieldNames?: string[] | string): ng.IPromise<VersionHistoryCollection<T>> {
             var listItem = this;
             var model = listItem.getModel();
             var promiseArray = [];
