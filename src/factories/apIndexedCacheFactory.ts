@@ -38,10 +38,10 @@ module ap {
             if (_.isObject(listItem) && !!listItem.id) {
                 /** Only add the listItem to the cache if it's not already there */
                 if (!this[listItem.id]) {
-                    this[listItem.id.toString()] = listItem;
+                    this[listItem.id] = listItem;
                 }
             } else {
-                throw new Error('A valid listItem wasn\'t found: ' + JSON.stringify(listItem));
+                throw new Error('A valid listItem wasn\'t provided: ' + JSON.stringify(listItem));
             }
         }
 

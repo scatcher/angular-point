@@ -18,7 +18,7 @@ module ap {
 
     export class FieldVersionCollection {
         fieldDefinition: FieldDefinition;
-        versions: {[key: number]: IFieldVersion} = {};
+        versions: { [key: number]: IFieldVersion } = {};
 
         constructor(fieldDefinition: FieldDefinition) {
             this.fieldDefinition = fieldDefinition;
@@ -115,7 +115,7 @@ module ap {
         significantVersionCount = 0;
         private versionSummaryCollection: { [key: number]: VersionSummary<T> } = {};
 
-        constructor(versions: {[key: number]: IListItemVersion<T>}) {
+        constructor(versions: { [key: number]: IListItemVersion<T> }) {
             /** First version won't have a previous version */
             var previousVersion;
             _.each(versions, (version: IListItemVersion<T>) => {
@@ -131,7 +131,7 @@ module ap {
         //Use getter in case we need to alter the way we store this in future
         get changes() {
             return this.versionSummaryCollection;
-        }        
+        }
         get count(): number {
             return _.keys(this.versionSummaryCollection).length;
         }
@@ -155,13 +155,13 @@ module ap {
             _.each(fieldVersionCollection.versions, (fieldVersion: IFieldVersion, versionNumber) => {
                 /** Create a new version object if it doesn't already exist */
                 this[versionNumber] = this[versionNumber] || new factory<T>({
-                        editor: fieldVersion.editor,
-                        /** Add field to the version history for this version with computed property name */
-                        [fieldVersionCollection.mappedName]: fieldVersion.value,
-                        modified: fieldVersion.modified,
-                        /** Iterating over object properties which converts everything to string so convert back */
-                        version: parseInt(versionNumber)
-                    });
+                    editor: fieldVersion.editor,
+                    modified: fieldVersion.modified,
+                    /** Iterating over object properties which converts everything to string so convert back */
+                    version: parseInt(versionNumber)
+                });
+                /** Add field to the version history for this version with computed property name */
+                this[versionNumber][fieldVersionCollection.mappedName] = fieldVersion.value
             });
         }
 

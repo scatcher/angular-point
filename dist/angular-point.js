@@ -832,11 +832,11 @@ var ap;
             if (_.isObject(listItem) && !!listItem.id) {
                 /** Only add the listItem to the cache if it's not already there */
                 if (!this[listItem.id]) {
-                    this[listItem.id.toString()] = listItem;
+                    this[listItem.id] = listItem;
                 }
             }
             else {
-                throw new Error('A valid listItem wasn\'t found: ' + JSON.stringify(listItem));
+                throw new Error('A valid listItem wasn\'t provided: ' + JSON.stringify(listItem));
             }
         };
         /**
@@ -2131,17 +2131,14 @@ var ap;
             /** Iterate through each version of this field */
             _.each(fieldVersionCollection.versions, function (fieldVersion, versionNumber) {
                 /** Create a new version object if it doesn't already exist */
-                _this[versionNumber] = _this[versionNumber] || new factory((_a = {
-                        editor: fieldVersion.editor
-                    },
-                    /** Add field to the version history for this version with computed property name */
-                    _a[fieldVersionCollection.mappedName] = fieldVersion.value,
-                    _a.modified = fieldVersion.modified,
+                _this[versionNumber] = _this[versionNumber] || new factory({
+                    editor: fieldVersion.editor,
+                    modified: fieldVersion.modified,
                     /** Iterating over object properties which converts everything to string so convert back */
-                    _a.version = parseInt(versionNumber),
-                    _a
-                ));
-                var _a;
+                    version: parseInt(versionNumber)
+                });
+                /** Add field to the version history for this version with computed property name */
+                _this[versionNumber][fieldVersionCollection.mappedName] = fieldVersion.value;
             });
         };
         VersionHistoryCollection.prototype.count = function () {
