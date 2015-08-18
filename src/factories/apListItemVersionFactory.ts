@@ -132,10 +132,10 @@ module ap {
         get changes() {
             return this.versionSummaryCollection;
         }
-        get count(): number {
+        count(): number {
             return _.keys(this.versionSummaryCollection).length;
         }
-        get toArray() {
+        toArray() {
             return _.toArray<VersionSummary<T>>(this.versionSummaryCollection);
         }
     }
