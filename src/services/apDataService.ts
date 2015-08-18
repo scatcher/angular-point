@@ -604,7 +604,11 @@ module ap {
             }
 
             /** Store token for future web service calls to return changes */
-            query.changeToken = this.retrieveChangeToken(responseXML);
+            let changeToken = this.retrieveChangeToken(responseXML);
+            if (changeToken) {
+                /** Don't update change token if request fails to return a valid response */
+                query.changeToken = changeToken;
+            }
 
             /** Update the user permissions for this list */
             var effectivePermissionMask = this.retrievePermMask(responseXML);
