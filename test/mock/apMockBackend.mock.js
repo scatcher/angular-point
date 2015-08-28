@@ -170,6 +170,7 @@ var ap;
                         break;
                     case 'Update':
                         var listItemStrId = $(request).find('Field[Name="ID"]').text();
+                        //Retrieve the JS Object that is attempting to update
                         var activeEntity = activeEntities[listItemStrId];
                         //Mock fields that would be updated when a list item is update
                         overrides = {
@@ -177,7 +178,7 @@ var ap;
                             Editor: apEncodeService.encodeValue('User', getMockUser()),
                             Version: activeEntity.version ? activeEntity.version + 1 : 2
                         };
-                        var fieldDefinitions = activeEntity.getList().customFields;
+                        var fieldDefinitions = activeEntity.getList().fields;
                         var valuePairs = apEncodeService.generateValuePairs(fieldDefinitions, activeEntity);
                         var encodedValues = {};
                         _.each(valuePairs, function (pair) {
