@@ -16,6 +16,13 @@ module ap {
         version: number;
     }
 
+    /**
+     * @ngdoc Object
+     * @name apListItemVersionFactory.FieldVersionCollection
+     * @param {FieldDefinition} fieldDefinition Field definition of each version of the field added.
+     * @description
+     * Object that contains the entire version history for a given list item field/property.
+     */
     export class FieldVersionCollection {
         fieldDefinition: FieldDefinition;
         versions: { [key: number]: IFieldVersion } = {};
@@ -23,8 +30,18 @@ module ap {
         constructor(fieldDefinition: FieldDefinition) {
             this.fieldDefinition = fieldDefinition;
         }
-
-        addVersion(editor: IUser, modified: Date, value: any, version: number) {
+        /**
+        * @ngdoc Object
+        * @name apListItemVersionFactory.FieldVersionCollection.addVersion
+        * @methodOf apListItemVersionFactory.FieldVersionCollection
+        * @param {IUser} editor User who made the change.
+        * @param {Date} modified Date modified.
+        * @param {any} value Value of the field at this version.
+        * @param {number} version The version number.
+        * @description
+        * Used to add a single version to the collection.
+        */
+        addVersion(editor: IUser, modified: Date, value: any, version: number): void {
             this.versions[version] = {
                 editor,
                 modified,
@@ -71,13 +88,18 @@ module ap {
         }
     }
 
-    export class VersionSummary<T extends ListItem<any>> {
+    /**
+     * @ngdoc Object
+     * @name apListItemVersionFactory.FieldChangeSummary
+     * @param {ListItem<T>} newerVersion Updated version of list item.
+     * @param {ListItem<T>} [previousVersion={}] Previous version of list item.
+     * @description
+     * Generates a snapshot between 2 versions of a list item and locates diferences.
+     */
+    export class FieldChangeSummary<T extends ListItem<any>>{
         changeCount: number;
         fieldsChanged: { [key: string]: FieldChange; } = {};
-        listItemVersion: IListItemVersion<any>;
-        version: number;
-
-        constructor(newerVersion: IListItemVersion<T>, previousVersion: IListItemVersion<T> | Object = {}) {
+        constructor(newerVersion: ListItem<T>, previousVersion: ListItem<T> | Object = {}) {
             /** Loop through each of the properties on the newer list item */
             _.each(newerVersion, (val, propertyName) => {
                 var fieldDefinition = newerVersion.getFieldDefinition(propertyName);
@@ -93,6 +115,26 @@ module ap {
                 }
             });
             this.changeCount = _.keys(this.fieldsChanged).length;
+        }
+        get hasMajorChanges(): boolean {
+            return _.isNumber(this.changeCount) && this.changeCount > 0;
+        }
+    }
+
+    /**
+     * @ngdoc Object
+     * @name apListItemVersionFactory.VersionSummary
+     * @param {IListItemVersion<T>} newerVersion Updated version of list item.
+     * @param {IListItemVersion<T>} [previousVersion={}] Previous version of list item.
+     * @description
+     * Used specifically to determine difference between 2 distinct versions of a list item using the 
+     * version history.  Extends FieldChangeSummary.
+     */
+    export class VersionSummary<T extends ListItem<any>> extends FieldChangeSummary<T> {
+        listItemVersion: IListItemVersion<any>;
+        version: number;
+        constructor(newerVersion: IListItemVersion<T>, previousVersion: IListItemVersion<T> | Object = {}) {
+            super(newerVersion, previousVersion);
             this.listItemVersion = newerVersion;
             this.version = newerVersion.version;
         }
@@ -104,12 +146,16 @@ module ap {
         get modified() {
             return this.listItemVersion.modified;
         }
-
-        get hasMajorChanges(): boolean {
-            return _.isNumber(this.changeCount) && this.changeCount > 0;
-        }
     }
 
+
+    /**
+     * @ngdoc Object
+     * @name apListItemVersionFactory.ChangeSummary
+     * @param {{ [key: number]: IListItemVersion<T> }} Multiple versions of a list item.
+     * @description
+     * Used to summarize all changes for a given list item.
+     */
     export class ChangeSummary<T extends ListItem<any>> {
         /** The number of versions where list item data actually changed */
         significantVersionCount = 0;
@@ -178,21 +224,23 @@ module ap {
         }
     }
 
-    //export class ListItemVersionFactory {
-    //    // static $inject = ['$q', 'apUtilityService'];
-    //    ChangeSummary = ChangeSummary;
-    //    VersionHistoryCollection = VersionHistoryCollection;
-    //}
-    //
-    ///**
-    // * @ngdoc function
-    // * @name angularPoint.apListItemVersionFactory
-    // * @description
-    // * Factory which handles parsing list item versions.
-    // *
-    // */
-    //angular.module('angularPoint')
-    //    .service('apListItemVersionFactory', ListItemVersionFactory);
+    export class ListItemVersionFactory {
+        ChangeSummary = ChangeSummary;
+        FieldChangeSummary = FieldChangeSummary;
+        FieldVersionCollection = FieldVersionCollection;
+        VersionHistoryCollection = VersionHistoryCollection;
+        VersionSummary = VersionSummary;
+    }
+    
+    /**
+    * @ngdoc function
+    * @name apListItemVersionFactory
+    * @description
+    * Factory which handles parsing list item versions and identifying changes.
+    *
+    */
+    angular.module('angularPoint')
+        .service('apListItemVersionFactory', ListItemVersionFactory);
 
 
 }

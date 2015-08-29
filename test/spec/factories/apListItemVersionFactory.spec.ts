@@ -30,6 +30,17 @@ module ap {
             it('exposes fields mapped name', function () {
                 expect(integerFieldDefinition.mappedName).toEqual('integer');
             });
+        });
+
+        describe('Class FieldChangeSummary', function () {
+
+            it('correctly detects a change', function () {
+                var newVersion = new mockModel.factory<MockListItem>({integer: 4});
+                var oldVersion = new mockModel.factory<MockListItem>({integer: 3});
+                var changeSummary = new ap.FieldChangeSummary(newVersion, oldVersion);
+
+                expect(changeSummary.hasMajorChanges).toBeTruthy();
+            });
 
         });
 
@@ -37,15 +48,15 @@ module ap {
 
             describe('getter hasMajorChanges', function () {
                 it('returns false when nothing changes between versions', function () {
-                    var newVersion = new mockModel.factory({integer: 3, version: 2});
-                    var oldVersion = new mockModel.factory({integer: 3, version: 1});
+                    var newVersion = new mockModel.factory<MockListItem>({integer: 3, version: 2});
+                    var oldVersion = new mockModel.factory<MockListItem>({integer: 3, version: 1});
                     var versionSummary = new ap.VersionSummary(newVersion, oldVersion);
 
                     expect(versionSummary.hasMajorChanges).toBeFalsy();
                 });
                 it('returns true when nothing changes between versions', function () {
-                    var newVersion = new mockModel.factory({integer: 4, version: 2});
-                    var oldVersion = new mockModel.factory({integer: 3, version: 1});
+                    var newVersion = new mockModel.factory<MockListItem>({integer: 4, version: 2});
+                    var oldVersion = new mockModel.factory<MockListItem>({integer: 3, version: 1});
                     var versionSummary = new ap.VersionSummary(newVersion, oldVersion);
 
                     expect(versionSummary.hasMajorChanges).toBeTruthy();
@@ -54,8 +65,8 @@ module ap {
 
             describe('change count', function () {
                 it('correctly identifies that 2 fields were changed', function () {
-                    var newVersion = new mockModel.factory({boolean: false, integer: 3, version: 2});
-                    var oldVersion = new mockModel.factory({boolean: true, integer: 4, version: 1});
+                    var newVersion = new mockModel.factory<MockListItem>({boolean: false, integer: 3, version: 2});
+                    var oldVersion = new mockModel.factory<MockListItem>({boolean: true, integer: 4, version: 1});
                     var versionSummary = new ap.VersionSummary(newVersion, oldVersion);
 
                     expect(versionSummary.changeCount).toEqual(2);
@@ -69,11 +80,11 @@ module ap {
             it('correctly determines which changes are significant', function () {
                 var changes = {
                     /** Significant because it's the first */
-                    1: new mockModel.factory({integer: 2, version: 1}),
+                    1: new mockModel.factory<MockListItem>({integer: 2, version: 1}),
                     /** Significant because integer changed */
-                    2: new mockModel.factory({integer: 3, version: 2}),
+                    2: new mockModel.factory<MockListItem>({integer: 3, version: 2}),
                     /** Not a significant change */
-                    3: new mockModel.factory({integer: 3, version: 3})
+                    3: new mockModel.factory<MockListItem>({integer: 3, version: 3})
                 };
                 var changeSummary = new ap.ChangeSummary(changes);
 

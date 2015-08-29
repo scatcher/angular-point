@@ -21,6 +21,14 @@ var ap;
                 expect(integerFieldDefinition.mappedName).toEqual('integer');
             });
         });
+        describe('Class FieldChangeSummary', function () {
+            it('correctly detects a change', function () {
+                var newVersion = new mockModel.factory({ integer: 4 });
+                var oldVersion = new mockModel.factory({ integer: 3 });
+                var changeSummary = new ap.FieldChangeSummary(newVersion, oldVersion);
+                expect(changeSummary.hasMajorChanges).toBeTruthy();
+            });
+        });
         describe('Class VersionSummary', function () {
             describe('getter hasMajorChanges', function () {
                 it('returns false when nothing changes between versions', function () {
