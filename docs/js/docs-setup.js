@@ -212,6 +212,51 @@ NG_DOCS={
     },
     {
       "section": "api",
+      "id": "apListItemVersionFactory",
+      "shortName": "apListItemVersionFactory",
+      "type": "function",
+      "moduleName": "apListItemVersionFactory",
+      "shortDescription": "Factory which handles parsing list item versions and identifying changes.",
+      "keywords": "api aplistitemversionfactory changes factory function handles identifying item list parsing versions"
+    },
+    {
+      "section": "api",
+      "id": "apListItemVersionFactory.ChangeSummary",
+      "shortName": "apListItemVersionFactory.ChangeSummary",
+      "type": "object",
+      "moduleName": "apListItemVersionFactory",
+      "shortDescription": "Used to summarize all changes for a given list item.",
+      "keywords": "api aplistitemversionfactory changes changesummary item list multiple object summarize versions"
+    },
+    {
+      "section": "api",
+      "id": "apListItemVersionFactory.FieldChangeSummary",
+      "shortName": "apListItemVersionFactory.FieldChangeSummary",
+      "type": "object",
+      "moduleName": "apListItemVersionFactory",
+      "shortDescription": "Generates a snapshot between 2 versions of a list item and locates diferences.",
+      "keywords": "api aplistitemversionfactory diferences fieldchangesummary generates item list locates newerversion object previous snapshot updated version versions"
+    },
+    {
+      "section": "api",
+      "id": "apListItemVersionFactory.FieldVersionCollection",
+      "shortName": "apListItemVersionFactory.FieldVersionCollection",
+      "type": "object",
+      "moduleName": "apListItemVersionFactory",
+      "shortDescription": "Object that contains the entire version history for a given list item field/property.",
+      "keywords": "add addversion api aplistitemversionfactory change collection definition editor entire field fielddefinition fieldversioncollection history item list modified number object single user version"
+    },
+    {
+      "section": "api",
+      "id": "apListItemVersionFactory.VersionSummary",
+      "shortName": "apListItemVersionFactory.VersionSummary",
+      "type": "object",
+      "moduleName": "apListItemVersionFactory",
+      "shortDescription": "Used specifically to determine difference between 2 distinct versions of a list item using the",
+      "keywords": "api aplistitemversionfactory determine difference distinct extends fieldchangesummary history item list newerversion object previous updated version versions versionsummary"
+    },
+    {
+      "section": "api",
       "id": "apLogger",
       "shortName": "apLogger",
       "type": "service",
@@ -455,6 +500,15 @@ NG_DOCS={
     },
     {
       "section": "api",
+      "id": "ListItem.changes",
+      "shortName": "ListItem.changes",
+      "type": "function",
+      "moduleName": "ListItem",
+      "shortDescription": "Checks a given list item compared to its pristine state and retuns a field change summary",
+      "keywords": "api change changes checks compared field fields function item list listitem modified non-readonly pristine retuns save summary"
+    },
+    {
+      "section": "api",
       "id": "ListItem.deleteAttachment",
       "shortName": "ListItem.deleteAttachment",
       "type": "function",
@@ -558,8 +612,8 @@ NG_DOCS={
       "shortName": "ListItem.getList",
       "type": "function",
       "moduleName": "ListItem",
-      "shortDescription": "Allows us to reference the list definition directly from the list item.  This is added to the",
-      "keywords": "allows api apmodelfactory definition directly documentation factory function getlist info item list listitem model prototype reference"
+      "shortDescription": "Abstraction to allow logic in model to be used instead of defining the list location in more than one place.",
+      "keywords": "abstraction allow api defining function getlist item list listitem location logic model place"
     },
     {
       "section": "api",
@@ -567,8 +621,8 @@ NG_DOCS={
       "shortName": "ListItem.getList",
       "type": "function",
       "moduleName": "ListItem",
-      "shortDescription": "Abstraction to allow logic in model to be used instead of defining the list location in more than one place.",
-      "keywords": "abstraction allow api defining function getlist item list listitem location logic model place"
+      "shortDescription": "Allows us to reference the list definition directly from the list item.  This is added to the",
+      "keywords": "allows api apmodelfactory definition directly documentation factory function getlist info item list listitem model prototype reference"
     },
     {
       "section": "api",
@@ -614,6 +668,15 @@ NG_DOCS={
       "moduleName": "ListItem",
       "shortDescription": "Takes an array of field names, finds the version history for field, and returns a snapshot of the object at each",
       "keywords": "api array assuming build combining definitions display field fields finds form function getversionhistory history includes independently interested ipromise item list listitem listitemversion modal model modified mygenericlistitem names non-readonly number object project promise properties property provided pull requests resolves responses returns server single snapshot standard takes title values ve version versionhistory vm working"
+    },
+    {
+      "section": "api",
+      "id": "ListItem.isPristine",
+      "shortName": "ListItem.isPristine",
+      "type": "function",
+      "moduleName": "ListItem",
+      "shortDescription": "Determines if a list item has changed since it was instantiated.",
+      "keywords": "api changed determines function instantiated ispristine item list listitem unchanged"
     },
     {
       "section": "api",

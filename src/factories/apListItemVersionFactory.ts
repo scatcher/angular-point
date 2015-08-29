@@ -3,6 +3,10 @@
 module ap {
     'use strict';
 
+    export interface IListItemVersions<T extends ListItem<any>> extends ListItem<T> {
+        [key: number]: IListItemVersion<T>;
+    }
+    
     export interface IListItemVersion<T extends ListItem<any>> extends ListItem<T> {
         modified: Date;
         version: number;
@@ -17,7 +21,7 @@ module ap {
     }
 
     /**
-     * @ngdoc Object
+     * @ngdoc object
      * @name apListItemVersionFactory.FieldVersionCollection
      * @param {FieldDefinition} fieldDefinition Field definition of each version of the field added.
      * @description
@@ -31,7 +35,7 @@ module ap {
             this.fieldDefinition = fieldDefinition;
         }
         /**
-        * @ngdoc Object
+        * @ngdoc object
         * @name apListItemVersionFactory.FieldVersionCollection.addVersion
         * @methodOf apListItemVersionFactory.FieldVersionCollection
         * @param {IUser} editor User who made the change.
@@ -89,7 +93,7 @@ module ap {
     }
 
     /**
-     * @ngdoc Object
+     * @ngdoc object
      * @name apListItemVersionFactory.FieldChangeSummary
      * @param {ListItem<T>} newerVersion Updated version of list item.
      * @param {ListItem<T>} [previousVersion={}] Previous version of list item.
@@ -122,7 +126,7 @@ module ap {
     }
 
     /**
-     * @ngdoc Object
+     * @ngdoc object
      * @name apListItemVersionFactory.VersionSummary
      * @param {IListItemVersion<T>} newerVersion Updated version of list item.
      * @param {IListItemVersion<T>} [previousVersion={}] Previous version of list item.
@@ -150,9 +154,9 @@ module ap {
 
 
     /**
-     * @ngdoc Object
+     * @ngdoc object
      * @name apListItemVersionFactory.ChangeSummary
-     * @param {{ [key: number]: IListItemVersion<T> }} Multiple versions of a list item.
+     * @param {IListItemVersions} versions Multiple versions of a list item.
      * @description
      * Used to summarize all changes for a given list item.
      */
@@ -161,7 +165,7 @@ module ap {
         significantVersionCount = 0;
         private versionSummaryCollection: { [key: number]: VersionSummary<T> } = {};
 
-        constructor(versions: { [key: number]: IListItemVersion<T> }) {
+        constructor(versions: IListItemVersions<T>) {
             /** First version won't have a previous version */
             var previousVersion;
             _.each(versions, (version: IListItemVersion<T>) => {

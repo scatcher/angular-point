@@ -1,6 +1,6 @@
 {
   "name": "angular-point",
-  "version": "3.8.3",
+  "version": "3.9.0",
   "homepage": "https://github.com/scatcher/angular-point",
   "authors": [
     "Scott <angular-point@scotthatcher.com>"
@@ -10,14 +10,14 @@
   "license": "MIT",
   "main": "./dist/angular-point.js",
   "dependencies": {
-    "angular": "^1.4.2",
-    "angular-toastr": "^1.4.1",
+    "angular": "^1.4.5",
+    "angular-toastr": "^1.5.0",
     "jquery": "^2.1.4",
-    "lodash": "^3.10.0",
+    "lodash": "^3.10.1",
     "lodash-deep": "^1.6.0"
   },
   "devDependencies": {
-    "angular-mocks": "^1.4.2",
+    "angular-mocks": "^1.4.5",
     "chance": "^0.7.6"
   },
   "ignore": [
@@ -26,7 +26,7 @@
     "bower_components"
   ],
   "resolutions": {
-    "angular": "^1.4.2"
+    "angular": "^1.4.5"
   },
   "typescript": {
     "definition": "./typings/ap.d.ts"

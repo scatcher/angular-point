@@ -1159,7 +1159,7 @@ var ap;
 var ap;
 (function (ap) {
     'use strict';
-    var $q, toastr, apCacheService, apDataService, apDecodeService, apEncodeService, apUtilityService, apConfig;
+    var $q, toastr, apCacheService, apDataService, apDecodeService, apEncodeService, apUtilityService, apConfig, apListItemVersionFactory;
     /**
      * @ngdoc object
      * @name ListItem
@@ -1171,6 +1171,18 @@ var ap;
     var ListItem = (function () {
         function ListItem() {
         }
+        /**
+         * @ngdoc function
+         * @name ListItem.changes
+         * @description
+         * Checks a given list item compared to its pristine state and retuns a field change summary
+         * with information on any significant changes to non-readonly fields.
+         * @returns {FieldChangeSummary<T>} Change summary of all fields that have been modified
+         * since last save.
+         */
+        ListItem.prototype.changes = function () {
+            return new apListItemVersionFactory.FieldChangeSummary(this, this.getPristine());
+        };
         /**
          * @ngdoc function
          * @name ListItem.deleteAttachment
@@ -1525,7 +1537,7 @@ var ap;
             /** Pause until all requests are resolved */
             return $q.all(promiseArray)
                 .then(function (fieldVersionCollections) {
-                var versionHistoryCollection = new ap.VersionHistoryCollection(fieldVersionCollections, model.factory);
+                var versionHistoryCollection = new apListItemVersionFactory.VersionHistoryCollection(fieldVersionCollections, model.factory);
                 return versionHistoryCollection;
             });
             /** Constructor that creates a promise for each field */
@@ -1544,6 +1556,16 @@ var ap;
                 }
                 return apDataService.getFieldVersionHistory(payload, fieldDefinition);
             }
+        };
+        /**
+         * @ngdoc function
+         * @name ListItem.isPristine
+         * @description
+         * Determines if a list item has changed since it was instantiated.
+         * @returns {boolean} The list item is unchanged.
+         */
+        ListItem.prototype.isPristine = function () {
+            return !this.changes().hasMajorChanges;
         };
         /**
          * @ngdoc function
@@ -1933,7 +1955,7 @@ var ap;
      * @requires apUtilityService
      */
     var ListItemFactory = (function () {
-        function ListItemFactory(_$q_, _apCacheService_, _apConfig_, _apDataService_, _apDecodeService_, _apEncodeService_, _apUtilityService_, _toastr_) {
+        function ListItemFactory(_$q_, _apCacheService_, _apConfig_, _apDataService_, _apDecodeService_, _apEncodeService_, _apUtilityService_, _toastr_, _apListItemVersionFactory_) {
             this.ListItem = ListItem;
             $q = _$q_;
             apCacheService = _apCacheService_;
@@ -1943,6 +1965,7 @@ var ap;
             apEncodeService = _apEncodeService_;
             apUtilityService = _apUtilityService_;
             toastr = _toastr_;
+            apListItemVersionFactory = _apListItemVersionFactory_;
         }
         /**
          * @ngdoc function
@@ -1965,7 +1988,7 @@ var ap;
         ListItemFactory.prototype.createGenericFactory = function () {
             return new StandardListItem();
         };
-        ListItemFactory.$inject = ['$q', 'apCacheService', 'apConfig', 'apDataService', 'apDecodeService', 'apEncodeService', 'apUtilityService', 'toastr'];
+        ListItemFactory.$inject = ['$q', 'apCacheService', 'apConfig', 'apDataService', 'apDecodeService', 'apEncodeService', 'apUtilityService', 'toastr', 'apListItemVersionFactory'];
         return ListItemFactory;
     })();
     ap.ListItemFactory = ListItemFactory;
@@ -1975,14 +1998,37 @@ var ap;
 })(ap || (ap = {}));
 
 /// <reference path="../app.module.ts" />
+var __extends = (this && this.__extends) || function (d, b) {
+    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+    function __() { this.constructor = d; }
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+};
 var ap;
 (function (ap) {
     'use strict';
+    /**
+     * @ngdoc object
+     * @name apListItemVersionFactory.FieldVersionCollection
+     * @param {FieldDefinition} fieldDefinition Field definition of each version of the field added.
+     * @description
+     * Object that contains the entire version history for a given list item field/property.
+     */
     var FieldVersionCollection = (function () {
         function FieldVersionCollection(fieldDefinition) {
             this.versions = {};
             this.fieldDefinition = fieldDefinition;
         }
+        /**
+        * @ngdoc object
+        * @name apListItemVersionFactory.FieldVersionCollection.addVersion
+        * @methodOf apListItemVersionFactory.FieldVersionCollection
+        * @param {IUser} editor User who made the change.
+        * @param {Date} modified Date modified.
+        * @param {any} value Value of the field at this version.
+        * @param {number} version The version number.
+        * @description
+        * Used to add a single version to the collection.
+        */
         FieldVersionCollection.prototype.addVersion = function (editor, modified, value, version) {
             this.versions[version] = {
                 editor: editor,
@@ -2028,8 +2074,16 @@ var ap;
         };
         return FieldChange;
     })();
-    var VersionSummary = (function () {
-        function VersionSummary(newerVersion, previousVersion) {
+    /**
+     * @ngdoc object
+     * @name apListItemVersionFactory.FieldChangeSummary
+     * @param {ListItem<T>} newerVersion Updated version of list item.
+     * @param {ListItem<T>} [previousVersion={}] Previous version of list item.
+     * @description
+     * Generates a snapshot between 2 versions of a list item and locates diferences.
+     */
+    var FieldChangeSummary = (function () {
+        function FieldChangeSummary(newerVersion, previousVersion) {
             var _this = this;
             if (previousVersion === void 0) { previousVersion = {}; }
             this.fieldsChanged = {};
@@ -2047,6 +2101,31 @@ var ap;
                 }
             });
             this.changeCount = _.keys(this.fieldsChanged).length;
+        }
+        Object.defineProperty(FieldChangeSummary.prototype, "hasMajorChanges", {
+            get: function () {
+                return _.isNumber(this.changeCount) && this.changeCount > 0;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        return FieldChangeSummary;
+    })();
+    ap.FieldChangeSummary = FieldChangeSummary;
+    /**
+     * @ngdoc object
+     * @name apListItemVersionFactory.VersionSummary
+     * @param {IListItemVersion<T>} newerVersion Updated version of list item.
+     * @param {IListItemVersion<T>} [previousVersion={}] Previous version of list item.
+     * @description
+     * Used specifically to determine difference between 2 distinct versions of a list item using the
+     * version history.  Extends FieldChangeSummary.
+     */
+    var VersionSummary = (function (_super) {
+        __extends(VersionSummary, _super);
+        function VersionSummary(newerVersion, previousVersion) {
+            if (previousVersion === void 0) { previousVersion = {}; }
+            _super.call(this, newerVersion, previousVersion);
             this.listItemVersion = newerVersion;
             this.version = newerVersion.version;
         }
@@ -2064,16 +2143,16 @@ var ap;
             enumerable: true,
             configurable: true
         });
-        Object.defineProperty(VersionSummary.prototype, "hasMajorChanges", {
-            get: function () {
-                return _.isNumber(this.changeCount) && this.changeCount > 0;
-            },
-            enumerable: true,
-            configurable: true
-        });
         return VersionSummary;
-    })();
+    })(FieldChangeSummary);
     ap.VersionSummary = VersionSummary;
+    /**
+     * @ngdoc object
+     * @name apListItemVersionFactory.ChangeSummary
+     * @param {IListItemVersions} versions Multiple versions of a list item.
+     * @description
+     * Used to summarize all changes for a given list item.
+     */
     var ChangeSummary = (function () {
         function ChangeSummary(versions) {
             var _this = this;
@@ -2100,20 +2179,12 @@ var ap;
             enumerable: true,
             configurable: true
         });
-        Object.defineProperty(ChangeSummary.prototype, "count", {
-            get: function () {
-                return _.keys(this.versionSummaryCollection).length;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(ChangeSummary.prototype, "toArray", {
-            get: function () {
-                return _.toArray(this.versionSummaryCollection);
-            },
-            enumerable: true,
-            configurable: true
-        });
+        ChangeSummary.prototype.count = function () {
+            return _.keys(this.versionSummaryCollection).length;
+        };
+        ChangeSummary.prototype.toArray = function () {
+            return _.toArray(this.versionSummaryCollection);
+        };
         return ChangeSummary;
     })();
     ap.ChangeSummary = ChangeSummary;
@@ -2153,6 +2224,26 @@ var ap;
         return VersionHistoryCollection;
     })();
     ap.VersionHistoryCollection = VersionHistoryCollection;
+    var ListItemVersionFactory = (function () {
+        function ListItemVersionFactory() {
+            this.ChangeSummary = ChangeSummary;
+            this.FieldChangeSummary = FieldChangeSummary;
+            this.FieldVersionCollection = FieldVersionCollection;
+            this.VersionHistoryCollection = VersionHistoryCollection;
+            this.VersionSummary = VersionSummary;
+        }
+        return ListItemVersionFactory;
+    })();
+    ap.ListItemVersionFactory = ListItemVersionFactory;
+    /**
+    * @ngdoc function
+    * @name apListItemVersionFactory
+    * @description
+    * Factory which handles parsing list item versions and identifying changes.
+    *
+    */
+    angular.module('angularPoint')
+        .service('apListItemVersionFactory', ListItemVersionFactory);
 })(ap || (ap = {}));
 
 /// <reference path="../app.module.ts" />
