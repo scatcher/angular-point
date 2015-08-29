@@ -4,7 +4,8 @@ module ap {
     'use strict';
 
     var $q: ng.IQService, toastr, apCacheService: CacheService, apDataService: DataService, apDecodeService: DecodeService,
-        apEncodeService: EncodeService, apUtilityService: UtilityService, apConfig: IAPConfig;
+        apEncodeService: EncodeService, apUtilityService: UtilityService, apConfig: IAPConfig,
+        apListItemVersionFactory: ListItemVersionFactory;
 
     interface IListItem<T extends ListItem<any>> {
         author?: IUser;
@@ -22,7 +23,7 @@ module ap {
         getAvailableWorkflows: () => ng.IPromise<IWorkflowDefinition[]>;
         getCache?: () => IndexedCache<T>;
         getChanges: () => ng.IPromise<T>;
-        getChangeSummary: (fieldNames: string[] | string) => ng.IPromise<ChangeSummary<T>>;
+        getChangeSummary: (fieldNames: string[]| string) => ng.IPromise<ChangeSummary<T>>;
         getFieldChoices: (fieldName: string) => string[];
         getFieldDefinition: (fieldName: string) => FieldDefinition | IExtendedFieldDefinition;
         getFieldDescription: (fieldName: string) => string;
@@ -31,7 +32,7 @@ module ap {
         getList: () => List;
         getListId: () => string;
         getLookupReference: <T2 extends ListItem<any>>(fieldName: string, lookupId?: number) => T2;
-        getVersionHistory: (fieldNames: string[] | string) => ng.IPromise<VersionHistoryCollection<T>>;
+        getVersionHistory: (fieldNames: string[]| string) => ng.IPromise<VersionHistoryCollection<T>>;
         resolvePermissions: () => IUserPermissionsObject;
         saveChanges: (options?: IListItemCrudOptions<T>) => ng.IPromise<T>;
         saveFields: (fieldArray: string[], options?: IListItemCrudOptions<T>) => ng.IPromise<T>;
@@ -71,6 +72,20 @@ module ap {
         private preDeleteAction: () => boolean;
         private preSaveAction: () => boolean;
         private postSaveAction: () => void;
+        
+
+        /**
+         * @ngdoc function
+         * @name ListItem.changes
+         * @description
+         * Checks a given list item compared to its pristine state and retuns a field change summary 
+         * with information on any significant changes to non-readonly fields.
+         * @returns {FieldChangeSummary<T>} Change summary of all fields that have been modified 
+         * since last save.
+         */
+        changes(): FieldChangeSummary<T> {
+            return new apListItemVersionFactory.FieldChangeSummary(this, this.getPristine());
+        }                
 
         /**
          * @ngdoc function
@@ -220,7 +235,7 @@ module ap {
          *      };
          * </pre>
          */
-        getChangeSummary(fieldNames?: string[] | string): ng.IPromise<ChangeSummary<T>> {
+        getChangeSummary(fieldNames?: string[]| string): ng.IPromise<ChangeSummary<T>> {
             return this.getVersionHistory(fieldNames)
                 .then((versionHistoryCollection: VersionHistoryCollection<T>) => versionHistoryCollection.generateChangeSummary());
         }
@@ -354,7 +369,7 @@ module ap {
             var model = this.getModel();
             return model.getListId();
         }
-
+        
 
         /**
          * @ngdoc function
@@ -429,7 +444,7 @@ module ap {
          *      };
          * </pre>
          */
-        getVersionHistory(fieldNames?: string[] | string): ng.IPromise<VersionHistoryCollection<T>> {
+        getVersionHistory(fieldNames?: string[]| string): ng.IPromise<VersionHistoryCollection<T>> {
             var listItem = this;
             var model = listItem.getModel();
             var promiseArray = [];
@@ -455,7 +470,7 @@ module ap {
             /** Pause until all requests are resolved */
             return $q.all(promiseArray)
                 .then((fieldVersionCollections: FieldVersionCollection[]) => {
-                    let versionHistoryCollection = new ap.VersionHistoryCollection<T>(fieldVersionCollections, model.factory);
+                    let versionHistoryCollection = new apListItemVersionFactory.VersionHistoryCollection<T>(fieldVersionCollections, model.factory);
                     return versionHistoryCollection;
                 });
 
@@ -479,6 +494,17 @@ module ap {
 
                 return apDataService.getFieldVersionHistory(payload, fieldDefinition);
             }
+        }
+        
+        /**
+         * @ngdoc function
+         * @name ListItem.isPristine
+         * @description
+         * Determines if a list item has changed since it was instantiated.
+         * @returns {boolean} The list item is unchanged.
+         */
+        isPristine() {
+            return !this.changes().hasMajorChanges;
         }
 
 
@@ -896,9 +922,9 @@ module ap {
 
     export class ListItemFactory {
         ListItem = ListItem;
-        static $inject = ['$q', 'apCacheService', 'apConfig', 'apDataService', 'apDecodeService', 'apEncodeService', 'apUtilityService', 'toastr'];
+        static $inject = ['$q', 'apCacheService', 'apConfig', 'apDataService', 'apDecodeService', 'apEncodeService', 'apUtilityService', 'toastr', 'apListItemVersionFactory'];
 
-        constructor(_$q_, _apCacheService_, _apConfig_, _apDataService_, _apDecodeService_, _apEncodeService_, _apUtilityService_, _toastr_) {
+        constructor(_$q_, _apCacheService_, _apConfig_, _apDataService_, _apDecodeService_, _apEncodeService_, _apUtilityService_, _toastr_, _apListItemVersionFactory_) {
             $q = _$q_;
             apCacheService = _apCacheService_;
             apConfig = _apConfig_;
@@ -907,6 +933,7 @@ module ap {
             apEncodeService = _apEncodeService_;
             apUtilityService = _apUtilityService_;
             toastr = _toastr_;
+            apListItemVersionFactory = _apListItemVersionFactory_;
         }
 
         /**

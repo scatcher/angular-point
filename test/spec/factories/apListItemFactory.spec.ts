@@ -34,6 +34,19 @@ module ap {
             });
         });
 
+        describe('Method: changes', function() {
+            it('detects a change and the field that was changed', function() {
+                let listItem = mockModel.createEmptyItem<MockListItem>({ integer: 99 });
+                listItem.saveChanges()
+                    .then((newListItem) => {
+                        //Newly instnatiated item now has pristine state stored
+                        newListItem.integer = 100;
+                        expect(newListItem.changes().fieldsChanged.integer).toBeDefined();
+                    })
+                $httpBackend.flush();
+            });
+        });
+
         describe('Method: deleteItem', function() {
             it('removes entity with ID of 1 from the cache', function() {
                 mockListItem.deleteItem()
@@ -188,6 +201,28 @@ module ap {
                 }).toThrow();
             });
 
+        });
+
+        describe('Method: isPristine', function() {
+            it('returns false when no longer pristine', function() {
+                let listItem = mockModel.createEmptyItem<MockListItem>({ integer: 99 });
+                listItem.saveChanges()
+                    .then((newListItem) => {
+                        //Newly instnatiated item now has pristine state stored
+                        newListItem.integer = 100;
+                        expect(newListItem.isPristine()).toBeFalsy();
+                    })
+                $httpBackend.flush();
+            });
+            it('returns true if still pristine', function() {
+                let listItem = mockModel.createEmptyItem<MockListItem>({ integer: 99 });
+                listItem.saveChanges()
+                    .then((newListItem) => {
+                        //Not making any changes so still should be pristine
+                        expect(newListItem.isPristine()).toBeTruthy();
+                    })
+                $httpBackend.flush();
+            });
         });
 
         describe('Method: resolvePermissions', function() {

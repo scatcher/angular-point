@@ -22,6 +22,18 @@ var ap;
                 expect(factory.create()).toEqual(new factory.ListItem);
             });
         });
+        describe('Method: changes', function () {
+            it('detects a change and the field that was changed', function () {
+                var listItem = mockModel.createEmptyItem({ integer: 99 });
+                listItem.saveChanges()
+                    .then(function (newListItem) {
+                    //Newly instnatiated item now has pristine state stored
+                    newListItem.integer = 100;
+                    expect(newListItem.changes().fieldsChanged.integer).toBeDefined();
+                });
+                $httpBackend.flush();
+            });
+        });
         describe('Method: deleteItem', function () {
             it('removes entity with ID of 1 from the cache', function () {
                 mockListItem.deleteItem()
@@ -151,6 +163,27 @@ var ap;
                 expect(function () {
                     mockListItem.getLookupReference('lookup');
                 }).toThrow();
+            });
+        });
+        describe('Method: isPristine', function () {
+            it('returns false when no longer pristine', function () {
+                var listItem = mockModel.createEmptyItem({ integer: 99 });
+                listItem.saveChanges()
+                    .then(function (newListItem) {
+                    //Newly instnatiated item now has pristine state stored
+                    newListItem.integer = 100;
+                    expect(newListItem.isPristine()).toBeFalsy();
+                });
+                $httpBackend.flush();
+            });
+            it('returns true if still pristine', function () {
+                var listItem = mockModel.createEmptyItem({ integer: 99 });
+                listItem.saveChanges()
+                    .then(function (newListItem) {
+                    //Not making any changes so still should be pristine
+                    expect(newListItem.isPristine()).toBeTruthy();
+                });
+                $httpBackend.flush();
             });
         });
         describe('Method: resolvePermissions', function () {
