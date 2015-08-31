@@ -209,14 +209,18 @@ var ap;
                 mockModel.list.permissions = undefined;
                 var firstListItem = mockModel.getCachedEntities().first();
                 //Set permissions to allow approving list items
-                firstListItem.permMask = 0x0000000000000010;
-                expect(firstListItem.resolvePermissions().EditListItems).toEqual(true);
-                expect(firstListItem.resolvePermissions().ApproveItems).toEqual(true);
+                firstListItem.permMask = '0x0000000000000010';
+                var updatedPermissions = mockModel.resolvePermissions();
+                expect(firstListItem.resolvePermissions()).toEqual(updatedPermissions);
+                expect(updatedPermissions.EditListItems).toEqual(false);
+                expect(updatedPermissions.ApproveItems).toEqual(true);
                 mockModel.list.permissions = undefined;
                 //Update the permMask for the first list item, giving the user only the ability to ViewListItems
-                firstListItem.permMask = 0x0000000000000001;
-                expect(firstListItem.resolvePermissions().ViewListItems).toEqual(true);
-                expect(firstListItem.resolvePermissions().ApproveItems).toEqual(false);
+                firstListItem.permMask = '0x0000000000000001';
+                updatedPermissions = mockModel.resolvePermissions();
+                expect(firstListItem.resolvePermissions()).toEqual(updatedPermissions);
+                expect(updatedPermissions.ViewListItems).toEqual(true);
+                expect(updatedPermissions.ApproveItems).toEqual(false);
             });
         });
         function getResponseXML() {

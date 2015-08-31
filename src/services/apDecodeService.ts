@@ -31,10 +31,10 @@ module ap {
          * Errors don't always throw correctly from SPServices so this function checks to see if part
          * of the XHR response contains an "errorstring" element.
          * @param {object} responseXML XHR response from the server.
-         * @returns {string|null} Returns an error string if present, otherwise returns null.
+         * @returns {string} Returns an error string if present.
          */
         checkResponseForErrors(responseXML: XMLDocument): string {
-            var error = null;
+            var error;
             /** Look for <errorstring></errorstring> or <ErrorText></ErrorText> for details on any errors */
             var errorElements = ['ErrorText', 'errorstring'];
             _.each(errorElements, (element) => {

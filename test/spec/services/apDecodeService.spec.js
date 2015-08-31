@@ -206,7 +206,7 @@ describe("Factory: apDecodeService", function () {
 
     describe('checkResponseForErrors', function () {
         it('returns null when an error isn\'t found', function () {
-            expect(service.checkResponseForErrors(mockChangeTokenXML)).toBeNull();
+            expect(service.checkResponseForErrors(mockChangeTokenXML)).toBeUndefined();
         });
         it('to find an error in the <ErrorText> element', function () {
             expect(_.isString(service.checkResponseForErrors(mockXMLService.errorUpdatingListItem)))

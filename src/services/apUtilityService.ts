@@ -35,7 +35,7 @@ module ap {
             apConfig = _apConfig_;
 
         }
-                
+
         /**
          * @ngdoc function
          * @name angularPoint.apUtilityService:batchProcess
@@ -110,8 +110,8 @@ module ap {
 
             return deferred.promise;
         }
-        
-        
+
+
         /**
          * @ngdoc function
          * @name angularPoint.apUtilityService:convertEffectivePermMask
@@ -129,47 +129,47 @@ module ap {
 
             var permissions = {
                 //General
-                EmptyMask: 0x0000000000000000,
-                FullMask: 0x7FFFFFFFFFFFFFFF,
+                EmptyMask: '0x0000000000000000',
+                FullMask: '0x7FFFFFFFFFFFFFFF',
 
                 //List and document permissions
-                ViewListItems: 0x0000000000000001,
-                AddListItems: 0x0000000000000002,
-                EditListItems: 0x0000000000000004,
-                DeleteListItems: 0x0000000000000008,
-                ApproveItems: 0x0000000000000010,
-                OpenItems: 0x0000000000000020,
-                ViewVersions: 0x0000000000000040,
-                DeleteVersions: 0x0000000000000080,
-                CancelCheckout: 0x0000000000000100,
-                ManagePersonalViews: 0x0000000000000200,
-                ManageLists: 0x0000000000000800,
-                ViewFormPages: 0x0000000000001000,
+                ViewListItems: '0x0000000000000001',
+                AddListItems: '0x0000000000000002',
+                EditListItems: '0x0000000000000004',
+                DeleteListItems: '0x0000000000000008',
+                ApproveItems: '0x0000000000000010',
+                OpenItems: '0x0000000000000020',
+                ViewVersions: '0x0000000000000040',
+                DeleteVersions: '0x0000000000000080',
+                CancelCheckout: '0x0000000000000100',
+                ManagePersonalViews: '0x0000000000000200',
+                ManageLists: '0x0000000000000800',
+                ViewFormPages: '0x0000000000001000',
 
                 //Web level permissions
-                Open: 0x0000000000010000,
-                ViewPages: 0x0000000000020000,
-                AddAndCustomizePages: 0x0000000000040000,
-                ApplyThemeAndBorder: 0x0000000000080000,
-                ApplyStyleSheets: 0x0000000000100000,
-                ViewUsageData: 0x0000000000200000,
-                CreateSSCSite: 0x0000000000400000,
-                ManageSubwebs: 0x0000000000800000,
-                CreateGroups: 0x0000000001000000,
-                ManagePermissions: 0x0000000002000000,
-                BrowseDirectories: 0x0000000004000000,
-                BrowseUserInfo: 0x0000000008000000,
-                AddDelPrivateWebParts: 0x0000000010000000,
-                UpdatePersonalWebParts: 0x0000000020000000,
-                ManageWeb: 0x0000000040000000,
-                UseClientIntegration: 0x0000001000000000,
-                UseRemoteAPIs: 0x0000002000000000,
-                ManageAlerts: 0x0000004000000000,
-                CreateAlerts: 0x0000008000000000,
-                EditMyUserInfo: 0x0000010000000000,
+                Open: '0x0000000000010000',
+                ViewPages: '0x0000000000020000',
+                AddAndCustomizePages: '0x0000000000040000',
+                ApplyThemeAndBorder: '0x0000000000080000',
+                ApplyStyleSheets: '0x0000000000100000',
+                ViewUsageData: '0x0000000000200000',
+                CreateSSCSite: '0x0000000000400000',
+                ManageSubwebs: '0x0000000000800000',
+                CreateGroups: '0x0000000001000000',
+                ManagePermissions: '0x0000000002000000',
+                BrowseDirectories: '0x0000000004000000',
+                BrowseUserInfo: '0x0000000008000000',
+                AddDelPrivateWebParts: '0x0000000010000000',
+                UpdatePersonalWebParts: '0x0000000020000000',
+                ManageWeb: '0x0000000040000000',
+                UseClientIntegration: '0x0000001000000000',
+                UseRemoteAPIs: '0x0000002000000000',
+                ManageAlerts: '0x0000004000000000',
+                CreateAlerts: '0x0000008000000000',
+                EditMyUserInfo: '0x0000010000000000',
 
                 //Special Permissions
-                EnumeratePermissions: 0x4000000000000000
+                EnumeratePermissions: '0x4000000000000000'
             };
 
             if (permissions[permMaskName]) {
@@ -177,7 +177,7 @@ module ap {
             }
             return permissionMask;
         }
-        
+
         /**
          * @ngdoc function
          * @name angularPoint.apUtilityService:dateWithinRange
@@ -320,7 +320,7 @@ module ap {
              * }
          * </pre>
          */
-        resolvePermissions(permissionsMask: number): IUserPermissionsObject {
+        resolvePermissions(permissionsMask): IUserPermissionsObject {
             var permissionSet = {
                 ViewListItems: (1 & permissionsMask) > 0,
                 AddListItems: (2 & permissionsMask) > 0,
@@ -356,7 +356,7 @@ module ap {
                 CreateAlerts: (549755813888 & permissionsMask) > 0,
                 EditMyUserInfo: (1099511627776 & permissionsMask) > 0,
                 EnumeratePermissions: (4611686018427387904 & permissionsMask) > 0,
-                FullMask: (9223372036854775807 === permissionsMask)
+                FullMask: (9223372036854775807 == permissionsMask)
             };
 
             /**

@@ -380,14 +380,14 @@ module ap {
             it('parses the version history for a field and returns all 3 versions', () => {
                 mockListItem.getVersionHistory('integer')
                     .then(function(response) {
-                        expect(response.count()).toEqual(4);
+                        expect(response.count()).toEqual(3);
                     });
                 $httpBackend.flush();
             });
             it('works without passing any any fields to dynamically build field array', () => {
                 mockListItem.getVersionHistory()
                     .then(function(response) {
-                        expect(response.count()).toEqual(4);
+                        expect(response.count()).toEqual(3);
                     });
                 $httpBackend.flush();
             });

@@ -6,8 +6,6 @@ module ap {
     var deferred: ng.IDeferred<Function>,
         registerCallback: ng.IPromise<Function>;
 
-    var logTypes = ['log', 'error', 'info', 'debug', 'warn'];
-
     export interface ILogEvent {
         cause?: string;
         event?: string;
@@ -15,6 +13,7 @@ module ap {
         message?: string;
         stackTrace?: string[];
         type?: string;
+        //Initial URL and URL after and routing has settled
         url?: string;
     }
 
@@ -30,6 +29,13 @@ module ap {
     }
 
     export class Logger implements ILogger {
+        static $inject = ['$q', '$window', '$log', '$timeout'];
+
+        constructor($q, private $window, private $log, private $timeout) {
+            /** Create a deferred object we can use to delay functionality until log model is registered */
+            deferred = $q.defer();
+            registerCallback = deferred.promise;
+        }
 
         /**
          * @ngdoc function
@@ -38,7 +44,13 @@ module ap {
          * @param {string} message Message to log.
          * @param {ILogger} [optionsOverride] Override any log options.
          */
-        debug: (message: string, optionsOverride?: ILogEvent) => ng.IPromise<ListItem<any>>;
+        debug(message: string, optionsOverride?: ILogEvent): ng.IPromise<ListItem<any>> {
+            let opts = _.assign({
+                message: message,
+                type: 'debug',
+            }, optionsOverride)
+            return this.notify(opts);
+        };
 
         /**
          * @ngdoc function
@@ -47,71 +59,13 @@ module ap {
          * @param {string} message Message to log.
          * @param {ILogger} [optionsOverride] Override any log options.
          */
-        error: (message: string, optionsOverride?: ILogEvent) => ng.IPromise<ListItem<any>>;
-
-        /**
-         * @ngdoc function
-         * @name apLogger.info
-         * @methodOf apLogger
-         * @param {string} message Message to log.
-         * @param {ILogger} [optionsOverride] Override any log options.
-         */
-        info: (message: string, optionsOverride?: ILogEvent) => ng.IPromise<ListItem<any>>;
-
-        /**
-         * @ngdoc function
-         * @name apLogger.log
-         * @methodOf apLogger
-         * @param {string} message Message to log.
-         * @param {ILogger} [optionsOverride] Override any log options.
-         */
-        log: (message: string, optionsOverride?: ILogEvent) => ng.IPromise<ListItem<any>>;
-
-        /**
-         * @ngdoc function
-         * @name apLogger.warn
-         * @methodOf apLogger
-         * @param {string} message Message to log.
-         * @param {ILogger} [optionsOverride] Override any log options.
-         */
-        warn: (message: string, optionsOverride?: ILogEvent) => ng.IPromise<ListItem<any>>;
-
-        static $inject = ['$q', '$window', '$log', '$timeout'];
-
-        constructor($q, private $window, private $log, private $timeout) {
-            /** Create a deferred object we can use to delay functionality until log model is registered */
-            deferred = $q.defer();
-            registerCallback = deferred.promise;
-
-            /** Generate a method for each logger call */
-            _.each(logTypes, (logType) => {
-
-                /**
-                 * @Example
-                 *
-                 * info(message: string, optionsOverride?: ILogEvent): ng.IPromise<ListItem<any>> {
-                 *     var opts = _.assign({}, {
-                 *         message: message,
-                 *         type: 'info'
-                 *         url: $window.location.href,
-                 *     }, optionsOverride);
-                 *
-                 *     return this.notify(opts);
-                 * }
-                 *
-                 */
-
-                this[logType] = (message: string, optionsOverride?: ILogEvent): ng.IPromise<ListItem<any>> => {
-                    var opts = _.assign({}, {
-                        message: message,
-                        type: logType,
-                    }, optionsOverride);
-
-                    return this.notify(opts);
-                }
-
-            });
-        }
+        error(message: string, optionsOverride?: ILogEvent): ng.IPromise<ListItem<any>> {
+            let opts = _.assign({
+                message: message,
+                type: 'error',
+            }, optionsOverride)
+            return this.notify(opts);
+        };
 
         /**
          * @ngdoc function
@@ -122,17 +76,16 @@ module ap {
          * @param {ILogger} optionsOverride Override any log options.
          */
         exception(exception: Object, cause?, optionsOverride?: ILogEvent): void {
-
             try {
                 var errorMessage = exception.toString();
                 // generate a stack trace
                 /* global printStackTrace:true */
-                var stackTrace = printStackTrace({e: exception});
+                var stackTrace = printStackTrace({ e: exception });
 
                 this.error(errorMessage, _.assign({}, {
                     event: 'exception',
                     stackTrace: stackTrace,
-                    cause: ( cause || "")
+                    cause: (cause || "")
                 }, optionsOverride));
 
             } catch (loggingError) {
@@ -142,12 +95,35 @@ module ap {
 
         }
 
-        private notify(options: ILogEvent) {
-            return this.$timeout(() => {
-                /** Allow navigation to settle before capturing url */
-                return this.registerEvent(_.assign({}, {url: this.$window.location.href}, options));
-            }, 0);
-        }
+        /**
+         * @ngdoc function
+         * @name apLogger.info
+         * @methodOf apLogger
+         * @param {string} message Message to log.
+         * @param {ILogger} [optionsOverride] Override any log options.
+         */
+        info(message: string, optionsOverride?: ILogEvent): ng.IPromise<ListItem<any>> {
+            let opts = _.assign({
+                message: message,
+                type: 'info',
+            }, optionsOverride)
+            return this.notify(opts);
+        };
+
+        /**
+         * @ngdoc function
+         * @name apLogger.log
+         * @methodOf apLogger
+         * @param {string} message Message to log.
+         * @param {ILogger} [optionsOverride] Override any log options.
+         */
+        log(message: string, optionsOverride?: ILogEvent): ng.IPromise<ListItem<any>> {
+            let opts = _.assign({
+                message: message,
+                type: 'log',
+            }, optionsOverride)
+            return this.notify(opts);
+        };
 
         registerEvent(logEvent: ILogEvent): ng.IPromise<ListItem<any>> {
             return registerCallback.then((callback: Function) => {
@@ -166,6 +142,31 @@ module ap {
          */
         subscribe(callback: Function): void {
             deferred.resolve(callback);
+        }
+
+        /**
+        * @ngdoc function
+        * @name apLogger.warn
+        * @methodOf apLogger
+        * @param {string} message Message to log.
+        * @param {ILogger} [optionsOverride] Override any log options.
+        */
+        warn(message: string, optionsOverride?: ILogEvent): ng.IPromise<ListItem<any>> {
+            let opts = _.assign({
+                message: message,
+                type: 'warn',
+            }, optionsOverride)
+            return this.notify(opts);
+        };
+
+        private notify(options: ILogEvent) {
+            //URL before navigation
+            let url = '1: ' + this.$window.location.href + '\n';
+            return this.$timeout(() => {
+                /** Allow navigation to settle before capturing 2nd url */
+                url += '2: ' + this.$window.location.href;
+                return this.registerEvent(_.assign({}, { url }, options));
+            }, 0);
         }
 
     }

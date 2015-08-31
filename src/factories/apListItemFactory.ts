@@ -14,7 +14,7 @@ module ap {
         fileRef?: ILookup;
         id?: number;
         modified?: Date;
-        permMask?: number;
+        permMask?: string;
         uniqueId?: string;
 
         deleteAttachment: (url: string) => ng.IPromise<any>;
@@ -67,25 +67,25 @@ module ap {
         getQuery: () => IQuery<T>;
         id: number;
         modified: Date;
-        permMask: number;
+        permMask: string;
         uniqueId: string;
         private preDeleteAction: () => boolean;
         private preSaveAction: () => boolean;
         private postSaveAction: () => void;
-        
+
 
         /**
          * @ngdoc function
          * @name ListItem.changes
          * @description
-         * Checks a given list item compared to its pristine state and retuns a field change summary 
+         * Checks a given list item compared to its pristine state and retuns a field change summary
          * with information on any significant changes to non-readonly fields.
-         * @returns {FieldChangeSummary<T>} Change summary of all fields that have been modified 
+         * @returns {FieldChangeSummary<T>} Change summary of all fields that have been modified
          * since last save.
          */
         changes(): FieldChangeSummary<T> {
             return new apListItemVersionFactory.FieldChangeSummary(this, this.getPristine());
-        }                
+        }
 
         /**
          * @ngdoc function
@@ -369,7 +369,7 @@ module ap {
             var model = this.getModel();
             return model.getListId();
         }
-        
+
 
         /**
          * @ngdoc function
@@ -495,7 +495,7 @@ module ap {
                 return apDataService.getFieldVersionHistory(payload, fieldDefinition);
             }
         }
-        
+
         /**
          * @ngdoc function
          * @name ListItem.isPristine

@@ -1128,6 +1128,23 @@ var ap;
         };
         /**
          * @ngdoc function
+         * @name List:extendPermissionsFromListItem
+         * @methodOf List
+         * @param {ListItem} listItem List item to use as sample of user's permisssions for list.
+         * @description
+         * If the user permissions haven't been resolved for the list, use the permissions from a
+         * sample list item and assume they're the same for the entire list
+         * @returns {IUserPermissionsObject} Resolved permissions for the list item.
+         */
+        List.prototype.extendPermissionsFromListItem = function (listItem) {
+            if (!listItem) {
+                throw new Error('A valid list item is required in order to extend list permissions.');
+            }
+            this.permissions = listItem.resolvePermissions();
+            return this.permissions;
+        };
+        /**
+         * @ngdoc function
          * @name List:getListId
          * @methodOf List
          * @description
@@ -2049,7 +2066,8 @@ var ap;
 var __extends = (this && this.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
-    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    __.prototype = b.prototype;
+    d.prototype = new __();
 };
 var ap;
 (function (ap) {
@@ -2482,10 +2500,20 @@ var ap;
             this.list = new ap.List(this.list);
             /** Register cache name with cache service so we can map factory name with list GUID */
             apCacheService.registerModel(this);
-            /** Convenience query that simply returns all list items within a list. */
+            /** Convenience querys that simply returns all list items within a list. */
             this.registerQuery({
-                name: 'getAllListItems',
+                name: '__getAllListItems',
                 operation: 'GetListItems'
+            });
+            /** Get a single list item from a list, primarily used to quickly identify user
+             *  permissions on list using the ows_PermMask property.  List items can have unique permissions
+             *  so can't rely on this 100% to correctly resolve list permissions.  In the case where that is
+             *  necessary you will need to use a similar query using GetListItemChangesSinceToken method which
+             *  will take longer but will correctly resolve the list permissions. */
+            this.registerQuery({
+                name: '__sample',
+                operation: 'GetListItems',
+                CAMLRowLimit: 1
             });
         }
         /**
@@ -2515,14 +2543,13 @@ var ap;
          * </pre>
          */
         Model.prototype.addNewItem = function (entity, options) {
-            var model = this, deferred = $q.defer();
-            apDataService.createListItem(model, entity, options)
+            var model = this;
+            return apDataService.createListItem(model, entity, options)
                 .then(function (listItem) {
-                deferred.resolve(listItem);
                 /** Optionally broadcast change event */
                 apUtilityService.registerChange(model, 'create', listItem.id);
+                return listItem;
             });
-            return deferred.promise;
         };
         /**
          * @ngdoc function
@@ -2588,7 +2615,7 @@ var ap;
          * Extends the List and Fields with list information returned from the server.  Only runs once and after that
          * returns the existing promise.
          * @param {object} [options] Pass-through options to apDataService.getList
-         * @returns {object} Promise that is resolved once the information has been added.
+         * @returns {ng.IPromise<Model>} Promise that is resolved with the extended model.
          */
         Model.prototype.extendListMetadata = function (options) {
             var model = this, deferred = $q.defer(), defaults = { listName: model.list.getListId() };
@@ -2597,9 +2624,22 @@ var ap;
                 /** All Future Requests get this */
                 model.deferredListDefinition = deferred.promise;
                 var opts = _.assign({}, defaults, options);
-                apDataService.getList(opts)
-                    .then(function (responseXML) {
-                    apDecodeService.extendListMetadata(model, responseXML);
+                var getListAction = apDataService.getList(opts);
+                /** We can potentially have 2 seperate requests for data so store them in array so we can wait until
+                 * all are resolved. */
+                var promiseArray = [getListAction];
+                /** Add a request for a sample list item to the server requests if we haven't
+                 * already resolved user permissions for the list. */
+                if (!model.getList().permissions) {
+                    /** Permissions not set yet, when the query is resolved with a sample list item
+                     * the query class will use the permMask from the list item to set the temp permissions
+                     * for the list until a time where we can run a GetListItemChangesSinceToken request and
+                     * set the actual permissions. */
+                    promiseArray.push(model.executeQuery('__sample'));
+                }
+                $q.all(promiseArray)
+                    .then(function (resolvedPromises) {
+                    apDecodeService.extendListMetadata(model, resolvedPromises[0]);
                     deferred.resolve(model);
                 });
             }
@@ -2644,6 +2684,7 @@ var ap;
         /**
          * @ngdoc function
          * @name Model.getAllListItems
+         * @module Model
          * @description
          * Inherited from Model constructor
          * Gets all list items in the current list, processes the xml, and caches the data in model.
@@ -2659,7 +2700,7 @@ var ap;
          */
         Model.prototype.getAllListItems = function () {
             var model = this;
-            var query = model.queries.getAllListItems;
+            var query = this.getQuery('__getAllListItems');
             return apDataService.executeQuery(model, query, { target: query.indexedCache });
         };
         /**
@@ -2785,7 +2826,7 @@ var ap;
          * </pre>
          */
         Model.prototype.getListItemById = function (listItemId, options) {
-            var deferred = $q.defer(), model = this, 
+            var model = this, 
             /** Unique Query Name */
             queryKey = 'GetListItemById-' + listItemId;
             /** Register a new Query if it doesn't already exist */
@@ -2808,14 +2849,11 @@ var ap;
                 var opts = _.assign({}, defaults, options);
                 model.registerQuery(opts);
             }
-            model.executeQuery(queryKey)
+            return model.executeQuery(queryKey)
                 .then(function (indexedCache) {
                 /** Should return an indexed cache object with a single listItem so just return the requested listItem */
-                deferred.resolve(indexedCache.first());
-            }, function (err) {
-                deferred.reject(err);
+                return indexedCache.first();
             });
-            return deferred.promise;
         };
         /**
          * @ngdoc function
@@ -3073,22 +3111,20 @@ var ap;
          * </pre>
          */
         Model.prototype.resolvePermissions = function () {
-            var model = this;
-            if (model.list && model.list.effectivePermMask) {
+            var model = this, list = model.getList();
+            if (list && list.permissions) {
                 /** If request has been made to GetListItemChangesSinceToken we have already stored the
-                 * permission for this list.  Get the permission mask from the permission mask name. */
-                var permissionMask = apUtilityService.convertEffectivePermMask(model.list.effectivePermMask);
-                return apUtilityService.resolvePermissions(permissionMask);
+                 * permission for this list. */
+                return list.permissions;
             }
             else if (model.getCachedEntities().first()) {
                 /** Next option is to use the same permission as one of the
                  * already cached list items for this model. */
-                var sampleListItem = model.getCachedEntities().first();
-                return apUtilityService.resolvePermissions(sampleListItem.permMask);
+                return list.extendPermissionsFromListItem(model.getCachedEntities().first());
             }
             else {
                 window.console.error('Attempted to resolve permissions of a model that hasn\'t been initialized.', model);
-                return apUtilityService.resolvePermissions(null);
+                return new ap.BasePermissionObject();
             }
         };
         /**
@@ -3312,11 +3348,17 @@ var ap;
                     target: query.getCache()
                 };
                 /** Extend defaults with any options */
-                var queryOptions = _.assign({}, defaults, options);
+                var queryOptions = _.assign(defaults, options);
                 apDataService.executeQuery(model, query, queryOptions).then(function (results) {
                     if (firstRunQuery) {
                         /** Promise resolved the first time query is completed */
                         query.initialized.resolve(queryOptions.target);
+                        /** Set list permissions if not already set */
+                        var list = model.getList();
+                        if (!list.permissions && results.first()) {
+                            /** Query needs to have returned at least 1 item so we can use permMask */
+                            list.extendPermissionsFromListItem(results.first());
+                        }
                     }
                     /** Remove lock to allow for future requests */
                     query.negotiatingWithServer = false;
@@ -3558,7 +3600,8 @@ var ap;
 var __extends = (this && this.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
-    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    __.prototype = b.prototype;
+    d.prototype = new __();
 };
 var ap;
 (function (ap) {
@@ -3944,9 +3987,9 @@ var ap;
     'use strict';
     var apDefaultListItemQueryOptions = ap.DefaultListItemQueryOptions;
     var apWebServiceOperationConstants = ap.WebServiceOperationConstants;
-    var service, $q, $timeout, $http, apConfig, apUtilityService, apCacheService, apDecodeService, apEncodeService, apFieldService, apIndexedCacheFactory, toastr, SPServices, apBasePermissionObject, apXMLToJSONService, apChangeService;
+    var service, $q, $timeout, $http, apConfig, apUtilityService, apCacheService, apDecodeService, apEncodeService, apFieldService, apIndexedCacheFactory, toastr, SPServices, apBasePermissionObject, apXMLToJSONService, apChangeService, apLogger;
     var DataService = (function () {
-        function DataService(_$http_, _$q_, _$timeout_, _apCacheService_, _apChangeService_, _apConfig_, _apDecodeService_, _apDefaultListItemQueryOptions_, _apEncodeService_, _apFieldService_, _apIndexedCacheFactory_, _apUtilityService_, _apWebServiceOperationConstants_, _apXMLToJSONService_, _SPServices_, _toastr_, _apBasePermissionObject_) {
+        function DataService(_$http_, _$q_, _$timeout_, _apCacheService_, _apChangeService_, _apConfig_, _apDecodeService_, _apDefaultListItemQueryOptions_, _apEncodeService_, _apFieldService_, _apIndexedCacheFactory_, _apUtilityService_, _apWebServiceOperationConstants_, _apXMLToJSONService_, _SPServices_, _toastr_, _apBasePermissionObject_, _apLogger_) {
             service = this;
             $http = _$http_;
             $q = _$q_;
@@ -3965,6 +4008,7 @@ var ap;
             SPServices = _SPServices_;
             toastr = _toastr_;
             apBasePermissionObject = _apBasePermissionObject_;
+            apLogger = _apLogger_;
         }
         /**
          * @ngdoc function
@@ -4006,9 +4050,6 @@ var ap;
                 var indexedCache = apDecodeService.processListItems(model, opts, response, opts);
                 /** Return reference to last listItem in cache because it will have the new highest id */
                 return indexedCache.last();
-                // deferred.resolve(indexedCache.last());
-            }, function (err) {
-                // deferred.reject(err);
             });
         };
         DataService.prototype.createItemUrlFromFileRef = function (fileRefString) {
@@ -4090,7 +4131,8 @@ var ap;
                 return apCacheService.deleteEntity(opts.listName, listItem.id);
             }, function (outcome) {
                 //In the event of an error, display toast
-                toastr.error('There was an error deleting a list item from ' + model.list.title);
+                var msg = 'There was an error deleting a list item from ' + model.list.title;
+                toastr.error(msg);
                 return outcome;
             });
         };
@@ -4175,7 +4217,8 @@ var ap;
             return this.serviceWrapper({
                 operation: 'GetTemplatesForItem',
                 item: itemUrl
-            }).then(function (responseXML) {
+            })
+                .then(function (responseXML) {
                 var workflowTemplates = [];
                 var xmlTemplates = apXMLToJSONService.filterNodes(responseXML, 'WorkflowTemplate');
                 _.each(xmlTemplates, function (xmlTemplate) {
@@ -4267,12 +4310,13 @@ var ap;
          * @returns {promise} Resolves with the current site root url.
          */
         DataService.prototype.getCurrentSite = function () {
+            var _this = this;
             var deferred = $q.defer();
             //var self = this.getCurrentSite;
             if (!this.queryForCurrentSite) {
                 /** We only want to run this once so cache the promise the first time and just reference it in the future */
                 this.queryForCurrentSite = deferred.promise;
-                var msg = SPServices.SOAPEnvelope.header +
+                var soapData = SPServices.SOAPEnvelope.header +
                     "<WebUrlFromPageUrl xmlns='" + SPServices.SCHEMASharePoint + "/soap/' ><pageUrl>" +
                     ((location.href.indexOf("?") > 0) ? location.href.substr(0, location.href.indexOf("?")) : location.href) +
                     "</pageUrl></WebUrlFromPageUrl>" +
@@ -4280,19 +4324,24 @@ var ap;
                 $http({
                     method: 'POST',
                     url: '/_vti_bin/Webs.asmx',
-                    data: msg,
+                    data: soapData,
                     responseType: "document",
                     headers: {
                         "Content-Type": "text/xml;charset='utf-8'"
                     }
-                }).then(function (response) {
+                })
+                    .then(function (response) {
                     /** Success */
+                    var errorMsg = apDecodeService.checkResponseForErrors(response.data);
+                    if (errorMsg) {
+                        _this.errorHandler('Failed to get current site.  ' + errorMsg, deferred, soapData);
+                    }
                     apConfig.defaultUrl = $(response.data).find("WebUrlFromPageUrlResult").text();
                     deferred.resolve(apConfig.defaultUrl);
-                }, function (response) {
+                })
+                    .catch(function (err) {
                     /** Error */
-                    var error = apDecodeService.checkResponseForErrors(response.data);
-                    deferred.reject(error);
+                    _this.errorHandler('Failed to get current site.  ' + err, deferred, soapData);
                 });
             }
             return this.queryForCurrentSite;
@@ -4326,10 +4375,11 @@ var ap;
                 var fieldVersionCollection = apDecodeService.parseFieldVersions(response, fieldDefinition);
                 /** Resolve with an array of all field versions */
                 return fieldVersionCollection;
-            }, function (outcome) {
+            })
+                .catch(function (err) {
                 /** Failure */
                 toastr.error('Failed to fetch version history.');
-                return outcome;
+                return err;
             });
         };
         /**
@@ -4462,9 +4512,9 @@ var ap;
                 query.changeToken = changeToken;
             }
             /** Update the user permissions for this list */
-            var effectivePermissionMask = this.retrievePermMask(responseXML);
-            if (effectivePermissionMask) {
-                model.list.effectivePermMask = effectivePermissionMask;
+            var permissions = this.retrieveListPermissions(responseXML);
+            if (permissions) {
+                model.list.permissions = permissions;
             }
             /** Change token query includes deleted items as well so we need to process them separately */
             this.processDeletionsSinceToken(responseXML, opts.target);
@@ -4501,11 +4551,13 @@ var ap;
          * @returns {promise} Promise that resolves with the server response.
          */
         DataService.prototype.requestData = function (opts) {
+            var _this = this;
+            var deferred = $q.defer();
             var soapData = SPServices.generateXMLComponents(opts);
             var service = apWebServiceOperationConstants[opts.operation][0];
-            return this.generateWebServiceUrl(service, opts.webURL)
+            this.generateWebServiceUrl(service, opts.webURL)
                 .then(function (url) {
-                return $http.post(url, soapData.msg, {
+                $http.post(url, soapData.msg, {
                     responseType: "document",
                     headers: {
                         "Content-Type": "text/xml;charset='utf-8'",
@@ -4517,24 +4569,26 @@ var ap;
                         }
                         return data;
                     }
-                }).then(function (response) {
-                    /** Success */
-                    /** Errors can still be resolved without throwing an error so check the XML */
-                    var error = apDecodeService.checkResponseForErrors(response.data);
-                    if (error) {
-                        console.error(error, opts);
-                        return error;
+                })
+                    .then(function (response) {
+                    // Success Code
+                    // Errors can still be resolved without throwing an error so check the XML
+                    var errorMsg = apDecodeService.checkResponseForErrors(response.data);
+                    if (errorMsg) {
+                        // Actuall error but returned with success resonse....thank you SharePoint
+                        _this.errorHandler(errorMsg, deferred, soapData, response);
                     }
                     else {
-                        return response.data;
+                        /** Real success */
+                        deferred.resolve(response.data);
                     }
-                }, function (response) {
-                    /** Failure */
-                    var error = apDecodeService.checkResponseForErrors(response.data);
-                    console.error(response.statusText, opts);
-                    return response.statusText + ': ' + error;
+                })
+                    .catch(function (err) {
+                    // Failure
+                    _this.errorHandler(err, deferred, soapData);
                 });
             });
+            return deferred.promise;
         };
         /**
          * @ngdoc function
@@ -4549,25 +4603,35 @@ var ap;
         };
         /**
          * @ngdoc function
-         * @name DataService.retrievePermMask
+         * @name DataService.retrieveListPermissions
          * @description
          * Returns the text representation of the users permission mask
          * Note: this attribute is only found when using 'GetListItemChangesSinceToken'
          * @param {XMLDocument} responseXML XML response from the server.
          */
-        DataService.prototype.retrievePermMask = function (responseXML) {
+        DataService.prototype.retrieveListPermissions = function (responseXML) {
             //Permissions will be a string of Permission names delimited by commas
             //Example: "ViewListItems, AddListItems, EditListItems, DeleteListItems, ...."
             var listPermissions = $(responseXML).find('listitems').attr('EffectivePermMask');
-            var permissionNameArray = listPermissions.split(',');
-            var permissionObject = new ap.BasePermissionObject();
-            _.each(permissionNameArray, function (permission) {
-                //Remove extra spaces
-                var permissionName = permission.trim();
-                //Find the permission level on the permission object that is currently set to false
-                //and set to true
-                permissionObject[permissionName] = true;
-            });
+            var permissionObject;
+            if (_.isString(listPermissions)) {
+                var permissionNameArray = listPermissions.split(',');
+                permissionObject = new ap.BasePermissionObject();
+                //Set each of the identified permission levels to true
+                _.each(permissionNameArray, function (permission) {
+                    //Remove extra spaces
+                    var permissionName = permission.trim();
+                    //Find the permission level on the permission object that is currently set to false
+                    //and set to true
+                    permissionObject[permissionName] = true;
+                    if (permissionName === 'FullMask') {
+                        //User has full rights so set all to true
+                        _.each(permissionObject, function (propertyValue, propertyName) {
+                            permissionObject[propertyName] = true;
+                        });
+                    }
+                });
+            }
             return permissionObject;
         };
         /**
@@ -4734,9 +4798,20 @@ var ap;
             }
             return validPayload;
         };
+        DataService.prototype.errorHandler = function (errorMsg, deferred, soapData, response) {
+            //Log error to any server side logging list
+            apLogger.error(errorMsg, {
+                json: {
+                    request: JSON.stringify(soapData),
+                    response: JSON.stringify(response)
+                }
+            });
+            deferred.reject(errorMsg);
+        };
         DataService.$inject = ['$http', '$q', '$timeout', 'apCacheService', 'apChangeService', 'apConfig', 'apDecodeService',
             'apDefaultListItemQueryOptions', 'apEncodeService', 'apFieldService', 'apIndexedCacheFactory',
-            'apUtilityService', 'apWebServiceOperationConstants', 'apXMLToJSONService', 'SPServices', 'toastr', 'apBasePermissionObject'];
+            'apUtilityService', 'apWebServiceOperationConstants', 'apXMLToJSONService', 'SPServices', 'toastr',
+            'apBasePermissionObject', 'apLogger'];
         return DataService;
     })();
     ap.DataService = DataService;
@@ -4777,10 +4852,10 @@ var ap;
          * Errors don't always throw correctly from SPServices so this function checks to see if part
          * of the XHR response contains an "errorstring" element.
          * @param {object} responseXML XHR response from the server.
-         * @returns {string|null} Returns an error string if present, otherwise returns null.
+         * @returns {string} Returns an error string if present.
          */
         DecodeService.prototype.checkResponseForErrors = function (responseXML) {
-            var error = null;
+            var error;
             /** Look for <errorstring></errorstring> or <ErrorText></ErrorText> for details on any errors */
             var errorElements = ['ErrorText', 'errorstring'];
             _.each(errorElements, function (element) {
@@ -5050,7 +5125,7 @@ var ap;
                 return str;
             }
             else {
-                return parseInt(str, 10);
+                return parseInt(str);
             }
         };
         DecodeService.prototype.jsLookup = function (str, options) {
@@ -5943,23 +6018,23 @@ var ap;
             var permissionValue;
             switch (perMask) {
                 case 'AddListItems':
-                    permissionValue = '0x0000000000000002';
+                    permissionValue = 0x0000000000000002;
                     break;
                 case 'EditListItems':
-                    permissionValue = '0x0000000000000004';
+                    permissionValue = 0x0000000000000004;
                     break;
                 case 'DeleteListItems':
-                    permissionValue = '0x0000000000000008';
+                    permissionValue = 0x0000000000000008;
                     break;
                 case 'ApproveItems':
-                    permissionValue = '0x0000000000000010';
+                    permissionValue = 0x0000000000000010;
                     break;
                 case 'FullMask':
-                    permissionValue = '0x7FFFFFFFFFFFFFFF';
+                    permissionValue = 0x7FFFFFFFFFFFFFFF;
                     break;
                 case 'ViewListItems':
                 default:
-                    permissionValue = '0x0000000000000001';
+                    permissionValue = 0x0000000000000001;
                     break;
             }
             return permissionValue;
@@ -6382,41 +6457,45 @@ var ap;
 (function (ap) {
     'use strict';
     var deferred, registerCallback;
-    var logTypes = ['log', 'error', 'info', 'debug', 'warn'];
     var Logger = (function () {
         function Logger($q, $window, $log, $timeout) {
-            var _this = this;
             this.$window = $window;
             this.$log = $log;
             this.$timeout = $timeout;
             /** Create a deferred object we can use to delay functionality until log model is registered */
             deferred = $q.defer();
             registerCallback = deferred.promise;
-            /** Generate a method for each logger call */
-            _.each(logTypes, function (logType) {
-                /**
-                 * @Example
-                 *
-                 * info(message: string, optionsOverride?: ILogEvent): ng.IPromise<ListItem<any>> {
-                 *     var opts = _.assign({}, {
-                 *         message: message,
-                 *         type: 'info'
-                 *         url: $window.location.href,
-                 *     }, optionsOverride);
-                 *
-                 *     return this.notify(opts);
-                 * }
-                 *
-                 */
-                _this[logType] = function (message, optionsOverride) {
-                    var opts = _.assign({}, {
-                        message: message,
-                        type: logType,
-                    }, optionsOverride);
-                    return _this.notify(opts);
-                };
-            });
         }
+        /**
+         * @ngdoc function
+         * @name apLogger.debug
+         * @methodOf apLogger
+         * @param {string} message Message to log.
+         * @param {ILogger} [optionsOverride] Override any log options.
+         */
+        Logger.prototype.debug = function (message, optionsOverride) {
+            var opts = _.assign({
+                message: message,
+                type: 'debug',
+            }, optionsOverride);
+            return this.notify(opts);
+        };
+        ;
+        /**
+         * @ngdoc function
+         * @name apLogger.error
+         * @methodOf apLogger
+         * @param {string} message Message to log.
+         * @param {ILogger} [optionsOverride] Override any log options.
+         */
+        Logger.prototype.error = function (message, optionsOverride) {
+            var opts = _.assign({
+                message: message,
+                type: 'error',
+            }, optionsOverride);
+            return this.notify(opts);
+        };
+        ;
         /**
          * @ngdoc function
          * @name apLogger.exception
@@ -6442,13 +6521,36 @@ var ap;
                 this.$log.log(loggingError);
             }
         };
-        Logger.prototype.notify = function (options) {
-            var _this = this;
-            return this.$timeout(function () {
-                /** Allow navigation to settle before capturing url */
-                return _this.registerEvent(_.assign({}, { url: _this.$window.location.href }, options));
-            }, 0);
+        /**
+         * @ngdoc function
+         * @name apLogger.info
+         * @methodOf apLogger
+         * @param {string} message Message to log.
+         * @param {ILogger} [optionsOverride] Override any log options.
+         */
+        Logger.prototype.info = function (message, optionsOverride) {
+            var opts = _.assign({
+                message: message,
+                type: 'info',
+            }, optionsOverride);
+            return this.notify(opts);
         };
+        ;
+        /**
+         * @ngdoc function
+         * @name apLogger.log
+         * @methodOf apLogger
+         * @param {string} message Message to log.
+         * @param {ILogger} [optionsOverride] Override any log options.
+         */
+        Logger.prototype.log = function (message, optionsOverride) {
+            var opts = _.assign({
+                message: message,
+                type: 'log',
+            }, optionsOverride);
+            return this.notify(opts);
+        };
+        ;
         Logger.prototype.registerEvent = function (logEvent) {
             return registerCallback.then(function (callback) {
                 if (_.isFunction(callback)) {
@@ -6465,6 +6567,31 @@ var ap;
          */
         Logger.prototype.subscribe = function (callback) {
             deferred.resolve(callback);
+        };
+        /**
+        * @ngdoc function
+        * @name apLogger.warn
+        * @methodOf apLogger
+        * @param {string} message Message to log.
+        * @param {ILogger} [optionsOverride] Override any log options.
+        */
+        Logger.prototype.warn = function (message, optionsOverride) {
+            var opts = _.assign({
+                message: message,
+                type: 'warn',
+            }, optionsOverride);
+            return this.notify(opts);
+        };
+        ;
+        Logger.prototype.notify = function (options) {
+            var _this = this;
+            //URL before navigation
+            var url = '1: ' + this.$window.location.href + '\n';
+            return this.$timeout(function () {
+                /** Allow navigation to settle before capturing 2nd url */
+                url += '2: ' + _this.$window.location.href;
+                return _this.registerEvent(_.assign({}, { url: url }, options));
+            }, 0);
         };
         Logger.$inject = ['$q', '$window', '$log', '$timeout'];
         return Logger;
@@ -7644,7 +7771,7 @@ var ap;
                 FullMask: '0x7FFFFFFFFFFFFFFF',
                 //List and document permissions
                 ViewListItems: '0x0000000000000001',
-                AddListItems: '',
+                AddListItems: '0x0000000000000002',
                 EditListItems: '0x0000000000000004',
                 DeleteListItems: '0x0000000000000008',
                 ApproveItems: '0x0000000000000010',
@@ -7831,27 +7958,27 @@ var ap;
                 PersonalViews: (512 & permissionsMask) > 0,
                 ManageLists: (2048 & permissionsMask) > 0,
                 ViewFormPages: (4096 & permissionsMask) > 0,
-                Open: (permissionsMask & 65536) > 0,
-                ViewPages: (permissionsMask & 131072) > 0,
-                AddAndCustomizePages: (permissionsMask & 262144) > 0,
-                ApplyThemeAndBorder: (permissionsMask & 524288) > 0,
+                Open: (65536 & permissionsMask) > 0,
+                ViewPages: (131072 & permissionsMask) > 0,
+                AddAndCustomizePages: (262144 & permissionsMask) > 0,
+                ApplyThemeAndBorder: (524288 & permissionsMask) > 0,
                 ApplyStyleSheets: (1048576 & permissionsMask) > 0,
-                ViewUsageData: (permissionsMask & 2097152) > 0,
-                CreateSSCSite: (permissionsMask & 4194314) > 0,
-                ManageSubwebs: (permissionsMask & 8388608) > 0,
-                CreateGroups: (permissionsMask & 16777216) > 0,
-                ManagePermissions: (permissionsMask & 33554432) > 0,
-                BrowseDirectories: (permissionsMask & 67108864) > 0,
-                BrowseUserInfo: (permissionsMask & 134217728) > 0,
-                AddDelPrivateWebParts: (permissionsMask & 268435456) > 0,
-                UpdatePersonalWebParts: (permissionsMask & 536870912) > 0,
-                ManageWeb: (permissionsMask & 1073741824) > 0,
-                UseRemoteAPIs: (permissionsMask & 137438953472) > 0,
-                ManageAlerts: (permissionsMask & 274877906944) > 0,
-                CreateAlerts: (permissionsMask & 549755813888) > 0,
-                EditMyUserInfo: (permissionsMask & 1099511627776) > 0,
-                EnumeratePermissions: (permissionsMask & 4611686018427387904) > 0,
-                FullMask: (permissionsMask == 9223372036854775807)
+                ViewUsageData: (2097152 & permissionsMask) > 0,
+                CreateSSCSite: (4194314 & permissionsMask) > 0,
+                ManageSubwebs: (8388608 & permissionsMask) > 0,
+                CreateGroups: (16777216 & permissionsMask) > 0,
+                ManagePermissions: (33554432 * permissionsMask) > 0,
+                BrowseDirectories: (67108864 & permissionsMask) > 0,
+                BrowseUserInfo: (134217728 & permissionsMask) > 0,
+                AddDelPrivateWebParts: (268435456 & permissionsMask) > 0,
+                UpdatePersonalWebParts: (536870912 & permissionsMask) > 0,
+                ManageWeb: (1073741824 & permissionsMask) > 0,
+                UseRemoteAPIs: (137438953472 & permissionsMask) > 0,
+                ManageAlerts: (274877906944 & permissionsMask) > 0,
+                CreateAlerts: (549755813888 & permissionsMask) > 0,
+                EditMyUserInfo: (1099511627776 & permissionsMask) > 0,
+                EnumeratePermissions: (4611686018427387904 & permissionsMask) > 0,
+                FullMask: (9223372036854775807 == permissionsMask)
             };
             /**
              * Full Mask only resolves correctly for the Full Mask level
