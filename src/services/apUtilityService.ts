@@ -129,47 +129,47 @@ module ap {
 
             var permissions = {
                 //General
-                EmptyMask: '0x0000000000000000',
-                FullMask: '0x7FFFFFFFFFFFFFFF',
+                EmptyMask: 0x0000000000000000,
+                FullMask: 0x7FFFFFFFFFFFFFFF,
 
                 //List and document permissions
-                ViewListItems: '0x0000000000000001',
-                AddListItems: '',
-                EditListItems: '0x0000000000000004',
-                DeleteListItems: '0x0000000000000008',
-                ApproveItems: '0x0000000000000010',
-                OpenItems: '0x0000000000000020',
-                ViewVersions: '0x0000000000000040',
-                DeleteVersions: '0x0000000000000080',
-                CancelCheckout: '0x0000000000000100',
-                ManagePersonalViews: '0x0000000000000200',
-                ManageLists: '0x0000000000000800',
-                ViewFormPages: '0x0000000000001000',
+                ViewListItems: 0x0000000000000001,
+                AddListItems: 0x0000000000000002,
+                EditListItems: 0x0000000000000004,
+                DeleteListItems: 0x0000000000000008,
+                ApproveItems: 0x0000000000000010,
+                OpenItems: 0x0000000000000020,
+                ViewVersions: 0x0000000000000040,
+                DeleteVersions: 0x0000000000000080,
+                CancelCheckout: 0x0000000000000100,
+                ManagePersonalViews: 0x0000000000000200,
+                ManageLists: 0x0000000000000800,
+                ViewFormPages: 0x0000000000001000,
 
                 //Web level permissions
-                Open: '0x0000000000010000',
-                ViewPages: '0x0000000000020000',
-                AddAndCustomizePages: '0x0000000000040000',
-                ApplyThemeAndBorder: '0x0000000000080000',
-                ApplyStyleSheets: '0x0000000000100000',
-                ViewUsageData: '0x0000000000200000',
-                CreateSSCSite: '0x0000000000400000',
-                ManageSubwebs: '0x0000000000800000',
-                CreateGroups: '0x0000000001000000',
-                ManagePermissions: '0x0000000002000000',
-                BrowseDirectories: '0x0000000004000000',
-                BrowseUserInfo: '0x0000000008000000',
-                AddDelPrivateWebParts: '0x0000000010000000',
-                UpdatePersonalWebParts: '0x0000000020000000',
-                ManageWeb: '0x0000000040000000',
-                UseClientIntegration: '0x0000001000000000',
-                UseRemoteAPIs: '0x0000002000000000',
-                ManageAlerts: '0x0000004000000000',
-                CreateAlerts: '0x0000008000000000',
-                EditMyUserInfo: '0x0000010000000000',
+                Open: 0x0000000000010000,
+                ViewPages: 0x0000000000020000,
+                AddAndCustomizePages: 0x0000000000040000,
+                ApplyThemeAndBorder: 0x0000000000080000,
+                ApplyStyleSheets: 0x0000000000100000,
+                ViewUsageData: 0x0000000000200000,
+                CreateSSCSite: 0x0000000000400000,
+                ManageSubwebs: 0x0000000000800000,
+                CreateGroups: 0x0000000001000000,
+                ManagePermissions: 0x0000000002000000,
+                BrowseDirectories: 0x0000000004000000,
+                BrowseUserInfo: 0x0000000008000000,
+                AddDelPrivateWebParts: 0x0000000010000000,
+                UpdatePersonalWebParts: 0x0000000020000000,
+                ManageWeb: 0x0000000040000000,
+                UseClientIntegration: 0x0000001000000000,
+                UseRemoteAPIs: 0x0000002000000000,
+                ManageAlerts: 0x0000004000000000,
+                CreateAlerts: 0x0000008000000000,
+                EditMyUserInfo: 0x0000010000000000,
 
                 //Special Permissions
-                EnumeratePermissions: '0x4000000000000000'
+                EnumeratePermissions: 0x4000000000000000
             };
 
             if (permissions[permMaskName]) {
@@ -320,7 +320,7 @@ module ap {
              * }
          * </pre>
          */
-        resolvePermissions(permissionsMask): IUserPermissionsObject {
+        resolvePermissions(permissionsMask: number): IUserPermissionsObject {
             var permissionSet = {
                 ViewListItems: (1 & permissionsMask) > 0,
                 AddListItems: (2 & permissionsMask) > 0,
@@ -336,27 +336,27 @@ module ap {
                 ManageLists: (2048 & permissionsMask) > 0,
                 ViewFormPages: (4096 & permissionsMask) > 0,
 
-                Open: (permissionsMask & 65536) > 0,
-                ViewPages: (permissionsMask & 131072) > 0,
-                AddAndCustomizePages: (permissionsMask & 262144) > 0,
-                ApplyThemeAndBorder: (permissionsMask & 524288) > 0,
+                Open: (65536 & permissionsMask) > 0,
+                ViewPages: (131072 & permissionsMask) > 0,
+                AddAndCustomizePages: (262144 & permissionsMask) > 0,
+                ApplyThemeAndBorder: (524288 & permissionsMask) > 0,
                 ApplyStyleSheets: (1048576 & permissionsMask) > 0,
-                ViewUsageData: (permissionsMask & 2097152) > 0,
-                CreateSSCSite: (permissionsMask & 4194314) > 0,
-                ManageSubwebs: (permissionsMask & 8388608) > 0,
-                CreateGroups: (permissionsMask & 16777216) > 0,
-                ManagePermissions: (permissionsMask & 33554432) > 0,
-                BrowseDirectories: (permissionsMask & 67108864) > 0,
-                BrowseUserInfo: (permissionsMask & 134217728) > 0,
-                AddDelPrivateWebParts: (permissionsMask & 268435456) > 0,
-                UpdatePersonalWebParts: (permissionsMask & 536870912) > 0,
-                ManageWeb: (permissionsMask & 1073741824) > 0,
-                UseRemoteAPIs: (permissionsMask & 137438953472) > 0,
-                ManageAlerts: (permissionsMask & 274877906944) > 0,
-                CreateAlerts: (permissionsMask & 549755813888) > 0,
-                EditMyUserInfo: (permissionsMask & 1099511627776) > 0,
-                EnumeratePermissions: (permissionsMask & 4611686018427387904) > 0,
-                FullMask: (permissionsMask == 9223372036854775807)
+                ViewUsageData: (2097152 & permissionsMask) > 0,
+                CreateSSCSite: (4194314 & permissionsMask) > 0,
+                ManageSubwebs: (8388608 & permissionsMask) > 0,
+                CreateGroups: (16777216 & permissionsMask) > 0,
+                ManagePermissions: (33554432 * permissionsMask) > 0,
+                BrowseDirectories: (67108864 & permissionsMask) > 0,
+                BrowseUserInfo: (134217728 & permissionsMask) > 0,
+                AddDelPrivateWebParts: (268435456 & permissionsMask) > 0,
+                UpdatePersonalWebParts: (536870912 & permissionsMask) > 0,
+                ManageWeb: (1073741824 & permissionsMask) > 0,
+                UseRemoteAPIs: (137438953472 & permissionsMask) > 0,
+                ManageAlerts: (274877906944 & permissionsMask) > 0,
+                CreateAlerts: (549755813888 & permissionsMask) > 0,
+                EditMyUserInfo: (1099511627776 & permissionsMask) > 0,
+                EnumeratePermissions: (4611686018427387904 & permissionsMask) > 0,
+                FullMask: (9223372036854775807 === permissionsMask)
             };
 
             /**

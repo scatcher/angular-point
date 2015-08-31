@@ -328,7 +328,7 @@ module ap {
             if (!str) {
                 return str;
             } else {
-                return parseInt(str, 10);
+                return parseInt(str);
             }
         }
 

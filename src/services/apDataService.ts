@@ -9,7 +9,7 @@ module ap {
     var service: DataService, $q: ng.IQService, $timeout: ng.ITimeoutService, $http: ng.IHttpService, apConfig: IAPConfig,
         apUtilityService: UtilityService, apCacheService: CacheService, apDecodeService: DecodeService,
         apEncodeService: EncodeService, apFieldService: FieldService, apIndexedCacheFactory: IndexedCacheFactory,
-        toastr, SPServices,
+        toastr, SPServices, apBasePermissionObject: BasePermissionObject,
         apXMLToJSONService: XMLToJSONService, apChangeService: ChangeService;
 
     export interface IDataService {
@@ -31,7 +31,7 @@ module ap {
         processDeletionsSinceToken(responseXML: XMLDocument, indexedCache: IndexedCache<any>): void;
         requestData(opts): ng.IPromise<XMLDocument>;
         retrieveChangeToken(responseXML: XMLDocument): string;
-        retrievePermMask(responseXML: XMLDocument): string;
+        retrieveListPermissions(responseXML: XMLDocument): string;
         serviceWrapper(options): ng.IPromise<any>;
         startWorkflow(options: { item: string; templateId: string; workflowParameters?: string; fileRef?: string; }): ng.IPromise<any>;
         updateListItem<T extends ListItem<any>>(model: Model, listItem: T, options): ng.IPromise<T>;
@@ -42,11 +42,11 @@ module ap {
         queryForCurrentSite: ng.IPromise<string>;
         static $inject = ['$http', '$q', '$timeout', 'apCacheService', 'apChangeService', 'apConfig', 'apDecodeService',
             'apDefaultListItemQueryOptions', 'apEncodeService', 'apFieldService', 'apIndexedCacheFactory',
-            'apUtilityService', 'apWebServiceOperationConstants', 'apXMLToJSONService', 'SPServices', 'toastr'];
+            'apUtilityService', 'apWebServiceOperationConstants', 'apXMLToJSONService', 'SPServices', 'toastr', 'apBasePermissionObject'];
 
         constructor(_$http_, _$q_, _$timeout_, _apCacheService_, _apChangeService_, _apConfig_, _apDecodeService_,
             _apDefaultListItemQueryOptions_, _apEncodeService_, _apFieldService_, _apIndexedCacheFactory_,
-            _apUtilityService_, _apWebServiceOperationConstants_, _apXMLToJSONService_, _SPServices_, _toastr_) {
+            _apUtilityService_, _apWebServiceOperationConstants_, _apXMLToJSONService_, _SPServices_, _toastr_, _apBasePermissionObject_) {
             service = this;
 
             $http = _$http_;
@@ -65,6 +65,7 @@ module ap {
             apXMLToJSONService = _apXMLToJSONService_;
             SPServices = _SPServices_;
             toastr = _toastr_;
+            apBasePermissionObject = _apBasePermissionObject_;
         }
 
         /**
@@ -81,7 +82,7 @@ module ap {
          * field identified in the model.
          * @returns {object} Promise which resolves with the newly created item.
          */
-        createListItem<T extends ListItem<any>>(model: Model, listItem: T, options?: ICreateListItemOptions<T>): ng.IPromise<T> {
+        createListItem<T extends ListItem<any>>(model: Model, listItem: Object, options?: ICreateListItemOptions<T>): ng.IPromise<T> {
             var defaults = {
                 batchCmd: 'New',
                 buildValuePairs: true,
@@ -461,7 +462,7 @@ module ap {
             return this.serviceWrapper(opts)
                 .then((response) => {
                     /** Parse XML response */
-                    var fieldVersionCollection = apDecodeService.parseFieldVersions(response, fieldDefinition );
+                    var fieldVersionCollection = apDecodeService.parseFieldVersions(response, fieldDefinition);
                     /** Resolve with an array of all field versions */
                     return fieldVersionCollection;
                 }, (outcome) => {
@@ -611,9 +612,9 @@ module ap {
             }
 
             /** Update the user permissions for this list */
-            var effectivePermissionMask = this.retrievePermMask(responseXML);
-            if (effectivePermissionMask) {
-                model.list.effectivePermMask = effectivePermissionMask;
+            var permissions = this.retrieveListPermissions(responseXML);
+            if (permissions) {
+                model.list.permissions = permissions;
             }
 
             /** Change token query includes deleted items as well so we need to process them separately */
@@ -703,14 +704,39 @@ module ap {
 
         /**
          * @ngdoc function
-         * @name DataService.retrievePermMask
+         * @name DataService.retrieveListPermissions
          * @description
          * Returns the text representation of the users permission mask
          * Note: this attribute is only found when using 'GetListItemChangesSinceToken'
          * @param {XMLDocument} responseXML XML response from the server.
          */
-        retrievePermMask(responseXML: XMLDocument): string {
-            return $(responseXML).find('listitems').attr('EffectivePermMask');
+        retrieveListPermissions(responseXML: XMLDocument): IUserPermissionsObject {
+            //Permissions will be a string of Permission names delimited by commas
+            //Example: "ViewListItems, AddListItems, EditListItems, DeleteListItems, ...."
+            let listPermissions: string = $(responseXML).find('listitems').attr('EffectivePermMask');
+            let permissionObject;
+            if (_.isString(listPermissions)) {
+                let permissionNameArray = listPermissions.split(',');
+                permissionObject = new ap.BasePermissionObject();
+                //Set each of the identified permission levels to true
+                _.each(permissionNameArray, (permission: string) => {
+                    //Remove extra spaces
+                    let permissionName = permission.trim();
+                    //Find the permission level on the permission object that is currently set to false
+                    //and set to true
+                    permissionObject[permissionName] = true;
+                    
+                    if (permissionName === 'FullMask') {
+                        //User has full rights so set all to true
+                        _.each(permissionObject, (propertyValue, propertyName) => {
+                            permissionObject[propertyName] = true;
+                        })
+                    }
+                });
+            }
+
+            return permissionObject;
+
         }
 
         /**

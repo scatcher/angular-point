@@ -185,10 +185,21 @@ module ap {
             /** Register cache name with cache service so we can map factory name with list GUID */
             apCacheService.registerModel(this);
 
-            /** Convenience query that simply returns all list items within a list. */
+            /** Convenience querys that simply returns all list items within a list. */
             this.registerQuery({
-                name: 'getAllListItems',
+                name: '__getAllListItems',
                 operation: 'GetListItems'
+            });
+            
+            /** Get a single list item from a list, primarily used to quickly identify user 
+             *  permissions on list using the ows_PermMask property.  List items can have unique permissions
+             *  so can't rely on this 100% to correctly resolve list permissions.  In the case where that is
+             *  necessary you will need to use a similar query using GetListItemChangesSinceToken method which
+             *  will take longer but will correctly resolve the list permissions. */
+            this.registerQuery({
+                name: '__sample',
+                operation: 'GetListItems',
+                CAMLRowLimit: 1
             });
 
         }
@@ -220,16 +231,14 @@ module ap {
          * </pre>
          */
         addNewItem<T extends ListItem<any>>(entity: Object, options?: Object): ng.IPromise<T> {
-            var model = this,
-                deferred = $q.defer();
+            var model = this;
 
-            apDataService.createListItem(model, entity, options)
+            return apDataService.createListItem<T>(model, entity, options)
                 .then((listItem) => {
-                    deferred.resolve(listItem);
                     /** Optionally broadcast change event */
                     apUtilityService.registerChange(model, 'create', listItem.id);
+                    return listItem;
                 });
-            return deferred.promise;
         }
 
 
@@ -300,9 +309,9 @@ module ap {
          * Extends the List and Fields with list information returned from the server.  Only runs once and after that
          * returns the existing promise.
          * @param {object} [options] Pass-through options to apDataService.getList
-         * @returns {object} Promise that is resolved once the information has been added.
+         * @returns {ng.IPromise<Model>} Promise that is resolved with the extended model.
          */
-        extendListMetadata(options?: Object): ng.IPromise<any> {
+        extendListMetadata(options?: Object): ng.IPromise<Model> {
             var model = this,
                 deferred = $q.defer(),
                 defaults = { listName: model.list.getListId() };
@@ -313,11 +322,28 @@ module ap {
                 model.deferredListDefinition = deferred.promise;
 
                 var opts = _.assign({}, defaults, options);
-                apDataService.getList(opts)
-                    .then((responseXML) => {
-                        apDecodeService.extendListMetadata(model, responseXML);
+                let getListAction = apDataService.getList(opts)
+
+                /** We can potentially have 2 seperate requests for data so store them in array so we can wait until 
+                 * all are resolved. */
+                let promiseArray = [getListAction];
+                
+                /** Add a request for a sample list item to the server requests if we haven't
+                 * already resolved user permissions for the list. */
+                if (!model.getList().permissions) {
+                    /** Permissions not set yet, when the query is resolved with a sample list item
+                     * the query class will use the permMask from the list item to set the temp permissions
+                     * for the list until a time where we can run a GetListItemChangesSinceToken request and
+                     * set the actual permissions. */
+                    promiseArray.push(model.executeQuery('__sample'));
+                }
+
+                $q.all(promiseArray)
+                    .then((resolvedPromises) => {
+                        apDecodeService.extendListMetadata(model, resolvedPromises[0]);
                         deferred.resolve(model);
                     });
+
             }
             return model.deferredListDefinition;
         }
@@ -367,6 +393,7 @@ module ap {
         /**
          * @ngdoc function
          * @name Model.getAllListItems
+         * @module Model
          * @description
          * Inherited from Model constructor
          * Gets all list items in the current list, processes the xml, and caches the data in model.
@@ -382,7 +409,7 @@ module ap {
          */
         getAllListItems<T extends ListItem<any>>(): ng.IPromise<IndexedCache<T>> {
             var model = this;
-            var query = model.queries.getAllListItems;
+            var query = this.getQuery<T>('__getAllListItems');
             return apDataService.executeQuery<T>(model, query, { target: query.indexedCache });
         }
 
@@ -520,8 +547,7 @@ module ap {
          * </pre>
          */
         getListItemById<T extends ListItem<any>>(listItemId: number, options?: Object): ng.IPromise<T> {
-            var deferred = $q.defer(),
-                model = this,
+            var model = this,
                 /** Unique Query Name */
                 queryKey = 'GetListItemById-' + listItemId;
 
@@ -546,15 +572,11 @@ module ap {
                 model.registerQuery(opts);
             }
 
-            model.executeQuery(queryKey)
-                .then((indexedCache) => {
+            return model.executeQuery<T>(queryKey)
+                .then((indexedCache: IndexedCache<T>) => {
                     /** Should return an indexed cache object with a single listItem so just return the requested listItem */
-                    deferred.resolve(indexedCache.first());
-                }, (err) => {
-                    deferred.reject(err);
+                    return indexedCache.first();
                 });
-
-            return deferred.promise;
         }
 
 
@@ -825,20 +847,19 @@ module ap {
          * </pre>
          */
         resolvePermissions(): IUserPermissionsObject {
-            var model = this;
-            if (model.list && model.list.effectivePermMask) {
+            var model = this,
+                list = model.getList();
+            if (list && list.permissions) {
                 /** If request has been made to GetListItemChangesSinceToken we have already stored the 
-                 * permission for this list.  Get the permission mask from the permission mask name. */
-                var permissionMask = apUtilityService.convertEffectivePermMask(model.list.effectivePermMask);
-                return apUtilityService.resolvePermissions(permissionMask);
+                 * permission for this list. */
+                return list.permissions;
             } else if (model.getCachedEntities().first()) {
                 /** Next option is to use the same permission as one of the 
                  * already cached list items for this model. */
-                var sampleListItem = model.getCachedEntities().first();
-                return apUtilityService.resolvePermissions(sampleListItem.permMask);
+                 return list.extendPermissionsFromListItem(model.getCachedEntities().first())
             } else {
                 window.console.error('Attempted to resolve permissions of a model that hasn\'t been initialized.', model);
-                return apUtilityService.resolvePermissions(null);
+                return new ap.BasePermissionObject();
             }
         }
 

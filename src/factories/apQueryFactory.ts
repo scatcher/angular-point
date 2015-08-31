@@ -174,12 +174,19 @@ module ap {
                 };
 
                 /** Extend defaults with any options */
-                var queryOptions = _.assign({}, defaults, options);
+                var queryOptions: IExecuteQueryOptions = _.assign(defaults, options);
 
                 apDataService.executeQuery(model, query, queryOptions).then((results) => {
                     if (firstRunQuery) {
                         /** Promise resolved the first time query is completed */
                         query.initialized.resolve(queryOptions.target);
+                        
+                        /** Set list permissions if not already set */
+                        var list = model.getList();
+                        if (!list.permissions && results.first()) {
+                            /** Query needs to have returned at least 1 item so we can use permMask */
+                            list.extendPermissionsFromListItem(results.first());
+                        }
                     }
 
                     /** Remove lock to allow for future requests */

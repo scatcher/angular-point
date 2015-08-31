@@ -6,6 +6,7 @@
 /// <reference path="../src/constants/apConfig.ts" />
 /// <reference path="../src/constants/apDefaultFields.ts" />
 /// <reference path="../src/constants/apDefaultListItemQueryOptions.ts" />
+/// <reference path="../src/constants/apPermissionObject.ts" />
 /// <reference path="../src/constants/apThirdPartyConstants.ts" />
 /// <reference path="../src/constants/apWebServiceOperationConstants.ts" />
 /// <reference path="../src/constants/apXMLFieldAttributeTypes.ts" />

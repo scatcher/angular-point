@@ -117,23 +117,23 @@ module ap {
             var permissionValue;
             switch (perMask) {
                 case 'AddListItems':
-                    permissionValue = '0x0000000000000002';
+                    permissionValue = 0x0000000000000002;
                     break;
                 case 'EditListItems':
-                    permissionValue = '0x0000000000000004';
+                    permissionValue = 0x0000000000000004;
                     break;
                 case 'DeleteListItems':
-                    permissionValue = '0x0000000000000008';
+                    permissionValue = 0x0000000000000008;
                     break;
                 case 'ApproveItems':
-                    permissionValue = '0x0000000000000010';
+                    permissionValue = 0x0000000000000010;
                     break;
                 case 'FullMask':
-                    permissionValue = '0x7FFFFFFFFFFFFFFF';
+                    permissionValue = 0x7FFFFFFFFFFFFFFF;
                     break;
                 case 'ViewListItems':
                 default:
-                    permissionValue = '0x0000000000000001';
+                    permissionValue = 0x0000000000000001;
                     break;
             }
             return permissionValue;

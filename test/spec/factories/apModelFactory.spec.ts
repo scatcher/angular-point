@@ -210,20 +210,37 @@ module ap {
 
         describe('Method: resolvePermissions', function() {
             it('correctly identifies that the user can approve', function() {
-                mockModel.list.effectivePermMask = 'ApproveItems';
+                mockModel.list.permissions = new ap.BasePermissionObject();
+                mockModel.list.permissions['ApproveItems'] = true;
                 expect(mockModel.resolvePermissions().ApproveItems).toBe(true);
             });
             it('falls back to use permission from first list item to resolve', function() {
+                let initialPermissions = mockModel.resolvePermissions();
+                expect(initialPermissions.AddListItems).toEqual(true);
                 //Make sure not to use saved permissions on list
-                mockModel.list.effectivePermMask = undefined;
+                mockModel.list.permissions = undefined;
+                //Update value on first list item which is what will be used to populate list permissions
+                var firstListItemPermissions = mockModel.getCachedEntities().first().resolvePermissions();
+
                 //Service will attempt to use same permissions as an existing list item
-                var firstListItem = mockModel.getCachedEntity(1);
-                var expectedPermissions = firstListItem.resolvePermissions();
-                expect(mockModel.resolvePermissions()).toEqual(expectedPermissions);
+                expect(mockModel.resolvePermissions()).toEqual(firstListItemPermissions);
             });
             it('correctly identifies that the user doesn\'t have the required permissions', function() {
-                mockModel.list.effectivePermMask = 'ViewListItems';
-                expect(mockModel.resolvePermissions().ApproveItems).toBe(false);
+                //Clear out any list permissions
+                mockModel.list.permissions = undefined;
+                let firstListItem = mockModel.getCachedEntities().first();
+                //Set permissions to allow approving list items
+                firstListItem.permMask = 0x0000000000000010;
+                
+                expect(firstListItem.resolvePermissions().EditListItems).toEqual(true);
+                expect(firstListItem.resolvePermissions().ApproveItems).toEqual(true);
+                
+                mockModel.list.permissions = undefined;
+                //Update the permMask for the first list item, giving the user only the ability to ViewListItems
+                firstListItem.permMask = 0x0000000000000001;
+                expect(firstListItem.resolvePermissions().ViewListItems).toEqual(true);
+                expect(firstListItem.resolvePermissions().ApproveItems).toEqual(false);
+                
             });
         });
 

@@ -109,10 +109,62 @@ module ap {
             })
         });
 
-        describe('Function: retrievePermMask', function() {
-            it('returns perm mask for the current user on this lsit', function() {
-                expect(service.retrievePermMask(mockXML)).toEqual('FullMask');
-            })
+        describe('Function: retrieveListPermissions', function() {
+            
+            let fullMaskXML = `
+            <?xml version="1.0" encoding="utf-8"?>
+            <soap:Envelope>
+                 <GetListItemChangesSinceTokenResponse xmlns="http://schemas.microsoft.com/sharepoint/soap/">
+                    <GetListItemChangesSinceTokenResult>
+                        <listitems EffectivePermMask='FullMask'></listitems>
+                    </GetListItemChangesSinceTokenResult>
+                </GetListItemChangesSinceTokenResponse>
+            </soap:Envelope>`
+            
+            it('returns permmission object with all permission levels set to true', function() {
+                let permissions = service.retrieveListPermissions(fullMaskXML);
+                _.each(permissions, (permissionValue) => {
+                    expect(permissionValue).toEqual(true);
+                })
+            });
+           
+            
+            let partialPermissionXML = `
+            <?xml version="1.0" encoding="utf-8"?>
+            <soap:Envelope>
+                 <GetListItemChangesSinceTokenResponse xmlns="http://schemas.microsoft.com/sharepoint/soap/">
+                    <GetListItemChangesSinceTokenResult>
+                        <listitems EffectivePermMask='ViewListItems, AddListItems, EditListItems, DeleteListItems'></listitems>
+                    </GetListItemChangesSinceTokenResult>
+                </GetListItemChangesSinceTokenResponse>
+            </soap:Envelope>`
+            
+            it('correctly sets the specified permission levels to true', function() {
+                let permissions = service.retrieveListPermissions(partialPermissionXML);
+                expect(permissions.ViewListItems).toEqual(true);
+                expect(permissions.AddListItems).toEqual(true);
+                expect(permissions.EditListItems).toEqual(true);
+                expect(permissions.DeleteListItems).toEqual(true);
+            });
+            
+            it('leaves unspecified permissions as false', function() {
+                let permissions = service.retrieveListPermissions(partialPermissionXML);
+                expect(permissions.ViewVersions).toEqual(false);
+            });
+            
+            let noPermMaskXML = `
+            <?xml version="1.0" encoding="utf-8"?>
+            <soap:Envelope>
+                 <GetListItemChangesSinceTokenResponse xmlns="http://schemas.microsoft.com/sharepoint/soap/">
+                    <GetListItemChangesSinceTokenResult></GetListItemChangesSinceTokenResult>
+                </GetListItemChangesSinceTokenResponse>
+            </soap:Envelope>`            
+            
+            it('returns undefined if no EffectivePermMask is found', function() {
+                let permissions = service.retrieveListPermissions(noPermMaskXML);
+                expect(permissions).toBeUndefined();
+            });
+            
         });
 
         describe('Function: getCollection', function() {

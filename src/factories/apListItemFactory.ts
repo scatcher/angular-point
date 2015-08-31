@@ -14,7 +14,7 @@ module ap {
         fileRef?: ILookup;
         id?: number;
         modified?: Date;
-        permMask?: string;
+        permMask?: number;
         uniqueId?: string;
 
         deleteAttachment: (url: string) => ng.IPromise<any>;
@@ -67,7 +67,7 @@ module ap {
         getQuery: () => IQuery<T>;
         id: number;
         modified: Date;
-        permMask: string;
+        permMask: number;
         uniqueId: string;
         private preDeleteAction: () => boolean;
         private preSaveAction: () => boolean;

@@ -84,7 +84,6 @@ module ap {
 
     export interface IList extends IUninstantiatedList, IXMLList {
         customFields: FieldDefinition[];
-        effectivePermMask?: string;
         environments: { [key: string]: string };
         fields: FieldDefinition[];
         getListId(): string;
@@ -92,6 +91,7 @@ module ap {
         identifyWebURL(): string;
         isReady: boolean;
         mapping?: Object;
+        permissions?: IUserPermissionsObject;
         title: string;
         viewFields?: string;
         webURL?: string;
@@ -156,12 +156,12 @@ module ap {
      */
     export class List implements IList {
         customFields = [];
-        effectivePermMask: string;
         environments: { [key: string]: string };
         fields = [];
         guid: string = '';
         isReady = false;
         mapping = {};
+        permissions: IUserPermissionsObject;
         title = '';
         viewFields = '';
         WebFullUrl; //Only appears if extended from list definition
@@ -209,6 +209,24 @@ module ap {
 
             /** Close viewFields */
             this.viewFields += '</ViewFields>';
+        }
+        
+        /**
+         * @ngdoc function
+         * @name List:extendPermissionsFromListItem
+         * @methodOf List
+         * @param {ListItem} listItem List item to use as sample of user's permisssions for list.
+         * @description
+         * If the user permissions haven't been resolved for the list, use the permissions from a 
+         * sample list item and assume they're the same for the entire list
+         * @returns {IUserPermissionsObject} Resolved permissions for the list item.
+         */
+        extendPermissionsFromListItem(listItem: ListItem<any>): IUserPermissionsObject {
+            if (!listItem) {
+                throw new Error('A valid list item is required in order to extend list permissions.');
+            }
+            this.permissions = listItem.resolvePermissions();
+            return this.permissions;
         }
 
 

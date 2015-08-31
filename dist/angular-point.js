@@ -161,6 +161,54 @@ var ap;
 var ap;
 (function (ap) {
     'use strict';
+    var BasePermissionObject = (function () {
+        function BasePermissionObject() {
+            this.AddAndCustomizePages = false;
+            this.AddDelPrivateWebParts = false;
+            this.AddListItems = false;
+            this.ApplyStyleSheets = false;
+            this.ApplyThemeAndBorder = false;
+            this.ApproveItems = false;
+            this.BrowseDirectories = false;
+            this.BrowseUserInfo = false;
+            this.CancelCheckout = false;
+            this.CreateAlerts = false;
+            this.CreateGroups = false;
+            this.CreateSSCSite = false;
+            this.DeleteListItems = false;
+            this.DeleteVersions = false;
+            this.EditListItems = false;
+            this.EditMyUserInfo = false;
+            this.EnumeratePermissions = false;
+            this.FullMask = false;
+            this.ManageAlerts = false;
+            this.ManageLists = false;
+            this.ManagePermissions = false;
+            this.ManageSubwebs = false;
+            this.ManageWeb = false;
+            this.Open = false;
+            this.OpenItems = false;
+            this.PersonalViews = false;
+            this.UpdatePersonalWebParts = false;
+            this.UseRemoteAPIs = false;
+            this.ViewFormPages = false;
+            this.ViewListItems = false;
+            this.ViewPages = false;
+            this.ViewUsageData = false;
+            this.ViewVersions = false;
+        }
+        return BasePermissionObject;
+    })();
+    ap.BasePermissionObject = BasePermissionObject;
+    angular
+        .module('angularPoint')
+        .constant('apBasePermissionObject', BasePermissionObject);
+})(ap || (ap = {}));
+
+/// <reference path="../app.module.ts" />
+var ap;
+(function (ap) {
+    'use strict';
     angular.module('angularPoint')
         .constant('_', _);
 })(ap || (ap = {}));
@@ -3896,9 +3944,9 @@ var ap;
     'use strict';
     var apDefaultListItemQueryOptions = ap.DefaultListItemQueryOptions;
     var apWebServiceOperationConstants = ap.WebServiceOperationConstants;
-    var service, $q, $timeout, $http, apConfig, apUtilityService, apCacheService, apDecodeService, apEncodeService, apFieldService, apIndexedCacheFactory, toastr, SPServices, apXMLToJSONService, apChangeService;
+    var service, $q, $timeout, $http, apConfig, apUtilityService, apCacheService, apDecodeService, apEncodeService, apFieldService, apIndexedCacheFactory, toastr, SPServices, apBasePermissionObject, apXMLToJSONService, apChangeService;
     var DataService = (function () {
-        function DataService(_$http_, _$q_, _$timeout_, _apCacheService_, _apChangeService_, _apConfig_, _apDecodeService_, _apDefaultListItemQueryOptions_, _apEncodeService_, _apFieldService_, _apIndexedCacheFactory_, _apUtilityService_, _apWebServiceOperationConstants_, _apXMLToJSONService_, _SPServices_, _toastr_) {
+        function DataService(_$http_, _$q_, _$timeout_, _apCacheService_, _apChangeService_, _apConfig_, _apDecodeService_, _apDefaultListItemQueryOptions_, _apEncodeService_, _apFieldService_, _apIndexedCacheFactory_, _apUtilityService_, _apWebServiceOperationConstants_, _apXMLToJSONService_, _SPServices_, _toastr_, _apBasePermissionObject_) {
             service = this;
             $http = _$http_;
             $q = _$q_;
@@ -3916,6 +3964,7 @@ var ap;
             apXMLToJSONService = _apXMLToJSONService_;
             SPServices = _SPServices_;
             toastr = _toastr_;
+            apBasePermissionObject = _apBasePermissionObject_;
         }
         /**
          * @ngdoc function
@@ -4507,7 +4556,19 @@ var ap;
          * @param {XMLDocument} responseXML XML response from the server.
          */
         DataService.prototype.retrievePermMask = function (responseXML) {
-            return $(responseXML).find('listitems').attr('EffectivePermMask');
+            //Permissions will be a string of Permission names delimited by commas
+            //Example: "ViewListItems, AddListItems, EditListItems, DeleteListItems, ...."
+            var listPermissions = $(responseXML).find('listitems').attr('EffectivePermMask');
+            var permissionNameArray = listPermissions.split(',');
+            var permissionObject = new ap.BasePermissionObject();
+            _.each(permissionNameArray, function (permission) {
+                //Remove extra spaces
+                var permissionName = permission.trim();
+                //Find the permission level on the permission object that is currently set to false
+                //and set to true
+                permissionObject[permissionName] = true;
+            });
+            return permissionObject;
         };
         /**
          * @ngdoc function
@@ -4675,7 +4736,7 @@ var ap;
         };
         DataService.$inject = ['$http', '$q', '$timeout', 'apCacheService', 'apChangeService', 'apConfig', 'apDecodeService',
             'apDefaultListItemQueryOptions', 'apEncodeService', 'apFieldService', 'apIndexedCacheFactory',
-            'apUtilityService', 'apWebServiceOperationConstants', 'apXMLToJSONService', 'SPServices', 'toastr'];
+            'apUtilityService', 'apWebServiceOperationConstants', 'apXMLToJSONService', 'SPServices', 'toastr', 'apBasePermissionObject'];
         return DataService;
     })();
     ap.DataService = DataService;
