@@ -10,7 +10,7 @@ module ap {
         apUtilityService: UtilityService, apCacheService: CacheService, apDecodeService: DecodeService,
         apEncodeService: EncodeService, apFieldService: FieldService, apIndexedCacheFactory: IndexedCacheFactory,
         toastr, SPServices, apBasePermissionObject: BasePermissionObject,
-        apXMLToJSONService: XMLToJSONService, apChangeService: ChangeService;
+        apXMLToJSONService: XMLToJSONService, apChangeService: ChangeService, apLogger: Logger;
 
     export interface IDataService {
         createListItem<T extends ListItem<any>>(model: Model, listItem: Object, options?: { buildValuePairs: boolean; valuePairs: [string, any][] }): ng.IPromise<T>;
@@ -42,11 +42,13 @@ module ap {
         queryForCurrentSite: ng.IPromise<string>;
         static $inject = ['$http', '$q', '$timeout', 'apCacheService', 'apChangeService', 'apConfig', 'apDecodeService',
             'apDefaultListItemQueryOptions', 'apEncodeService', 'apFieldService', 'apIndexedCacheFactory',
-            'apUtilityService', 'apWebServiceOperationConstants', 'apXMLToJSONService', 'SPServices', 'toastr', 'apBasePermissionObject'];
+            'apUtilityService', 'apWebServiceOperationConstants', 'apXMLToJSONService', 'SPServices', 'toastr',
+            'apBasePermissionObject', 'apLogger'];
 
         constructor(_$http_, _$q_, _$timeout_, _apCacheService_, _apChangeService_, _apConfig_, _apDecodeService_,
             _apDefaultListItemQueryOptions_, _apEncodeService_, _apFieldService_, _apIndexedCacheFactory_,
-            _apUtilityService_, _apWebServiceOperationConstants_, _apXMLToJSONService_, _SPServices_, _toastr_, _apBasePermissionObject_) {
+            _apUtilityService_, _apWebServiceOperationConstants_, _apXMLToJSONService_, _SPServices_, _toastr_,
+            _apBasePermissionObject_, _apLogger_) {
             service = this;
 
             $http = _$http_;
@@ -66,6 +68,7 @@ module ap {
             SPServices = _SPServices_;
             toastr = _toastr_;
             apBasePermissionObject = _apBasePermissionObject_;
+            apLogger = _apLogger_;
         }
 
         /**
@@ -114,9 +117,6 @@ module ap {
                     var indexedCache = apDecodeService.processListItems(model, opts, response, opts);
                     /** Return reference to last listItem in cache because it will have the new highest id */
                     return indexedCache.last()
-                    // deferred.resolve(indexedCache.last());
-                }, (err) => {
-                    // deferred.reject(err);
                 });
         }
 
@@ -208,7 +208,9 @@ module ap {
                     return apCacheService.deleteEntity(opts.listName, listItem.id);
                 }, (outcome) => {
                     //In the event of an error, display toast
-                    toastr.error('There was an error deleting a list item from ' + model.list.title);
+                    let msg = 'There was an error deleting a list item from ' + model.list.title;
+                    toastr.error(msg);
+
                     return outcome;
                 });
 
@@ -305,7 +307,8 @@ module ap {
             return this.serviceWrapper({
                 operation: 'GetTemplatesForItem',
                 item: itemUrl
-            }).then(function(responseXML) {
+            })
+            .then(function(responseXML) {
                 var workflowTemplates = [];
                 var xmlTemplates = apXMLToJSONService.filterNodes(responseXML, 'WorkflowTemplate');
                 _.each(xmlTemplates, function(xmlTemplate: JQuery) {
@@ -408,7 +411,7 @@ module ap {
                 /** We only want to run this once so cache the promise the first time and just reference it in the future */
                 this.queryForCurrentSite = deferred.promise;
 
-                var msg = SPServices.SOAPEnvelope.header +
+                var soapData = SPServices.SOAPEnvelope.header +
                     "<WebUrlFromPageUrl xmlns='" + SPServices.SCHEMASharePoint + "/soap/' ><pageUrl>" +
                     ((location.href.indexOf("?") > 0) ? location.href.substr(0, location.href.indexOf("?")) : location.href) +
                     "</pageUrl></WebUrlFromPageUrl>" +
@@ -417,19 +420,24 @@ module ap {
                 $http({
                     method: 'POST',
                     url: '/_vti_bin/Webs.asmx',
-                    data: msg,
+                    data: soapData,
                     responseType: "document",
                     headers: {
                         "Content-Type": "text/xml;charset='utf-8'"
                     }
-                }).then((response) => {
+                })
+                .then((response) => {
                     /** Success */
+                    var errorMsg = apDecodeService.checkResponseForErrors(response.data);
+                    if (errorMsg) {
+                        this.errorHandler('Failed to get current site.  ' + errorMsg, deferred, soapData);
+                    }
                     apConfig.defaultUrl = $(response.data).find("WebUrlFromPageUrlResult").text();
                     deferred.resolve(apConfig.defaultUrl)
-                }, (response) => {
+                })
+                .catch((err) => {
                     /** Error */
-                    var error = apDecodeService.checkResponseForErrors(response.data);
-                    deferred.reject(error);
+                    this.errorHandler('Failed to get current site.  ' + err, deferred, soapData);
                 });
             }
             return this.queryForCurrentSite;
@@ -465,10 +473,11 @@ module ap {
                     var fieldVersionCollection = apDecodeService.parseFieldVersions(response, fieldDefinition);
                     /** Resolve with an array of all field versions */
                     return fieldVersionCollection;
-                }, (outcome) => {
+                })
+                .catch((err) => {
                     /** Failure */
                     toastr.error('Failed to fetch version history.');
-                    return outcome;
+                    return err;
                 });
         }
 
@@ -655,11 +664,13 @@ module ap {
          * @returns {promise} Promise that resolves with the server response.
          */
         requestData(opts): ng.IPromise<XMLDocument> {
+            var deferred = $q.defer();
             var soapData = SPServices.generateXMLComponents(opts);
             var service = apWebServiceOperationConstants[opts.operation][0];
-            return this.generateWebServiceUrl(service, opts.webURL)
+
+            this.generateWebServiceUrl(service, opts.webURL)
                 .then((url) => {
-                    return $http.post(url, soapData.msg, {
+                    $http.post(url, soapData.msg, {
                         responseType: "document",
                         headers: {
                             "Content-Type": "text/xml;charset='utf-8'",
@@ -671,23 +682,26 @@ module ap {
                             }
                             return data;
                         }
-                    }).then((response) => {
-                        /** Success */
-                        /** Errors can still be resolved without throwing an error so check the XML */
-                        var error = apDecodeService.checkResponseForErrors(response.data);
-                        if (error) {
-                            console.error(error, opts);
-                            return error;
+                    })
+                    .then((response) => {
+                        // Success Code
+                        // Errors can still be resolved without throwing an error so check the XML
+                        var errorMsg = apDecodeService.checkResponseForErrors(response.data);
+                        if (errorMsg) {
+                            // Actuall error but returned with success resonse....thank you SharePoint
+                            this.errorHandler(errorMsg, deferred, soapData, response);
                         } else {
-                            return response.data;
+                            /** Real success */
+                            deferred.resolve(response.data);
                         }
-                    }, (response) => {
-                        /** Failure */
-                        var error = apDecodeService.checkResponseForErrors(response.data);
-                        console.error(response.statusText, opts);
-                        return response.statusText + ': ' + error;
+                    })
+                    .catch((err) => {
+                        // Failure
+                        this.errorHandler(err, deferred, soapData);
                     });
                 });
+
+            return deferred.promise;
         }
 
         /**
@@ -725,7 +739,7 @@ module ap {
                     //Find the permission level on the permission object that is currently set to false
                     //and set to true
                     permissionObject[permissionName] = true;
-                    
+
                     if (permissionName === 'FullMask') {
                         //User has full rights so set all to true
                         _.each(permissionObject, (propertyValue, propertyName) => {
@@ -918,6 +932,18 @@ module ap {
                     break;
             }
             return validPayload;
+        }
+
+        private errorHandler(errorMsg: string, deferred: ng.IDeferred<any>, soapData: Object, response?: Object) {
+            //Log error to any server side logging list
+            apLogger.error(errorMsg, {
+                json: {
+                    request: JSON.stringify(soapData),
+                    response: JSON.stringify(response)
+                }
+            });
+
+            deferred.reject(errorMsg);
         }
 
 
