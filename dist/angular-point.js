@@ -2066,8 +2066,7 @@ var ap;
 var __extends = (this && this.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
-    __.prototype = b.prototype;
-    d.prototype = new __();
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 };
 var ap;
 (function (ap) {
@@ -3232,7 +3231,22 @@ var ap;
 var ap;
 (function (ap) {
     'use strict';
-    var $q, apIndexedCacheFactory, apConfig, apDefaultListItemQueryOptions, apDataService;
+    var $q, apIndexedCacheFactory, apConfig, apDefaultListItemQueryOptions, apDataService, apDecodeService;
+    var LocalStorageQuery = (function () {
+        function LocalStorageQuery(key, stringifiedQuery) {
+            this.key = key;
+            var parsedQuery = JSON.parse(stringifiedQuery);
+            _.assign(this, parsedQuery);
+            this.lastRun = new Date(parsedQuery.lastRun);
+        }
+        LocalStorageQuery.prototype.hasExpired = function (localStorageExpiration) {
+            return this.lastRun.getMilliseconds() + localStorageExpiration <= new Date().getMilliseconds();
+        };
+        LocalStorageQuery.prototype.removeItem = function () {
+            localStorage.removeItem(this.key);
+        };
+        return LocalStorageQuery;
+    })();
     /**
      * @ngdoc function
      * @name Query
@@ -3243,6 +3257,8 @@ var ap;
      * receive a more efficient response, just don't have the ability to check for changes since the last time
      * the query was called.
      * @param {boolean} [config.cacheXML=true] Set to false if you want a fresh request.
+     * @param {boolean} [config.localStorage=false] Should we store data from this query in local storage to speed up requests in the future.
+     * @param {number} [config.localStorageExpiration=86400000] Set expiration in milliseconds - Defaults to a day and if set to 0 doesn't expire.
      * @param {string} [config.offlineXML] Optionally reference a specific XML file to use for this query instead
      * of using the shared XML file for this list.
      * @param {string} [config.query=Ordered ascending by ID] CAML query passed to SharePoint to control
@@ -3298,6 +3314,10 @@ var ap;
             this.cacheXML = false;
             /** Reference to the most recent query when performing GetListItemChangesSinceToken */
             this.changeToken = undefined;
+            /** Should we store data from this query in local storage to speed up requests in the future */
+            this.localStorage = false;
+            /** Set expiration in milliseconds - Defaults to a day and if set to 0 doesn't expire */
+            this.localStorageExpiration = 86400000;
             /** Flag to prevent us from makeing concurrent requests */
             this.negotiatingWithServer = false;
             /** Every time we run we want to check to update our cached data with
@@ -3318,6 +3338,15 @@ var ap;
             /** Allow the model to be referenced at a later time */
             this.getModel = function () { return model; };
         }
+        Object.defineProperty(Query.prototype, "localStorageKey", {
+            /** They key we use for local storage */
+            get: function () {
+                var model = this.getModel();
+                return model.getListId() + '.query.' + this.name;
+            },
+            enumerable: true,
+            configurable: true
+        });
         /**
          * @ngdoc function
          * @name Query.execute
@@ -3330,6 +3359,7 @@ var ap;
          * @returns {object[]} Array of list item objects.
          */
         Query.prototype.execute = function (options) {
+            var _this = this;
             var query = this;
             var model = query.getModel();
             var deferred = $q.defer();
@@ -3341,6 +3371,11 @@ var ap;
             else {
                 /** Set flag to prevent another call while this query is active */
                 query.negotiatingWithServer = true;
+                /** See if we already have data in local storage and hydrate if it hasn't expired, which
+                 * then allows us to only request the changes. */
+                if (this.operation === 'GetListItemChangesSinceToken' && this.localStorage && !this.lastRun) {
+                    this.hydrateFromLocalStorage();
+                }
                 /** Set flag if this if the first time this query has been run */
                 var firstRunQuery = _.isNull(query.lastRun);
                 var defaults = {
@@ -3353,38 +3388,117 @@ var ap;
                     if (firstRunQuery) {
                         /** Promise resolved the first time query is completed */
                         query.initialized.resolve(queryOptions.target);
-                        /** Set list permissions if not already set */
-                        var list = model.getList();
-                        if (!list.permissions && results.first()) {
-                            /** Query needs to have returned at least 1 item so we can use permMask */
-                            list.extendPermissionsFromListItem(results.first());
-                        }
+                    }
+                    /** Set list permissions if not already set */
+                    var list = model.getList();
+                    if (!list.permissions && results.first()) {
+                        /** Query needs to have returned at least 1 item so we can use permMask */
+                        list.extendPermissionsFromListItem(results.first());
                     }
                     /** Remove lock to allow for future requests */
                     query.negotiatingWithServer = false;
                     /** Store query completion date/time on model to allow us to identify age of data */
                     model.lastServerUpdate = new Date();
                     deferred.resolve(queryOptions.target);
+                    /** Overwrite local storage value with updated state so we can potentially restore in
+                     * future sessions. */
+                    if (_this.operation === 'GetListItemChangesSinceToken' && _this.localStorage) {
+                        _this.saveToLocalStorage();
+                    }
                 });
                 /** Save reference on the query **/
                 query.promise = deferred.promise;
                 return deferred.promise;
             }
         };
+        /**
+         * @ngdoc function
+         * @name Query.getCache
+         * @methodOf Query
+         * @description
+         * Use this to return the cache instead of using the actual property to allow for future refactoring.
+         * @returns {IndexedCache<T>} Indexed Cache containing all elements in query.
+         */
         Query.prototype.getCache = function () {
             return this.indexedCache;
+        };
+        /**
+         * @ngdoc function
+         * @name Query.getLocalStorage
+         * @methodOf Query
+         * @description
+         * Use this to return query data currenty saved in user's LocalStorage.
+         * @returns {LocalStorageQuery} Local storage data for this query.
+         */
+        Query.prototype.getLocalStorage = function () {
+            var parsedQuery;
+            var stringifiedQuery = localStorage.getItem(this.localStorageKey);
+            if (stringifiedQuery) {
+                parsedQuery = new LocalStorageQuery(this.localStorageKey, stringifiedQuery);
+            }
+            return parsedQuery;
+        };
+        /**
+         * @ngdoc function
+         * @name Query.hydrateFromLocalStorage
+         * @methodOf Query
+         * @description
+         * If data already exists in browser local storage, we rehydrate JSON using list item constructor and
+         * then have the ability to just check the server to see what has changed from the current state.
+         */
+        Query.prototype.hydrateFromLocalStorage = function () {
+            var localStorageQuery = this.getLocalStorage();
+            //Check to see if we have a version in localStorage
+            if (localStorageQuery) {
+                if (localStorageQuery.hasExpired(this.localStorageExpiration)) {
+                    //Don't continue and purge if data has exceeded expiration
+                    localStorageQuery.removeItem();
+                }
+                else {
+                    var listItemProvider = apDecodeService.createListItemProvider(this.getModel(), this, this.getCache());
+                    //Hydrate each raw list item and add to cache
+                    _.each(localStorageQuery.indexedCache, function (rawObject) {
+                        listItemProvider(rawObject);
+                    });
+                    //Set the last run date
+                    this.lastRun = localStorageQuery.lastRun;
+                    //Store the change token
+                    this.changeToken = localStorageQuery.indexedCache;
+                    //Resolve initial query promise in case any other concurrent requests are waiting for the data
+                    this.initialized.resolve(this.getCache());
+                }
+            }
+        };
+        /**
+         * @ngdoc function
+         * @name Query.saveToLocalStorage
+         * @methodOf Query
+         * @description
+         * Save a snapshot of the current state to local storage so we can speed up calls
+         * for data already residing on the users machine.
+         */
+        Query.prototype.saveToLocalStorage = function () {
+            var model = this.getModel();
+            var store = {
+                changeToken: this.changeToken,
+                indexedCache: this.getCache(),
+                lastRun: this.lastRun
+            };
+            var stringifiedQuery = JSON.stringify(store);
+            localStorage.setItem(this.localStorageKey, stringifiedQuery);
         };
         return Query;
     })();
     ap.Query = Query;
     var QueryFactory = (function () {
-        function QueryFactory(_$q_, _apConfig_, _apDataService_, _apDefaultListItemQueryOptions_, _apIndexedCacheFactory_) {
+        function QueryFactory(_$q_, _apConfig_, _apDataService_, _apDefaultListItemQueryOptions_, _apIndexedCacheFactory_, _apDecodeService_) {
             this.Query = Query;
             $q = _$q_;
             apConfig = _apConfig_;
             apDataService = _apDataService_;
             apDefaultListItemQueryOptions = _apDefaultListItemQueryOptions_;
             apIndexedCacheFactory = _apIndexedCacheFactory_;
+            apDecodeService = _apDecodeService_;
         }
         /**
          * @ngdoc function
@@ -3398,7 +3512,7 @@ var ap;
         QueryFactory.prototype.create = function (config, model) {
             return new Query(config, model);
         };
-        QueryFactory.$inject = ['$q', 'apConfig', 'apDataService', 'apDefaultListItemQueryOptions', 'apIndexedCacheFactory'];
+        QueryFactory.$inject = ['$q', 'apConfig', 'apDataService', 'apDefaultListItemQueryOptions', 'apIndexedCacheFactory', 'apDecodeService'];
         return QueryFactory;
     })();
     ap.QueryFactory = QueryFactory;
@@ -3600,8 +3714,7 @@ var ap;
 var __extends = (this && this.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
-    __.prototype = b.prototype;
-    d.prototype = new __();
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 };
 var ap;
 (function (ap) {
