@@ -377,17 +377,17 @@ module ap {
         });
 
         describe('Method: getVersionHistory', function() {
-            it('parses the version history for a field and returns all 3 versions', () => {
+            it('parses the version history for a field and returns all 4 versions', () => {
                 mockListItem.getVersionHistory('integer')
                     .then(function(response) {
-                        expect(response.count()).toEqual(3);
+                        expect(response.count()).toEqual(4);
                     });
                 $httpBackend.flush();
             });
             it('works without passing any any fields to dynamically build field array', () => {
                 mockListItem.getVersionHistory()
                     .then(function(response) {
-                        expect(response.count()).toEqual(3);
+                        expect(response.count()).toEqual(4);
                     });
                 $httpBackend.flush();
             });
