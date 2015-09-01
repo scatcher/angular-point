@@ -4,7 +4,7 @@ module ap {
     'use strict';
 
     var $q, apIndexedCacheFactory: IndexedCacheFactory, apConfig: IAPConfig, apDefaultListItemQueryOptions,
-        apDataService: DataService, apDecodeService: DecodeService;
+        apDataService: DataService, apDecodeService: DecodeService, apLogger: Logger;
 
     export interface IQuery<T extends ListItem<any>> {
         cacheXML?: boolean;
@@ -28,6 +28,7 @@ module ap {
         query?: string;
         queryOptions?: IQueryOptions;
         saveToLocalStorage(): void;
+        sessionStorage: boolean;
         viewFields: string;
         webURL?: string;
     }
@@ -149,6 +150,7 @@ module ap {
            </OrderBy>
         </Query>`;
         queryOptions;
+        sessionStorage = false;
         viewFields;
         webURL;
 
@@ -202,7 +204,7 @@ module ap {
                 
                 /** See if we already have data in local storage and hydrate if it hasn't expired, which
                  * then allows us to only request the changes. */
-                if (this.operation === 'GetListItemChangesSinceToken' && this.localStorage && !this.lastRun) {
+                if (this.operation === 'GetListItemChangesSinceToken' && (this.localStorage || this.sessionStorage) && !this.lastRun) {
                     this.hydrateFromLocalStorage();
                 }
 
@@ -239,9 +241,9 @@ module ap {
                     deferred.resolve(queryOptions.target);
 
                     /** Overwrite local storage value with updated state so we can potentially restore in
-                     * future sessions. */                    
-                    if (this.operation === 'GetListItemChangesSinceToken' && this.localStorage) { 
-                        this.saveToLocalStorage();
+                     * future sessions. */
+                    if (query.operation === 'GetListItemChangesSinceToken' && (query.localStorage || query.sessionStorage)) {
+                        query.saveToLocalStorage();
                     }
                 });
 
@@ -250,6 +252,7 @@ module ap {
                 return deferred.promise;
             }
         }
+        
         /**
          * @ngdoc function
          * @name Query.getCache
@@ -261,22 +264,24 @@ module ap {
         getCache(): IndexedCache<T> {
             return this.indexedCache;
         }
+        
         /**
          * @ngdoc function
          * @name Query.getLocalStorage
          * @methodOf Query
          * @description
-         * Use this to return query data currenty saved in user's LocalStorage.
+         * Use this to return query data currenty saved in user's local or session storage.
          * @returns {LocalStorageQuery} Local storage data for this query.
          */
         getLocalStorage(): LocalStorageQuery {
             let parsedQuery;
-            let stringifiedQuery = localStorage.getItem(this.localStorageKey);
+            let stringifiedQuery = localStorage.getItem(this.localStorageKey) || sessionStorage.getItem(this.localStorageKey);
             if (stringifiedQuery) {
                 parsedQuery = new LocalStorageQuery(this.localStorageKey, stringifiedQuery);
             }
             return parsedQuery;
         }
+        
         /**
          * @ngdoc function
          * @name Query.hydrateFromLocalStorage
@@ -301,19 +306,20 @@ module ap {
                     //Set the last run date
                     this.lastRun = localStorageQuery.lastRun;
                     //Store the change token
-                    this.changeToken = localStorageQuery.indexedCache;
+                    this.changeToken = localStorageQuery.changeToken;
                     //Resolve initial query promise in case any other concurrent requests are waiting for the data
                     this.initialized.resolve(this.getCache());
                 }
 
             }
         }
+        
         /**
          * @ngdoc function
          * @name Query.saveToLocalStorage
          * @methodOf Query
          * @description
-         * Save a snapshot of the current state to local storage so we can speed up calls
+         * Save a snapshot of the current state to local/session storage so we can speed up calls
          * for data already residing on the users machine.
          */
         saveToLocalStorage(): void {
@@ -324,17 +330,42 @@ module ap {
                 lastRun: this.lastRun
             }
             let stringifiedQuery = JSON.stringify(store);
-            localStorage.setItem(this.localStorageKey, stringifiedQuery);
-
+            let storageType = this.localStorage ? 'local' : 'session';
+            //Use try/catch in case we've exceeded browser storage limit (typically 5MB)
+            try {
+                if (this.localStorage) {
+                    localStorage.setItem(this.localStorageKey, stringifiedQuery);
+                } else {
+                    sessionStorage.setItem(this.localStorageKey, stringifiedQuery);
+                }
+            } catch (e) {
+                if (e.code == 22) {
+                    // Storage full, maybe notify user or do some clean-up
+                }
+                apLogger.debug('Looks like we\'re out of space in ' + storageType + ' storage.', {
+                    json: {
+                        query: this.name,
+                        model: this.getModel().list.title
+                    }
+                });
+                if (this.localStorage) {
+                    localStorage.clear();
+                } else {
+                    sessionStorage.clear();
+                }
+                //Disable storage for remainder of session to prevent throwing additional errors
+                this.localStorage = false;
+                this.sessionStorage = false;
+            }
         }
     }
 
 
     export class QueryFactory {
         Query = Query;
-        static $inject = ['$q', 'apConfig', 'apDataService', 'apDefaultListItemQueryOptions', 'apIndexedCacheFactory', 'apDecodeService'];
+        static $inject = ['$q', 'apConfig', 'apDataService', 'apDefaultListItemQueryOptions', 'apIndexedCacheFactory', 'apDecodeService', 'apLogger'];
 
-        constructor(_$q_, _apConfig_, _apDataService_, _apDefaultListItemQueryOptions_, _apIndexedCacheFactory_, _apDecodeService_) {
+        constructor(_$q_, _apConfig_, _apDataService_, _apDefaultListItemQueryOptions_, _apIndexedCacheFactory_, _apDecodeService_, _apLogger_) {
 
             $q = _$q_;
             apConfig = _apConfig_;
@@ -342,7 +373,7 @@ module ap {
             apDefaultListItemQueryOptions = _apDefaultListItemQueryOptions_;
             apIndexedCacheFactory = _apIndexedCacheFactory_;
             apDecodeService = _apDecodeService_;
-
+            apLogger = _apLogger_;
         }
 
         /**

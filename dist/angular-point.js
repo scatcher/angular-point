@@ -3231,7 +3231,7 @@ var ap;
 var ap;
 (function (ap) {
     'use strict';
-    var $q, apIndexedCacheFactory, apConfig, apDefaultListItemQueryOptions, apDataService, apDecodeService;
+    var $q, apIndexedCacheFactory, apConfig, apDefaultListItemQueryOptions, apDataService, apDecodeService, apLogger;
     var LocalStorageQuery = (function () {
         function LocalStorageQuery(key, stringifiedQuery) {
             this.key = key;
@@ -3325,6 +3325,7 @@ var ap;
             this.operation = 'GetListItemChangesSinceToken';
             /** Default query returns list items in ascending ID order */
             this.query = "\n        <Query>\n           <OrderBy>\n               <FieldRef Name=\"ID\" Ascending=\"TRUE\"/>\n           </OrderBy>\n        </Query>";
+            this.sessionStorage = false;
             this.indexedCache = apIndexedCacheFactory.create();
             this.initialized = $q.defer();
             this.listName = model.list.getListId();
@@ -3359,7 +3360,6 @@ var ap;
          * @returns {object[]} Array of list item objects.
          */
         Query.prototype.execute = function (options) {
-            var _this = this;
             var query = this;
             var model = query.getModel();
             var deferred = $q.defer();
@@ -3373,7 +3373,7 @@ var ap;
                 query.negotiatingWithServer = true;
                 /** See if we already have data in local storage and hydrate if it hasn't expired, which
                  * then allows us to only request the changes. */
-                if (this.operation === 'GetListItemChangesSinceToken' && this.localStorage && !this.lastRun) {
+                if (this.operation === 'GetListItemChangesSinceToken' && (this.localStorage || this.sessionStorage) && !this.lastRun) {
                     this.hydrateFromLocalStorage();
                 }
                 /** Set flag if this if the first time this query has been run */
@@ -3402,8 +3402,8 @@ var ap;
                     deferred.resolve(queryOptions.target);
                     /** Overwrite local storage value with updated state so we can potentially restore in
                      * future sessions. */
-                    if (_this.operation === 'GetListItemChangesSinceToken' && _this.localStorage) {
-                        _this.saveToLocalStorage();
+                    if (query.operation === 'GetListItemChangesSinceToken' && (query.localStorage || query.sessionStorage)) {
+                        query.saveToLocalStorage();
                     }
                 });
                 /** Save reference on the query **/
@@ -3427,12 +3427,12 @@ var ap;
          * @name Query.getLocalStorage
          * @methodOf Query
          * @description
-         * Use this to return query data currenty saved in user's LocalStorage.
+         * Use this to return query data currenty saved in user's local or session storage.
          * @returns {LocalStorageQuery} Local storage data for this query.
          */
         Query.prototype.getLocalStorage = function () {
             var parsedQuery;
-            var stringifiedQuery = localStorage.getItem(this.localStorageKey);
+            var stringifiedQuery = localStorage.getItem(this.localStorageKey) || sessionStorage.getItem(this.localStorageKey);
             if (stringifiedQuery) {
                 parsedQuery = new LocalStorageQuery(this.localStorageKey, stringifiedQuery);
             }
@@ -3463,7 +3463,7 @@ var ap;
                     //Set the last run date
                     this.lastRun = localStorageQuery.lastRun;
                     //Store the change token
-                    this.changeToken = localStorageQuery.indexedCache;
+                    this.changeToken = localStorageQuery.changeToken;
                     //Resolve initial query promise in case any other concurrent requests are waiting for the data
                     this.initialized.resolve(this.getCache());
                 }
@@ -3474,7 +3474,7 @@ var ap;
          * @name Query.saveToLocalStorage
          * @methodOf Query
          * @description
-         * Save a snapshot of the current state to local storage so we can speed up calls
+         * Save a snapshot of the current state to local/session storage so we can speed up calls
          * for data already residing on the users machine.
          */
         Query.prototype.saveToLocalStorage = function () {
@@ -3485,13 +3485,41 @@ var ap;
                 lastRun: this.lastRun
             };
             var stringifiedQuery = JSON.stringify(store);
-            localStorage.setItem(this.localStorageKey, stringifiedQuery);
+            var storageType = this.localStorage ? 'local' : 'session';
+            //Use try/catch in case we've exceeded browser storage limit (typically 5MB)
+            try {
+                if (this.localStorage) {
+                    localStorage.setItem(this.localStorageKey, stringifiedQuery);
+                }
+                else {
+                    sessionStorage.setItem(this.localStorageKey, stringifiedQuery);
+                }
+            }
+            catch (e) {
+                if (e.code == 22) {
+                }
+                apLogger.debug('Looks like we\'re out of space in ' + storageType + ' storage.', {
+                    json: {
+                        query: this.name,
+                        model: this.getModel().list.title
+                    }
+                });
+                if (this.localStorage) {
+                    localStorage.clear();
+                }
+                else {
+                    sessionStorage.clear();
+                }
+                //Disable storage for remainder of session to prevent throwing additional errors
+                this.localStorage = false;
+                this.sessionStorage = false;
+            }
         };
         return Query;
     })();
     ap.Query = Query;
     var QueryFactory = (function () {
-        function QueryFactory(_$q_, _apConfig_, _apDataService_, _apDefaultListItemQueryOptions_, _apIndexedCacheFactory_, _apDecodeService_) {
+        function QueryFactory(_$q_, _apConfig_, _apDataService_, _apDefaultListItemQueryOptions_, _apIndexedCacheFactory_, _apDecodeService_, _apLogger_) {
             this.Query = Query;
             $q = _$q_;
             apConfig = _apConfig_;
@@ -3499,6 +3527,7 @@ var ap;
             apDefaultListItemQueryOptions = _apDefaultListItemQueryOptions_;
             apIndexedCacheFactory = _apIndexedCacheFactory_;
             apDecodeService = _apDecodeService_;
+            apLogger = _apLogger_;
         }
         /**
          * @ngdoc function
@@ -3512,7 +3541,7 @@ var ap;
         QueryFactory.prototype.create = function (config, model) {
             return new Query(config, model);
         };
-        QueryFactory.$inject = ['$q', 'apConfig', 'apDataService', 'apDefaultListItemQueryOptions', 'apIndexedCacheFactory', 'apDecodeService'];
+        QueryFactory.$inject = ['$q', 'apConfig', 'apDataService', 'apDefaultListItemQueryOptions', 'apIndexedCacheFactory', 'apDecodeService', 'apLogger'];
         return QueryFactory;
     })();
     ap.QueryFactory = QueryFactory;
