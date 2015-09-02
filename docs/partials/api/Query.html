@@ -11,8 +11,11 @@
 </div></td></tr><tr><td>config.operation</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="query-page"><p>Optionally use &#39;GetListItems&#39; to
 receive a more efficient response, just don&#39;t have the ability to check for changes since the last time
 the query was called.</p>
-</div> <p><em>(default: GetListItemChangesSinceToken)</em></p></td></tr><tr><td>config.cacheXML</td><td><a href="" class="label type-hint type-hint-boolean">boolean</a></td><td><div class="query-page"><p>Set to false if you want a fresh request.</p>
-</div> <p><em>(default: true)</em></p></td></tr><tr><td>[config.offlineXML]</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="query-page"><p>Optionally reference a specific XML file to use for this query instead
+</div> <p><em>(default: GetListItemChangesSinceToken)</em></p></td></tr><tr><td>config.force</td><td><a href="" class="label type-hint type-hint-boolean">boolean</a></td><td><div class="query-page"><p>Ignore cached data and force server query.</p>
+</div> <p><em>(default: false)</em></p></td></tr><tr><td>config.cacheXML</td><td><a href="" class="label type-hint type-hint-boolean">boolean</a></td><td><div class="query-page"><p>Set to false if you want a fresh request.</p>
+</div> <p><em>(default: true)</em></p></td></tr><tr><td>config.localStorage</td><td><a href="" class="label type-hint type-hint-boolean">boolean</a></td><td><div class="query-page"><p>Should we store data from this query in local storage to speed up requests in the future.</p>
+</div> <p><em>(default: false)</em></p></td></tr><tr><td>config.localStorageExpiration</td><td><a href="" class="label type-hint type-hint-number">number</a></td><td><div class="query-page"><p>Set expiration in milliseconds - Defaults to a day and if set to 0 doesn&#39;t expire.</p>
+</div> <p><em>(default: 86400000)</em></p></td></tr><tr><td>[config.offlineXML]</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="query-page"><p>Optionally reference a specific XML file to use for this query instead
 of using the shared XML file for this list.</p>
 </div></td></tr><tr><td>config.query</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="query-page"><p>CAML query passed to SharePoint to control
 the data SharePoint returns.</p>
@@ -46,6 +49,26 @@ Subsequent calls pulls down changes (Assuming operation: &quot;GetListItemChange
 </div><h5 id="methods_execute_parameters">Parameters</h5><table class="variables-matrix table table-bordered table-striped"><thead><tr><th>Param</th><th>Type</th><th>Details</th></tr></thead><tbody><tr><td>[options]</td><td><a href="" class="label type-hint type-hint-object">object</a></td><td><div class="query-execute-page"><p>Any options that should be passed to dataService.executeQuery.</p>
 </div></td></tr></tbody></table><h5 id="methods_execute_returns">Returns</h5><table class="variables-matrix"><tr><td><a href="" class="label type-hint type-hint-object">object[]</a></td><td><div class="query-execute-page"><p>Array of list item objects.</p>
 </div></td></tr></table></div>
+</li>
+<li><h3 id="methods_getcache">getCache()</h3>
+<div class="getcache"><div class="query-getcache-page"><p>Use this to return the cache instead of using the actual property to allow for future refactoring.</p>
+</div><h5 id="methods_getcache_returns">Returns</h5><table class="variables-matrix"><tr><td><a href="" class="label type-hint type-hint-indexedcache">IndexedCache&lt;T&gt;</a></td><td><div class="query-getcache-page"><p>Indexed Cache containing all elements in query.</p>
+</div></td></tr></table></div>
+</li>
+<li><h3 id="methods_getlocalstorage">getLocalStorage()</h3>
+<div class="getlocalstorage"><div class="query-getlocalstorage-page"><p>Use this to return query data currenty saved in user&#39;s local or session storage.</p>
+</div><h5 id="methods_getlocalstorage_returns">Returns</h5><table class="variables-matrix"><tr><td><a href="" class="label type-hint type-hint-localstoragequery">LocalStorageQuery</a></td><td><div class="query-getlocalstorage-page"><p>Local storage data for this query.</p>
+</div></td></tr></table></div>
+</li>
+<li><h3 id="methods_hydratefromlocalstorage">hydrateFromLocalStorage()</h3>
+<div class="hydratefromlocalstorage"><div class="query-hydratefromlocalstorage-page"><p>If data already exists in browser local storage, we rehydrate JSON using list item constructor and
+then have the ability to just check the server to see what has changed from the current state.</p>
+</div></div>
+</li>
+<li><h3 id="methods_savetolocalstorage">saveToLocalStorage()</h3>
+<div class="savetolocalstorage"><div class="query-savetolocalstorage-page"><p>Save a snapshot of the current state to local/session storage so we can speed up calls
+for data already residing on the users machine.</p>
+</div></div>
 </li>
 </ul>
 </div>
