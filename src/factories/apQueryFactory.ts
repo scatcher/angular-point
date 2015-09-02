@@ -10,6 +10,7 @@ module ap {
         cacheXML?: boolean;
         changeToken?: string;
         execute(options?: Object): ng.IPromise<IndexedCache<T>>;
+        force: boolean;
         getCache(): IndexedCache<T>;
         getLocalStorage(): LocalStorageQuery;
         getModel(): Model;
@@ -64,6 +65,7 @@ module ap {
      * @param {string} [config.operation=GetListItemChangesSinceToken] Optionally use 'GetListItems' to
      * receive a more efficient response, just don't have the ability to check for changes since the last time
      * the query was called.
+     * @param {boolean} [config.force=false] Ignore cached data and force server query.
      * @param {boolean} [config.cacheXML=true] Set to false if you want a fresh request.
      * @param {boolean} [config.localStorage=false] Should we store data from this query in local storage to speed up requests in the future.
      * @param {number} [config.localStorageExpiration=86400000] Set expiration in milliseconds - Defaults to a day and if set to 0 doesn't expire.
@@ -121,7 +123,7 @@ module ap {
         cacheXML: boolean = false;
         /** Reference to the most recent query when performing GetListItemChangesSinceToken */
         changeToken = undefined;
-
+        force = false;
         getModel: () => Model;
 
         /** Key value hash map with key being the id of the entity */
@@ -193,63 +195,95 @@ module ap {
             var query = this;
             var model = query.getModel();
             var deferred = $q.defer();
-
+                
             /** Return existing promise if request is already underway or has been previously executed in the past
-             * 1/10th of a second */
-            if (query.negotiatingWithServer || (_.isDate(query.lastRun) && query.lastRun.getTime() + 100 > new Date().getTime())) {
+            * 1/10th of a second */
+            if (query.negotiatingWithServer || (_.isDate(query.lastRun) && query.lastRun.getTime() + apConfig.queryDebounceTime > new Date().getTime())) {
                 return query.promise;
             } else {
                 /** Set flag to prevent another call while this query is active */
                 query.negotiatingWithServer = true;
+
+                let localStorageData = this.getLocalStorage();
+                //Check to see if we have a version in localStorage
                 
-                /** See if we already have data in local storage and hydrate if it hasn't expired, which
-                 * then allows us to only request the changes. */
-                if (this.operation === 'GetListItemChangesSinceToken' && (this.localStorage || this.sessionStorage) && !this.lastRun) {
-                    this.hydrateFromLocalStorage();
-                }
-
-                /** Set flag if this if the first time this query has been run */
-                var firstRunQuery = _.isNull(query.lastRun);
-
-                var defaults = {
+                let defaults = {
                     /** Designate the central cache for this query if not already set */
                     target: query.getCache()
                 };
 
                 /** Extend defaults with any options */
-                var queryOptions: IExecuteQueryOptions = _.assign(defaults, options);
+                let queryOptions: IExecuteQueryOptions = _.assign(defaults, options);
 
-                apDataService.executeQuery(model, query, queryOptions).then((results) => {
-                    if (firstRunQuery) {
-                        /** Promise resolved the first time query is completed */
-                        query.initialized.resolve(queryOptions.target);
+                /** Flag used to determine if we need to make a request to the server */
+                let makeRequest = true;
+                
+                /** See if we already have data in local storage and hydrate if it hasn't expired, which
+                * then allows us to only request the changes. */
+                if (!query.force && localStorageData) {
+                    switch (this.operation) {
+                        case 'GetListItemChangesSinceToken':
+                            //Only run the first time, after that the token/data are already in sync    
+                            if (!query.lastRun) {
+                                query.hydrateFromLocalStorage(localStorageData);
+                            }
+                            break;
+                        case 'GetListItems':
+                            query.hydrateFromLocalStorage(localStorageData);
+                            //Use cached data if we have data already available
+                            makeRequest = this.getCache().count() > 0;
                     }
-                    
-                    /** Set list permissions if not already set */
-                    var list = model.getList();
-                    if (!list.permissions && results.first()) {
-                        /** Query needs to have returned at least 1 item so we can use permMask */
-                        list.extendPermissionsFromListItem(results.first());
-                    }                    
+                }
 
-                    /** Remove lock to allow for future requests */
-                    query.negotiatingWithServer = false;
-
-                    /** Store query completion date/time on model to allow us to identify age of data */
-                    model.lastServerUpdate = new Date();
-
-                    deferred.resolve(queryOptions.target);
-
-                    /** Overwrite local storage value with updated state so we can potentially restore in
-                     * future sessions. */
-                    if (query.operation === 'GetListItemChangesSinceToken' && (query.localStorage || query.sessionStorage)) {
-                        query.saveToLocalStorage();
-                    }
-                });
-
+                if (makeRequest) {
+                    apDataService.executeQuery<T>(model, query, queryOptions).then((results) => {
+                        if (this.operation === 'GetListItems') {
+                            /** Purge all list items from the query cache so we can add in all new list
+                            * items and handle the case where something was deleted since the last call*/
+                            this.getCache().clear();
+                        }
+                        this.processResults(results, deferred, queryOptions);
+                    });
+                } else {
+                    this.processResults(this.getCache(), deferred, queryOptions);
+                }
+                
                 /** Save reference on the query **/
                 query.promise = deferred.promise;
                 return deferred.promise;
+            }
+        }
+        processResults(results: ap.IndexedCache<T>, deferred: ng.IDeferred<any>, queryOptions: IExecuteQueryOptions) {
+            let query = this;
+            let model = query.getModel();
+            
+            /** Set flag if this if the first time this query has been run */
+            var firstRunQuery = _.isNull(query.lastRun);
+
+            if (firstRunQuery) {
+                /** Promise resolved the first time query is completed */
+                query.initialized.resolve(queryOptions.target);
+            }
+                    
+            /** Set list permissions if not already set */
+            var list = model.getList();
+            if (!list.permissions && results.first()) {
+                /** Query needs to have returned at least 1 item so we can use permMask */
+                list.extendPermissionsFromListItem(results.first());
+            }                    
+
+            /** Remove lock to allow for future requests */
+            query.negotiatingWithServer = false;
+
+            /** Store query completion date/time on model to allow us to identify age of data */
+            model.lastServerUpdate = new Date();
+
+            deferred.resolve(queryOptions.target);
+
+            /** Overwrite local storage value with updated state so we can potentially restore in
+             * future sessions. */
+            if (query.localStorage || query.sessionStorage) {
+                query.saveToLocalStorage();
             }
         }
         
@@ -290,27 +324,22 @@ module ap {
          * If data already exists in browser local storage, we rehydrate JSON using list item constructor and 
          * then have the ability to just check the server to see what has changed from the current state.
          */
-        hydrateFromLocalStorage(): void {
-            let localStorageQuery = this.getLocalStorage();
-            //Check to see if we have a version in localStorage
-            if (localStorageQuery) {
-                if (localStorageQuery.hasExpired(this.localStorageExpiration)) {
-                    //Don't continue and purge if data has exceeded expiration
-                    localStorageQuery.removeItem();
-                } else {
-                    let listItemProvider = apDecodeService.createListItemProvider(this.getModel(), this, this.getCache());
-                    //Hydrate each raw list item and add to cache
-                    _.each(localStorageQuery.indexedCache, (rawObject: Object) => {
-                        listItemProvider(rawObject);
-                    });
-                    //Set the last run date
-                    this.lastRun = localStorageQuery.lastRun;
-                    //Store the change token
-                    this.changeToken = localStorageQuery.changeToken;
-                    //Resolve initial query promise in case any other concurrent requests are waiting for the data
-                    this.initialized.resolve(this.getCache());
-                }
-
+        hydrateFromLocalStorage(localStorageQuery: LocalStorageQuery): void {
+            if (localStorageQuery.hasExpired(this.localStorageExpiration)) {
+                //Don't continue and purge if data has exceeded expiration
+                localStorageQuery.removeItem();
+            } else {
+                let listItemProvider = apDecodeService.createListItemProvider<T>(this.getModel(), this, this.getCache());
+                //Hydrate each raw list item and add to cache
+                _.each(localStorageQuery.indexedCache, (rawObject: Object) => {
+                    listItemProvider(rawObject);
+                });
+                //Set the last run date
+                this.lastRun = localStorageQuery.lastRun;
+                //Store the change token
+                this.changeToken = localStorageQuery.changeToken;
+                //Resolve initial query promise in case any other concurrent requests are waiting for the data
+                this.initialized.resolve(this.getCache());
             }
         }
         

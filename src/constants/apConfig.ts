@@ -56,7 +56,9 @@ module ap {
         environment?: string;
         firebaseURL?: string;
         offline: boolean;
+        queryDebounceTime: number;
         userLoginNamePrefix?: string;
+        version: string;
     }
 
     export var APConfig: IAPConfig = {
@@ -66,12 +68,15 @@ module ap {
         defaultUrl: '',
         environment: 'production',
         firebaseURL: "The optional url of your firebase source",
+        //Are we in working offline
         offline: window.location.href.indexOf('localhost') > -1 ||
         window.location.href.indexOf('http://0.') > -1 ||
         window.location.href.indexOf('http://10.') > -1 ||
         window.location.href.indexOf('http://127.') > -1 ||
         window.location.href.indexOf('http://192.') > -1,
-        offlineXML: 'dev/'
+        offlineXML: 'dev/',
+        //Any identical query within this amount of time return the same promise
+        queryDebounceTime: 100
     };
 
     angular

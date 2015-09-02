@@ -104,12 +104,15 @@ var ap;
         defaultUrl: '',
         environment: 'production',
         firebaseURL: "The optional url of your firebase source",
+        //Are we in working offline
         offline: window.location.href.indexOf('localhost') > -1 ||
             window.location.href.indexOf('http://0.') > -1 ||
             window.location.href.indexOf('http://10.') > -1 ||
             window.location.href.indexOf('http://127.') > -1 ||
             window.location.href.indexOf('http://192.') > -1,
-        offlineXML: 'dev/'
+        offlineXML: 'dev/',
+        //Any identical query within this amount of time return the same promise
+        queryDebounceTime: 100
     };
     angular
         .module('angularPoint')
@@ -536,6 +539,101 @@ var ap;
     angular
         .module('angularPoint')
         .constant('apXMLListAttributeTypes', ap.XMLListAttributeTypes);
+})(ap || (ap = {}));
+
+/// <reference path="../app.module.ts" />
+var ap;
+(function (ap) {
+    'use strict';
+    /** Local references to cached promises */
+    var _getGroupCollection, _getUserProfile;
+    var UserModel = (function () {
+        function UserModel($q, apDataService) {
+            this.$q = $q;
+            this.apDataService = apDataService;
+        }
+        /**
+         * @ngdoc function
+         * @name angularPoint.apUserModel:checkIfMember
+         * @methodOf angularPoint.apUserModel
+         * @description
+         * Checks to see if current user is a member of the specified group.
+         * @param {string} groupName Name of the group.
+         * @param {boolean} [force=false] Ignore any cached value.
+         * @returns {object} Returns the group definition if the user is a member. {ID:string, Name:string, Description:string, OwnerId:string, OwnerIsUser:string}
+         * @example
+         * <pre>{ID: "190", Name: "Blog Contributors", Description: "We are bloggers...", OwnerID: "126", OwnerIsUser: "False"}</pre>
+         */
+        UserModel.prototype.checkIfMember = function (groupName, force) {
+            if (force === void 0) { force = false; }
+            //Allow function to be called before group collection is ready
+            var deferred = this.$q.defer();
+            //Initially ensure groups are ready, any future calls will receive the return
+            this.getGroupCollection(force).then(function (groupCollection) {
+                var groupDefinition = _.find(groupCollection, { Name: groupName });
+                deferred.resolve(groupDefinition);
+            });
+            return deferred.promise;
+        };
+        /**
+         * @ngdoc function
+         * @name angularPoint.apUserModel:getGroupCollection
+         * @methodOf angularPoint.apUserModel
+         * @description
+         * Returns the group definitions for the current user and caches results.
+         * @param {boolean} [force=false] Ignore any cached value.
+         * @returns {IGroupDefinition[]} Promise which resolves with the array of groups the user belongs to.
+         */
+        UserModel.prototype.getGroupCollection = function (force) {
+            var _this = this;
+            if (force === void 0) { force = false; }
+            if (!_getGroupCollection || force) {
+                /** Create a new deferred object if not already defined */
+                var deferred = this.$q.defer();
+                this.getUserProfile(force).then(function (userProfile) {
+                    _this.apDataService.getGroupCollectionFromUser(userProfile.userLoginName)
+                        .then(function (groupCollection) {
+                        deferred.resolve(groupCollection);
+                    });
+                });
+                _getGroupCollection = deferred.promise;
+            }
+            return _getGroupCollection;
+        };
+        /**
+         * @ngdoc function
+         * @name angularPoint.apUserModel:getUserProfile
+         * @methodOf angularPoint.apUserModel
+         * @description
+         * Returns the user profile for the current user and caches results.
+         * Pull user profile info and parse into a profile object
+         * http://spservices.codeplex.com/wikipage?title=GetUserProfileByName
+         * @param {boolean} [force=false] Ignore any cached value.
+         * @returns {object} Promise which resolves with the requested user profile.
+         */
+        UserModel.prototype.getUserProfile = function (force) {
+            if (force === void 0) { force = false; }
+            if (!_getUserProfile || force) {
+                /** Create a new deferred object if not already defined */
+                _getUserProfile = this.apDataService.getUserProfileByName();
+            }
+            return _getUserProfile;
+        };
+        UserModel.$inject = ['$q', 'apDataService'];
+        return UserModel;
+    })();
+    ap.UserModel = UserModel;
+    /**
+     * @ngdoc service
+     * @name angularPoint.apUserModel
+     * @description
+     * Simple service that allows us to request and cache both the current user and their group memberships.
+     *
+     * @requires apDataService
+     *
+     */
+    angular.module('angularPoint')
+        .service('apUserModel', UserModel);
 })(ap || (ap = {}));
 
 /// <reference path="../app.module.ts" />
@@ -3256,6 +3354,7 @@ var ap;
      * @param {string} [config.operation=GetListItemChangesSinceToken] Optionally use 'GetListItems' to
      * receive a more efficient response, just don't have the ability to check for changes since the last time
      * the query was called.
+     * @param {boolean} [config.force=false] Ignore cached data and force server query.
      * @param {boolean} [config.cacheXML=true] Set to false if you want a fresh request.
      * @param {boolean} [config.localStorage=false] Should we store data from this query in local storage to speed up requests in the future.
      * @param {number} [config.localStorageExpiration=86400000] Set expiration in milliseconds - Defaults to a day and if set to 0 doesn't expire.
@@ -3314,6 +3413,7 @@ var ap;
             this.cacheXML = false;
             /** Reference to the most recent query when performing GetListItemChangesSinceToken */
             this.changeToken = undefined;
+            this.force = false;
             /** Should we store data from this query in local storage to speed up requests in the future */
             this.localStorage = false;
             /** Set expiration in milliseconds - Defaults to a day and if set to 0 doesn't expire */
@@ -3360,55 +3460,86 @@ var ap;
          * @returns {object[]} Array of list item objects.
          */
         Query.prototype.execute = function (options) {
+            var _this = this;
             var query = this;
             var model = query.getModel();
             var deferred = $q.defer();
             /** Return existing promise if request is already underway or has been previously executed in the past
-             * 1/10th of a second */
-            if (query.negotiatingWithServer || (_.isDate(query.lastRun) && query.lastRun.getTime() + 100 > new Date().getTime())) {
+            * 1/10th of a second */
+            if (query.negotiatingWithServer || (_.isDate(query.lastRun) && query.lastRun.getTime() + apConfig.queryDebounceTime > new Date().getTime())) {
                 return query.promise;
             }
             else {
                 /** Set flag to prevent another call while this query is active */
                 query.negotiatingWithServer = true;
-                /** See if we already have data in local storage and hydrate if it hasn't expired, which
-                 * then allows us to only request the changes. */
-                if (this.operation === 'GetListItemChangesSinceToken' && (this.localStorage || this.sessionStorage) && !this.lastRun) {
-                    this.hydrateFromLocalStorage();
-                }
-                /** Set flag if this if the first time this query has been run */
-                var firstRunQuery = _.isNull(query.lastRun);
+                var localStorageData = this.getLocalStorage();
+                //Check to see if we have a version in localStorage
                 var defaults = {
                     /** Designate the central cache for this query if not already set */
                     target: query.getCache()
                 };
                 /** Extend defaults with any options */
                 var queryOptions = _.assign(defaults, options);
-                apDataService.executeQuery(model, query, queryOptions).then(function (results) {
-                    if (firstRunQuery) {
-                        /** Promise resolved the first time query is completed */
-                        query.initialized.resolve(queryOptions.target);
+                /** Flag used to determine if we need to make a request to the server */
+                var makeRequest = true;
+                /** See if we already have data in local storage and hydrate if it hasn't expired, which
+                * then allows us to only request the changes. */
+                if (!query.force && localStorageData) {
+                    switch (this.operation) {
+                        case 'GetListItemChangesSinceToken':
+                            //Only run the first time, after that the token/data are already in sync    
+                            if (!query.lastRun) {
+                                query.hydrateFromLocalStorage(localStorageData);
+                            }
+                            break;
+                        case 'GetListItems':
+                            query.hydrateFromLocalStorage(localStorageData);
+                            //Use cached data if we have data already available
+                            makeRequest = this.getCache().count() > 0;
                     }
-                    /** Set list permissions if not already set */
-                    var list = model.getList();
-                    if (!list.permissions && results.first()) {
-                        /** Query needs to have returned at least 1 item so we can use permMask */
-                        list.extendPermissionsFromListItem(results.first());
-                    }
-                    /** Remove lock to allow for future requests */
-                    query.negotiatingWithServer = false;
-                    /** Store query completion date/time on model to allow us to identify age of data */
-                    model.lastServerUpdate = new Date();
-                    deferred.resolve(queryOptions.target);
-                    /** Overwrite local storage value with updated state so we can potentially restore in
-                     * future sessions. */
-                    if (query.operation === 'GetListItemChangesSinceToken' && (query.localStorage || query.sessionStorage)) {
-                        query.saveToLocalStorage();
-                    }
-                });
+                }
+                if (makeRequest) {
+                    apDataService.executeQuery(model, query, queryOptions).then(function (results) {
+                        if (_this.operation === 'GetListItems') {
+                            /** Purge all list items from the query cache so we can add in all new list
+                            * items and handle the case where something was deleted since the last call*/
+                            _this.getCache().clear();
+                        }
+                        _this.processResults(results, deferred, queryOptions);
+                    });
+                }
+                else {
+                    this.processResults(this.getCache(), deferred, queryOptions);
+                }
                 /** Save reference on the query **/
                 query.promise = deferred.promise;
                 return deferred.promise;
+            }
+        };
+        Query.prototype.processResults = function (results, deferred, queryOptions) {
+            var query = this;
+            var model = query.getModel();
+            /** Set flag if this if the first time this query has been run */
+            var firstRunQuery = _.isNull(query.lastRun);
+            if (firstRunQuery) {
+                /** Promise resolved the first time query is completed */
+                query.initialized.resolve(queryOptions.target);
+            }
+            /** Set list permissions if not already set */
+            var list = model.getList();
+            if (!list.permissions && results.first()) {
+                /** Query needs to have returned at least 1 item so we can use permMask */
+                list.extendPermissionsFromListItem(results.first());
+            }
+            /** Remove lock to allow for future requests */
+            query.negotiatingWithServer = false;
+            /** Store query completion date/time on model to allow us to identify age of data */
+            model.lastServerUpdate = new Date();
+            deferred.resolve(queryOptions.target);
+            /** Overwrite local storage value with updated state so we can potentially restore in
+             * future sessions. */
+            if (query.localStorage || query.sessionStorage) {
+                query.saveToLocalStorage();
             }
         };
         /**
@@ -3446,27 +3577,23 @@ var ap;
          * If data already exists in browser local storage, we rehydrate JSON using list item constructor and
          * then have the ability to just check the server to see what has changed from the current state.
          */
-        Query.prototype.hydrateFromLocalStorage = function () {
-            var localStorageQuery = this.getLocalStorage();
-            //Check to see if we have a version in localStorage
-            if (localStorageQuery) {
-                if (localStorageQuery.hasExpired(this.localStorageExpiration)) {
-                    //Don't continue and purge if data has exceeded expiration
-                    localStorageQuery.removeItem();
-                }
-                else {
-                    var listItemProvider = apDecodeService.createListItemProvider(this.getModel(), this, this.getCache());
-                    //Hydrate each raw list item and add to cache
-                    _.each(localStorageQuery.indexedCache, function (rawObject) {
-                        listItemProvider(rawObject);
-                    });
-                    //Set the last run date
-                    this.lastRun = localStorageQuery.lastRun;
-                    //Store the change token
-                    this.changeToken = localStorageQuery.changeToken;
-                    //Resolve initial query promise in case any other concurrent requests are waiting for the data
-                    this.initialized.resolve(this.getCache());
-                }
+        Query.prototype.hydrateFromLocalStorage = function (localStorageQuery) {
+            if (localStorageQuery.hasExpired(this.localStorageExpiration)) {
+                //Don't continue and purge if data has exceeded expiration
+                localStorageQuery.removeItem();
+            }
+            else {
+                var listItemProvider = apDecodeService.createListItemProvider(this.getModel(), this, this.getCache());
+                //Hydrate each raw list item and add to cache
+                _.each(localStorageQuery.indexedCache, function (rawObject) {
+                    listItemProvider(rawObject);
+                });
+                //Set the last run date
+                this.lastRun = localStorageQuery.lastRun;
+                //Store the change token
+                this.changeToken = localStorageQuery.changeToken;
+                //Resolve initial query promise in case any other concurrent requests are waiting for the data
+                this.initialized.resolve(this.getCache());
             }
         };
         /**
@@ -3639,104 +3766,6 @@ var ap;
      */
     angular.module('angularPoint')
         .service('apUserFactory', UserFactory);
-})(ap || (ap = {}));
-
-/// <reference path="../app.module.ts" />
-/// <reference path="../../typings/tsd.d.ts" />
-
-/// <reference path="../app.module.ts" />
-var ap;
-(function (ap) {
-    'use strict';
-    /** Local references to cached promises */
-    var _getGroupCollection, _getUserProfile;
-    var UserModel = (function () {
-        function UserModel($q, apDataService) {
-            this.$q = $q;
-            this.apDataService = apDataService;
-        }
-        /**
-         * @ngdoc function
-         * @name angularPoint.apUserModel:checkIfMember
-         * @methodOf angularPoint.apUserModel
-         * @description
-         * Checks to see if current user is a member of the specified group.
-         * @param {string} groupName Name of the group.
-         * @param {boolean} [force=false] Ignore any cached value.
-         * @returns {object} Returns the group definition if the user is a member. {ID:string, Name:string, Description:string, OwnerId:string, OwnerIsUser:string}
-         * @example
-         * <pre>{ID: "190", Name: "Blog Contributors", Description: "We are bloggers...", OwnerID: "126", OwnerIsUser: "False"}</pre>
-         */
-        UserModel.prototype.checkIfMember = function (groupName, force) {
-            if (force === void 0) { force = false; }
-            //Allow function to be called before group collection is ready
-            var deferred = this.$q.defer();
-            //Initially ensure groups are ready, any future calls will receive the return
-            this.getGroupCollection(force).then(function (groupCollection) {
-                var groupDefinition = _.find(groupCollection, { Name: groupName });
-                deferred.resolve(groupDefinition);
-            });
-            return deferred.promise;
-        };
-        /**
-         * @ngdoc function
-         * @name angularPoint.apUserModel:getGroupCollection
-         * @methodOf angularPoint.apUserModel
-         * @description
-         * Returns the group definitions for the current user and caches results.
-         * @param {boolean} [force=false] Ignore any cached value.
-         * @returns {IGroupDefinition[]} Promise which resolves with the array of groups the user belongs to.
-         */
-        UserModel.prototype.getGroupCollection = function (force) {
-            var _this = this;
-            if (force === void 0) { force = false; }
-            if (!_getGroupCollection || force) {
-                /** Create a new deferred object if not already defined */
-                var deferred = this.$q.defer();
-                this.getUserProfile(force).then(function (userProfile) {
-                    _this.apDataService.getGroupCollectionFromUser(userProfile.userLoginName)
-                        .then(function (groupCollection) {
-                        deferred.resolve(groupCollection);
-                    });
-                });
-                _getGroupCollection = deferred.promise;
-            }
-            return _getGroupCollection;
-        };
-        /**
-         * @ngdoc function
-         * @name angularPoint.apUserModel:getUserProfile
-         * @methodOf angularPoint.apUserModel
-         * @description
-         * Returns the user profile for the current user and caches results.
-         * Pull user profile info and parse into a profile object
-         * http://spservices.codeplex.com/wikipage?title=GetUserProfileByName
-         * @param {boolean} [force=false] Ignore any cached value.
-         * @returns {object} Promise which resolves with the requested user profile.
-         */
-        UserModel.prototype.getUserProfile = function (force) {
-            if (force === void 0) { force = false; }
-            if (!_getUserProfile || force) {
-                /** Create a new deferred object if not already defined */
-                _getUserProfile = this.apDataService.getUserProfileByName();
-            }
-            return _getUserProfile;
-        };
-        UserModel.$inject = ['$q', 'apDataService'];
-        return UserModel;
-    })();
-    ap.UserModel = UserModel;
-    /**
-     * @ngdoc service
-     * @name angularPoint.apUserModel
-     * @description
-     * Simple service that allows us to request and cache both the current user and their group memberships.
-     *
-     * @requires apDataService
-     *
-     */
-    angular.module('angularPoint')
-        .service('apUserModel', UserModel);
 })(ap || (ap = {}));
 
 /// <reference path="../app.module.ts" />
@@ -8403,5 +8432,8 @@ var ap;
     angular.module('angularPoint')
         .service('apXMLToJSONService', XMLToJSONService);
 })(ap || (ap = {}));
+
+/// <reference path="../app.module.ts" />
+/// <reference path="../../typings/tsd.d.ts" />
 
 //# sourceMappingURL=angular-point.js.map

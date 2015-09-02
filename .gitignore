@@ -8,4 +8,4 @@ coverage/
 .tmp
 .settings
 .publish
-*.DS_Store
+.DS_Store
