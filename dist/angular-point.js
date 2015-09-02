@@ -104,6 +104,8 @@ var ap;
         defaultUrl: '',
         environment: 'production',
         firebaseURL: "The optional url of your firebase source",
+        //expiration in milliseconds - Defaults to a day and if set to 0 doesn't expire
+        localStorageExpiration: 86400000,
         //Are we in working offline
         offline: window.location.href.indexOf('localhost') > -1 ||
             window.location.href.indexOf('http://0.') > -1 ||
@@ -540,9 +542,6 @@ var ap;
         .module('angularPoint')
         .constant('apXMLListAttributeTypes', ap.XMLListAttributeTypes);
 })(ap || (ap = {}));
-
-/// <reference path="../app.module.ts" />
-/// <reference path="../../typings/tsd.d.ts" />
 
 /// <reference path="../app.module.ts" />
 var ap;
@@ -3246,13 +3245,27 @@ var ap;
             this.lastRun = new Date(parsedQuery.lastRun);
         }
         LocalStorageQuery.prototype.hasExpired = function (localStorageExpiration) {
-            return this.lastRun.getMilliseconds() + localStorageExpiration <= new Date().getMilliseconds();
+            if (localStorageExpiration === void 0) { localStorageExpiration = apConfig.localStorageExpiration; }
+            var hasExpired = true;
+            if (_.isNaN(localStorage)) {
+                throw new Error('Local storage expiration is required to be a numeric value and instead is ' + localStorageExpiration);
+            }
+            else if (localStorageExpiration === 0) {
+                //No expiration
+                hasExpired = false;
+            }
+            else {
+                //Evaluate if cache has exceeded expiration
+                hasExpired = this.lastRun.getMilliseconds() + localStorageExpiration <= new Date().getMilliseconds();
+            }
+            return hasExpired;
         };
         LocalStorageQuery.prototype.removeItem = function () {
             localStorage.removeItem(this.key);
         };
         return LocalStorageQuery;
     })();
+    ap.LocalStorageQuery = LocalStorageQuery;
     /**
      * @ngdoc function
      * @name Query
@@ -3265,12 +3278,16 @@ var ap;
      * @param {boolean} [config.force=false] Ignore cached data and force server query.
      * @param {boolean} [config.cacheXML=true] Set to false if you want a fresh request.
      * @param {boolean} [config.localStorage=false] Should we store data from this query in local storage to speed up requests in the future.
-     * @param {number} [config.localStorageExpiration=86400000] Set expiration in milliseconds - Defaults to a day and if set to 0 doesn't expire.
+     * @param {number} [config.localStorageExpiration=86400000] Set expiration in milliseconds - Defaults to a day
+     * and if set to 0 doesn't expire.  Can be updated globally using apConfig.localStorageExpiration.
      * @param {string} [config.offlineXML] Optionally reference a specific XML file to use for this query instead
      * of using the shared XML file for this list.
      * @param {string} [config.query=Ordered ascending by ID] CAML query passed to SharePoint to control
      * the data SharePoint returns.
      * @param {string} [config.queryOptions] SharePoint options.
+     * @param {boolean} [config.runOnce] Pertains to GetListItems only, optionally run a single time and return initial value for all future
+     * calls.  Works well with data that isn't expected to change throughout the session but unlike localStorage or sessionStorage
+     * the data doesn't persist between sessions.
      * <pre>
      * //Default
      * queryOptions: '' +
@@ -3319,13 +3336,11 @@ var ap;
         function Query(config, model) {
             /** Very memory intensive to enable cacheXML which is disabled by default*/
             this.cacheXML = false;
-            /** Reference to the most recent query when performing GetListItemChangesSinceToken */
-            this.changeToken = undefined;
             this.force = false;
             /** Should we store data from this query in local storage to speed up requests in the future */
             this.localStorage = false;
             /** Set expiration in milliseconds - Defaults to a day and if set to 0 doesn't expire */
-            this.localStorageExpiration = 86400000;
+            this.localStorageExpiration = apConfig.localStorageExpiration;
             /** Flag to prevent us from makeing concurrent requests */
             this.negotiatingWithServer = false;
             /** Every time we run we want to check to update our cached data with
@@ -3333,6 +3348,7 @@ var ap;
             this.operation = 'GetListItemChangesSinceToken';
             /** Default query returns list items in ascending ID order */
             this.query = "\n        <Query>\n           <OrderBy>\n               <FieldRef Name=\"ID\" Ascending=\"TRUE\"/>\n           </OrderBy>\n        </Query>";
+            this.runOnce = false;
             this.sessionStorage = false;
             this.indexedCache = apIndexedCacheFactory.create();
             this.initialized = $q.defer();
@@ -3406,13 +3422,12 @@ var ap;
                             makeRequest = this.getCache().count() > 0;
                     }
                 }
+                /** Optionally handle query.runOnce for GetListItems when initial call has already been made */
+                if (this.operation === 'GetListItems' && !query.lastRun && this.runOnce) {
+                    makeRequest = false;
+                }
                 if (makeRequest) {
                     apDataService.executeQuery(model, query, queryOptions).then(function (results) {
-                        if (_this.operation === 'GetListItems') {
-                            /** Purge all list items from the query cache so we can add in all new list
-                            * items and handle the case where something was deleted since the last call*/
-                            _this.getCache().clear();
-                        }
                         _this.processResults(results, deferred, queryOptions);
                     });
                 }
@@ -3422,32 +3437,6 @@ var ap;
                 /** Save reference on the query **/
                 query.promise = deferred.promise;
                 return deferred.promise;
-            }
-        };
-        Query.prototype.processResults = function (results, deferred, queryOptions) {
-            var query = this;
-            var model = query.getModel();
-            /** Set flag if this if the first time this query has been run */
-            var firstRunQuery = _.isNull(query.lastRun);
-            if (firstRunQuery) {
-                /** Promise resolved the first time query is completed */
-                query.initialized.resolve(queryOptions.target);
-            }
-            /** Set list permissions if not already set */
-            var list = model.getList();
-            if (!list.permissions && results.first()) {
-                /** Query needs to have returned at least 1 item so we can use permMask */
-                list.extendPermissionsFromListItem(results.first());
-            }
-            /** Remove lock to allow for future requests */
-            query.negotiatingWithServer = false;
-            /** Store query completion date/time on model to allow us to identify age of data */
-            model.lastServerUpdate = new Date();
-            deferred.resolve(queryOptions.target);
-            /** Overwrite local storage value with updated state so we can potentially restore in
-             * future sessions. */
-            if (query.localStorage || query.sessionStorage) {
-                query.saveToLocalStorage();
             }
         };
         /**
@@ -3502,6 +3491,39 @@ var ap;
                 this.changeToken = localStorageQuery.changeToken;
                 //Resolve initial query promise in case any other concurrent requests are waiting for the data
                 this.initialized.resolve(this.getCache());
+            }
+        };
+        /**
+         * @ngdoc function
+         * @name Query.processResults
+         * @methodOf Query
+         * @description
+         * Internal method exposed to allow for testing.  Handle cleanup after query execution is complete.
+         */
+        Query.prototype.processResults = function (results, deferred, queryOptions) {
+            var query = this;
+            var model = query.getModel();
+            /** Set flag if this if the first time this query has been run */
+            var firstRunQuery = _.isNull(query.lastRun);
+            if (firstRunQuery) {
+                /** Promise resolved the first time query is completed */
+                query.initialized.resolve(queryOptions.target);
+            }
+            /** Set list permissions if not already set */
+            var list = model.getList();
+            if (!list.permissions && results.first()) {
+                /** Query needs to have returned at least 1 item so we can use permMask */
+                list.extendPermissionsFromListItem(results.first());
+            }
+            /** Remove lock to allow for future requests */
+            query.negotiatingWithServer = false;
+            /** Store query completion date/time on model to allow us to identify age of data */
+            model.lastServerUpdate = new Date();
+            deferred.resolve(queryOptions.target);
+            /** Overwrite local storage value with updated state so we can potentially restore in
+             * future sessions. */
+            if (query.localStorage || query.sessionStorage) {
+                query.saveToLocalStorage();
             }
         };
         /**
@@ -3675,6 +3697,9 @@ var ap;
     angular.module('angularPoint')
         .service('apUserFactory', UserFactory);
 })(ap || (ap = {}));
+
+/// <reference path="../app.module.ts" />
+/// <reference path="../../typings/tsd.d.ts" />
 
 /// <reference path="../app.module.ts" />
 var ap;

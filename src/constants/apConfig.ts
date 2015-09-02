@@ -55,8 +55,9 @@ module ap {
         defaultUrl: string;
         environment?: string;
         firebaseURL?: string;
+        localStorageExpiration?: number;
         offline: boolean;
-        queryDebounceTime: number;
+        queryDebounceTime?: number;
         userLoginNamePrefix?: string;
         version: string;
     }
@@ -68,6 +69,8 @@ module ap {
         defaultUrl: '',
         environment: 'production',
         firebaseURL: "The optional url of your firebase source",
+        //expiration in milliseconds - Defaults to a day and if set to 0 doesn't expire
+        localStorageExpiration: 86400000,
         //Are we in working offline
         offline: window.location.href.indexOf('localhost') > -1 ||
         window.location.href.indexOf('http://0.') > -1 ||

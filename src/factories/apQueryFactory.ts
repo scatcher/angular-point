@@ -3,7 +3,7 @@
 module ap {
     'use strict';
 
-    var $q, apIndexedCacheFactory: IndexedCacheFactory, apConfig: IAPConfig, apDefaultListItemQueryOptions,
+    var $q: ng.IQService, apIndexedCacheFactory: IndexedCacheFactory, apConfig: IAPConfig, apDefaultListItemQueryOptions,
         apDataService: DataService, apDecodeService: DecodeService, apLogger: Logger;
 
     export interface IQuery<T extends ListItem<any>> {
@@ -14,7 +14,7 @@ module ap {
         getCache(): IndexedCache<T>;
         getLocalStorage(): LocalStorageQuery;
         getModel(): Model;
-        hydrateFromLocalStorage(): void;
+        hydrateFromLocalStorage(localStorageQuery: LocalStorageQuery): void;
         indexedCache: IndexedCache<T>;
         initialized: ng.IDeferred<IndexedCache<T>>
         lastRun: Date;
@@ -28,13 +28,14 @@ module ap {
         promise?: ng.IPromise<IndexedCache<T>>;
         query?: string;
         queryOptions?: IQueryOptions;
+        runOnce: boolean;
         saveToLocalStorage(): void;
         sessionStorage: boolean;
         viewFields: string;
         webURL?: string;
     }
 
-    class LocalStorageQuery {
+    export class LocalStorageQuery {
         changeToken: string;
         indexedCache: { [key: number]: Object };
         lastRun: Date;
@@ -43,8 +44,18 @@ module ap {
             _.assign(this, parsedQuery);
             this.lastRun = new Date(parsedQuery.lastRun);
         }
-        hasExpired(localStorageExpiration: number): boolean {
-            return this.lastRun.getMilliseconds() + localStorageExpiration <= new Date().getMilliseconds();
+        hasExpired(localStorageExpiration: number = apConfig.localStorageExpiration): boolean {
+            let hasExpired = true;
+            if (_.isNaN(localStorage)) {
+                throw new Error('Local storage expiration is required to be a numeric value and instead is ' + localStorageExpiration);
+            } else if (localStorageExpiration === 0) {
+                //No expiration
+                hasExpired = false;
+            } else {
+                //Evaluate if cache has exceeded expiration
+                hasExpired = this.lastRun.getMilliseconds() + localStorageExpiration <= new Date().getMilliseconds();
+            }
+            return hasExpired;
         }
         removeItem() {
             localStorage.removeItem(this.key);
@@ -68,12 +79,16 @@ module ap {
      * @param {boolean} [config.force=false] Ignore cached data and force server query.
      * @param {boolean} [config.cacheXML=true] Set to false if you want a fresh request.
      * @param {boolean} [config.localStorage=false] Should we store data from this query in local storage to speed up requests in the future.
-     * @param {number} [config.localStorageExpiration=86400000] Set expiration in milliseconds - Defaults to a day and if set to 0 doesn't expire.
+     * @param {number} [config.localStorageExpiration=86400000] Set expiration in milliseconds - Defaults to a day 
+     * and if set to 0 doesn't expire.  Can be updated globally using apConfig.localStorageExpiration.
      * @param {string} [config.offlineXML] Optionally reference a specific XML file to use for this query instead
      * of using the shared XML file for this list.
      * @param {string} [config.query=Ordered ascending by ID] CAML query passed to SharePoint to control
      * the data SharePoint returns.
      * @param {string} [config.queryOptions] SharePoint options.
+     * @param {boolean} [config.runOnce] Pertains to GetListItems only, optionally run a single time and return initial value for all future 
+     * calls.  Works well with data that isn't expected to change throughout the session but unlike localStorage or sessionStorage
+     * the data doesn't persist between sessions.
      * <pre>
      * //Default
      * queryOptions: '' +
@@ -120,9 +135,9 @@ module ap {
      */
     export class Query<T extends ListItem<any>> implements IQuery<T> {
         /** Very memory intensive to enable cacheXML which is disabled by default*/
-        cacheXML: boolean = false;
+        cacheXML = false;
         /** Reference to the most recent query when performing GetListItemChangesSinceToken */
-        changeToken = undefined;
+        changeToken;
         force = false;
         getModel: () => Model;
 
@@ -136,10 +151,10 @@ module ap {
         /** Should we store data from this query in local storage to speed up requests in the future */
         localStorage = false;
         /** Set expiration in milliseconds - Defaults to a day and if set to 0 doesn't expire */
-        localStorageExpiration = 86400000;
+        localStorageExpiration = apConfig.localStorageExpiration;
         name: string;
         /** Flag to prevent us from makeing concurrent requests */
-        negotiatingWithServer: boolean = false;
+        negotiatingWithServer = false;
         /** Every time we run we want to check to update our cached data with
          * any changes made on the server */
         operation = 'GetListItemChangesSinceToken';
@@ -152,6 +167,7 @@ module ap {
            </OrderBy>
         </Query>`;
         queryOptions;
+        runOnce = false;
         sessionStorage = false;
         viewFields;
         webURL;
@@ -234,14 +250,14 @@ module ap {
                             makeRequest = this.getCache().count() > 0;
                     }
                 }
+                
+                /** Optionally handle query.runOnce for GetListItems when initial call has already been made */
+                if (this.operation === 'GetListItems' && !query.lastRun && this.runOnce) {
+                    makeRequest = false;
+                }
 
                 if (makeRequest) {
                     apDataService.executeQuery<T>(model, query, queryOptions).then((results) => {
-                        if (this.operation === 'GetListItems') {
-                            /** Purge all list items from the query cache so we can add in all new list
-                            * items and handle the case where something was deleted since the last call*/
-                            this.getCache().clear();
-                        }
                         this.processResults(results, deferred, queryOptions);
                     });
                 } else {
@@ -252,41 +268,7 @@ module ap {
                 query.promise = deferred.promise;
                 return deferred.promise;
             }
-        }
-        processResults(results: ap.IndexedCache<T>, deferred: ng.IDeferred<any>, queryOptions: IExecuteQueryOptions) {
-            let query = this;
-            let model = query.getModel();
-            
-            /** Set flag if this if the first time this query has been run */
-            var firstRunQuery = _.isNull(query.lastRun);
-
-            if (firstRunQuery) {
-                /** Promise resolved the first time query is completed */
-                query.initialized.resolve(queryOptions.target);
-            }
-                    
-            /** Set list permissions if not already set */
-            var list = model.getList();
-            if (!list.permissions && results.first()) {
-                /** Query needs to have returned at least 1 item so we can use permMask */
-                list.extendPermissionsFromListItem(results.first());
-            }                    
-
-            /** Remove lock to allow for future requests */
-            query.negotiatingWithServer = false;
-
-            /** Store query completion date/time on model to allow us to identify age of data */
-            model.lastServerUpdate = new Date();
-
-            deferred.resolve(queryOptions.target);
-
-            /** Overwrite local storage value with updated state so we can potentially restore in
-             * future sessions. */
-            if (query.localStorage || query.sessionStorage) {
-                query.saveToLocalStorage();
-            }
-        }
-        
+        }        
         /**
          * @ngdoc function
          * @name Query.getCache
@@ -342,6 +324,47 @@ module ap {
                 this.initialized.resolve(this.getCache());
             }
         }
+        
+        /**
+         * @ngdoc function
+         * @name Query.processResults
+         * @methodOf Query
+         * @description
+         * Internal method exposed to allow for testing.  Handle cleanup after query execution is complete.
+         */
+        processResults(results: ap.IndexedCache<T>, deferred: ng.IDeferred<any>, queryOptions: IExecuteQueryOptions) {
+            let query = this;
+            let model = query.getModel();
+            
+            /** Set flag if this if the first time this query has been run */
+            var firstRunQuery = _.isNull(query.lastRun);
+
+            if (firstRunQuery) {
+                /** Promise resolved the first time query is completed */
+                query.initialized.resolve(queryOptions.target);
+            }
+                    
+            /** Set list permissions if not already set */
+            var list = model.getList();
+            if (!list.permissions && results.first()) {
+                /** Query needs to have returned at least 1 item so we can use permMask */
+                list.extendPermissionsFromListItem(results.first());
+            }                    
+
+            /** Remove lock to allow for future requests */
+            query.negotiatingWithServer = false;
+
+            /** Store query completion date/time on model to allow us to identify age of data */
+            model.lastServerUpdate = new Date();
+
+            deferred.resolve(queryOptions.target);
+
+            /** Overwrite local storage value with updated state so we can potentially restore in
+             * future sessions. */
+            if (query.localStorage || query.sessionStorage) {
+                query.saveToLocalStorage();
+            }
+        }        
         
         /**
          * @ngdoc function
