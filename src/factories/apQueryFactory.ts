@@ -375,6 +375,9 @@ module ap {
          * for data already residing on the users machine.
          */
         saveToLocalStorage(): void {
+            //Don't use storage when running offline
+            if (apConfig.offline) return;
+            
             let model = this.getModel();
             let store = {
                 changeToken: this.changeToken,
