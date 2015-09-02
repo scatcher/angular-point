@@ -46,7 +46,7 @@ NG_DOCS={
       "type": "service",
       "moduleName": "angularPoint",
       "shortDescription": "Processes the XML received from SharePoint and converts it into JavaScript objects based on predefined field types.",
-      "keywords": "additional allow allows anderson angularpoint apcacheservice apconfig apdecodeservice api aputilityservice array attributes attributetypes based batch build cache cached call camlcase capital checks child code codeplex coming configuration constructors container convenience conversions convert converts copies correctly corresponding customfields data define defined definition definitions directly don element elements empty entities entity error errors errorstring exists extend extended extends factory fetch field fielddefinition fielddefinitions fields fieldversioncollection filter find formatted function future getcache getlist getlistitems getlistitemssincetoken includeallattrs included incredible indexedcache inedexed info initial instantiated item items iterate javascript js keeping key large leading letter list listitemprovider lists ll location majority mappedname mapping marc metadata method minor model modified needed newly node note null object objects objecttype operations optional optionally options ows_ parent parse parsed pass post predefined prevent processed processes processing project promise properties property propertyname provided push pushing query received reference references registers removeows representation representing requesting resolved resolves response responsexml responsible retrieve return returned returning returns rows scope server service set sharepoint simple slowdowns spservices spxmltojson start stored str string stripped takes target text throw true tweaking type typed types typically ui update updating val values version versions web webservice work xhr xml xmlentities xmlentity xmlobject"
+      "keywords": "additional allow allows anderson angularpoint apcacheservice apconfig apdecodeservice api aputilityservice array attributes attributetypes based batch build cache cached call camlcase capital checks child code codeplex coming configuration constructors container convenience conversions convert converts copies correctly corresponding customfields data define defined definition definitions directly don element elements empty entities entity error errors errorstring exists extend extended extends factory fetch field fielddefinition fielddefinitions fields fieldversioncollection filter find formatted function future getcache getlist getlistitems getlistitemssincetoken includeallattrs included incredible indexedcache inedexed info initial instantiated item items iterate javascript js keeping key large leading letter list listitemprovider lists ll location majority mappedname mapping marc metadata method minor model modified needed newly node note object objects objecttype operations optional optionally options ows_ parent parse parsed pass post predefined prevent processed processes processing project promise properties property propertyname provided push pushing query received reference references registers removeows representation representing requesting resolved resolves response responsexml responsible retrieve return returned returning returns rows scope server service set sharepoint simple slowdowns spservices spxmltojson start stored str string stripped takes target text throw true tweaking type typed types typically ui update updating val values version versions web webservice work xhr xml xmlentities xmlentity xmlobject"
     },
     {
       "section": "api",
@@ -262,7 +262,7 @@ NG_DOCS={
       "type": "service",
       "moduleName": "apLogger",
       "shortDescription": "Common definitions used in the application.",
-      "keywords": "access add angular ap api aplogger application assign callback callend caused change class common console control create createemptyitem customfields definitions dependencies description display email ensure error event events exception export extends factory false fired formatted formattedstacktrace function guid ilogevent instantiated json list listitem ll log logcounter logger logging logs logsmodel logtype loop mappedname maxlogspersesssion message model newlog note notification obj object objecttype occurs options optionsoverride override prevents readable readonly register representation savechanges server service spamming stacktrace staticname stored string subscribe super text title trace type url var write"
+      "keywords": "access add angular ap api aplogger application assign callback callend caused change class common console control create createemptyitem customfields debug definitions dependencies description display email ensure error event events exception export extends factory false fired formatted formattedstacktrace function guid ilogevent info instantiated json list listitem ll log logcounter logger logging logs logsmodel logtype loop mappedname maxlogspersesssion message model newlog note notification obj object objecttype occurs options optionsoverride override prevents readable readonly register representation savechanges server service spamming stacktrace staticname stored string subscribe super text title trace type url var warn write"
     },
     {
       "section": "api",
@@ -428,12 +428,12 @@ NG_DOCS={
     },
     {
       "section": "api",
-      "id": "DataService.retrievePermMask",
-      "shortName": "DataService.retrievePermMask",
+      "id": "DataService.retrieveListPermissions",
+      "shortName": "DataService.retrieveListPermissions",
       "type": "function",
       "moduleName": "DataService",
       "shortDescription": "Returns the text representation of the users permission mask",
-      "keywords": "api attribute dataservice function getlistitemchangessincetoken mask note permission representation response responsexml retrievepermmask returns server text users xml"
+      "keywords": "api attribute dataservice function getlistitemchangessincetoken mask note permission representation response responsexml retrievelistpermissions returns server text users xml"
     },
     {
       "section": "api",
@@ -487,7 +487,7 @@ NG_DOCS={
       "type": "object",
       "moduleName": "List",
       "shortDescription": "List Object Constructor.  This is handled automatically when creating a new model so there shouldn&#39;t be",
-      "keywords": "accept account active angularpoint apconfig api aplistfactory application attribute automatically basing call class combines config corresponding creating crud customfields default defaults defaulturl defining desired details dev environment environments extended field fields file firstname folder function generated guid handled identified include initialization instantiated instantiates internal lastname linenums list list-page lists ll located lookup manually mappedname mapping maps model multi-environment named names non-standard object objecttype offline offlinexml organization param parameters prettyprint projectslist property provided readonly reason requests selected set setting settings setup sharepoint shouldn spaces standard staticname string text title type unique user viewfields weburl xml"
+      "keywords": "accept account active angularpoint apconfig api aplistfactory application assume attribute automatically basing call class combines config corresponding creating crud customfields default defaults defaulturl defining desired details dev entire environment environments extended field fields file firstname folder function generated guid handled haven identified include initialization instantiated instantiates internal item lastname linenums list list-page listitem lists ll located lookup manually mappedname mapping maps model multi-environment named names non-standard object objecttype offline offlinexml organization param parameters permissions permisssions prettyprint projectslist property provided readonly reason requests resolved sample selected set setting settings setup sharepoint shouldn spaces standard staticname string text title type unique user viewfields weburl xml"
     },
     {
       "section": "api",
@@ -811,7 +811,7 @@ NG_DOCS={
       "type": "function",
       "moduleName": "Model",
       "shortDescription": "Extends the List and Fields with list information returned from the server.  Only runs once and after that",
-      "keywords": "apdataservice api existing extendlistmetadata extends fields function getlist list model options pass-through promise resolved returned returns runs server"
+      "keywords": "apdataservice api existing extended extendlistmetadata extends fields function getlist ipromise list model options pass-through promise resolved returned returns runs server"
     },
     {
       "section": "api",
@@ -928,7 +928,7 @@ NG_DOCS={
       "type": "function",
       "moduleName": "Query",
       "shortDescription": "Primary constructor that all queries inherit from.",
-      "keywords": "ability allows api array ascending cachexml call called calls caml camlrowlimit changes check config control data dataservice definition doesn don efficient execute executequery false file fresh function getlistitemchangessincetoken getlistitems inherit initial initialization item larger list model modifications modified note objects offlinexml operation optionally options parameters parent passed permissions prevents primary project pull pulls queries query queryoptions receive recentchanges records reference registerquery request response retrieve returned returns scope set shared sharepoint specific subsequent time true user xml"
+      "keywords": "ability actual allow allows api array ascending browser cache cached cachexml call called calls caml camlrowlimit changed changes check config control current currenty data dataservice day defaults definition doesn don efficient elements execute executequery exists expiration expire false file force fresh function future getcache getlistitemchangessincetoken getlistitems getlocalstorage hydratefromlocalstorage ignore indexed inherit initial initialization item json larger list local localstorage localstorageexpiration machine milliseconds model modifications modified note objects offlinexml operation optionally options parameters parent passed permissions prevents primary project property pull pulls queries query queryoptions receive recentchanges records refactoring reference registerquery rehydrate request requests residing response retrieve return returned returns save saved savetolocalstorage scope server session set shared sharepoint snapshot specific speed storage store subsequent time true user users xml"
     },
     {
       "section": "api",

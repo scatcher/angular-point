@@ -55,7 +55,14 @@ in our application.  Also contains field type, readonly attribute, and any other
 </pre>
 </div></td></tr></tbody></table></div>
 <div class="member method"><h2 id="methods">Methods</h2>
-<ul class="methods"><li><h3 id="methods_getlistid">getListId()</h3>
+<ul class="methods"><li><h3 id="methods_extendpermissionsfromlistitem">extendPermissionsFromListItem(listItem)</h3>
+<div class="extendpermissionsfromlistitem"><div class="list-page list-extendpermissionsfromlistitem-page"><p>If the user permissions haven&#39;t been resolved for the list, use the permissions from a
+sample list item and assume they&#39;re the same for the entire list</p>
+</div><h5 id="methods_extendpermissionsfromlistitem_parameters">Parameters</h5><table class="variables-matrix table table-bordered table-striped"><thead><tr><th>Param</th><th>Type</th><th>Details</th></tr></thead><tbody><tr><td>listItem</td><td><a href="" class="label type-hint type-hint-listitem">ListItem</a></td><td><div class="list-page list-extendpermissionsfromlistitem-page"><p>List item to use as sample of user&#39;s permisssions for list.</p>
+</div></td></tr></tbody></table><h5 id="methods_extendpermissionsfromlistitem_returns">Returns</h5><table class="variables-matrix"><tr><td><a href="" class="label type-hint type-hint-iuserpermissionsobject">IUserPermissionsObject</a></td><td><div class="list-page list-extendpermissionsfromlistitem-page"><p>Resolved permissions for the list item.</p>
+</div></td></tr></table></div>
+</li>
+<li><h3 id="methods_getlistid">getListId()</h3>
 <div class="getlistid"><div class="list-page list-getlistid-page"><p>Defaults to list.guid.  For a multi-environment setup, we accept a list.environments object with a property for each named
 environment with a corresponding value of the list guid.  The active environment can be selected
 by setting apConfig.environment to the string name of the desired environment.</p>
