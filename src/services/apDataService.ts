@@ -602,15 +602,18 @@ module ap {
          */
         processChangeTokenXML<T extends ListItem<any>>(model: Model, query: IQuery<T>, responseXML: XMLDocument, opts): void {
             if (!model.deferredListDefinition) {
-                var deferred = $q.defer();
-
-                /** Replace the null placeholder with this promise so we don't have to process in the future and also
-                 * don't have to query again if we run Model.extendListMetadata. */
-                model.deferredListDefinition = deferred.promise;
-
-                /** Immediately resolve because there's no need to perform any async actions */
-                deferred.resolve(model);
+                //Extend our local list definition and field definitions with XML
                 apDecodeService.extendListMetadata(model, responseXML);
+                
+                /**If loaded from local or session cache the list/field definitions won't be extended so ensure we check before
+                 * resolving promise verifying list has been extended.  One of the attributes we'd expect to see on all List/Libraries
+                 * is "BaseType" */
+                if (model.getList().BaseType) {
+                    //List successfully extended
+                    /** Replace the null placeholder with this resolved promise so we don't have to process in the future and also
+                    * don't have to query again if we run Model.extendListMetadata. */
+                    model.deferredListDefinition = $q.when(model);
+                }
             }
 
             /** Store token for future web service calls to return changes */
