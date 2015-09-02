@@ -6,6 +6,24 @@ module ap {
     var $q: ng.IQService, apIndexedCacheFactory: IndexedCacheFactory, apConfig: IAPConfig, apDefaultListItemQueryOptions,
         apDataService: DataService, apDecodeService: DecodeService, apLogger: Logger;
 
+    export interface IQueryOptions {
+        force?: boolean;
+        //Only relevant if requesting a single item
+        listItemID?: number;
+        localStorage?: boolean;
+        localStorageExpiration?: number;
+        name?: string;
+        operation?: string;
+        query?: string;
+        queryOptions?: string;
+        //Returns all items if set to 0
+        rowLimit?: number;
+        runOnce?: boolean;
+        sessionStorage?: boolean;
+        viewFields?: string;
+        webURL?: string;
+    }
+
     export interface IQuery<T extends ListItem<any>> {
         cacheXML?: boolean;
         changeToken?: string;
@@ -18,16 +36,18 @@ module ap {
         indexedCache: IndexedCache<T>;
         initialized: ng.IDeferred<IndexedCache<T>>
         lastRun: Date;
+        listItemID?: number;
         listName: string;
         localStorage: boolean;
         localStorageExpiration: number;
         name: string;
         negotiatingWithServer: boolean;
-        offlineXML?: string;
+        // offlineXML?: string;
         operation?: string;
         promise?: ng.IPromise<IndexedCache<T>>;
         query?: string;
         queryOptions?: IQueryOptions;
+        rowLimit?: number;
         runOnce: boolean;
         saveToLocalStorage(): void;
         sessionStorage: boolean;
@@ -62,92 +82,83 @@ module ap {
         }
     }
 
-    export interface IQueryOptions {
-        name?: string;
-        operation?: string;
-    }
+
+
 
     /**
      * @ngdoc function
      * @name Query
      * @description
-     * Primary constructor that all queries inherit from.
-     * @param {object} config Initialization parameters.
-     * @param {string} [config.operation=GetListItemChangesSinceToken] Optionally use 'GetListItems' to
-     * receive a more efficient response, just don't have the ability to check for changes since the last time
-     * the query was called.
-     * @param {boolean} [config.force=false] Ignore cached data and force server query.
-     * @param {boolean} [config.cacheXML=true] Set to false if you want a fresh request.
-     * @param {boolean} [config.localStorage=false] Should we store data from this query in local storage to speed up requests in the future.
-     * @param {number} [config.localStorageExpiration=86400000] Set expiration in milliseconds - Defaults to a day 
+     * Primary constructor that all queries inherit from. This object is a passthrough to [SPServices](http: //spservices.codeplex.com/).  All
+     * options to passed through to [dataService.executeQuery](#/api/dataService.executeQuery).
+     * @param {object} queryOptions Initialization parameters.
+     * @param {boolean} [queryOptions.force=false] Ignore cached data and force server query.
+     * @param {number} [queryOptions.listItemID] Optionally request for a single list item by id.
+     * @param {boolean} [queryOptions.localStorage=false] Should we store data from this query in local storage to speed up requests in the future.
+     * @param {number} [queryOptions.localStorageExpiration=86400000] Set expiration in milliseconds - Defaults to a day
      * and if set to 0 doesn't expire.  Can be updated globally using apConfig.localStorageExpiration.
-     * @param {string} [config.offlineXML] Optionally reference a specific XML file to use for this query instead
-     * of using the shared XML file for this list.
-     * @param {string} [config.query=Ordered ascending by ID] CAML query passed to SharePoint to control
-     * the data SharePoint returns.
-     * @param {string} [config.queryOptions] SharePoint options.
-     * @param {boolean} [config.runOnce] Pertains to GetListItems only, optionally run a single time and return initial value for all future 
+     * @param {string} [queryOptions.name=primary] The name that we use to identify this query.
+     * @param {string} [queryOptions.operation=GetListItemChangesSinceToken] Optionally use 'GetListItems' to
+     * receive a more efficient response, just don't have the ability to check for changes since the last time
+     * the query was called. Defaults to [GetListItemChangesSinceToken](http://msdn.microsoft.com/en-us/library/lists.lists.getlistitemchangessincetoken%28v=office.12%29.aspx)
+     * but for a smaller payload and faster response you can use [GetListItems](http: //spservices.codeplex.com/wikipage?title=GetListItems&referringTitle=Lists).
+     * @param {string} [queryOptions.query=Ordered ascending by ID] CAML query passed to SharePoint to control
+     * the data SharePoint returns. Josh McCarty has a good quick reference [here](http: //joshmccarty.com/2012/06/a-caml-query-quick-reference).
+     * @param {string} [queryOptions.queryOptions] SharePoint options xml as string.
+     * <pre>
+     * <QueryOptions>
+     *    <IncludeMandatoryColumns>FALSE</IncludeMandatoryColumns>
+     *    <IncludeAttachmentUrls>TRUE</IncludeAttachmentUrls>
+     *    <IncludeAttachmentVersion>FALSE</IncludeAttachmentVersion>
+     *    <ExpandUserField>FALSE</ExpandUserField>
+     * </QueryOptions>
+     * </pre>
+     * @param {string} [queryOptions.rowLimit] The number of list items to return, 0 returns all list items.
+     * @param {boolean} [queryOptions.runOnce] Pertains to GetListItems only, optionally run a single time and return initial value for all future
      * calls.  Works well with data that isn't expected to change throughout the session but unlike localStorage or sessionStorage
      * the data doesn't persist between sessions.
-     * <pre>
-     * //Default
-     * queryOptions: '' +
-     * '<QueryOptions>' +
-     * '   <IncludeMandatoryColumns>' +
-     *      'FALSE' +
-     *     '</IncludeMandatoryColumns>' +
-     * '   <IncludeAttachmentUrls>' +
-     *      'TRUE' +
-     *     '</IncludeAttachmentUrls>' +
-     * '   <IncludeAttachmentVersion>' +
-     *      'FALSE' +
-     *     '</IncludeAttachmentVersion>' +
-     * '   <ExpandUserField>' +
-     *      'FALSE' +
-     *     '</ExpandUserField>' +
-     * '</QueryOptions>',
-     * </pre>
+     * @param {boolean} [queryOptions.sessionStorage=false] Use the browsers sessionStorage to cache the list items and uses the
+     * queryOptions.localStorageExpiration param to validate how long the cache is good for.
+     * @param {string} [queryOptions.viewFields] XML as string that specifies fields to return.
+     * @param {string} [queryOptions.webURL] Used to override the default URL if list is located somewhere else.
      * @param {object} model Reference to the parent model for the query.  Allows us to reference when out of
      * scope.
-     * @constructor
-     *
      * @example
      * <pre>
      * // Query to retrieve the most recent 25 modifications
      * model.registerQuery({
-         *    name: 'recentChanges',
-         *    CAMLRowLimit: 25,
-         *    query: '' +
-         *        '<Query>' +
-         *        '   <OrderBy>' +
-         *        '       <FieldRef Name="Modified" Ascending="FALSE"/>' +
-         *        '   </OrderBy>' +
-         *            // Prevents any records from being returned if user
-         *            // doesn't have permissions on project
-         *        '   <Where>' +
-         *        '       <IsNotNull>' +
-         *        '           <FieldRef Name="Project"/>' +
-         *        '       </IsNotNull>' +
-         *        '   </Where>' +
-         *        '</Query>'
-         * });
+     *    name: 'recentChanges',
+     *    CAMLRowLimit: 25,
+     *    query: '' +
+     *        '<Query>' +
+     *        '   <OrderBy>' +
+     *        '       <FieldRef Name="Modified" Ascending="FALSE"/>' +
+     *        '   </OrderBy>' +
+     *            // Prevents any records from being returned if user
+     *            // doesn't have permissions on project
+     *        '   <Where>' +
+     *        '       <IsNotNull>' +
+     *        '           <FieldRef Name="Project"/>' +
+     *        '       </IsNotNull>' +
+     *        '   </Where>' +
+     *        '</Query>'
+     * });
      * </pre>
      */
     export class Query<T extends ListItem<any>> implements IQuery<T> {
         /** Very memory intensive to enable cacheXML which is disabled by default*/
         cacheXML = false;
         /** Reference to the most recent query when performing GetListItemChangesSinceToken */
-        changeToken;
+        changeToken: string;
         force = false;
         getModel: () => Model;
-
         /** Key value hash map with key being the id of the entity */
-        indexedCache: IndexedCache<T>;
+        indexedCache = apIndexedCacheFactory.create<T>();
         /** Promise resolved after first time query is executed */
-        initialized: ng.IDeferred<IndexedCache<T>>;
+        initialized = $q.defer();
         /** Date/Time last run */
-        lastRun;
-        listName;
+        lastRun: Date;
+        listItemID: number;
         /** Should we store data from this query in local storage to speed up requests in the future */
         localStorage = false;
         /** Set expiration in milliseconds - Defaults to a day and if set to 0 doesn't expire */
@@ -158,7 +169,7 @@ module ap {
         /** Every time we run we want to check to update our cached data with
          * any changes made on the server */
         operation = 'GetListItemChangesSinceToken';
-        promise;
+        promise: ng.IPromise<IndexedCache<T>>;
         /** Default query returns list items in ascending ID order */
         query: string = `
         <Query>
@@ -166,17 +177,19 @@ module ap {
                <FieldRef Name="ID" Ascending="TRUE"/>
            </OrderBy>
         </Query>`;
-        queryOptions;
+        queryOptions = ap.DefaultListItemQueryOptions;
+        rowLimit: number;
         runOnce = false;
         sessionStorage = false;
-        viewFields;
-        webURL;
+        viewFields: string;
+        webURL: string;
 
-        constructor(config, model: Model) {
-            this.indexedCache = apIndexedCacheFactory.create<T>();
-            this.initialized = $q.defer();
-            this.listName = model.list.getListId();
-            this.queryOptions = apDefaultListItemQueryOptions;
+        get listName() {
+            return this.getModel().getListId();
+        }
+
+        constructor(queryOptions: IQueryOptions, model: Model) {
+            //Use the default viewFields from the model
             this.viewFields = model.list.viewFields;
 
             /** Set the default url if the config param is defined, otherwise let SPServices handle it */
@@ -184,12 +197,13 @@ module ap {
                 this.webURL = apConfig.defaultUrl;
             }
 
-            _.assign(this, config);
+            //Allow all values on query to be overwritten by queryOptions object
+            _.assign(this, queryOptions);
 
             /** Allow the model to be referenced at a later time */
             this.getModel = () => model;
         }
-        
+
         /** They key we use for local storage */
         private get localStorageKey() {
             var model = this.getModel();
@@ -211,7 +225,7 @@ module ap {
             var query = this;
             var model = query.getModel();
             var deferred = $q.defer();
-                
+
             /** Return existing promise if request is already underway or has been previously executed in the past
             * 1/10th of a second */
             if (query.negotiatingWithServer || (_.isDate(query.lastRun) && query.lastRun.getTime() + apConfig.queryDebounceTime > new Date().getTime())) {
@@ -222,7 +236,7 @@ module ap {
 
                 let localStorageData = this.getLocalStorage();
                 //Check to see if we have a version in localStorage
-                
+
                 let defaults = {
                     /** Designate the central cache for this query if not already set */
                     target: query.getCache()
@@ -233,13 +247,13 @@ module ap {
 
                 /** Flag used to determine if we need to make a request to the server */
                 let makeRequest = true;
-                
+
                 /** See if we already have data in local storage and hydrate if it hasn't expired, which
                 * then allows us to only request the changes. */
                 if (!query.force && localStorageData) {
                     switch (this.operation) {
                         case 'GetListItemChangesSinceToken':
-                            //Only run the first time, after that the token/data are already in sync    
+                            //Only run the first time, after that the token/data are already in sync
                             if (!query.lastRun) {
                                 query.hydrateFromLocalStorage(localStorageData);
                             }
@@ -250,7 +264,7 @@ module ap {
                             makeRequest = this.getCache().count() > 0;
                     }
                 }
-                
+
                 /** Optionally handle query.runOnce for GetListItems when initial call has already been made */
                 if (this.operation === 'GetListItems' && !query.lastRun && this.runOnce) {
                     makeRequest = false;
@@ -263,12 +277,12 @@ module ap {
                 } else {
                     this.processResults(this.getCache(), deferred, queryOptions);
                 }
-                
+
                 /** Save reference on the query **/
                 query.promise = deferred.promise;
                 return deferred.promise;
             }
-        }        
+        }
         /**
          * @ngdoc function
          * @name Query.getCache
@@ -280,7 +294,7 @@ module ap {
         getCache(): IndexedCache<T> {
             return this.indexedCache;
         }
-        
+
         /**
          * @ngdoc function
          * @name Query.getLocalStorage
@@ -297,13 +311,13 @@ module ap {
             }
             return parsedQuery;
         }
-        
+
         /**
          * @ngdoc function
          * @name Query.hydrateFromLocalStorage
          * @methodOf Query
          * @description
-         * If data already exists in browser local storage, we rehydrate JSON using list item constructor and 
+         * If data already exists in browser local storage, we rehydrate JSON using list item constructor and
          * then have the ability to just check the server to see what has changed from the current state.
          */
         hydrateFromLocalStorage(localStorageQuery: LocalStorageQuery): void {
@@ -324,7 +338,7 @@ module ap {
                 this.initialized.resolve(this.getCache());
             }
         }
-        
+
         /**
          * @ngdoc function
          * @name Query.processResults
@@ -335,7 +349,7 @@ module ap {
         processResults(results: ap.IndexedCache<T>, deferred: ng.IDeferred<any>, queryOptions: IExecuteQueryOptions) {
             let query = this;
             let model = query.getModel();
-            
+
             /** Set flag if this if the first time this query has been run */
             var firstRunQuery = _.isNull(query.lastRun);
 
@@ -343,13 +357,13 @@ module ap {
                 /** Promise resolved the first time query is completed */
                 query.initialized.resolve(queryOptions.target);
             }
-                    
+
             /** Set list permissions if not already set */
             var list = model.getList();
             if (!list.permissions && results.first()) {
                 /** Query needs to have returned at least 1 item so we can use permMask */
                 list.extendPermissionsFromListItem(results.first());
-            }                    
+            }
 
             /** Remove lock to allow for future requests */
             query.negotiatingWithServer = false;
@@ -364,8 +378,8 @@ module ap {
             if (query.localStorage || query.sessionStorage) {
                 query.saveToLocalStorage();
             }
-        }        
-        
+        }
+
         /**
          * @ngdoc function
          * @name Query.saveToLocalStorage

@@ -190,8 +190,8 @@ module ap {
                 name: '__getAllListItems',
                 operation: 'GetListItems'
             });
-            
-            /** Get a single list item from a list, primarily used to quickly identify user 
+
+            /** Get a single list item from a list, primarily used to quickly identify user
              *  permissions on list using the ows_PermMask property.  List items can have unique permissions
              *  so can't rely on this 100% to correctly resolve list permissions.  In the case where that is
              *  necessary you will need to use a similar query using GetListItemChangesSinceToken method which
@@ -324,10 +324,10 @@ module ap {
                 var opts = _.assign({}, defaults, options);
                 let getListAction = apDataService.getList(opts)
 
-                /** We can potentially have 2 seperate requests for data so store them in array so we can wait until 
+                /** We can potentially have 2 seperate requests for data so store them in array so we can wait until
                  * all are resolved. */
                 let promiseArray = [getListAction];
-                
+
                 /** Add a request for a sample list item to the server requests if we haven't
                  * already resolved user permissions for the list. */
                 if (!model.getList().permissions) {
@@ -647,135 +647,138 @@ module ap {
 
 
         /**
-         * @ngdoc function
-         * @name Model.registerQuery
-         * @module Model
-         * @description
-         * Constructor that allows us create a static query with the option to build dynamic queries as seen in the
-         * third example.  This construct is a passthrough to [SPServices](http: //spservices.codeplex.com/)
-         * @param {object} [queryOptions] Optional options to pass through to the
-         * [dataService](#/api/dataService.executeQuery).
-         * @param {string} [queryOptions.name=apConfig.defaultQueryName] Optional name of the new query (recommended but will
-         * default to 'Primary' if not specified)
-         * @param {string} [queryOptions.operation="GetListItemChangesSinceToken"] Defaults to
-         * [GetListItemChangesSinceToken](http: //msdn.microsoft.com/en-us/library/lists.lists.getlistitemchangessincetoken%28v=office.12%29.aspx)
-         * but for a smaller payload and faster response you can use
-         * [GetListItems](http: //spservices.codeplex.com/wikipage?title=GetListItems&referringTitle=Lists).
-         * @param {boolean} [queryOptions.cacheXML=false] Typically don't need to store the XML response because it
-         * has already been parsed into JS objects.
-         * @param {string} [queryOptions.offlineXML] Optionally reference a specific XML file to use for this query instead
-         * of using the shared XML file used by all queries on this model.  Useful to mock custom query results.
-         * @param {string} [queryOptions.query] CAML Query - Josh McCarty has a good quick reference
-         * [here](http: //joshmccarty.com/2012/06/a-caml-query-quick-reference)
-         * @param {string} [queryOptions.queryOptions]
-         * <pre>
-         * // Default options
-         * '<QueryOptions>' +
-         * '   <IncludeMandatoryColumns>' +
-         *      'FALSE' +
-         *     '</IncludeMandatoryColumns>' +
-         * '   <IncludeAttachmentUrls>' +
-         *      'TRUE' +
-         *     '</IncludeAttachmentUrls>' +
-         * '   <IncludeAttachmentVersion>' +
-         *      'FALSE' +
-         *     '</IncludeAttachmentVersion>' +
-         * '   <ExpandUserField>' +
-         *      'FALSE' +
-         *     '</ExpandUserField>' +
-         * '</QueryOptions>',
-         * </pre>
-         *
-         *
-         * @returns {object} Query Returns a new query object.
-         *
-         * @example
-         * <h4>Example #1</h4>
-         * <pre>
-         * // Query to retrieve the most recent 25 modifications
-         * model.registerQuery({
-         *    name: 'recentChanges',
-         *    CAMLRowLimit: 25,
-         *    query: '' +
-         *        '<Query>' +
-         *        '   <OrderBy>' +
-         *        '       <FieldRef Name="Modified" Ascending="FALSE"/>' +
-         *        '   </OrderBy>' +
-         *            //Prevents any records from being returned if user doesn't
-         *            // have permissions on project
-         *        '   <Where>' +
-         *        '       <IsNotNull>' +
-         *        '           <FieldRef Name="Project"/>' +
-         *        '       </IsNotNull>' +
-         *        '   </Where>' +
-         *        '</Query>'
-         * });
-         * </pre>
-         *
-         * <h4>Example #2</h4>
-         * <pre>
-         * // Could be placed on the projectModel and creates the query but doesn't
-         * // call it
-         * projectModel.registerQuery({
-         *     name: 'primary',
-         *     query: '' +
-         *         '<Query>' +
-         *         '   <OrderBy>' +
-         *         '       <FieldRef Name="Title" Ascending="TRUE"/>' +
-         *         '   </OrderBy>' +
-         *         '</Query>'
-         * });
-         *
-         * //To call the query or check for changes since the last call
-         * projectModel.executeQuery('primary').then(function(entities) {
-         *     // We now have a reference to array of entities stored in the local
-         *     // cache.  These inherit from the ListItem prototype as well as the
-         *     // Project prototype on the model
-         *     $scope.projects = entities;
-         * });
-         * </pre>
-         *
-         * <h4>Example #3</h4>
-         * <pre>
-         * // Advanced functionality that would allow us to dynamically create
-         * // queries for list items with a lookup field associated with a specific
-         * // project id.  Let's assume this is on the projectTasksModel.
-         * model.queryByProjectId(projectId) {
-         *     // Unique query name
-         *     var queryKey = 'pid' + projectId;
-         *
-         *     // Register project query if it doesn't exist
-         *     if (!_.isObject(model.queries[queryKey])) {
-         *         model.registerQuery({
-         *             name: queryKey,
-         *             query: '' +
-         *                 '<Query>' +
-         *                 '   <OrderBy>' +
-         *                 '       <FieldRef Name="ID" Ascending="TRUE"/>' +
-         *                 '   </OrderBy>' +
-         *                 '   <Where>' +
-         *                 '       <And>' +
-         *                              // Prevents any records from being returned
-         *                              //if user doesn't have permissions on project
-         *                 '           <IsNotNull>' +
-         *                 '               <FieldRef Name="Project"/>' +
-         *                 '           </IsNotNull>' +
-         *                              // Return all records for the project matching
-         *                              // param projectId
-         *                 '           <Eq>' +
-         *                 '               <FieldRef Name="Project" LookupId="TRUE"/>' +
-         *                 '               <Value Type="Lookup">' + projectId + '</Value>' +
-         *                 '           </Eq>' +
-         *                 '       </And>' +
-         *                 '   </Where>' +
-         *                 '</Query>'
-         *         });
-         *     }
-         *     //Still using execute query but now we have a custom query
-         *     return model.executeQuery(queryKey);
-         * };
-         * </pre>
-         */
+        * @ngdoc function
+        * @name Model.registerQuery
+        * @module Model
+        * @description
+        * Constructor that allows us create a static query with the option to build dynamic queries as seen in the
+        * third example.  This construct is a passthrough to [SPServices](http: //spservices.codeplex.com/)
+        * @param {object} queryOptions Initialization parameters.
+        * @param {boolean} [queryOptions.force=false] Ignore cached data and force server query.
+        * @param {number} [queryOptions.listItemID] Optionally request for a single list item by id.
+        * @param {boolean} [queryOptions.localStorage=false] Should we store data from this query in local storage to speed up requests in the future.
+        * @param {number} [queryOptions.localStorageExpiration=86400000] Set expiration in milliseconds - Defaults to a day
+        * and if set to 0 doesn't expire.  Can be updated globally using apConfig.localStorageExpiration.
+        * @param {string} [queryOptions.name=primary] The name that we use to identify this query.
+        * @param {string} [queryOptions.operation=GetListItemChangesSinceToken] Optionally use 'GetListItems' to
+        * receive a more efficient response, just don't have the ability to check for changes since the last time
+        * the query was called. Defaults to [GetListItemChangesSinceToken](http://msdn.microsoft.com/en-us/library/lists.lists.getlistitemchangessincetoken%28v=office.12%29.aspx)
+        * but for a smaller payload and faster response you can use [GetListItems](http: //spservices.codeplex.com/wikipage?title=GetListItems&referringTitle=Lists).
+        * @param {string} [queryOptions.query=Ordered ascending by ID] CAML query passed to SharePoint to control
+        * the data SharePoint returns. Josh McCarty has a good quick reference [here](http: //joshmccarty.com/2012/06/a-caml-query-quick-reference).
+        * @param {string} [queryOptions.queryOptions] SharePoint options xml as string.
+        * <pre>
+        * <QueryOptions>
+        *    <IncludeMandatoryColumns>FALSE</IncludeMandatoryColumns>
+        *    <IncludeAttachmentUrls>TRUE</IncludeAttachmentUrls>
+        *    <IncludeAttachmentVersion>FALSE</IncludeAttachmentVersion>
+        *    <ExpandUserField>FALSE</ExpandUserField>
+        * </QueryOptions>
+        * </pre>
+        * @param {string} [queryOptions.rowLimit] The number of list items to return, 0 returns all list items.
+        * @param {boolean} [queryOptions.runOnce] Pertains to GetListItems only, optionally run a single time and return initial value for all future
+        * calls.  Works well with data that isn't expected to change throughout the session but unlike localStorage or sessionStorage
+        * the data doesn't persist between sessions.
+        * @param {boolean} [queryOptions.sessionStorage=false] Use the browsers sessionStorage to cache the list items and uses the
+        * queryOptions.localStorageExpiration param to validate how long the cache is good for.
+        * @param {string} [queryOptions.viewFields] XML as string that specifies fields to return.
+        * @param {string} [queryOptions.webURL] Used to override the default URL if list is located somewhere else.
+        * @returns {object} Query Returns a new query object.
+        *
+        * @example
+        * <h4>Example #1</h4>
+        * <pre>
+        * // Query to retrieve the most recent 25 modifications
+        * model.registerQuery({
+        *    name: 'recentChanges',
+        *    rowLimit: 25,
+        *    query: '' +
+        *        '<Query>' +
+        *        '   <OrderBy>' +
+        *        '       <FieldRef Name="Modified" Ascending="FALSE"/>' +
+        *        '   </OrderBy>' +
+        *            //Prevents any records from being returned if user doesn't
+        *            // have permissions on project
+        *        '   <Where>' +
+        *        '       <IsNotNull>' +
+        *        '           <FieldRef Name="Project"/>' +
+        *        '       </IsNotNull>' +
+        *        '   </Where>' +
+        *        '</Query>'
+        * });
+        * </pre>
+        *
+        * <h4>Example #2</h4>
+        * <pre>
+        * // Could be placed on the projectModel and creates the query but doesn't
+        * // call it.  Uses the session cache to make the initial call faster.
+        * projectModel.registerQuery({
+        *     name: 'primary',
+        *     sessionCache: true,
+        *     //Set an expiration value of 8 hours rather than use the default of 24
+        *     localStorageExpiration: 28800000,
+        *     query: '' +
+        *         '<Query>' +
+        *         '   <OrderBy>' +
+        *         '       <FieldRef Name="Title" Ascending="TRUE"/>' +
+        *         '   </OrderBy>' +
+        *         '</Query>'
+        * });
+        *
+        * //To call the query or check for changes since the last call
+        * projectModel.executeQuery('primary')
+        *   .then((entities) => {
+        *     // We now have a reference to array of entities stored in the local
+        *     // cache.  These inherit from the ListItem prototype as well as the
+        *     // Project prototype on the model
+        *     vm.projects = entities;
+        *   })
+        *   .catch((err) => {
+        *       //Handle error
+        *   })
+        * </pre>
+        *
+        * <h4>Example #3</h4>
+        * <pre>
+        * // Advanced functionality that would allow us to dynamically create
+        * // queries for list items with a lookup field associated with a specific
+        * // project id.  Let's assume this is on the projectTasksModel.
+        * model.queryByProjectId(projectId) {
+        *     // Unique query name
+        *     var queryKey = 'pid' + projectId;
+        *
+        *     // Register project query if it doesn't exist
+        *     if (!_.isObject(model.queries[queryKey])) {
+        *         model.registerQuery({
+        *             name: queryKey,
+        *             query: '' +
+        *                 '<Query>' +
+        *                 '   <OrderBy>' +
+        *                 '       <FieldRef Name="ID" Ascending="TRUE"/>' +
+        *                 '   </OrderBy>' +
+        *                 '   <Where>' +
+        *                 '       <And>' +
+        *                              // Prevents any records from being returned
+        *                              //if user doesn't have permissions on project
+        *                 '           <IsNotNull>' +
+        *                 '               <FieldRef Name="Project"/>' +
+        *                 '           </IsNotNull>' +
+        *                              // Return all records for the project matching
+        *                              // param projectId
+        *                 '           <Eq>' +
+        *                 '               <FieldRef Name="Project" LookupId="TRUE"/>' +
+        *                 '               <Value Type="Lookup">' + projectId + '</Value>' +
+        *                 '           </Eq>' +
+        *                 '       </And>' +
+        *                 '   </Where>' +
+        *                 '</Query>'
+        *         });
+        *     }
+        *     //Still using execute query but now we have a custom query
+        *     return model.executeQuery(queryKey);
+        * };
+        * </pre>
+        */
         registerQuery<T extends ListItem<any>>(queryOptions: IQueryOptions): IQuery<T> {
             var model = this;
 
@@ -850,13 +853,13 @@ module ap {
             var model = this,
                 list = model.getList();
             if (list && list.permissions) {
-                /** If request has been made to GetListItemChangesSinceToken we have already stored the 
+                /** If request has been made to GetListItemChangesSinceToken we have already stored the
                  * permission for this list. */
                 return list.permissions;
             } else if (model.getCachedEntities().first()) {
-                /** Next option is to use the same permission as one of the 
+                /** Next option is to use the same permission as one of the
                  * already cached list items for this model. */
-                 return list.extendPermissionsFromListItem(model.getCachedEntities().first())
+                return list.extendPermissionsFromListItem(model.getCachedEntities().first())
             } else {
                 window.console.error('Attempted to resolve permissions of a model that hasn\'t been initialized.', model);
                 return new ap.BasePermissionObject();
