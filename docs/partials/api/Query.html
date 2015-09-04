@@ -3,45 +3,41 @@
 </div>
 </h1>
 <div><h2 id="description">Description</h2>
-<div class="description"><div class="query-page"><p>Primary constructor that all queries inherit from.</p>
+<div class="description"><div class="query-page"><p>Primary constructor that all queries inherit from. This object is a passthrough to <a href="http: //spservices.codeplex.com/">SPServices</a>.  All
+options to passed through to <a href="#/api/dataService.executeQuery">dataService.executeQuery</a>.</p>
 </div></div>
 <h2 id="usage">Usage</h2>
-<div class="usage"><pre class="prettyprint linenums">Query(config, model);</pre>
-<h4 id="usage_parameters">Parameters</h4><table class="variables-matrix table table-bordered table-striped"><thead><tr><th>Param</th><th>Type</th><th>Details</th></tr></thead><tbody><tr><td>config</td><td><a href="" class="label type-hint type-hint-object">object</a></td><td><div class="query-page"><p>Initialization parameters.</p>
-</div></td></tr><tr><td>config.operation</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="query-page"><p>Optionally use &#39;GetListItems&#39; to
-receive a more efficient response, just don&#39;t have the ability to check for changes since the last time
-the query was called.</p>
-</div> <p><em>(default: GetListItemChangesSinceToken)</em></p></td></tr><tr><td>config.force</td><td><a href="" class="label type-hint type-hint-boolean">boolean</a></td><td><div class="query-page"><p>Ignore cached data and force server query.</p>
-</div> <p><em>(default: false)</em></p></td></tr><tr><td>config.cacheXML</td><td><a href="" class="label type-hint type-hint-boolean">boolean</a></td><td><div class="query-page"><p>Set to false if you want a fresh request.</p>
-</div> <p><em>(default: true)</em></p></td></tr><tr><td>config.localStorage</td><td><a href="" class="label type-hint type-hint-boolean">boolean</a></td><td><div class="query-page"><p>Should we store data from this query in local storage to speed up requests in the future.</p>
-</div> <p><em>(default: false)</em></p></td></tr><tr><td>config.localStorageExpiration</td><td><a href="" class="label type-hint type-hint-number">number</a></td><td><div class="query-page"><p>Set expiration in milliseconds - Defaults to a day
+<div class="usage"><pre class="prettyprint linenums">Query(queryOptions, model);</pre>
+<h4 id="usage_parameters">Parameters</h4><table class="variables-matrix table table-bordered table-striped"><thead><tr><th>Param</th><th>Type</th><th>Details</th></tr></thead><tbody><tr><td>queryOptions</td><td><a href="" class="label type-hint type-hint-object">object</a></td><td><div class="query-page"><p>Initialization parameters.</p>
+</div></td></tr><tr><td>queryOptions.force</td><td><a href="" class="label type-hint type-hint-boolean">boolean</a></td><td><div class="query-page"><p>Ignore cached data and force server query.</p>
+</div> <p><em>(default: false)</em></p></td></tr><tr><td>[queryOptions.listItemID]</td><td><a href="" class="label type-hint type-hint-number">number</a></td><td><div class="query-page"><p>Optionally request for a single list item by id.</p>
+</div></td></tr><tr><td>queryOptions.localStorage</td><td><a href="" class="label type-hint type-hint-boolean">boolean</a></td><td><div class="query-page"><p>Should we store data from this query in local storage to speed up requests in the future.</p>
+</div> <p><em>(default: false)</em></p></td></tr><tr><td>queryOptions.localStorageExpiration</td><td><a href="" class="label type-hint type-hint-number">number</a></td><td><div class="query-page"><p>Set expiration in milliseconds - Defaults to a day
 and if set to 0 doesn&#39;t expire.  Can be updated globally using apConfig.localStorageExpiration.</p>
-</div> <p><em>(default: 86400000)</em></p></td></tr><tr><td>[config.offlineXML]</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="query-page"><p>Optionally reference a specific XML file to use for this query instead
-of using the shared XML file for this list.</p>
-</div></td></tr><tr><td>config.query</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="query-page"><p>CAML query passed to SharePoint to control
-the data SharePoint returns.</p>
-</div> <p><em>(default: Ordered ascending by ID)</em></p></td></tr><tr><td>[config.queryOptions]</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="query-page"><p>SharePoint options.</p>
-</div></td></tr><tr><td>[config.runOnce]</td><td><a href="" class="label type-hint type-hint-boolean">boolean</a></td><td><div class="query-page"><p>Pertains to GetListItems only, optionally run a single time and return initial value for all future
-calls.  Works well with data that isn&#39;t expected to change throughout the session but unlike localStorage or sessionStorage
-the data doesn&#39;t persist between sessions.
+</div> <p><em>(default: 86400000)</em></p></td></tr><tr><td>queryOptions.name</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="query-page"><p>The name that we use to identify this query.</p>
+</div> <p><em>(default: primary)</em></p></td></tr><tr><td>queryOptions.operation</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="query-page"><p>Optionally use &#39;GetListItems&#39; to
+receive a more efficient response, just don&#39;t have the ability to check for changes since the last time
+the query was called. Defaults to <a href="http://msdn.microsoft.com/en-us/library/lists.lists.getlistitemchangessincetoken%28v=office.12%29.aspx">GetListItemChangesSinceToken</a>
+but for a smaller payload and faster response you can use <a href="http: //spservices.codeplex.com/wikipage?title=GetListItems&amp;referringTitle=Lists">GetListItems</a>.</p>
+</div> <p><em>(default: GetListItemChangesSinceToken)</em></p></td></tr><tr><td>queryOptions.query</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="query-page"><p>CAML query passed to SharePoint to control
+the data SharePoint returns. Josh McCarty has a good quick reference <a href="http: //joshmccarty.com/2012/06/a-caml-query-quick-reference">here</a>.</p>
+</div> <p><em>(default: Ordered ascending by ID)</em></p></td></tr><tr><td>[queryOptions.queryOptions]</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="query-page"><p>SharePoint options xml as string.
 <pre class="prettyprint linenums">
-//Default
-queryOptions: '' +
-'&lt;QueryOptions&gt;' +
-'   &lt;IncludeMandatoryColumns&gt;' +
-     'FALSE' +
-    '&lt;/IncludeMandatoryColumns&gt;' +
-'   &lt;IncludeAttachmentUrls&gt;' +
-     'TRUE' +
-    '&lt;/IncludeAttachmentUrls&gt;' +
-'   &lt;IncludeAttachmentVersion&gt;' +
-     'FALSE' +
-    '&lt;/IncludeAttachmentVersion&gt;' +
-'   &lt;ExpandUserField&gt;' +
-     'FALSE' +
-    '&lt;/ExpandUserField&gt;' +
-'&lt;/QueryOptions&gt;',
+&lt;QueryOptions&gt;
+   &lt;IncludeMandatoryColumns&gt;FALSE&lt;/IncludeMandatoryColumns&gt;
+   &lt;IncludeAttachmentUrls&gt;TRUE&lt;/IncludeAttachmentUrls&gt;
+   &lt;IncludeAttachmentVersion&gt;FALSE&lt;/IncludeAttachmentVersion&gt;
+   &lt;ExpandUserField&gt;FALSE&lt;/ExpandUserField&gt;
+&lt;/QueryOptions&gt;
 </pre>
+</div></td></tr><tr><td>[queryOptions.rowLimit]</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="query-page"><p>The number of list items to return, 0 returns all list items.</p>
+</div></td></tr><tr><td>[queryOptions.runOnce]</td><td><a href="" class="label type-hint type-hint-boolean">boolean</a></td><td><div class="query-page"><p>Pertains to GetListItems only, optionally run a single time and return initial value for all future
+calls.  Works well with data that isn&#39;t expected to change throughout the session but unlike localStorage or sessionStorage
+the data doesn&#39;t persist between sessions.</p>
+</div></td></tr><tr><td>queryOptions.sessionStorage</td><td><a href="" class="label type-hint type-hint-boolean">boolean</a></td><td><div class="query-page"><p>Use the browsers sessionStorage to cache the list items and uses the
+queryOptions.localStorageExpiration param to validate how long the cache is good for.</p>
+</div> <p><em>(default: false)</em></p></td></tr><tr><td>[queryOptions.viewFields]</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="query-page"><p>XML as string that specifies fields to return.</p>
+</div></td></tr><tr><td>[queryOptions.webURL]</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="query-page"><p>Used to override the default URL if list is located somewhere else.</p>
 </div></td></tr><tr><td>model</td><td><a href="" class="label type-hint type-hint-object">object</a></td><td><div class="query-page"><p>Reference to the parent model for the query.  Allows us to reference when out of
 scope.</p>
 </div></td></tr></tbody></table></div>

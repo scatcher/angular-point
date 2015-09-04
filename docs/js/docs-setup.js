@@ -612,8 +612,8 @@ NG_DOCS={
       "shortName": "ListItem.getList",
       "type": "function",
       "moduleName": "ListItem",
-      "shortDescription": "Abstraction to allow logic in model to be used instead of defining the list location in more than one place.",
-      "keywords": "abstraction allow api defining function getlist item list listitem location logic model place"
+      "shortDescription": "Allows us to reference the list definition directly from the list item.  This is added to the",
+      "keywords": "allows api apmodelfactory definition directly documentation factory function getlist info item list listitem model prototype reference"
     },
     {
       "section": "api",
@@ -621,8 +621,8 @@ NG_DOCS={
       "shortName": "ListItem.getList",
       "type": "function",
       "moduleName": "ListItem",
-      "shortDescription": "Allows us to reference the list definition directly from the list item.  This is added to the",
-      "keywords": "allows api apmodelfactory definition directly documentation factory function getlist info item list listitem model prototype reference"
+      "shortDescription": "Abstraction to allow logic in model to be used instead of defining the list location in more than one place.",
+      "keywords": "abstraction allow api defining function getlist item list listitem location logic model place"
     },
     {
       "section": "api",
@@ -901,7 +901,7 @@ NG_DOCS={
       "type": "function",
       "moduleName": "Model",
       "shortDescription": "Constructor that allows us create a static query with the option to build dynamic queries as seen in the",
-      "keywords": "$scope advanced allow allows api array ascending aspx associated assume build cache cachexml call caml camlrowlimit changes check codeplex construct create creates custom default defaultqueryname defaults doesn don dynamic dynamically entities example execute executequery exist false faster field file function functionality getlistitemchangessincetoken good inherit isobject items josh js list listitem lists local lookup lookupid matching mccarty microsoft mock model modifications modified object objects offlinexml operation option optional optionally options param parsed pass passthrough payload permissions pid prevents primary project projectid projectmodel projects projecttasksmodel prototype queries query querybyprojectid querykey queryoptions quick recentchanges records reference register registerquery response retrieve return returned returns shared smaller specific static store stored third title true type typically unique user var xml"
+      "keywords": "ability advanced allow allows apconfig api array ascending aspx associated assume browsers build cache cached call called calls caml catch change changes check codeplex construct control create creates custom data day default defaults doesn don dynamic dynamically efficient entities error example execute executequery exist expected expiration expire false faster field fields force function functionality future getlistitemchangessincetoken getlistitems globally good hours identify ignore inherit initial initialization isn isobject item items josh list listitem listitemid lists local localstorage localstorageexpiration located long lookup lookupid matching mccarty microsoft milliseconds model modifications modified number object operation option optionally options override param parameters passed passthrough payload permissions persist pertains pid prevents primary project projectid projectmodel projects projecttasksmodel prototype queries query querybyprojectid querykey queryoptions quick receive recentchanges records reference register registerquery request requests response retrieve return returned returns rowlimit runonce server session sessioncache sessions sessionstorage set sharepoint single smaller specific specifies speed static storage store stored string third time title true type unique updated url user validate var viewfields vm weburl works xml"
     },
     {
       "section": "api",
@@ -927,8 +927,8 @@ NG_DOCS={
       "shortName": "Query",
       "type": "function",
       "moduleName": "Query",
-      "shortDescription": "Primary constructor that all queries inherit from.",
-      "keywords": "ability actual allow allows apconfig api array ascending browser cache cached cachexml call called calls caml camlrowlimit change changed changes check cleanup complete config control current currenty data dataservice day defaults definition doesn don efficient elements execute executequery execution exists expected expiration expire exposed false file force fresh function future getcache getlistitemchangessincetoken getlistitems getlocalstorage globally handle hydratefromlocalstorage ignore indexed inherit initial initialization internal isn item json larger list local localstorage localstorageexpiration machine method milliseconds model modifications modified note objects offlinexml operation optionally options parameters parent passed permissions persist pertains prevents primary processresults project property pull pulls queries query queryoptions receive recentchanges records refactoring reference registerquery rehydrate request requests residing response retrieve return returned returns runonce save saved savetolocalstorage scope server session sessions sessionstorage set shared sharepoint single snapshot specific speed storage store subsequent testing time true updated user users works xml"
+      "shortDescription": "Primary constructor that all queries inherit from. This object is a passthrough to SPServices.  All",
+      "keywords": "ability actual allow allows apconfig api array ascending aspx browser browsers cache cached call called calls caml camlrowlimit change changed changes check cleanup codeplex complete control current currenty data dataservice day default defaults definition doesn don efficient elements execute executequery execution exists expected expiration expire exposed false faster fields force function future getcache getlistitemchangessincetoken getlistitems getlocalstorage globally good handle hydratefromlocalstorage identify ignore indexed inherit initial initialization internal isn item items josh json larger list listitemid lists local localstorage localstorageexpiration located long machine mccarty method microsoft milliseconds model modifications modified note number object objects operation optionally options override param parameters parent passed passthrough payload permissions persist pertains prevents primary processresults project property pull pulls queries query queryoptions quick receive recentchanges records refactoring reference registerquery rehydrate request requests residing response retrieve return returned returns rowlimit runonce save saved savetolocalstorage scope server session sessions sessionstorage set sharepoint single smaller snapshot specifies speed storage store string subsequent testing time updated url user users validate viewfields weburl works xml"
     },
     {
       "section": "api",

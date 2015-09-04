@@ -544,9 +544,6 @@ var ap;
 })(ap || (ap = {}));
 
 /// <reference path="../app.module.ts" />
-/// <reference path="../../typings/tsd.d.ts" />
-
-/// <reference path="../app.module.ts" />
 var ap;
 (function (ap) {
     'use strict';
@@ -2074,8 +2071,7 @@ var ap;
 var __extends = (this && this.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
-    __.prototype = b.prototype;
-    d.prototype = new __();
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 };
 var ap;
 (function (ap) {
@@ -3546,6 +3542,9 @@ var ap;
          * for data already residing on the users machine.
          */
         Query.prototype.saveToLocalStorage = function () {
+            //Don't use storage when running offline
+            if (apConfig.offline)
+                return;
             var model = this.getModel();
             var store = {
                 changeToken: this.changeToken,
@@ -3710,11 +3709,108 @@ var ap;
 })(ap || (ap = {}));
 
 /// <reference path="../app.module.ts" />
+/// <reference path="../../typings/tsd.d.ts" />
+
+/// <reference path="../app.module.ts" />
+var ap;
+(function (ap) {
+    'use strict';
+    /** Local references to cached promises */
+    var _getGroupCollection, _getUserProfile;
+    var UserModel = (function () {
+        function UserModel($q, apDataService) {
+            this.$q = $q;
+            this.apDataService = apDataService;
+        }
+        /**
+         * @ngdoc function
+         * @name angularPoint.apUserModel:checkIfMember
+         * @methodOf angularPoint.apUserModel
+         * @description
+         * Checks to see if current user is a member of the specified group.
+         * @param {string} groupName Name of the group.
+         * @param {boolean} [force=false] Ignore any cached value.
+         * @returns {object} Returns the group definition if the user is a member. {ID:string, Name:string, Description:string, OwnerId:string, OwnerIsUser:string}
+         * @example
+         * <pre>{ID: "190", Name: "Blog Contributors", Description: "We are bloggers...", OwnerID: "126", OwnerIsUser: "False"}</pre>
+         */
+        UserModel.prototype.checkIfMember = function (groupName, force) {
+            if (force === void 0) { force = false; }
+            //Allow function to be called before group collection is ready
+            var deferred = this.$q.defer();
+            //Initially ensure groups are ready, any future calls will receive the return
+            this.getGroupCollection(force).then(function (groupCollection) {
+                var groupDefinition = _.find(groupCollection, { Name: groupName });
+                deferred.resolve(groupDefinition);
+            });
+            return deferred.promise;
+        };
+        /**
+         * @ngdoc function
+         * @name angularPoint.apUserModel:getGroupCollection
+         * @methodOf angularPoint.apUserModel
+         * @description
+         * Returns the group definitions for the current user and caches results.
+         * @param {boolean} [force=false] Ignore any cached value.
+         * @returns {IGroupDefinition[]} Promise which resolves with the array of groups the user belongs to.
+         */
+        UserModel.prototype.getGroupCollection = function (force) {
+            var _this = this;
+            if (force === void 0) { force = false; }
+            if (!_getGroupCollection || force) {
+                /** Create a new deferred object if not already defined */
+                var deferred = this.$q.defer();
+                this.getUserProfile(force).then(function (userProfile) {
+                    _this.apDataService.getGroupCollectionFromUser(userProfile.userLoginName)
+                        .then(function (groupCollection) {
+                        deferred.resolve(groupCollection);
+                    });
+                });
+                _getGroupCollection = deferred.promise;
+            }
+            return _getGroupCollection;
+        };
+        /**
+         * @ngdoc function
+         * @name angularPoint.apUserModel:getUserProfile
+         * @methodOf angularPoint.apUserModel
+         * @description
+         * Returns the user profile for the current user and caches results.
+         * Pull user profile info and parse into a profile object
+         * http://spservices.codeplex.com/wikipage?title=GetUserProfileByName
+         * @param {boolean} [force=false] Ignore any cached value.
+         * @returns {object} Promise which resolves with the requested user profile.
+         */
+        UserModel.prototype.getUserProfile = function (force) {
+            if (force === void 0) { force = false; }
+            if (!_getUserProfile || force) {
+                /** Create a new deferred object if not already defined */
+                _getUserProfile = this.apDataService.getUserProfileByName();
+            }
+            return _getUserProfile;
+        };
+        UserModel.$inject = ['$q', 'apDataService'];
+        return UserModel;
+    })();
+    ap.UserModel = UserModel;
+    /**
+     * @ngdoc service
+     * @name angularPoint.apUserModel
+     * @description
+     * Simple service that allows us to request and cache both the current user and their group memberships.
+     *
+     * @requires apDataService
+     *
+     */
+    angular.module('angularPoint')
+        .service('apUserModel', UserModel);
+})(ap || (ap = {}));
+
+/// <reference path="../app.module.ts" />
 var __extends = (this && this.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
-    __.prototype = b.prototype;
-    d.prototype = new __();
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 };
 var ap;
 (function (ap) {
@@ -8377,101 +8473,6 @@ var ap;
      */
     angular.module('angularPoint')
         .service('apXMLToJSONService', XMLToJSONService);
-})(ap || (ap = {}));
-
-/// <reference path="../app.module.ts" />
-var ap;
-(function (ap) {
-    'use strict';
-    /** Local references to cached promises */
-    var _getGroupCollection, _getUserProfile;
-    var UserModel = (function () {
-        function UserModel($q, apDataService) {
-            this.$q = $q;
-            this.apDataService = apDataService;
-        }
-        /**
-         * @ngdoc function
-         * @name angularPoint.apUserModel:checkIfMember
-         * @methodOf angularPoint.apUserModel
-         * @description
-         * Checks to see if current user is a member of the specified group.
-         * @param {string} groupName Name of the group.
-         * @param {boolean} [force=false] Ignore any cached value.
-         * @returns {object} Returns the group definition if the user is a member. {ID:string, Name:string, Description:string, OwnerId:string, OwnerIsUser:string}
-         * @example
-         * <pre>{ID: "190", Name: "Blog Contributors", Description: "We are bloggers...", OwnerID: "126", OwnerIsUser: "False"}</pre>
-         */
-        UserModel.prototype.checkIfMember = function (groupName, force) {
-            if (force === void 0) { force = false; }
-            //Allow function to be called before group collection is ready
-            var deferred = this.$q.defer();
-            //Initially ensure groups are ready, any future calls will receive the return
-            this.getGroupCollection(force).then(function (groupCollection) {
-                var groupDefinition = _.find(groupCollection, { Name: groupName });
-                deferred.resolve(groupDefinition);
-            });
-            return deferred.promise;
-        };
-        /**
-         * @ngdoc function
-         * @name angularPoint.apUserModel:getGroupCollection
-         * @methodOf angularPoint.apUserModel
-         * @description
-         * Returns the group definitions for the current user and caches results.
-         * @param {boolean} [force=false] Ignore any cached value.
-         * @returns {IGroupDefinition[]} Promise which resolves with the array of groups the user belongs to.
-         */
-        UserModel.prototype.getGroupCollection = function (force) {
-            var _this = this;
-            if (force === void 0) { force = false; }
-            if (!_getGroupCollection || force) {
-                /** Create a new deferred object if not already defined */
-                var deferred = this.$q.defer();
-                this.getUserProfile(force).then(function (userProfile) {
-                    _this.apDataService.getGroupCollectionFromUser(userProfile.userLoginName)
-                        .then(function (groupCollection) {
-                        deferred.resolve(groupCollection);
-                    });
-                });
-                _getGroupCollection = deferred.promise;
-            }
-            return _getGroupCollection;
-        };
-        /**
-         * @ngdoc function
-         * @name angularPoint.apUserModel:getUserProfile
-         * @methodOf angularPoint.apUserModel
-         * @description
-         * Returns the user profile for the current user and caches results.
-         * Pull user profile info and parse into a profile object
-         * http://spservices.codeplex.com/wikipage?title=GetUserProfileByName
-         * @param {boolean} [force=false] Ignore any cached value.
-         * @returns {object} Promise which resolves with the requested user profile.
-         */
-        UserModel.prototype.getUserProfile = function (force) {
-            if (force === void 0) { force = false; }
-            if (!_getUserProfile || force) {
-                /** Create a new deferred object if not already defined */
-                _getUserProfile = this.apDataService.getUserProfileByName();
-            }
-            return _getUserProfile;
-        };
-        UserModel.$inject = ['$q', 'apDataService'];
-        return UserModel;
-    })();
-    ap.UserModel = UserModel;
-    /**
-     * @ngdoc service
-     * @name angularPoint.apUserModel
-     * @description
-     * Simple service that allows us to request and cache both the current user and their group memberships.
-     *
-     * @requires apDataService
-     *
-     */
-    angular.module('angularPoint')
-        .service('apUserModel', UserModel);
 })(ap || (ap = {}));
 
 //# sourceMappingURL=angular-point.js.map
