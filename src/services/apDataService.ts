@@ -22,7 +22,7 @@ module ap {
         getAvailableWorkflows(fileRefString: string): ng.IPromise<IWorkflowDefinition[]>;
         getCollection(options: { operation: string; userLoginName?: string; groupName?: string; listName?: string; filterNode: string; }): ng.IPromise<Object[]>;
         getCurrentSite(): ng.IPromise<string>;
-        getFieldVersionHistory<T extends ListItem<any>>(options: { operation?: string; webURL?: string; strListID: string; strListItemID: number; strFieldName?: string; }, fieldDefinition: FieldDefinition): ng.IPromise<VersionHistoryCollection<T>>;
+        getFieldVersionHistory<T extends ListItem<any>>(options: IGetFieldVersionHistoryOptions, fieldDefinition: IFieldDefinition): ng.IPromise<FieldVersionCollection>
         getGroupCollectionFromUser(login?: string): ng.IPromise<IXMLGroup[]>;
         getList(options: { listName: string }): ng.IPromise<Object>;
         getListFields(options: { listName: string; }): ng.IPromise<IXMLFieldDefinition[]>;
@@ -31,7 +31,7 @@ module ap {
         processDeletionsSinceToken(responseXML: XMLDocument, indexedCache: IndexedCache<any>): void;
         requestData(opts): ng.IPromise<XMLDocument>;
         retrieveChangeToken(responseXML: XMLDocument): string;
-        retrieveListPermissions(responseXML: XMLDocument): string;
+        retrieveListPermissions(responseXML: XMLDocument): IUserPermissionsObject
         serviceWrapper(options): ng.IPromise<any>;
         startWorkflow(options: { item: string; templateId: string; workflowParameters?: string; fileRef?: string; }): ng.IPromise<any>;
         updateListItem<T extends ListItem<any>>(model: Model, listItem: T, options): ng.IPromise<T>;
@@ -90,7 +90,7 @@ module ap {
                 batchCmd: 'New',
                 buildValuePairs: true,
                 indexedCache: apIndexedCacheFactory.create({}),
-                listName: model.list.getListId(),
+                listName: model.getListId(),
                 operation: 'UpdateListItems',
                 target: undefined,
                 valuePairs: [],
@@ -105,7 +105,7 @@ module ap {
             opts.getCache = () => opts.indexedCache;
 
             if (opts.buildValuePairs === true) {
-                var editableFields: FieldDefinition[] = _.where(model.list.fields, { readOnly: false });
+                var editableFields: IFieldDefinition[] = _.where(model.list.fields, { readOnly: false });
                 opts.valuePairs = apEncodeService.generateValuePairs(editableFields, listItem);
             }
 
@@ -180,7 +180,7 @@ module ap {
             var defaults = {
                 target: _.isFunction(listItem.getCache) ? listItem.getCache() : model.getCache(),
                 operation: 'UpdateListItems',
-                listName: model.list.getListId(),
+                listName: model.getListId(),
                 batchCmd: 'Delete',
                 ID: listItem.id,
                 webURL: model.list.identifyWebURL()
@@ -308,19 +308,19 @@ module ap {
                 operation: 'GetTemplatesForItem',
                 item: itemUrl
             })
-            .then(function(responseXML) {
-                var workflowTemplates = [];
-                var xmlTemplates = apXMLToJSONService.filterNodes(responseXML, 'WorkflowTemplate');
-                _.each(xmlTemplates, function(xmlTemplate: JQuery) {
-                    var template = {
-                        name: $(xmlTemplate).attr('Name'),
-                        instantiationUrl: $(xmlTemplate).attr('InstantiationUrl'),
-                        templateId: '{' + $(xmlTemplate).find('WorkflowTemplateIdSet').attr('TemplateId') + '}'
-                    };
-                    workflowTemplates.push(template);
+                .then(function(responseXML) {
+                    var workflowTemplates = [];
+                    var xmlTemplates = apXMLToJSONService.filterNodes(responseXML, 'WorkflowTemplate');
+                    _.each(xmlTemplates, function(xmlTemplate: JQuery) {
+                        var template = {
+                            name: $(xmlTemplate).attr('Name'),
+                            instantiationUrl: $(xmlTemplate).attr('InstantiationUrl'),
+                            templateId: '{' + $(xmlTemplate).find('WorkflowTemplateIdSet').attr('TemplateId') + '}'
+                        };
+                        workflowTemplates.push(template);
+                    });
+                    return workflowTemplates;
                 });
-                return workflowTemplates;
-            });
         }
 
         /**
@@ -426,19 +426,19 @@ module ap {
                         "Content-Type": "text/xml;charset='utf-8'"
                     }
                 })
-                .then((response) => {
-                    /** Success */
-                    var errorMsg = apDecodeService.checkResponseForErrors(response.data);
-                    if (errorMsg) {
-                        this.errorHandler('Failed to get current site.  ' + errorMsg, deferred, soapData);
-                    }
-                    apConfig.defaultUrl = $(response.data).find("WebUrlFromPageUrlResult").text();
-                    deferred.resolve(apConfig.defaultUrl)
-                })
-                .catch((err) => {
-                    /** Error */
-                    this.errorHandler('Failed to get current site.  ' + err, deferred, soapData);
-                });
+                    .then((response) => {
+                        /** Success */
+                        var errorMsg = apDecodeService.checkResponseForErrors(response.data);
+                        if (errorMsg) {
+                            this.errorHandler('Failed to get current site.  ' + errorMsg, deferred, soapData);
+                        }
+                        apConfig.defaultUrl = $(response.data).find("WebUrlFromPageUrlResult").text();
+                        deferred.resolve(apConfig.defaultUrl)
+                    })
+                    .catch((err) => {
+                        /** Error */
+                        this.errorHandler('Failed to get current site.  ' + err, deferred, soapData);
+                    });
             }
             return this.queryForCurrentSite;
         }
@@ -453,7 +453,7 @@ module ap {
          * var options = {
          *        operation: 'GetVersionCollection',
          *        webURL: apConfig.defaultUrl,
-         *        strlistID: model.list.getListId(),
+         *        strlistID: model.getListId(),
          *        strlistItemID: listItem.id,
          *        strFieldName: fieldDefinition.staticName
          *    };
@@ -461,7 +461,7 @@ module ap {
          * @param {object} fieldDefinition Field definition object from the model.
          * @returns {object[]} Promise which resolves with an array of list item changes for the specified field.
          */
-        getFieldVersionHistory<T extends ListItem<any>>(options: { operation?: string; webURL?: string; strListID: string; strListItemID: number; strFieldName?: string; }, fieldDefinition: FieldDefinition): ng.IPromise<FieldVersionCollection> {
+        getFieldVersionHistory<T extends ListItem<any>>(options: IGetFieldVersionHistoryOptions, fieldDefinition: FieldDefinition): ng.IPromise<FieldVersionCollection> {
             var defaults = {
                 operation: 'GetVersionCollection'
             };
@@ -686,22 +686,22 @@ module ap {
                             return data;
                         }
                     })
-                    .then((response) => {
-                        // Success Code
-                        // Errors can still be resolved without throwing an error so check the XML
-                        var errorMsg = apDecodeService.checkResponseForErrors(response.data);
-                        if (errorMsg) {
-                            // Actuall error but returned with success resonse....thank you SharePoint
-                            this.errorHandler(errorMsg, deferred, soapData, response);
-                        } else {
-                            /** Real success */
-                            deferred.resolve(response.data);
-                        }
-                    })
-                    .catch((err) => {
-                        // Failure
-                        this.errorHandler(err, deferred, soapData);
-                    });
+                        .then((response) => {
+                            // Success Code
+                            // Errors can still be resolved without throwing an error so check the XML
+                            var errorMsg = apDecodeService.checkResponseForErrors(response.data);
+                            if (errorMsg) {
+                                // Actuall error but returned with success resonse....thank you SharePoint
+                                this.errorHandler(errorMsg, deferred, soapData, response);
+                            } else {
+                                /** Real success */
+                                deferred.resolve(response.data);
+                            }
+                        })
+                        .catch((err) => {
+                            // Failure
+                            this.errorHandler(err, deferred, soapData);
+                        });
                 });
 
             return deferred.promise;
@@ -870,7 +870,7 @@ module ap {
                 batchCmd: 'Update',
                 buildValuePairs: true,
                 ID: listItem.id,
-                listName: model.list.getListId(),
+                listName: model.getListId(),
                 operation: 'UpdateListItems',
                 target: listItem.getCache(),
                 valuePairs: [],
@@ -962,7 +962,7 @@ module ap {
     export interface IExecuteQueryOptions {
         factory?: Function;
         filter?: string;
-        mapping?: FieldDefinition[];
+        mapping?: IFieldDefinition[];
         target?: IndexedCache<any>;
         [key: string]: any;
     }
@@ -987,6 +987,13 @@ module ap {
         valuePairs?: [string, any][];
     }
 
+    interface IGetFieldVersionHistoryOptions {
+        operation?: string;
+        strFieldName?: string;
+        strListID: string;
+        strListItemID: number;
+        webURL?: string;
+    }
 
     angular
         .module('angularPoint')

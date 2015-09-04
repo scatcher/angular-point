@@ -306,7 +306,7 @@ module ap {
          */
         registerEntity<T extends ListItem<any>>(entity: T, targetCache?: IndexedCache<T>): T {
             var model = entity.getModel();
-            var entityContainer = this.getEntityContainer(model.list.getListId(), entity.id);
+            var entityContainer = this.getEntityContainer(model.getListId(), entity.id);
             /** Maintain a single object in cache for this entity */
             if (!_.isObject(entityContainer.entity)) {
                 /** Entity isn't currently in the cache */
@@ -345,8 +345,8 @@ module ap {
          * @param {object} model Model to create the cache for.
          */
         registerModel(model: Model): void {
-            if (model.list && model.list.getListId() && model.list.title) {
-                var listId = model.list.getListId().toLowerCase();
+            if (model.list && model.getListId() && model.list.title) {
+                var listId = model.getListId().toLowerCase();
                 /** Store a reference to the model by list title */
                 listNameToIdMap[model.list.title] = {
                     model: model,

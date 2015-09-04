@@ -17,15 +17,15 @@ module ap {
         permMask?: string;
         uniqueId?: string;
 
-        deleteAttachment: (url: string) => ng.IPromise<any>;
-        deleteItem: (options?: IListItemCrudOptions<T>) => ng.IPromise<any>;
+        deleteAttachment(url: string): ng.IPromise<any>;
+        deleteItem(options?: IListItemCrudOptions<T>): ng.IPromise<any>;
         getAttachmentCollection: () => ng.IPromise<string[]>;
         getAvailableWorkflows: () => ng.IPromise<IWorkflowDefinition[]>;
         getCache?: () => IndexedCache<T>;
         getChanges: () => ng.IPromise<T>;
         getChangeSummary: (fieldNames: string[]| string) => ng.IPromise<ChangeSummary<T>>;
         getFieldChoices: (fieldName: string) => string[];
-        getFieldDefinition: (fieldName: string) => FieldDefinition | IExtendedFieldDefinition;
+        getFieldDefinition(fieldName: string): IFieldDefinition;
         getFieldDescription: (fieldName: string) => string;
         getFieldLabel: (fieldName: string) => string;
         getFormattedValue: (fieldName: string, options?: Object) => string;
@@ -111,7 +111,7 @@ module ap {
             return apDataService.deleteAttachment({
                 listItemID: listItem.id,
                 url: url,
-                listName: listItem.getModel().list.getListId()
+                listName: listItem.getListId()
             });
         }
 
@@ -180,8 +180,8 @@ module ap {
             var listItem = this;
             return apDataService.getCollection({
                 operation: 'GetAttachmentCollection',
-                listName: listItem.getModel().list.getListId(),
-                webURL: listItem.getModel().list.webURL,
+                listName: listItem.getListId(),
+                webURL: listItem.getList().webURL,
                 ID: listItem.id,
                 filterNode: 'Attachment'
             });
@@ -280,7 +280,7 @@ module ap {
          * @param {string} fieldName Internal field name.
          * @returns {object} Field definition.
          */
-        getFieldDefinition(fieldName: string): IExtendedFieldDefinition {
+        getFieldDefinition(fieldName: string): IFieldDefinition {
             var listItem = this;
             return listItem.getModel().getFieldDefinition(fieldName);
         }
@@ -481,7 +481,7 @@ module ap {
 
                 var payload = {
                     operation: 'GetVersionCollection',
-                    strlistID: model.list.getListId(),
+                    strlistID: model.getListId(),
                     strlistItemID: listItem.id,
                     strFieldName: fieldDefinition.staticName,
                     webURL: undefined

@@ -28,10 +28,10 @@ module ap {
      * Object that contains the entire version history for a given list item field/property.
      */
     export class FieldVersionCollection {
-        fieldDefinition: FieldDefinition;
+        fieldDefinition: IFieldDefinition;
         versions: { [key: number]: IFieldVersion } = {};
 
-        constructor(fieldDefinition: FieldDefinition) {
+        constructor(fieldDefinition: IFieldDefinition) {
             this.fieldDefinition = fieldDefinition;
         }
         /**
@@ -71,7 +71,7 @@ module ap {
         previousVersion: IListItemVersion<any>;
         propertyName: string;
 
-        constructor(propertyName: string, fieldDefinition: IFieldDefinition, newerVersion: IListItemVersion<any>, previousVersion: IListItemVersion<any> = {}) {
+        constructor(propertyName: string, fieldDefinition: IFieldConfigurationObject, newerVersion: IListItemVersion<any>, previousVersion: IListItemVersion<any> = {}) {
 
             this.fieldName = fieldDefinition.displayName;
             this.newerVersion = newerVersion;

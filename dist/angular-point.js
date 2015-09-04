@@ -544,3171 +544,6 @@ var ap;
 })(ap || (ap = {}));
 
 /// <reference path="../app.module.ts" />
-var ap;
-(function (ap) {
-    'use strict';
-    var CamlFactory = (function () {
-        function CamlFactory() {
-        }
-        /**
-         * @ngdoc function
-         * @name angularPoint.apCamlFactory:camlContainsQuery
-         * @methodOf angularPoint.apCamlFactory
-         * @parameter {object[]} fieldDefinitionsArray Array of fields to search for a given search string.
-         * @parameter {string} searchString String of text to search records for.
-         * @description
-         * Returns a combination of selectors using CAML '<Or></Or>' elements
-         * @returns {string} Caml select string.
-         * @example
-         * <pre>
-         *
-         * var testHTML = {objectType: 'HTML', staticName: 'HTML'};
-         * var testJSON = {objectType: 'JSON', staticName: 'JSON'};
-         * var testText = {objectType: 'Text', staticName: 'Text'};
-         * var testText2 = {objectType: 'Text', staticName: 'Text'};
-         *
-         * var testCaml = camlContainsQuery([testHTML, testText, testJSON, testText2], 'Test Query');
-         * console.log(testCaml);
-         *
-         * //Returns
-         * <Or><Contains><FieldRef Name=\"HTML\" /><Value Type=\"Text\"><![CDATA[Test Query]]>
-         * </Value></Contains><Or><Contains><FieldRef Name=\"Text\" /><Value Type=\"Text\">Test Query</Value>
-         * </Contains><Or><Contains><FieldRef Name=\"JSON\" /><Value Type=\"Text\"><![CDATA[Test Query]]>
-         * </Value></Contains><Contains><FieldRef Name=\"Text\" /><Value Type=\"Text\">Test Query</Value>
-         * </Contains></Or></Or></Or>
-         * </pre>
-         */
-        CamlFactory.prototype.camlContainsQuery = function (fieldDefinitionsArray, searchString) {
-            var _this = this;
-            var selectStatements = [];
-            /** Create a select statement for each field */
-            _.each(fieldDefinitionsArray, function (fieldDefinition, definitionIndex) {
-                selectStatements.push(_this.createCamlContainsSelector(fieldDefinition, searchString));
-            });
-            return this.chainCamlSelects(selectStatements, 'And');
-        };
-        /**
-         * @ngdoc function
-         * @name angularPoint.apCamlFactory:chainCamlSelects
-         * @methodOf angularPoint.apCamlFactory
-         * @description
-         * Used to combine multiple caml selectors into a single CAML query string wrapped properly.
-         * @param {object[]} selectStatements An array of select statements to wrap in "<Or>".
-         * @param {string} joinType Valid caml join type ('Or', 'And', ...).
-         * @returns {string} CAML query string.
-         */
-        CamlFactory.prototype.chainCamlSelects = function (selectStatements, joinType) {
-            var camlQuery = '', camlQueryClosure = '';
-            _.each(selectStatements, function (statement, statementIndex) {
-                /** Add an or clause if we still have additional fields to process */
-                if (statementIndex < selectStatements.length - 1) {
-                    camlQuery += '<' + joinType + '>';
-                    camlQueryClosure = '</' + joinType + '>' + camlQueryClosure;
-                }
-                camlQuery += statement;
-            });
-            return camlQuery + camlQueryClosure;
-        };
-        /**
-         * @ngdoc function
-         * @name angularPoint.apCamlFactory:createCamlContainsSelector
-         * @methodOf angularPoint.apCamlFactory
-         * @description
-         * Escapes characters that SharePoint gets upset about based on field type.
-         * @example
-         * <pre>
-         * var testHTML = {objectType: 'HTML', staticName: 'HTML'};
-         *
-         * var testCaml = createCamlContainsSelector(testHTML, 'Test Query');
-         * console.log(testCaml);
-         *
-         * //Returns
-         * <Contains>
-         *   <FieldRef Name=\"HTML\" />
-         *   <Value Type=\"Text\"><![CDATA[Test Query]]></Value>
-         * </Contains>
-         * </pre>
-         */
-        CamlFactory.prototype.createCamlContainsSelector = function (fieldDefinition, searchString) {
-            var camlSelector;
-            switch (fieldDefinition.objectType) {
-                case 'HTML':
-                case 'JSON':
-                    camlSelector = '' +
-                        '<Contains>' +
-                        '<FieldRef Name="' + fieldDefinition.staticName + '" />' +
-                        /** Use CDATA wrapper to escape [&, <, > ] */
-                        '<Value Type="Text"><![CDATA[' + searchString + ']]></Value>' +
-                        '</Contains>';
-                    break;
-                default:
-                    camlSelector = '' +
-                        '<Contains>' +
-                        '<FieldRef Name="' + fieldDefinition.staticName + '" />' +
-                        '<Value Type="Text">' + searchString + '</Value>' +
-                        '</Contains>';
-            }
-            return camlSelector;
-        };
-        return CamlFactory;
-    })();
-    ap.CamlFactory = CamlFactory;
-    /**
-     * @ngdoc function
-     * @name angularPoint.apCamlFactory
-     * @description
-     * Tools to assist with the creation of CAML queries.
-     *
-     */
-    angular.module('angularPoint')
-        .service('apCamlFactory', CamlFactory);
-})(ap || (ap = {}));
-
-/// <reference path="../app.module.ts" />
-var ap;
-(function (ap) {
-    'use strict';
-    var apFieldService, apUtilityService, apFormattedFieldValueService;
-    /**
-     * @ngdoc object
-     * @name Field
-     * @description
-     * Defined in the MODEL.list.fieldDefinitions array.  Each field definition object maps an internal field
-     * in a SharePoint list/library to a JavaScript object using the internal SharePoint field name, the field
-     * type, and the desired JavaScript property name to add onto the parsed list item object. Ignore shown usage,
-     * each field definition is just an object within the fieldDefinitions array.
-     * @param {object} obj Field definition.
-     * @param {string} obj.staticName The actual SharePoint field name.
-     * @param {string} [obj.objectType='Text']
-     * <dl>
-     *     <dt>Boolean</dt>
-     *     <dd>Used to store a TRUE/FALSE value (stored in SharePoint as 0 or 1).</dd>
-     *     <dt>Calc</dt>
-     *     <dd>";#" Delimited String: The first value will be the calculated column value
-     *     type, the second will be the value</dd>
-     *     <dt>Choice</dt>
-     *     <dd>Simple text string but when processing the initial list definition, we
-     *     look for a Choices XML element within the field definition and store each
-     *     value.  We can then retrieve the valid Choices with one of the following:
-     *     ```var fieldDefinition = LISTITEM.getFieldDefinition('CHOICE_FIELD_NAME');```
-     *                                      or
-     *     ```var fieldDefinition = MODELNAME.getFieldDefinition('CHOICE_FIELD_NAME');```
-     *     ```var choices = fieldDefinition.Choices;```
-     *     </dd>
-     *     <dt>Counter</dt>
-     *     <dd>Same as Integer. Generally used only for the internal ID field. Its integer
-     *     value is set automatically to be unique with respect to every other item in the
-     *     current list. The Counter type is always read-only and cannot be set through a
-     *     form post.</dd>
-     *     <dt>Currency</dt>
-     *     <dd>Floating point number.</dd>
-     *     <dt>DateTime</dt>
-     *     <dd>Replace dashes with slashes and the "T" deliminator with a space if found.  Then
-     *     converts into a valid JS date object.</dd>
-     *     <dt>Float</dt>
-     *     <dd>Floating point number.</dd>
-     *     <dt>HTML</dt>
-     *     <dd>```_.unescape(STRING)```</dd>
-     *     <dt>Integer</dt>
-     *     <dd>Parses the string to a base 10 int.</dd>
-     *     <dt>JSON</dt>
-     *     <dd>Parses JSON if valid and converts into a a JS object.  If not valid, an error is
-     *     thrown with additional info on specifically what is invalid.</dd>
-     *     <dt>Lookup</dt>
-     *     <dd>Passes string to Lookup constructor where it is broken into an object containing
-     *     a "lookupValue" and "lookupId" attribute.  Inherits additional prototype methods from
-     *     Lookup.  See [Lookup](#/api/Lookup) for more information.
-     *     </dd>
-     *     <dt>LookupMulti</dt>
-     *     <dd>Converts multiple delimited ";#" strings into an array of Lookup objects.</dd>
-     *     <dt>MultiChoice</dt>
-     *     <dd>Converts delimited ";#" string into an array of strings representing each of the
-     *     selected choices.  Similar to the single "Choice", the XML Choices are stored in the
-     *     field definition after the initial call is returned from SharePoint so we can reference
-     *     later.
-     *     </dd>
-     *     <dt>Number</dt>
-     *     <dd>Treats as a float.</dd>
-     *     <dt>Text</dt>
-     *     <dd>**Default** No processing of the text string from XML.</dd>
-     *     <dt>User</dt>
-     *     <dd>Similar to Lookup but uses the "User" prototype as a constructor to convert into a
-     *     User object with "lookupId" and "lookupValue" attributes.  The lookupId is the site collection
-     *     ID for the user and the lookupValue is typically the display name.
-     *     See [User](#/api/User) for more information.
-     *     </dd>
-     *     <dt>UserMulti</dt>
-     *     <dd>Parses delimited string to returns an array of User objects.</dd>
-     * </dl>
-     * @param {string} obj.mappedName The attribute name we'd like to use
-     * for this field on the newly created JS object.
-     * @param {boolean} [obj.readOnly=false] When saving, we only push fields
-     * that are mapped and not read only.
-     * @param {boolean} [obj.required=false] Allows us to validate the field to ensure it is valid based
-     * on field type.
-     * @returns {object} Field
-     *
-     * @requires angularPoint.apFieldFactory
-     * @constructor
-     */
-    var FieldDefinition = (function () {
-        function FieldDefinition(obj) {
-            this.objectType = 'Text';
-            this.readOnly = false;
-            _.assign(this, obj);
-            this.displayName = this.displayName ? this.displayName : apUtilityService.fromCamelCase(this.mappedName);
-            /** Deprecated internal name and replace with staticName but maintain compatibility */
-            this.staticName = this.staticName || this.internalName;
-        }
-        /**
-         * @ngdoc function
-         * @name Field:getDefaultValueForType
-         * @methodOf Field
-         * @description
-         * Returns an object defining a specific field type
-         * @returns {object} { defaultValue: '...':string, staticMock: '...':string, dynamicMock: ...:Function}
-         */
-        FieldDefinition.prototype.getDefinition = function () {
-            return apFieldService.getDefinition(this.objectType);
-        };
-        /**
-         * @ngdoc function
-         * @name Field:getDefaultValueForType
-         * @methodOf Field
-         * @description
-         * Can return mock data appropriate for the field type, by default it dynamically generates data but
-         * the staticValue param will instead return a hard coded type specific value.
-         */
-        FieldDefinition.prototype.getDefaultValueForType = function () {
-            return apFieldService.getDefaultValueForType(this.objectType);
-        };
-        /**
-         * @ngdoc function
-         * @name Field:getFormattedValue
-         * @methodOf Field
-         * @description
-         * By default uses the formatted field service to convert a field value into a formatted string
-         * readable by user.  Optionally can override in field definition with formatter property to return
-         * custom formatted value. A good example of this would be to stringify a discussion thread.
-         * @param {ListItem<any>} listItem List used to generate field value.
-         * @param {object} [options] Pass through to apFormattedFieldValueService.getFormattedFieldValue.
-         * @returns {string} Formatted field value suitable for outputting to user.
-         * @example
-         * <pre>
-         *  //In model.list.customFields defining a field
-         * {
-         * 	  mappedName: 'lookup',
-         * 	  objectType: 'Lookup',
-         *    staticName: 'MyAwesomeLookup',
-         * 	  formatter: (listItem: ListItem<any>, fieldDefinition: IFieldDefinition, options?: Object) => {
-         * 	  	 return listItem[fieldDefinition.mappedName].lookupValue.toUpperCase();
-         * 	  }
-         * }
-         * </pre>
-         */
-        FieldDefinition.prototype.getFormattedValue = function (listItem, options) {
-            //Optionally provide a custom method to convert a field value into a formatted string
-            return _.isFunction(this.formatter) ? this.formatter(listItem, this, options) :
-                apFormattedFieldValueService
-                    .getFormattedFieldValue(listItem[this.mappedName], this.objectType, options);
-        };
-        /**
-         * @ngdoc function
-         * @name Field:getMockData
-         * @methodOf Field
-         * @param {object} [options] Optional params passed to apFieldService.getMockData.
-         * @param {boolean} [options.staticValue=false] Default to dynamically build mock data.
-         * @returns {*} mockData
-         */
-        FieldDefinition.prototype.getMockData = function (options) {
-            return apFieldService.getMockData(this.objectType, options);
-        };
-        return FieldDefinition;
-    })();
-    ap.FieldDefinition = FieldDefinition;
-    /**
-     * @ngdoc service
-     * @name angularPoint.apFieldFactory
-     * @description
-     * Contains the Field constructor and prototype definitions.
-     * @property {constructor} Field The Field constructor.
-     *
-     * @requires angularPoint.apFieldService
-     * @requires angularPoint.apUtilityService
-     *
-     */
-    var FieldFactory = (function () {
-        function FieldFactory(_apFieldService_, _apUtilityService_, _apFormattedFieldValueService_) {
-            this.FieldDefinition = FieldDefinition;
-            apFieldService = _apFieldService_;
-            apUtilityService = _apUtilityService_;
-            apFormattedFieldValueService = _apFormattedFieldValueService_;
-        }
-        FieldFactory.$inject = ['apFieldService', 'apUtilityService', 'apFormattedFieldValueService'];
-        return FieldFactory;
-    })();
-    ap.FieldFactory = FieldFactory;
-    angular
-        .module('angularPoint')
-        .service('apFieldFactory', FieldFactory);
-})(ap || (ap = {}));
-
-/// <reference path="../app.module.ts" />
-var ap;
-(function (ap) {
-    'use strict';
-    /**
-     * @ngdoc object
-     * @name IndexedCache
-     * @description
-     * Cache constructor that is extended to make it easier to work with via prototype methods.  Located in
-     * apIndexedCacheFactory.
-     * @param {object} [object] Optionally extend new cache with provided object.
-     * @requires angularPoint.apIndexedCacheFactory
-     * @constructor
-     */
-    var IndexedCache = (function () {
-        function IndexedCache(object) {
-            if (object) {
-                _.assign(this, object);
-            }
-        }
-        /**
-         * @ngdoc function
-         * @name IndexedCache.addEntity
-         * @methodOf IndexedCache
-         * @description
-         * Adds a new key to the cache if not already there with a value of the new listItem.
-         * @param {object} listItem Entity to add to the cache.
-         */
-        IndexedCache.prototype.addEntity = function (listItem) {
-            if (_.isObject(listItem) && !!listItem.id) {
-                /** Only add the listItem to the cache if it's not already there */
-                if (!this[listItem.id]) {
-                    this[listItem.id] = listItem;
-                }
-            }
-            else {
-                throw new Error('A valid listItem wasn\'t provided: ' + JSON.stringify(listItem));
-            }
-        };
-        /**
-         * @ngdoc function
-         * @name IndexedCache.clear
-         * @methodOf IndexedCache
-         * @description
-         * Clears all cached elements from the containing cache object.
-         */
-        IndexedCache.prototype.clear = function () {
-            var _this = this;
-            _.each(this, function (listItem, key) { return delete _this[key]; });
-        };
-        /**
-         * @ngdoc function
-         * @name IndexedCache.count
-         * @methodOf IndexedCache
-         * @description
-         * Returns the number of entities in the cache.
-         * @returns {number} Number of entities in the cache.
-         */
-        IndexedCache.prototype.count = function () {
-            return this.keys().length;
-        };
-        /**
-         * @ngdoc function
-         * @name IndexedCache.first
-         * @methodOf IndexedCache
-         * @description
-         * Returns the first listItem in the index (smallest ID).
-         * @returns {object} First listItem in cache.
-         */
-        IndexedCache.prototype.first = function () {
-            return this.nthEntity(0);
-        };
-        /**
-         * @ngdoc function
-         * @name IndexedCache.keys
-         * @methodOf IndexedCache
-         * @description
-         * Returns the array of keys (listItem ID's) for the cache.
-         * @returns {string[]} Array of listItem id's as strings.
-         */
-        IndexedCache.prototype.keys = function () {
-            return _.keys(this);
-        };
-        /**
-         * @ngdoc function
-         * @name IndexedCache.last
-         * @methodOf IndexedCache
-         * @description
-         * Returns the last listItem in the index (largest ID).
-         * @returns {object} Last listItem in cache.
-         */
-        IndexedCache.prototype.last = function () {
-            var keys = this.keys();
-            return this[keys[keys.length - 1]];
-        };
-        /**
-         * @ngdoc function
-         * @name IndexedCache.nthEntity
-         * @methodOf IndexedCache
-         * @description
-         * Based on the
-         * @param {number} index The index of the item requested.
-         * @returns {object} First listItem in cache.
-         */
-        IndexedCache.prototype.nthEntity = function (index) {
-            var keys = this.keys();
-            return this[keys[index]];
-        };
-        /**
-         * @ngdoc function
-         * @name IndexedCache.removeEntity
-         * @methodOf IndexedCache
-         * @description
-         * Removes a listItem from the cache.
-         * @param {object|number} listItem Entity to remove or ID of listItem to be removed.
-         */
-        IndexedCache.prototype.removeEntity = function (listItem) {
-            if (_.isObject(listItem) && listItem.id && this[listItem.id]) {
-                delete this[listItem.id];
-            }
-            else if (_.isNumber(listItem)) {
-                /** Allow listItem ID to be used instead of then listItem */
-                delete this[listItem];
-            }
-        };
-        /**
-         * @ngdoc function
-         * @name IndexedCache.toArray
-         * @methodOf IndexedCache
-         * @description
-         * Turns the cache object into an array of entities.
-         * @returns {object[]} Returns the array of entities currently in the cache.
-         */
-        IndexedCache.prototype.toArray = function () {
-            return _.toArray(this);
-        };
-        return IndexedCache;
-    })();
-    ap.IndexedCache = IndexedCache;
-    /**
-     * @ngdoc object
-     * @name angularPoint.apIndexedCacheFactory
-     * @description
-     * Exposes the EntityFactory prototype and a constructor to instantiate a new Entity Factory in apCacheService.
-     *
-     */
-    var IndexedCacheFactory = (function () {
-        function IndexedCacheFactory() {
-            this.IndexedCache = IndexedCache;
-        }
-        /**
-         * @ngdoc function
-         * @name angularPoint.apIndexedCacheFactory:create
-         * @methodOf angularPoint.apIndexedCacheFactory
-         * @description
-         * Instantiates and returns a new Indexed Cache.grunt
-         */
-        IndexedCacheFactory.prototype.create = function (overrides) {
-            return new IndexedCache(overrides);
-        };
-        return IndexedCacheFactory;
-    })();
-    ap.IndexedCacheFactory = IndexedCacheFactory;
-    angular.module('angularPoint')
-        .service('apIndexedCacheFactory', IndexedCacheFactory);
-})(ap || (ap = {}));
-
-/// <reference path="../app.module.ts" />
-var ap;
-(function (ap) {
-    'use strict';
-    var apConfig, apDefaultFields, apFieldFactory;
-    /**
-     * @ngdoc object
-     * @name List
-     * @description
-     * List Object Constructor.  This is handled automatically when creating a new model so there shouldn't be
-     * any reason to manually call.
-     * @param {object} config Initialization parameters.
-     * @param {string} config.guid Unique SharePoint GUID for the list we'll be basing the model on
-     * ex:'{4D74831A-42B2-4558-A67F-B0B5ADBC0EAC}'
-     * @param {string} config.title Maps to the offline XML file in dev folder (no spaces)
-     * ex: 'ProjectsList' so the offline XML file would be located at apConfig.offlineXML + 'ProjectsList.xml'
-     * @param {object[]} [config.customFields] Mapping of SharePoint field names to the internal names we'll be using
-     * in our application.  Also contains field type, readonly attribute, and any other non-standard settings.
-     * <pre>
-     * [
-     *   {
-         *       staticName: "Title",
-         *       objectType: "Text",
-         *       mappedName: "lastName",
-         *       readOnly:false
-         *   },
-     *   {
-         *       staticName: "FirstName",
-         *       objectType: "Text",
-         *       mappedName: "firstName",
-         *       readOnly:false
-         *   },
-     *   {
-         *       staticName: "Organization",
-         *       objectType: "Lookup",
-         *       mappedName: "organization",
-         *       readOnly:false
-         *   },
-     *   {
-         *       staticName: "Account",
-         *       objectType: "User",
-         *       mappedName: "account",
-         *       readOnly:false
-         *   },
-     *   {
-         *       staticName: "Details",
-         *       objectType: "Text",
-         *       mappedName: "details",
-         *       readOnly:false
-         *   }
-     * ]
-     * </pre>
-     * @property {string} viewFields XML string defining each of the fields to include in all CRUD requests,
-     * generated when the Model.List is instantiated.
-     * <pre>
-     *     <ViewFields>...</ViewFields>
-     * </pre>
-     * @property {Field[]} fields Generated when the Model.List is instantiated.  Combines the standard
-     * default fields for all lists with the fields identified in the config.customFields and instantiates each
-     * with the Field constructor.
-     * @requires angularPoint.apListFactory
-     * @constructor
-     */
-    var List = (function () {
-        function List(config) {
-            this.customFields = [];
-            this.fields = [];
-            this.guid = '';
-            this.isReady = false;
-            this.mapping = {};
-            this.title = '';
-            this.viewFields = '';
-            this.webURL = apConfig.defaultUrl;
-            _.assign(this, config);
-            this.environments = this.environments || { production: this.guid };
-            this.extendFieldDefinitions();
-        }
-        /**
-         * @description
-         * 1. Populates the fields array which uses the Field constructor to combine the default
-         * SharePoint fields with those defined in the list definition on the model
-         * 2. Creates the list.viewFields XML string that defines the fields to be requested on a query
-         *
-         * @param {object} list Reference to the list within a model.
-         */
-        List.prototype.extendFieldDefinitions = function () {
-            var _this = this;
-            /**
-             * Constructs the field
-             * - adds to viewField
-             * - create ows_ mapping
-             * @param fieldDefinition
-             */
-            var buildField = function (fieldDefinition) {
-                var field = new apFieldFactory.FieldDefinition(fieldDefinition);
-                _this.fields.push(field);
-                _this.viewFields += '<FieldRef Name="' + field.staticName + '"/>';
-                _this.mapping['ows_' + field.staticName] = {
-                    mappedName: field.mappedName,
-                    objectType: field.objectType
-                };
-            };
-            /** Open viewFields */
-            this.viewFields += '<ViewFields>';
-            /** Add the default fields */
-            _.each(apDefaultFields, function (field) { return buildField(field); });
-            /** Add each of the fields defined in the model */
-            _.each(this.customFields, function (field) { return buildField(field); });
-            /** Close viewFields */
-            this.viewFields += '</ViewFields>';
-        };
-        /**
-         * @ngdoc function
-         * @name List:extendPermissionsFromListItem
-         * @methodOf List
-         * @param {ListItem} listItem List item to use as sample of user's permisssions for list.
-         * @description
-         * If the user permissions haven't been resolved for the list, use the permissions from a
-         * sample list item and assume they're the same for the entire list
-         * @returns {IUserPermissionsObject} Resolved permissions for the list item.
-         */
-        List.prototype.extendPermissionsFromListItem = function (listItem) {
-            if (!listItem) {
-                throw new Error('A valid list item is required in order to extend list permissions.');
-            }
-            this.permissions = listItem.resolvePermissions();
-            return this.permissions;
-        };
-        /**
-         * @ngdoc function
-         * @name List:getListId
-         * @methodOf List
-         * @description
-         * Defaults to list.guid.  For a multi-environment setup, we accept a list.environments object with a property for each named
-         * environment with a corresponding value of the list guid.  The active environment can be selected
-         * by setting apConfig.environment to the string name of the desired environment.
-         * @returns {string} List ID.
-         */
-        List.prototype.getListId = function () {
-            if (_.isString(this.environments[apConfig.environment])) {
-                /**
-                 * For a multi-environment setup, we accept a list.environments object with a property for each named
-                 * environment with a corresponding value of the list guid.  The active environment can be selected
-                 * by setting apConfig.environment to the string name of the desired environment.
-                 */
-                return this.environments[apConfig.environment];
-            }
-            else {
-                throw new Error('There isn\'t a valid environment definition for apConfig.environment=' + apConfig.environment + '  ' +
-                    'Please confirm that the list "' + this.title + '" has the necessary environmental configuration.');
-            }
-        };
-        /**
-         * @ngdoc function
-         * @name List:identifyWebURL
-         * @methodOf List
-         * @description
-         * If a list is extended, use the provided webURL, otherwise use list.webURL.  If never set it will default
-         * to apConfig.defaultUrl.
-         * @returns {string} webURL param.
-         */
-        List.prototype.identifyWebURL = function () {
-            return this.WebFullUrl ? this.WebFullUrl : this.webURL;
-        };
-        return List;
-    })();
-    ap.List = List;
-    /**
-     * @ngdoc service
-     * @name angularPoint.apListFactory
-     * @description
-     * Exposes the List prototype and a constructor to instantiate a new List.
-     *
-     * @property {constructor} List The List constructor.
-     *
-     * @requires angularPoint.apConfig
-     * @requires angularPoint.apDefaultFields
-     * @requires angularPoint.apFieldFactory
-     */
-    var ListFactory = (function () {
-        function ListFactory(_apConfig_, _apDefaultFields_, _apFieldFactory_) {
-            this.List = List;
-            apConfig = _apConfig_;
-            apDefaultFields = _apDefaultFields_;
-            apFieldFactory = _apFieldFactory_;
-        }
-        /**
-         * @ngdoc function
-         * @name angularPoint.apListFactory:create
-         * @methodOf angularPoint.apListFactory
-         * @param {object} config Options object.
-         * @description
-         * Instantiates and returns a new List.
-         */
-        ListFactory.prototype.create = function (config) {
-            return new List(config);
-        };
-        ListFactory.$inject = ['apConfig', 'apDefaultFields', 'apFieldFactory'];
-        return ListFactory;
-    })();
-    ap.ListFactory = ListFactory;
-    angular.module('angularPoint')
-        .service('apListFactory', ListFactory);
-})(ap || (ap = {}));
-
-/// <reference path="../app.module.ts" />
-var ap;
-(function (ap) {
-    'use strict';
-    var $q, toastr, apCacheService, apDataService, apDecodeService, apEncodeService, apUtilityService, apConfig, apListItemVersionFactory;
-    /**
-     * @ngdoc object
-     * @name ListItem
-     * @description
-     * Base prototype which all list items inherit from.  All methods can be accessed through this prototype so all CRUD
-     * functionality can be called directly from a given list item.
-     * @constructor
-     */
-    var ListItem = (function () {
-        function ListItem() {
-        }
-        /**
-         * @ngdoc function
-         * @name ListItem.changes
-         * @description
-         * Checks a given list item compared to its pristine state and retuns a field change summary
-         * with information on any significant changes to non-readonly fields.
-         * @returns {FieldChangeSummary<T>} Change summary of all fields that have been modified
-         * since last save.
-         */
-        ListItem.prototype.changes = function () {
-            return new apListItemVersionFactory.FieldChangeSummary(this, this.getPristine());
-        };
-        /**
-         * @ngdoc function
-         * @name ListItem.deleteAttachment
-         * @description
-         * Delete an attachment from a list item.
-         * @param {string} url Requires the URL for the attachment we want to delete.
-         * @returns {object} Promise which resolves with the updated attachment collection.
-         * @example
-         * <pre>
-         * $scope.deleteAttachment = function (attachment) {
-         *     var confirmation = window.confirm("Are you sure you want to delete this file?");
-         *     if (confirmation) {
-         *         scope.listItem.deleteAttachment(attachment).then(function () {
-         *             alert("Attachment successfully deleted");
-         *         });
-         *     }
-         * };
-         * </pre>
-         */
-        ListItem.prototype.deleteAttachment = function (url) {
-            var listItem = this;
-            return apDataService.deleteAttachment({
-                listItemID: listItem.id,
-                url: url,
-                listName: listItem.getModel().list.getListId()
-            });
-        };
-        /**
-         * @ngdoc function
-         * @name ListItem.deleteItem
-         * @description
-         * Deletes record directly from the object and removes record from user cache.
-         * @param {object} [options] Optionally pass params to the dataService.
-         * @param {boolean} [options.updateAllCaches=false] Iterate over each of the query cache's and ensure the listItem is
-         * removed everywhere.  This is more process intensive so by default we only remove the cached listItem in the
-         * cache where this listItem is currently stored.
-         * @returns {object} Promise which really only lets us know the request is complete.
-         * @example
-         * ```
-         * <ul>
-         *    <li ng-repeat="task in tasks">
-         *        {{task.title}} <a href ng-click="task.deleteItem()>delete</a>
-         *    </li>
-         * </ul>
-         * ```
-         * List of tasks.  When the delete link is clicked, the list item item is removed from the local cache and
-         * the view is updated to no longer show the task.
-         */
-        ListItem.prototype.deleteItem = function (options) {
-            var listItem = this;
-            var model = listItem.getModel();
-            var deferred = $q.defer();
-            if (_.isFunction(listItem.preDeleteAction) && !listItem.preDeleteAction()) {
-                //preDeleteAction exists but returned false so we don't delete
-                deferred.reject('Pre-Delete Action Returned False');
-            }
-            else {
-                apDataService.deleteListItem(model, listItem, options)
-                    .then(function (response) {
-                    deferred.resolve(response);
-                    /** Optionally broadcast change event */
-                    apUtilityService.registerChange(model, 'delete', listItem.id);
-                });
-            }
-            return deferred.promise;
-        };
-        /**
-         * @ngdoc function
-         * @name ListItem.getAttachmentCollection
-         * @description
-         * Requests all attachments for a given list item.
-         * @returns {object} Promise which resolves with all attachments for a list item.
-         * @example
-         * <pre>
-         * //Pull down all attachments for the current list item
-         * var fetchAttachments = function (listItem) {
-         *     listItem.getAttachmentCollection()
-         *         .then(function (attachments) {
-         *             scope.attachments = attachments;
-         *         });
-         * };
-         * </pre>
-         */
-        ListItem.prototype.getAttachmentCollection = function () {
-            var listItem = this;
-            return apDataService.getCollection({
-                operation: 'GetAttachmentCollection',
-                listName: listItem.getModel().list.getListId(),
-                webURL: listItem.getModel().list.webURL,
-                ID: listItem.id,
-                filterNode: 'Attachment'
-            });
-        };
-        /**
-         * @ngdoc function
-         * @name ListItem.getAvailableWorkflows
-         * @description
-         * Wrapper for apDataService.getAvailableWorkflows.  Simply passes the current item in.
-         * @returns {promise} Array of objects defining each of the available workflows.
-         */
-        ListItem.prototype.getAvailableWorkflows = function () {
-            var listItem = this;
-            return apDataService.getAvailableWorkflows(listItem.fileRef.lookupValue);
-        };
-        /**
-         * @ngdoc function
-         * @name ListItem.getChanges
-         * @description
-         * Wrapper for model.getListItemById.  Queries server for any changes and extends the existing
-         * list item with those changes.
-         * @returns {promise} Promise which resolves with the updated list item.
-         */
-        ListItem.prototype.getChanges = function () {
-            var model = this.getModel();
-            return model.getListItemById(this.id);
-        };
-        /**
-         * @ngdoc function
-         * @name ListItem.getChangeSummary
-         * @description
-         * Uses ListItem.getVersionHistory and determines what information changed between each list item
-         * version.
-         * @param {string[] | string} [fieldNames] An array/single string of field names on the list item to fetch a version
-         * history for.
-         * @returns {ng.IPromise<ChangeSummary<T>>} Promise which resolves with an array of list item versions.
-         * @example
-         * Assuming we have a modal form where we want to display each version of the title and project fields
-         * of a given list item.
-         * <pre>
-         * myGenericListItem.getChangeSummary(['title', 'project'])
-         *     .then(function(changeSummary: ChangeSummary) {
-         *            // We now have an array of every version of these fields
-         *            vm.changeSummary = changeSummary;
-         *      };
-         * </pre>
-         */
-        ListItem.prototype.getChangeSummary = function (fieldNames) {
-            return this.getVersionHistory(fieldNames)
-                .then(function (versionHistoryCollection) { return versionHistoryCollection.generateChangeSummary(); });
-        };
-        /**
-         * @ngdoc function
-         * @name ListItem.getFieldChoices
-         * @param {string} fieldName Internal field name.
-         * @description
-         * Uses the field definition defined in the model to attempt to find the choices array for a given Lookup or
-         * MultiLookup type field.  The default value is fieldDefinition.choices which can optionally be added to a
-         * given field definition.  If this isn't found, we check fieldDefinition.Choices which is populated after a
-         * GetListItemsSinceToken operation or a Model.extendListMetadata operation.  Finally if that isn't available
-         * we return an empty array.
-         * @returns {string[]} An array of choices for a Choice or MultiChoice type field.
-         */
-        ListItem.prototype.getFieldChoices = function (fieldName) {
-            var listItem = this;
-            var fieldDefinition = listItem.getFieldDefinition(fieldName);
-            return fieldDefinition.choices || fieldDefinition.Choices || [];
-        };
-        /**
-         * @ngdoc function
-         * @name ListItem.getFieldDefinition
-         * @description
-         * Returns the field definition from the definitions defined in the custom fields array within a model.
-         * @example
-         * <pre>
-         * var project = {
-         *    title: 'Project 1',
-         *    location: {
-         *        lookupId: 5,
-         *        lookupValue: 'Some Building'
-         *    }
-         * };
-         *
-         * //To get field metadata
-         * var locationDefinition = project.getFieldDefinition('location');
-         * </pre>
-         * @param {string} fieldName Internal field name.
-         * @returns {object} Field definition.
-         */
-        ListItem.prototype.getFieldDefinition = function (fieldName) {
-            var listItem = this;
-            return listItem.getModel().getFieldDefinition(fieldName);
-        };
-        /**
-         * @ngdoc function
-         * @name ListItem.getFieldDescription
-         * @param {string} fieldName Internal field name.
-         * @description
-         * Uses the field definition defined in the model to attempt to find the description for a given field.  The default
-         * value is fieldDefinition.Description which is populated after a GetListItemsSinceToken operation or a
-         * Model.extendListMetadata operation.  If this isn't available we look for an optional attribute of a field
-         * fieldDefinition.description.  Finally if that have anything it returns an empty string.
-         * @returns {string} The description for a given field object.
-         */
-        ListItem.prototype.getFieldDescription = function (fieldName) {
-            var listItem = this;
-            var fieldDefinition = listItem.getFieldDefinition(fieldName);
-            return fieldDefinition.description || fieldDefinition.Description || '';
-        };
-        /**
-         * @ngdoc function
-         * @name ListItem.getFieldLabel
-         * @param {string} fieldName Internal field name.
-         * @description
-         * Uses the field definition defined in the model to attempt to find the label for a given field.  The default
-         * value is fieldDefinition.label.  If not available it will then use fieldDefinition.DisplayName which is
-         * populated after a GetListItemsSinceToken operation or a Model.extendListMetadata operation.  If this isn't
-         * available it will fallback to the the fieldDefinition.DisplayName which is a best guess at converting the
-         * caml case version of the mapped name using apUtilityService.fromCamelCase.
-         * @returns {string} The label for a given field object.
-         */
-        ListItem.prototype.getFieldLabel = function (fieldName) {
-            var listItem = this;
-            var fieldDefinition = listItem.getFieldDefinition(fieldName);
-            return fieldDefinition.label || fieldDefinition.DisplayName || fieldDefinition.displayName;
-        };
-        /**
-         * @ngdoc function
-         * @name ListItem.getFormattedValue
-         * @description
-         * Given the attribute name on a listItem, we can lookup the field type and from there return a formatted
-         * string representation of that value.
-         * @param {string} fieldName Attribute name on the object that contains the value to stringify.
-         * @param {object} [options] Pass through to apFormattedFieldValueService.getFormattedFieldValue or any
-         * custom method specified on the field definition.
-         * @returns {string} Formatted string representing the field value.
-         */
-        ListItem.prototype.getFormattedValue = function (fieldName, options) {
-            var listItem = this;
-            var fieldDefinition = listItem.getFieldDefinition(fieldName);
-            if (!fieldDefinition) {
-                throw new Error("A field definition for a field named " + fieldName + " wasn't found.");
-            }
-            return fieldDefinition.getFormattedValue(this, options);
-        };
-        /**
-         * @ngdoc function
-         * @name ListItem.getList
-         * @description
-         * Abstraction to allow logic in model to be used instead of defining the list location in more than one place.
-         * @returns {object} List for the list item.
-         */
-        ListItem.prototype.getList = function () {
-            var model = this.getModel();
-            return model.getList();
-        };
-        /**
-         * @ngdoc function
-         * @name ListItem.getListId
-         * @description
-         * Allows us to reference the list ID directly from the list item.  This is added to the
-         * model.factory prototype in apModelFactory.
-         * @returns {string} List ID.
-         */
-        ListItem.prototype.getListId = function () {
-            var model = this.getModel();
-            return model.getListId();
-        };
-        /**
-         * @ngdoc function
-         * @name ListItem.getLookupReference
-         * @description
-         * Allows us to retrieve the listItem being referenced in a given lookup field.
-         * @param {string} fieldName Name of the lookup property on the list item that references a listItem.
-         * @param {number} [lookupId=listItem.fieldName.lookupId] The listItem.lookupId of the lookup object.  This allows us to also use this logic
-         * on a multi-select by iterating over each of the lookups.
-         * @example
-         * <pre>
-         * var project = {
-         *    title: 'Project 1',
-         *    location: {
-         *        lookupId: 5,
-         *        lookupValue: 'Some Building'
-         *    }
-         * };
-         *
-         * //To get the location listItem
-         * var listItem = project.getLookupReference('location');
-         * </pre>
-         * @returns {object} The listItem the lookup is referencing or undefined if not in the cache.
-         */
-        ListItem.prototype.getLookupReference = function (fieldName, lookupId) {
-            var listItem = this;
-            var lookupReference;
-            if (_.isUndefined(fieldName)) {
-                throw new Error('A field name is required.');
-            }
-            else if (_.isEmpty(listItem[fieldName])) {
-                lookupReference = '';
-            }
-            else {
-                var model = listItem.getModel();
-                var fieldDefinition = model.getFieldDefinition(fieldName);
-                /** Ensure the field definition has the List attribute which contains the GUID of the list
-                 *  that a lookup is referencing. */
-                if (fieldDefinition && fieldDefinition.List) {
-                    var targetId = lookupId || listItem[fieldName].lookupId;
-                    lookupReference = apCacheService.getCachedEntity(fieldDefinition.List, targetId);
-                }
-                else {
-                    throw new Error('This isn\'t a valid Lookup field or the field definitions need to be extended ' +
-                        'before we can complete this request.');
-                }
-            }
-            return lookupReference;
-        };
-        /**
-         * @ngdoc function
-         * @name ListItem.getVersionHistory
-         * @description
-         * Takes an array of field names, finds the version history for field, and returns a snapshot of the object at each
-         * version.  If no fields are provided, we look at the field definitions in the model and pull all non-readonly
-         * fields.  The only way to do this that I've been able to get working is to get the version history for each
-         * field independently and then build the history by combining the server responses for each requests into a
-         * snapshot of the object.  Each version has the standard modified date but also includes a version property with
-         * the version number.
-         * @param {string[]} [fieldNames] An array of field names or single field name of properties on the list item
-         * that we're interested in.
-         * @returns {ng.IPromise<VersionHistoryCollection<T>>} Promise which resolves with an object with keys=version
-         * and values = ListItemVersion.
-         * @example
-         * Assuming we have a modal form where we want to display each version of the title and project fields
-         * of a given list item.
-         * <pre>
-         * myGenericListItem.getVersionHistory(['title', 'project'])
-         *     .then(function(versionHistory) {
-         *            // We now have an array of every version of these fields
-         *            vm.versionHistory = versionHistory;
-         *      };
-         * </pre>
-         */
-        ListItem.prototype.getVersionHistory = function (fieldNames) {
-            var listItem = this;
-            var model = listItem.getModel();
-            var promiseArray = [];
-            if (!fieldNames) {
-                /** If fields aren't provided, pull the version history for all NON-readonly fields */
-                var targetFields = _.where(model.list.fields, { readOnly: false });
-                fieldNames = [];
-                _.each(targetFields, function (field) {
-                    fieldNames.push(field.mappedName);
-                });
-            }
-            else if (_.isString(fieldNames)) {
-                /** If a single field name is provided, add it to an array so we can process it more easily */
-                fieldNames = [fieldNames];
-            }
-            /** Generate promises for each field */
-            _.each(fieldNames, function (fieldName) {
-                var promise = createPromise(fieldName);
-                promiseArray.push(promise);
-            });
-            /** Pause until all requests are resolved */
-            return $q.all(promiseArray)
-                .then(function (fieldVersionCollections) {
-                var versionHistoryCollection = new apListItemVersionFactory.VersionHistoryCollection(fieldVersionCollections, model.factory);
-                return versionHistoryCollection;
-            });
-            /** Constructor that creates a promise for each field */
-            function createPromise(fieldName) {
-                var fieldDefinition = listItem.getFieldDefinition(fieldName);
-                var payload = {
-                    operation: 'GetVersionCollection',
-                    strlistID: model.list.getListId(),
-                    strlistItemID: listItem.id,
-                    strFieldName: fieldDefinition.staticName,
-                    webURL: undefined
-                };
-                /** Manually set site url if defined, prevents SPServices from making a blocking call to fetch it. */
-                if (apConfig.defaultUrl) {
-                    payload.webURL = apConfig.defaultUrl;
-                }
-                return apDataService.getFieldVersionHistory(payload, fieldDefinition);
-            }
-        };
-        /**
-         * @ngdoc function
-         * @name ListItem.isPristine
-         * @description
-         * Determines if a list item has changed since it was instantiated.
-         * @returns {boolean} The list item is unchanged.
-         */
-        ListItem.prototype.isPristine = function () {
-            return !this.changes().hasMajorChanges;
-        };
-        /**
-         * @ngdoc function
-         * @name ListItem.prototype.registerPreDeleteAction
-         * @param {Function} action Function that accepts no arguments and returns a boolean determining if delete can continue.
-         * @returns {Function} Function that can be called to unregister.
-         * @description
-         * Register a function on the list item prototype that is executed prior to deleting.  Good use case
-         * is to perform cleanup prior to deleting or determining if user can delete.  Method returns boolean and if
-         * true delete will continue, otherwise delete is prevented. There is no ListItem.registerPostDeleteAction because
-         * the list item no longer exists.
-         *
-         * @example
-         * <pre>
-         * //In example projectsModel.ts
-         *  export class Project extends ap.ListItem<Project>{
-         *      title: string;
-         *      users: User[];
-         *      ...some other expected attributes
-         *      constructor(obj) {
-         *          super(obj);
-         *          _.assign(this, obj);
-         *      }
-         *  }
-         *
-         *  let unregister = Project.prototype.registerPreDeleteAction(function() {
-         *      //Do some validation here and return true if user can delete
-         *      //otherwise return false to prevent delete action
-         *  });
-         *
-         *  //At some point in the future if no longer necessary
-         *  unregister();
-         *
-         * </pre>
-         */
-        ListItem.prototype.registerPreDeleteAction = function (action) {
-            var _this = this;
-            this.preDeleteAction = action;
-            //Return function to unregister
-            return function () { return _this.preDeleteAction = undefined; };
-        };
-        /**
-         * @ngdoc function
-         * @name ListItem.prototype.registerPreSaveAction
-         * @param {Function} action Function that accepts no arguments and returns a boolean determining is save can continue.
-         * @returns {Function} Function that can be called to unregister.
-         * @description
-         * Register a function on the list item prototype that is executed prior to saving.  Good use case
-         * is to validate list item or perform cleanup prior to saving.  Method returns boolean and if
-         * true save will continue, otherwise save is prevented.
-         *
-         * @example
-         * <pre>
-         * //In example projectsModel.ts
-         *  export class Project extends ap.ListItem<Project>{
-         *      title: string;
-         *      users: User[];
-         *      ...some other expected attributes
-         *      constructor(obj) {
-         *          super(obj);
-         *          _.assign(this, obj);
-         *      }
-         *  }
-         *
-         *  let unregister = Project.prototype.registerPreSaveAction(function() {
-         *      //Do some validation here and return true if user can save
-         *      //otherwise return false to prevent save action
-         *  });
-         *
-         *  //At some point in the future if no longer necessary
-         *  unregister();
-         *
-         * </pre>
-         */
-        ListItem.prototype.registerPreSaveAction = function (action) {
-            var _this = this;
-            this.preSaveAction = action;
-            //Return function to unregister
-            return function () { return _this.preSaveAction = undefined; };
-        };
-        /**
-         * @ngdoc function
-         * @name ListItem.prototype.registerPostSaveAction
-         * @param {Function} action Callback function that accepts no arguments, returns nothing, and is called
-         * after a list item has completed saving.
-         * @returns {Function} Function that can be called to unregister.
-         * @description
-         * Register a function on the model prototype that is executed after saving.  Good use case
-         * is to perform cleanup after save.
-         *
-         * @example
-         * <pre>
-         * //In example projectsModel.ts
-         *  export class Project extends ap.ListItem<Project>{
-         *      title: string;
-         *      users: User[];
-         *      ...some other expected attributes
-         *      constructor(obj) {
-         *          super(obj);
-         *          _.assign(this, obj);
-         *      }
-         *  }
-         *
-         *  let unregister = Project.prototype.registerPostSaveAction(function() {
-         *      //Use this method to perform any cleanup after save event
-         *      //for any list item of this type
-         *  });
-         *
-         *  //At some point in the future if no longer necessary
-         *  unregister();
-         *
-         * </pre>
-         */
-        ListItem.prototype.registerPostSaveAction = function (action) {
-            var _this = this;
-            this.postSaveAction = action;
-            //Return function to unregister
-            return function () { return delete _this.postSaveAction; };
-        };
-        /**
-         * @ngdoc function
-         * @name ListItem.resolvePermissions
-         * @description
-         * See apModelService.resolvePermissions for details on what we expect to have returned.
-         * @returns {Object} Contains properties for each permission level evaluated for current user.
-         * @example
-         * Lets assume we're checking to see if a user has edit rights for a given task list item.
-         * <pre>
-         * var canUserEdit = function(task) {
-         *      var userPermissions = task.resolvePermissions();
-         *      return userPermissions.EditListItems;
-         * };
-         * </pre>
-         * Example of what the returned object would look like
-         * for a site admin.
-         * <pre>
-         * userPermissions = {
-         *    "ViewListItems": true,
-         *    "AddListItems": true,
-         *    "EditListItems": true,
-         *    "DeleteListItems": true,
-         *    "ApproveItems": true,
-         *    "OpenItems": true,
-         *    "ViewVersions": true,
-         *    "DeleteVersions": true,
-         *    "CancelCheckout": true,
-         *    "PersonalViews": true,
-         *    "ManageLists": true,
-         *    "ViewFormPages": true,
-         *    "Open": true,
-         *    "ViewPages": true,
-         *    "AddAndCustomizePages": true,
-         *    "ApplyThemeAndBorder": true,
-         *    "ApplyStyleSheets": true,
-         *    "ViewUsageData": true,
-         *    "CreateSSCSite": true,
-         *    "ManageSubwebs": true,
-         *    "CreateGroups": true,
-         *    "ManagePermissions": true,
-         *    "BrowseDirectories": true,
-         *    "BrowseUserInfo": true,
-         *    "AddDelPrivateWebParts": true,
-         *    "UpdatePersonalWebParts": true,
-         *    "ManageWeb": true,
-         *    "UseRemoteAPIs": true,
-         *    "ManageAlerts": true,
-         *    "CreateAlerts": true,
-         *    "EditMyUserInfo": true,
-         *    "EnumeratePermissions": true,
-         *    "FullMask": true
-         * }
-         * </pre>
-         */
-        ListItem.prototype.resolvePermissions = function () {
-            return apUtilityService.resolvePermissions(this.permMask);
-        };
-        /**
-         * @ngdoc function
-         * @name ListItem.saveChanges
-         * @description
-         * Updates record directly from the object
-         * @param {object} [options] Optionally pass params to the data service.
-         * @param {boolean} [options.updateAllCaches=false] Search through the cache for each query to ensure listItem is
-         * updated everywhere.  This is more process intensive so by default we only update the cached listItem in the
-         * cache where this listItem is currently stored.
-         * @returns {object} Promise which resolved with the updated list item from the server.
-         * @example
-         * <pre>
-         * // Example of save function on a fictitious
-         * // app/modules/tasks/TaskDetailsCtrl.js modal form.
-         * $scope.saveChanges = function(task) {
-         *      task.saveChanges().then(function() {
-         *          // Successfully saved so we can do something
-         *          // like close form
-         *
-         *          }, function() {
-         *          // Failure
-         *
-         *          });
-         * }
-         * </pre>
-         */
-        ListItem.prototype.saveChanges = function (options) {
-            var listItem = this;
-            var model = listItem.getModel();
-            var deferred = $q.defer();
-            if (_.isFunction(listItem.preSaveAction) && !listItem.preSaveAction()) {
-                //preSaveAction exists but returned false so we don't save
-                deferred.reject('Pre-Save Action Returned False');
-            }
-            else {
-                //Either no preSaveAction registered or it passed validation
-                /** Redirect if the request is actually creating a new list item.  This can occur if we create
-                 * an empty item that is instantiated from the model and then attempt to save instead of using
-                 * model.addNewItem */
-                if (!listItem.id) {
-                    return model.addNewItem(listItem, options);
-                }
-                apDataService.updateListItem(model, listItem, options)
-                    .then(function (updatedListItem) {
-                    deferred.resolve(updatedListItem);
-                    /** Optionally broadcast change event */
-                    apUtilityService.registerChange(model, 'update', updatedListItem.id);
-                    //Optionally perform any post save cleanup if registered
-                    if (_.isFunction(listItem.postSaveAction)) {
-                        listItem.postSaveAction();
-                    }
-                    ;
-                });
-            }
-            return deferred.promise;
-        };
-        /**
-         * @ngdoc function
-         * @name ListItem.saveFields
-         * @description
-         * Saves a named subset of fields back to SharePoint.  This is an alternative to saving all fields.
-         * @param {array|string} fieldArray Array of internal field names that should be saved to SharePoint or a single
-         * string to save an individual field.
-         * @param {object} [options] Optionally pass params to the data service.
-         * @param {boolean} [options.updateAllCaches=false] Search through the cache for each query to ensure listItem is
-         * updated everywhere.  This is more process intensive so by default we only update the cached listItem in the
-         * cache where this listItem is currently stored.
-         * @returns {object} Promise which resolves with the updated list item from the server.
-         * @example
-         * <pre>
-         * // Example of saveFields function on a fictitious
-         * // app/modules/tasks/TaskDetailsCtrl.js modal form.
-         * // Similar to saveChanges but instead we only save
-         * // specified fields instead of pushing everything.
-         * $scope.updateStatus = function(task) {
-         *      task.saveFields(['status', 'notes']).then(function() {
-         *          // Successfully updated the status and
-         *          // notes fields for the given task
-         *
-         *          }, function() {
-         *          // Failure to update the field
-         *
-         *          });
-         * }
-         * </pre>
-         */
-        ListItem.prototype.saveFields = function (fieldArray, options) {
-            var listItem = this;
-            var model = listItem.getModel();
-            var definitions = [];
-            /** Allow a string to be passed in to save a single field */
-            var fieldNames = _.isString(fieldArray) ? [fieldArray] : fieldArray;
-            /** Find the field definition for each of the requested fields */
-            _.each(fieldNames, function (field) {
-                var match = _.find(model.list.customFields, { mappedName: field });
-                if (match) {
-                    definitions.push(match);
-                }
-            });
-            /** Generate value pairs for specified fields */
-            var valuePairs = apEncodeService.generateValuePairs(definitions, listItem);
-            var defaults = { buildValuePairs: false, valuePairs: valuePairs };
-            /** Extend defaults with any provided options */
-            var opts = _.assign({}, defaults, options);
-            return apDataService.updateListItem(model, listItem, opts)
-                .then(function (updatedListItem) {
-                /** Optionally broadcast change event */
-                apUtilityService.registerChange(model, 'update', updatedListItem.id);
-                return updatedListItem;
-            });
-        };
-        /**
-         * @ngdoc function
-         * @name ListItem.setPristine
-         * @param {ListItem} [listItem] Optionally pass list item object back to the list item constructor to
-         * run any initialization logic.  Otherwise we just overwrite existing values on the object with a copy from the
-         * original object.
-         * @description
-         * Resets all list item properties back to a pristine state but doesn't update any properties added
-         * manually to the list item.
-         */
-        ListItem.prototype.setPristine = function (listItem) {
-            if (!this.id || !_.isFunction(this.getPristine)) {
-                throw new Error('Unable to find the pristine state for this list item.');
-            }
-            var pristineState = this.getPristine();
-            if (listItem) {
-                listItem.constructor(pristineState);
-            }
-            else {
-                _.assign(this, pristineState);
-            }
-        };
-        /**
-         * @ngdoc function
-         * @name ListItem.startWorkflow
-         * @description
-         * Given a workflow name or templateId we initiate a given workflow using apDataService.startWorkflow.
-         * @param {object} options Params for method and pass through options to apDataService.startWorkflow.
-         * @param {string} [options.templateId] Used to directly start the workflow without looking up the templateId.
-         * @param {string} [options.workflowName] Use this value to lookup the templateId and then start the workflow.
-         * @returns {promise} Resolves with server response.
-         */
-        ListItem.prototype.startWorkflow = function (options) {
-            var listItem = this, deferred = $q.defer();
-            /** Set the relative file reference */
-            options.fileRef = listItem.fileRef.lookupValue;
-            if (!options.templateId && !options.workflowName) {
-                throw new Error('Either a templateId or workflowName is required to initiate a workflow.');
-            }
-            else if (options.templateId) {
-                /** The templateId is already provided so we don't need to look for it */
-                initiateRequest();
-            }
-            else {
-                /** We first need to get the template GUID for the workflow */
-                listItem.getAvailableWorkflows()
-                    .then(function (workflows) {
-                    var targetWorklow = _.findWhere(workflows, { name: options.workflowName });
-                    if (!targetWorklow) {
-                        throw new Error('A workflow with the specified name wasn\'t found.');
-                    }
-                    /** Create an extended set of options to pass any overrides to apDataService */
-                    options.templateId = targetWorklow.templateId;
-                    initiateRequest();
-                });
-            }
-            return deferred.promise;
-            function initiateRequest() {
-                apDataService.startWorkflow(options)
-                    .then(function (xmlResponse) {
-                    deferred.resolve(xmlResponse);
-                });
-            }
-        };
-        /**
-         * @ngdoc function
-         * @name ListItem.validateEntity
-         * @description
-         * Helper function that passes the current item to Model.validateEntity
-         * @param {object} [options] Optionally pass params to the dataService.
-         * @param {boolean} [options.toast=true] Set to false to prevent toastr messages from being displayed.
-         * @returns {boolean} Evaluation of validity.
-         */
-        ListItem.prototype.validateEntity = function (options) {
-            var listItem = this, model = listItem.getModel();
-            return model.validateEntity(listItem, options);
-        };
-        return ListItem;
-    })();
-    ap.ListItem = ListItem;
-    /** In the event that a factory isn't specified, just use a
-     * standard constructor to allow it to inherit from ListItem */
-    var StandardListItem = (function () {
-        function StandardListItem(obj) {
-            _.assign(this, obj);
-        }
-        return StandardListItem;
-    })();
-    ap.StandardListItem = StandardListItem;
-    /**
-     * @ngdoc object
-     * @name apListItemFactory
-     * @description
-     * Exposes the ListItem prototype and a constructor to instantiate a new ListItem.
-     * See [ListItem](#/api/ListItem) for details of the methods available on the prototype.
-     *
-     * @requires ListItem
-     * @requires apCacheService
-     * @requires apDataService
-     * @requires apUtilityService
-     */
-    var ListItemFactory = (function () {
-        function ListItemFactory(_$q_, _apCacheService_, _apConfig_, _apDataService_, _apDecodeService_, _apEncodeService_, _apUtilityService_, _toastr_, _apListItemVersionFactory_) {
-            this.ListItem = ListItem;
-            $q = _$q_;
-            apCacheService = _apCacheService_;
-            apConfig = _apConfig_;
-            apDataService = _apDataService_;
-            apDecodeService = _apDecodeService_;
-            apEncodeService = _apEncodeService_;
-            apUtilityService = _apUtilityService_;
-            toastr = _toastr_;
-            apListItemVersionFactory = _apListItemVersionFactory_;
-        }
-        /**
-         * @ngdoc function
-         * @name apListItemFactory: create
-         * @methodOf apListItemFactory
-         * @description
-         * Instantiates and returns a new ListItem.
-         */
-        ListItemFactory.prototype.create = function () {
-            return new ListItem();
-        };
-        /**
-         * @ngdoc function
-         * @name apListItemFactory: createGenericFactory
-         * @methodOf apListItemFactory
-         * @description
-         * In the event that a factory isn't specified, just use a
-         * standard constructor to allow it to inherit from ListItem
-         */
-        ListItemFactory.prototype.createGenericFactory = function () {
-            return new StandardListItem();
-        };
-        ListItemFactory.$inject = ['$q', 'apCacheService', 'apConfig', 'apDataService', 'apDecodeService', 'apEncodeService', 'apUtilityService', 'toastr', 'apListItemVersionFactory'];
-        return ListItemFactory;
-    })();
-    ap.ListItemFactory = ListItemFactory;
-    angular
-        .module('angularPoint')
-        .service('apListItemFactory', ListItemFactory);
-})(ap || (ap = {}));
-
-/// <reference path="../app.module.ts" />
-var __extends = (this && this.__extends) || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-    function __() { this.constructor = d; }
-    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-};
-var ap;
-(function (ap) {
-    'use strict';
-    /**
-     * @ngdoc object
-     * @name apListItemVersionFactory.FieldVersionCollection
-     * @param {FieldDefinition} fieldDefinition Field definition of each version of the field added.
-     * @description
-     * Object that contains the entire version history for a given list item field/property.
-     */
-    var FieldVersionCollection = (function () {
-        function FieldVersionCollection(fieldDefinition) {
-            this.versions = {};
-            this.fieldDefinition = fieldDefinition;
-        }
-        /**
-        * @ngdoc object
-        * @name apListItemVersionFactory.FieldVersionCollection.addVersion
-        * @methodOf apListItemVersionFactory.FieldVersionCollection
-        * @param {IUser} editor User who made the change.
-        * @param {Date} modified Date modified.
-        * @param {any} value Value of the field at this version.
-        * @param {number} version The version number.
-        * @description
-        * Used to add a single version to the collection.
-        */
-        FieldVersionCollection.prototype.addVersion = function (editor, modified, value, version) {
-            this.versions[version] = {
-                editor: editor,
-                modified: modified,
-                value: value,
-                version: version
-            };
-        };
-        Object.defineProperty(FieldVersionCollection.prototype, "mappedName", {
-            get: function () {
-                return this.fieldDefinition.mappedName;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(FieldVersionCollection.prototype, "length", {
-            get: function () {
-                return _.keys(this.versions).length;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        return FieldVersionCollection;
-    })();
-    ap.FieldVersionCollection = FieldVersionCollection;
-    var FieldChange = (function () {
-        function FieldChange(propertyName, fieldDefinition, newerVersion, previousVersion) {
-            if (previousVersion === void 0) { previousVersion = {}; }
-            this.fieldName = fieldDefinition.displayName;
-            this.newerVersion = newerVersion;
-            /** Need to set property name before calling this.getFormattedValue */
-            this.propertyName = propertyName;
-            this.newValue = this.getFormattedValue(newerVersion);
-            this.oldValue = this.getFormattedValue(previousVersion);
-            this.previousVersion = previousVersion;
-        }
-        FieldChange.prototype.getFormattedValue = function (version) {
-            var propertyValue = '';
-            if (version.getFormattedValue) {
-                propertyValue = version.getFormattedValue(this.propertyName);
-            }
-            return propertyValue;
-        };
-        return FieldChange;
-    })();
-    /**
-     * @ngdoc object
-     * @name apListItemVersionFactory.FieldChangeSummary
-     * @param {ListItem<T>} newerVersion Updated version of list item.
-     * @param {ListItem<T>} [previousVersion={}] Previous version of list item.
-     * @description
-     * Generates a snapshot between 2 versions of a list item and locates diferences.
-     */
-    var FieldChangeSummary = (function () {
-        function FieldChangeSummary(newerVersion, previousVersion) {
-            var _this = this;
-            if (previousVersion === void 0) { previousVersion = {}; }
-            this.fieldsChanged = {};
-            /** Loop through each of the properties on the newer list item */
-            _.each(newerVersion, function (val, propertyName) {
-                var fieldDefinition = newerVersion.getFieldDefinition(propertyName);
-                /** Only log non-readonly fields that aren't the same */
-                if (fieldDefinition && !fieldDefinition.readOnly &&
-                    JSON.stringify(newerVersion[propertyName]) !== JSON.stringify(previousVersion[propertyName])) {
-                    var fieldChange = new FieldChange(propertyName, fieldDefinition, newerVersion, previousVersion);
-                    if (fieldChange.newValue !== fieldChange.oldValue) {
-                        /** This field has changed */
-                        _this.fieldsChanged[propertyName] = fieldChange;
-                    }
-                }
-            });
-            this.changeCount = _.keys(this.fieldsChanged).length;
-        }
-        Object.defineProperty(FieldChangeSummary.prototype, "hasMajorChanges", {
-            get: function () {
-                return _.isNumber(this.changeCount) && this.changeCount > 0;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        return FieldChangeSummary;
-    })();
-    ap.FieldChangeSummary = FieldChangeSummary;
-    /**
-     * @ngdoc object
-     * @name apListItemVersionFactory.VersionSummary
-     * @param {IListItemVersion<T>} newerVersion Updated version of list item.
-     * @param {IListItemVersion<T>} [previousVersion={}] Previous version of list item.
-     * @description
-     * Used specifically to determine difference between 2 distinct versions of a list item using the
-     * version history.  Extends FieldChangeSummary.
-     */
-    var VersionSummary = (function (_super) {
-        __extends(VersionSummary, _super);
-        function VersionSummary(newerVersion, previousVersion) {
-            if (previousVersion === void 0) { previousVersion = {}; }
-            _super.call(this, newerVersion, previousVersion);
-            this.listItemVersion = newerVersion;
-            this.version = newerVersion.version;
-        }
-        Object.defineProperty(VersionSummary.prototype, "editor", {
-            get: function () {
-                return this.listItemVersion.editor;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(VersionSummary.prototype, "modified", {
-            get: function () {
-                return this.listItemVersion.modified;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        return VersionSummary;
-    })(FieldChangeSummary);
-    ap.VersionSummary = VersionSummary;
-    /**
-     * @ngdoc object
-     * @name apListItemVersionFactory.ChangeSummary
-     * @param {IListItemVersions} versions Multiple versions of a list item.
-     * @description
-     * Used to summarize all changes for a given list item.
-     */
-    var ChangeSummary = (function () {
-        function ChangeSummary(versions) {
-            var _this = this;
-            /** The number of versions where list item data actually changed */
-            this.significantVersionCount = 0;
-            this.versionSummaryCollection = {};
-            /** First version won't have a previous version */
-            var previousVersion;
-            _.each(versions, function (version) {
-                var versionSummary = new VersionSummary(version, previousVersion);
-                if (versionSummary.hasMajorChanges) {
-                    _this.significantVersionCount++;
-                }
-                _this.versionSummaryCollection[versionSummary.version] = versionSummary;
-                /** Store this version so we can compare to the next version */
-                previousVersion = version;
-            });
-        }
-        Object.defineProperty(ChangeSummary.prototype, "changes", {
-            //Use getter in case we need to alter the way we store this in future
-            get: function () {
-                return this.versionSummaryCollection;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        ChangeSummary.prototype.count = function () {
-            return _.keys(this.versionSummaryCollection).length;
-        };
-        ChangeSummary.prototype.toArray = function () {
-            return _.toArray(this.versionSummaryCollection);
-        };
-        return ChangeSummary;
-    })();
-    ap.ChangeSummary = ChangeSummary;
-    var VersionHistoryCollection = (function () {
-        // getFactory: () => IModelFactory;
-        function VersionHistoryCollection(fieldVersionCollections, factory) {
-            var _this = this;
-            /** Iterate through each of the field version collections */
-            _.each(fieldVersionCollections, function (fieldVersionCollection) {
-                _this.addFieldCollection(fieldVersionCollection, factory);
-            });
-        }
-        VersionHistoryCollection.prototype.addFieldCollection = function (fieldVersionCollection, factory) {
-            var _this = this;
-            /** Iterate through each version of this field */
-            _.each(fieldVersionCollection.versions, function (fieldVersion, versionNumber) {
-                /** Create a new version object if it doesn't already exist */
-                _this[versionNumber] = _this[versionNumber] || new factory({
-                    editor: fieldVersion.editor,
-                    modified: fieldVersion.modified,
-                    /** Iterating over object properties which converts everything to string so convert back */
-                    version: parseInt(versionNumber)
-                });
-                /** Add field to the version history for this version with computed property name */
-                _this[versionNumber][fieldVersionCollection.mappedName] = fieldVersion.value;
-            });
-        };
-        VersionHistoryCollection.prototype.count = function () {
-            return _.keys(this).length;
-        };
-        VersionHistoryCollection.prototype.generateChangeSummary = function () {
-            return new ChangeSummary(this);
-        };
-        VersionHistoryCollection.prototype.toArray = function () {
-            return _.toArray(this);
-        };
-        return VersionHistoryCollection;
-    })();
-    ap.VersionHistoryCollection = VersionHistoryCollection;
-    var ListItemVersionFactory = (function () {
-        function ListItemVersionFactory() {
-            this.ChangeSummary = ChangeSummary;
-            this.FieldChangeSummary = FieldChangeSummary;
-            this.FieldVersionCollection = FieldVersionCollection;
-            this.VersionHistoryCollection = VersionHistoryCollection;
-            this.VersionSummary = VersionSummary;
-        }
-        return ListItemVersionFactory;
-    })();
-    ap.ListItemVersionFactory = ListItemVersionFactory;
-    /**
-    * @ngdoc function
-    * @name apListItemVersionFactory
-    * @description
-    * Factory which handles parsing list item versions and identifying changes.
-    *
-    */
-    angular.module('angularPoint')
-        .service('apListItemVersionFactory', ListItemVersionFactory);
-})(ap || (ap = {}));
-
-/// <reference path="../app.module.ts" />
-var ap;
-(function (ap) {
-    'use strict';
-    var $q, apUtilityService;
-    /**
-     * @ngdoc function
-     * @name Lookup
-     * @description
-     * Allows for easier distinction when debugging if object type is shown as either Lookup or User.  Also allows us
-     * to create an async request for the entity being referenced by the lookup
-     * @param {string} s String to split into lookupValue and lookupId
-     * @param {object} options Contains a reference to the parent list item and the property name.
-     * @param {object} options.entity Reference to parent list item.
-     * @param {object} options.propertyName Key on list item object.
-     * @constructor
-     */
-    var Lookup = (function () {
-        function Lookup(s, options) {
-            var lookup = this;
-            var thisLookup = new apUtilityService.SplitIndex(s);
-            lookup.lookupId = thisLookup.id;
-            lookup.lookupValue = thisLookup.value || '';
-        }
-        return Lookup;
-    })();
-    ap.Lookup = Lookup;
-    var LookupFactory = (function () {
-        function LookupFactory(_$q_, _apUtilityService_) {
-            this.Lookup = Lookup;
-            $q = _$q_;
-            apUtilityService = _apUtilityService_;
-        }
-        /**
-         * @ngdoc function
-         * @name angularPoint.apLookupFactory:create
-         * @methodOf angularPoint.apLookupFactory
-         * @description
-         * Instantiates and returns a new Lookup field.
-         */
-        LookupFactory.prototype.create = function (s, options) {
-            return new Lookup(s, options);
-        };
-        LookupFactory.$inject = ['$q', 'apUtilityService'];
-        return LookupFactory;
-    })();
-    ap.LookupFactory = LookupFactory;
-    /**
-     * @ngdoc function
-     * @name angularPoint.apLookupFactory
-     * @description
-     * Tools to assist with the creation of CAML queries.
-     *
-     */
-    angular.module('angularPoint')
-        .service('apLookupFactory', LookupFactory);
-})(ap || (ap = {}));
-
-/// <reference path="../app.module.ts" />
-var ap;
-(function (ap) {
-    'use strict';
-    var apCacheService, apDataService, apListFactory, apQueryFactory, apUtilityService, apFieldService, apConfig, apIndexedCacheFactory, apDecodeService, $q, toastr;
-    /**
-     * @ngdoc function
-     * @name Model
-     * @description
-     * Model Constructor
-     * Provides the Following
-     * - adds an empty "data" array
-     * - adds an empty "queries" object
-     * - adds a deferred obj "ready"
-     * - builds "model.list" with constructor
-     * - adds "getAllListItems" function
-     * - adds "addNewItem" function
-     * @param {object} config Object containing optional params.
-     * @param {object} [config.factory = apListItemFactory.createGenericFactory()] - Constructor function for
-     * individual list items.
-     * @param {boolean} [config.fieldDefinitionsExtended=false] Queries using the GetListItemChangesSinceToken
-     * operation return the full list definition along with the requested entities.  The first time one of these
-     * queries is executed we will try to extend our field definitions defined in the model with the additional
-     * information provided from the server.  Examples are options for a Choice field, display name of the field,
-     * field description, and any other field information provided for the fields specified in the model.  This
-     * flag is set once the first query is complete so we don't process again.
-     * @param {object} config.list - Definition of the list in SharePoint.
-     * be passed to the list constructor to extend further
-     * @param {string} config.list.title - List name, no spaces.  Offline XML file will need to be
-     * named the same (ex: CustomList so xml file would be apConfig.offlineXML + '/CustomList.xml')
-     * @param {string} config.list.getListId() - Unique SharePoint ID (ex: '{3DBEB25A-BEF0-4213-A634-00DAF46E3897}')
-     * @param {object[]} config.list.customFields - Maps SharePoint fields with names we'll use within the
-     * application.  Identifies field types and formats accordingly.  Also denotes if a field is read only.
-     * @constructor
-     *
-     * @example
-     * <pre>
-     * //Taken from a fictitious projectsModel.ts
-     *
-     * export class ProjectsModel extends ap.Model {
-     *      constructor() {
-     *          super({
-     *              factory: Project,
-     *              list: {
-     *                  guid: '{PROJECT LIST GUID}',
-     *                  title: 'Projects',
-     *                  customFields: [
-     *                      {
-     *                         staticName: 'Title',
-     *                         objectType: 'Text',
-     *                         mappedName: 'title',
-     *                         readOnly: false
-     *                      },
-     *                      {
-     *                         staticName: 'Customer',
-     *                         objectType: 'Lookup',
-     *                         mappedName: 'customer',
-     *                         readOnly: false
-     *                      },
-     *                      {
-     *                         staticName: 'ProjectDescription',
-     *                         objectType: 'Text',
-     *                         mappedName: 'projectDescription',
-     *                         readOnly: false
-     *                      },
-     *                      {
-     *                         staticName: 'Status',
-     *                         objectType: 'Text',
-     *                         mappedName: 'status',
-     *                         readOnly: false
-     *                      },
-     *                      {
-     *                         staticName: 'TaskManager',
-     *                         objectType: 'User',
-     *                         mappedName: 'taskManager',
-     *                         readOnly: false
-     *                      },
-     *                      {
-     *                         staticName: 'ProjectGroup',
-     *                         objectType: 'Lookup',
-     *                         mappedName: 'group',
-     *                         readOnly: false
-     *                      },
-     *                      {
-     *                         staticName: 'CostEstimate',
-     *                         objectType: 'Currency',
-     *                         mappedName: 'costEstimate',
-     *                         readOnly: false
-     *                      },
-     *                      {
-     *                         staticName: 'Active',
-     *                         objectType: 'Boolean',
-     *                         mappedName: 'active',
-     *                         readOnly: false
-     *                      },
-     *                      {
-     *                         staticName: 'Attachments',
-     *                         objectType: 'Attachments',
-     *                         mappedName: 'attachments',
-     *                         readOnly: true
-     *                      }
-     *                  ]
-     *              }
-     *          });
-     *
-     *          var model = this;
-     *
-     *          //Any other model setup
-     *      }
-     *      someExposedModelMethod() {
-     *          this.dosomething...
-     *      }
-     *
-     *   }
-     * </pre>
-     */
-    var Model = (function () {
-        function Model(config) {
-            var _this = this;
-            this.data = [];
-            this.fieldDefinitionsExtended = false;
-            this.queries = {};
-            /** Assign all properties of config to the model */
-            _.assign(this, config);
-            /** Allow us to reference the model directly from the list item's factory prototype */
-            this.factory.prototype.getModel = function () { return _this; };
-            /** Use list constructor to instantiate valid list */
-            this.list = new ap.List(this.list);
-            /** Register cache name with cache service so we can map factory name with list GUID */
-            apCacheService.registerModel(this);
-            /** Convenience querys that simply returns all list items within a list. */
-            this.registerQuery({
-                name: '__getAllListItems',
-                operation: 'GetListItems'
-            });
-            /** Get a single list item from a list, primarily used to quickly identify user
-             *  permissions on list using the ows_PermMask property.  List items can have unique permissions
-             *  so can't rely on this 100% to correctly resolve list permissions.  In the case where that is
-             *  necessary you will need to use a similar query using GetListItemChangesSinceToken method which
-             *  will take longer but will correctly resolve the list permissions. */
-            this.registerQuery({
-                name: '__sample',
-                operation: 'GetListItems',
-                CAMLRowLimit: 1
-            });
-        }
-        /**
-         * @ngdoc function
-         * @name Model.addNewItem
-         * @module Model
-         * @description
-         * Using the definition of a list stored in a model, create a new list item in SharePoint.
-         * @param {object} entity An object that will be converted into key/value pairs based on the field definitions
-         * defined in the model.
-         * @param {object} [options] - Pass additional options to the data service.
-         * @returns {object} A promise which when resolved will returned the newly created list item from there server.
-         * This allows us to update the view with a valid new object that contains a unique list item id.
-         *
-         * @example
-         * <pre>
-         * <file name="app/modules/project/projectsModel.js">
-         * projectModel.addNewItem({
-         *        title: 'A Project',
-         *        customer: {lookupValue: 'My Customer', lookupId: 123},
-         *        description: 'This is the project description'
-         *     }).then(function(newEntityFromServer) {
-         *         //The local query cache is automatically updated but
-         *         //any other dependent logic can go here
-         * };
-         * </file>
-         * </pre>
-         */
-        Model.prototype.addNewItem = function (entity, options) {
-            var model = this;
-            return apDataService.createListItem(model, entity, options)
-                .then(function (listItem) {
-                /** Optionally broadcast change event */
-                apUtilityService.registerChange(model, 'create', listItem.id);
-                return listItem;
-            });
-        };
-        /**
-         * @ngdoc function
-         * @name Model.createEmptyItem
-         * @module Model
-         * @description
-         * Creates an object using the editable fields from the model, all attributes are empty based on the field
-         * type unless an overrides object is passed in.  The overrides object extends the defaults.  A benefit to this
-         * approach is the returned object inherits from the ListItem prototype so we have the ability to call
-         * entity.saveChanges instead of calling the model.addNewItem(entity).
-         *
-         * @param {object} [overrides] - Optionally extend the new empty item with specific values.
-         * @returns {object} Newly created list item.
-         */
-        Model.prototype.createEmptyItem = function (overrides) {
-            var model = this;
-            var newItem = {};
-            _.each(model.list.customFields, function (fieldDefinition) {
-                /** Create attributes for each non-readonly field definition */
-                if (!fieldDefinition.readOnly) {
-                    /** Create an attribute with the expected empty value based on field definition type */
-                    newItem[fieldDefinition.mappedName] = apFieldService.getDefaultValueForType(fieldDefinition.objectType);
-                }
-            });
-            /** Extend any values that should override the default empty values */
-            var rawObject = _.assign({}, newItem, overrides);
-            return new model.factory(rawObject);
-        };
-        /**
-         * @ngdoc function
-         * @name Model.executeQuery
-         * @module Model
-         * @description
-         * The primary method for retrieving data from a query registered on a model.  It returns a promise
-         * which resolves to the local cache after post processing entities with constructors.
-         *
-         * @param {string} [queryName=apConfig.defaultQueryName] A unique key to identify this query
-         * @param {object} [options] Pass options to the data service.
-         * @returns {object} Promise that when resolves returns an array of list items which inherit from ListItem and
-         * optionally go through a defined constructor on the model.
-         *
-         * @example To call the query or check for changes since the last call.
-         * <pre>
-         * projectModel.executeQuery('MyCustomQuery').then(function(entities) {
-         *      //We now have a reference to array of entities stored in the local cache
-         *      //These inherit from the ListItem prototype as well as the Project prototype on the model
-         *      $scope.subsetOfProjects = entities;
-         *  });
-         * </pre>
-         */
-        Model.prototype.executeQuery = function (queryName, options) {
-            var model = this;
-            var query = model.getQuery(queryName);
-            if (query) {
-                return query.execute(options);
-            }
-        };
-        /**
-         * @ngdoc function
-         * @name Model.extendListMetadata
-         * @module Model
-         * @description
-         * Extends the List and Fields with list information returned from the server.  Only runs once and after that
-         * returns the existing promise.
-         * @param {object} [options] Pass-through options to apDataService.getList
-         * @returns {ng.IPromise<Model>} Promise that is resolved with the extended model.
-         */
-        Model.prototype.extendListMetadata = function (options) {
-            var model = this, deferred = $q.defer(), defaults = { listName: model.list.getListId() };
-            /** Only request information if the list hasn't already been extended and is not currently being requested */
-            if (!model.deferredListDefinition) {
-                /** All Future Requests get this */
-                model.deferredListDefinition = deferred.promise;
-                var opts = _.assign({}, defaults, options);
-                var getListAction = apDataService.getList(opts);
-                /** We can potentially have 2 seperate requests for data so store them in array so we can wait until
-                 * all are resolved. */
-                var promiseArray = [getListAction];
-                /** Add a request for a sample list item to the server requests if we haven't
-                 * already resolved user permissions for the list. */
-                if (!model.getList().permissions) {
-                    /** Permissions not set yet, when the query is resolved with a sample list item
-                     * the query class will use the permMask from the list item to set the temp permissions
-                     * for the list until a time where we can run a GetListItemChangesSinceToken request and
-                     * set the actual permissions. */
-                    promiseArray.push(model.executeQuery('__sample'));
-                }
-                $q.all(promiseArray)
-                    .then(function (resolvedPromises) {
-                    apDecodeService.extendListMetadata(model, resolvedPromises[0]);
-                    deferred.resolve(model);
-                });
-            }
-            return model.deferredListDefinition;
-        };
-        /**
-         * @ngdoc function
-         * @name Model.generateMockData
-         * @module Model
-         * @description
-         * Generates 'n' mock records for testing using the field types defined in the model to provide something to visualize.
-         *
-         * @param {object} [options] Object containing optional parameters.
-         * @param {number} [options.quantity=10] The requested number of mock records to return.
-         * @param {string} [options.permissionLevel=FullMask] Sets the mask on the mock records to simulate desired
-         * permission level.
-         * @param {boolean} [options.staticValue=false] By default all mock data is dynamically created but if set,
-         * this will cause static data to be used instead.
-         */
-        Model.prototype.generateMockData = function (options) {
-            var mockData = [], model = this;
-            var defaults = {
-                quantity: 10,
-                staticValue: false,
-                permissionLevel: 'FullMask'
-            };
-            /** Extend defaults with any provided options */
-            var opts = _.assign({}, defaults, options);
-            _.times(opts.quantity, function (count) {
-                var mock = {
-                    id: count + 1
-                };
-                /** Create an attribute with mock data for each field */
-                _.each(model.list.fields, function (field) {
-                    mock[field.mappedName] = field.getMockData(opts);
-                });
-                /** Use the factory on the model to extend the object */
-                mockData.push(new model.factory(mock));
-            });
-            return mockData;
-        };
-        /**
-         * @ngdoc function
-         * @name Model.getAllListItems
-         * @module Model
-         * @description
-         * Inherited from Model constructor
-         * Gets all list items in the current list, processes the xml, and caches the data in model.
-         * @returns {object} Promise returning all list items when resolved.
-         * @example
-         * <pre>
-         * //Taken from a fictitious projectsModel.js
-         * projectModel.getAllListItems().then(function(entities) {
-         *     //Do something with all of the returned entities
-         *     $scope.projects = entities;
-         * };
-         * </pre>
-         */
-        Model.prototype.getAllListItems = function () {
-            var model = this;
-            var query = this.getQuery('__getAllListItems');
-            return apDataService.executeQuery(model, query, { target: query.indexedCache });
-        };
-        /**
-         * @ngdoc function
-         * @name Model.getCache
-         * @module Model
-         * @description
-         * Helper function that return the local cache for a named query if provided, otherwise
-         * it returns the cache for the primary query for the model.  Useful if you know the query
-         * has already been resolved and there's no need to check SharePoint for changes.
-         *
-         * @param {string} [queryName=apConfig.defaultQueryName] A unique key to identify this query.
-         * @returns {Array} Returns the contents of the current cache for a named query.
-         *
-         * @example
-         * <pre>
-         * var primaryQueryCache = projectModel.getCache();
-         * </pre>
-         *
-         * <pre>
-         * var primaryQueryCache = projectModel.getCache('primary');
-         * </pre>
-         *
-         * <pre>
-         * var namedQueryCache = projectModel.getCache('customQuery');
-         * </pre>
-         */
-        Model.prototype.getCache = function (queryName) {
-            var model = this, query, cache;
-            query = model.getQuery(queryName);
-            if (query && query.indexedCache) {
-                cache = query.indexedCache;
-            }
-            return cache;
-        };
-        /**
-         * @ngdoc function
-         * @name Model.getCachedEntities
-         * @module Model
-         * @description
-         * Returns all entities registered for this model regardless of query.
-         * @returns {IndexedCache<T>} All registered entities for this model.
-         */
-        Model.prototype.getCachedEntities = function () {
-            var model = this;
-            return apCacheService.getCachedEntities(model.list.getListId());
-        };
-        /**
-         * @ngdoc function
-         * @name Model.getCachedEntity
-         * @module Model
-         * @description
-         * Attempts to locate a model listItem by id.
-         * @param {number} listItemId The ID of the requested listItem.
-         * @returns {object} Returns either the requested listItem or undefined if it's not found.
-         */
-        Model.prototype.getCachedEntity = function (listItemId) {
-            var model = this;
-            return apCacheService.getCachedEntity(model.list.getListId(), listItemId);
-        };
-        /**
-         * @ngdoc function
-         * @name Model.getFieldDefinition
-         * @module Model
-         * @description
-         * Returns the field definition from the definitions defined in the custom fields array within a model.
-         * <pre>
-         * var project = {
-         *    title: 'Project 1',
-         *    location: {
-         *        lookupId: 5,
-         *        lookupValue: 'Some Building'
-         *    }
-         * };
-         *
-         * //To get field metadata
-         * var locationDefinition = projectsModel.getFieldDefinition('location');
-         * </pre>
-         * @param {string} fieldName Internal field name.
-         * @returns {object} Field definition.
-         */
-        Model.prototype.getFieldDefinition = function (fieldName) {
-            var model = this;
-            return _.find(model.list.fields, { mappedName: fieldName });
-        };
-        /**
-         * @ngdoc function
-         * @name ListItem.getList
-         * @description
-         * Allows us to reference the list definition directly from the list item.  This is added to the
-         * model.factory prototype in apModelFactory.  See the [List](#/api/List) documentation for more info.
-         * @returns {object} List for the list item.
-         */
-        Model.prototype.getList = function () {
-            return this.list;
-        };
-        /**
-         * @ngdoc function
-         * @name ListItem.getListId
-         * @description
-         * Allows us to reference the list ID directly from the model.
-         * @returns {string} List ID.
-         */
-        Model.prototype.getListId = function () {
-            return this.list.getListId();
-        };
-        /**
-         * @ngdoc function
-         * @name Model.getListItemById
-         * @param {number} listItemId Id of the item being requested.
-         * @param {object} options Used to override apDataService defaults.
-         * @description
-         * Inherited from Model constructor
-         * Attempts to retrieve the requested list item from the server.
-         * @returns {object} Promise that resolves with the requested list item if found.  Otherwise it returns undefined.
-         * @example
-         * <pre>
-         * //Taken from a fictitious projectsModel.js
-         * projectModel.getListItemById(12).then(function(listItem) {
-         *     //Do something with the located listItem
-         *     $scope.project = listItem;
-         * };
-         * </pre>
-         */
-        Model.prototype.getListItemById = function (listItemId, options) {
-            var model = this, 
-            /** Unique Query Name */
-            queryKey = 'GetListItemById-' + listItemId;
-            /** Register a new Query if it doesn't already exist */
-            if (!model.getQuery(queryKey)) {
-                var defaults = {
-                    name: queryKey,
-                    operation: 'GetListItems',
-                    CAMLRowLimit: 1,
-                    CAMLQuery: '' +
-                        '<Query>' +
-                        ' <Where>' +
-                        '   <Eq>' +
-                        '     <FieldRef Name="ID"/>' +
-                        '     <Value Type="Number">' + listItemId + '</Value>' +
-                        '   </Eq>' +
-                        ' </Where>' +
-                        '</Query>'
-                };
-                /** Allows us to override defaults */
-                var opts = _.assign({}, defaults, options);
-                model.registerQuery(opts);
-            }
-            return model.executeQuery(queryKey)
-                .then(function (indexedCache) {
-                /** Should return an indexed cache object with a single listItem so just return the requested listItem */
-                return indexedCache.first();
-            });
-        };
-        /**
-         * @ngdoc function
-         * @name ListItem.getModel
-         * @description
-         * Allows us to reference the parent model directly from the list item.  This is added to the
-         * model.factory prototype in apModelFactory.  See the [List](#/api/List) documentation for more info.
-         * @returns {object} Model for the list item.
-         */
-        Model.prototype.getModel = function () {
-            return this;
-        };
-        /**
-         * @ngdoc function
-         * @name Model.getQuery
-         * @module Model
-         * @description
-         * Helper function that attempts to locate and return a reference to the requested or catchall query.
-         * @param {string} [queryName=apConfig.defaultQueryName] A unique key to identify this query.
-         * @returns {object} See Query prototype for additional details on what a Query looks like.
-         *
-         * @example
-         * <pre>
-         * var primaryQuery = projectModel.getQuery();
-         * </pre>
-         *
-         * <pre>
-         * var primaryQuery = projectModel.getQuery('primary');
-         * </pre>
-         *
-         * <pre>
-         * var namedQuery = projectModel.getQuery('customQuery');
-         * </pre>
-         */
-        Model.prototype.getQuery = function (queryName) {
-            var model = this, query;
-            if (_.isObject(model.queries[queryName])) {
-                /** The named query exists */
-                query = model.queries[queryName];
-            }
-            else if (_.isObject(model.queries[apConfig.defaultQueryName]) && !queryName) {
-                /** A named query wasn't specified and the catchall query exists */
-                query = model.queries[apConfig.defaultQueryName];
-            }
-            else {
-                /** Requested query not found */
-                query = undefined;
-            }
-            return query;
-        };
-        /**
-         * @ngdoc function
-         * @name Model.isInitialised
-         * @module Model
-         * @description
-         * Methods which allows us to easily determine if we've successfully made any queries this session.
-         * @returns {boolean} Returns evaluation.
-         */
-        Model.prototype.isInitialised = function () {
-            var model = this;
-            return _.isDate(model.lastServerUpdate);
-        };
-        /**
-        * @ngdoc function
-        * @name Model.registerQuery
-        * @module Model
-        * @description
-        * Constructor that allows us create a static query with the option to build dynamic queries as seen in the
-        * third example.  This construct is a passthrough to [SPServices](http: //spservices.codeplex.com/)
-        * @param {object} queryOptions Initialization parameters.
-        * @param {boolean} [queryOptions.force=false] Ignore cached data and force server query.
-        * @param {number} [queryOptions.listItemID] Optionally request for a single list item by id.
-        * @param {boolean} [queryOptions.localStorage=false] Should we store data from this query in local storage to speed up requests in the future.
-        * @param {number} [queryOptions.localStorageExpiration=86400000] Set expiration in milliseconds - Defaults to a day
-        * and if set to 0 doesn't expire.  Can be updated globally using apConfig.localStorageExpiration.
-        * @param {string} [queryOptions.name=primary] The name that we use to identify this query.
-        * @param {string} [queryOptions.operation=GetListItemChangesSinceToken] Optionally use 'GetListItems' to
-        * receive a more efficient response, just don't have the ability to check for changes since the last time
-        * the query was called. Defaults to [GetListItemChangesSinceToken](http://msdn.microsoft.com/en-us/library/lists.lists.getlistitemchangessincetoken%28v=office.12%29.aspx)
-        * but for a smaller payload and faster response you can use [GetListItems](http: //spservices.codeplex.com/wikipage?title=GetListItems&referringTitle=Lists).
-        * @param {string} [queryOptions.query=Ordered ascending by ID] CAML query passed to SharePoint to control
-        * the data SharePoint returns. Josh McCarty has a good quick reference [here](http: //joshmccarty.com/2012/06/a-caml-query-quick-reference).
-        * @param {string} [queryOptions.queryOptions] SharePoint options xml as string.
-        * <pre>
-        * <QueryOptions>
-        *    <IncludeMandatoryColumns>FALSE</IncludeMandatoryColumns>
-        *    <IncludeAttachmentUrls>TRUE</IncludeAttachmentUrls>
-        *    <IncludeAttachmentVersion>FALSE</IncludeAttachmentVersion>
-        *    <ExpandUserField>FALSE</ExpandUserField>
-        * </QueryOptions>
-        * </pre>
-        * @param {string} [queryOptions.rowLimit] The number of list items to return, 0 returns all list items.
-        * @param {boolean} [queryOptions.runOnce] Pertains to GetListItems only, optionally run a single time and return initial value for all future
-        * calls.  Works well with data that isn't expected to change throughout the session but unlike localStorage or sessionStorage
-        * the data doesn't persist between sessions.
-        * @param {boolean} [queryOptions.sessionStorage=false] Use the browsers sessionStorage to cache the list items and uses the
-        * queryOptions.localStorageExpiration param to validate how long the cache is good for.
-        * @param {string} [queryOptions.viewFields] XML as string that specifies fields to return.
-        * @param {string} [queryOptions.webURL] Used to override the default URL if list is located somewhere else.
-        * @returns {object} Query Returns a new query object.
-        *
-        * @example
-        * <h4>Example #1</h4>
-        * <pre>
-        * // Query to retrieve the most recent 25 modifications
-        * model.registerQuery({
-        *    name: 'recentChanges',
-        *    rowLimit: 25,
-        *    query: '' +
-        *        '<Query>' +
-        *        '   <OrderBy>' +
-        *        '       <FieldRef Name="Modified" Ascending="FALSE"/>' +
-        *        '   </OrderBy>' +
-        *            //Prevents any records from being returned if user doesn't
-        *            // have permissions on project
-        *        '   <Where>' +
-        *        '       <IsNotNull>' +
-        *        '           <FieldRef Name="Project"/>' +
-        *        '       </IsNotNull>' +
-        *        '   </Where>' +
-        *        '</Query>'
-        * });
-        * </pre>
-        *
-        * <h4>Example #2</h4>
-        * <pre>
-        * // Could be placed on the projectModel and creates the query but doesn't
-        * // call it.  Uses the session cache to make the initial call faster.
-        * projectModel.registerQuery({
-        *     name: 'primary',
-        *     sessionCache: true,
-        *     //Set an expiration value of 8 hours rather than use the default of 24
-        *     localStorageExpiration: 28800000,
-        *     query: '' +
-        *         '<Query>' +
-        *         '   <OrderBy>' +
-        *         '       <FieldRef Name="Title" Ascending="TRUE"/>' +
-        *         '   </OrderBy>' +
-        *         '</Query>'
-        * });
-        *
-        * //To call the query or check for changes since the last call
-        * projectModel.executeQuery('primary')
-        *   .then((entities) => {
-        *     // We now have a reference to array of entities stored in the local
-        *     // cache.  These inherit from the ListItem prototype as well as the
-        *     // Project prototype on the model
-        *     vm.projects = entities;
-        *   })
-        *   .catch((err) => {
-        *       //Handle error
-        *   })
-        * </pre>
-        *
-        * <h4>Example #3</h4>
-        * <pre>
-        * // Advanced functionality that would allow us to dynamically create
-        * // queries for list items with a lookup field associated with a specific
-        * // project id.  Let's assume this is on the projectTasksModel.
-        * model.queryByProjectId(projectId) {
-        *     // Unique query name
-        *     var queryKey = 'pid' + projectId;
-        *
-        *     // Register project query if it doesn't exist
-        *     if (!_.isObject(model.queries[queryKey])) {
-        *         model.registerQuery({
-        *             name: queryKey,
-        *             query: '' +
-        *                 '<Query>' +
-        *                 '   <OrderBy>' +
-        *                 '       <FieldRef Name="ID" Ascending="TRUE"/>' +
-        *                 '   </OrderBy>' +
-        *                 '   <Where>' +
-        *                 '       <And>' +
-        *                              // Prevents any records from being returned
-        *                              //if user doesn't have permissions on project
-        *                 '           <IsNotNull>' +
-        *                 '               <FieldRef Name="Project"/>' +
-        *                 '           </IsNotNull>' +
-        *                              // Return all records for the project matching
-        *                              // param projectId
-        *                 '           <Eq>' +
-        *                 '               <FieldRef Name="Project" LookupId="TRUE"/>' +
-        *                 '               <Value Type="Lookup">' + projectId + '</Value>' +
-        *                 '           </Eq>' +
-        *                 '       </And>' +
-        *                 '   </Where>' +
-        *                 '</Query>'
-        *         });
-        *     }
-        *     //Still using execute query but now we have a custom query
-        *     return model.executeQuery(queryKey);
-        * };
-        * </pre>
-        */
-        Model.prototype.registerQuery = function (queryOptions) {
-            var model = this;
-            var defaults = {
-                /** If name isn't set, assume this is the only model and designate as primary */
-                name: apConfig.defaultQueryName
-            };
-            queryOptions = _.assign({}, defaults, queryOptions);
-            model.queries[queryOptions.name] = apQueryFactory.create(queryOptions, model);
-            /** Return the newly created query */
-            return model.queries[queryOptions.name];
-        };
-        /**
-         * @ngdoc function
-         * @name Model.resolvePermissions
-         * @module Model
-         * @description
-         * See apModelFactory.resolvePermissions for details on what we expect to have returned.
-         * @returns {Object} Contains properties for each permission level evaluated for current user.
-         * @example
-         * Lets assume we're checking to see if a user has edit rights for a given list.
-         * <pre>
-         * var userPermissions = tasksModel.resolvePermissions();
-         * var userCanEdit = userPermissions.EditListItems;
-         * </pre>
-         * Example of what the returned object would look like
-         * for a site admin.
-         * <pre>
-         * perm = {
-            *    "ViewListItems": true,
-            *    "AddListItems": true,
-            *    "EditListItems": true,
-            *    "DeleteListItems": true,
-            *    "ApproveItems": true,
-            *    "OpenItems": true,
-            *    "ViewVersions": true,
-            *    "DeleteVersions": true,
-            *    "CancelCheckout": true,
-            *    "PersonalViews": true,
-            *    "ManageLists": true,
-            *    "ViewFormPages": true,
-            *    "Open": true,
-            *    "ViewPages": true,
-            *    "AddAndCustomizePages": true,
-            *    "ApplyThemeAndBorder": true,
-            *    "ApplyStyleSheets": true,
-            *    "ViewUsageData": true,
-            *    "CreateSSCSite": true,
-            *    "ManageSubwebs": true,
-            *    "CreateGroups": true,
-            *    "ManagePermissions": true,
-            *    "BrowseDirectories": true,
-            *    "BrowseUserInfo": true,
-            *    "AddDelPrivateWebParts": true,
-            *    "UpdatePersonalWebParts": true,
-            *    "ManageWeb": true,
-            *    "UseRemoteAPIs": true,
-            *    "ManageAlerts": true,
-            *    "CreateAlerts": true,
-            *    "EditMyUserInfo": true,
-            *    "EnumeratePermissions": true,
-            *    "FullMask": true
-            * }
-         * </pre>
-         */
-        Model.prototype.resolvePermissions = function () {
-            var model = this, list = model.getList();
-            if (list && list.permissions) {
-                /** If request has been made to GetListItemChangesSinceToken we have already stored the
-                 * permission for this list. */
-                return list.permissions;
-            }
-            else if (model.getCachedEntities().first()) {
-                /** Next option is to use the same permission as one of the
-                 * already cached list items for this model. */
-                return list.extendPermissionsFromListItem(model.getCachedEntities().first());
-            }
-            else {
-                window.console.error('Attempted to resolve permissions of a model that hasn\'t been initialized.', model);
-                return new ap.BasePermissionObject();
-            }
-        };
-        /**
-         * @ngdoc function
-         * @name Model.validateEntity
-         * @module Model
-         * @description
-         * Uses the custom fields defined in an model to ensure each field (required = true) is evaluated
-         * based on field type
-         *
-         * @param {object} listItem SharePoint list item.
-         * @param {object} [options] Object containing optional parameters.
-         * @param {boolean} [options.toast=true] Should toasts be generated to alert the user of issues.
-         * @returns {boolean} Evaluation of validity.
-         */
-        Model.prototype.validateEntity = function (listItem, options) {
-            var valid = true, model = this;
-            var defaults = {
-                toast: true
-            };
-            /** Extend defaults with any provided options */
-            var opts = _.assign({}, defaults, options);
-            var checkObject = function (fieldValue) {
-                return _.isObject(fieldValue) && _.isNumber(fieldValue.lookupId);
-            };
-            _.each(model.list.customFields, function (fieldDefinition) {
-                var fieldValue = listItem[fieldDefinition.mappedName];
-                var fieldDescriptor = '"' + fieldDefinition.objectType + '" value.';
-                /** Only evaluate required fields */
-                if ((fieldDefinition.required || fieldDefinition.Required) && valid) {
-                    switch (fieldDefinition.objectType) {
-                        case 'Boolean':
-                            valid = _.isBoolean(fieldValue);
-                            break;
-                        case 'DateTime':
-                            valid = _.isDate(fieldValue);
-                            break;
-                        case 'Lookup':
-                        case 'User':
-                            valid = checkObject(fieldValue);
-                            break;
-                        case 'LookupMulti':
-                        case 'UserMulti':
-                            /** Ensure it's a valid array containing objects */
-                            valid = _.isArray(fieldValue) && fieldValue.length > 0;
-                            if (valid) {
-                                /** Additionally check that each lookup/person contains a lookupId */
-                                _.each(fieldValue, function (fieldObject) {
-                                    if (valid) {
-                                        valid = checkObject(fieldObject);
-                                    }
-                                    else {
-                                        /** Short circuit */
-                                        return false;
-                                    }
-                                });
-                            }
-                            break;
-                        default:
-                            /** Evaluate everything else as a string */
-                            valid = !_.isEmpty(fieldValue);
-                    }
-                    if (!valid && opts.toast) {
-                        var fieldName = fieldDefinition.label || fieldDefinition.staticName;
-                        toastr.error(fieldName + ' does not appear to be a valid ' + fieldDescriptor);
-                    }
-                }
-                if (!valid) {
-                    return false;
-                }
-            });
-            return valid;
-        };
-        return Model;
-    })();
-    ap.Model = Model;
-    var ModelFactory = (function () {
-        function ModelFactory(_$q_, _apCacheService_, _apConfig_, _apDataService_, _apDecodeService_, _apFieldService_, _apIndexedCacheFactory_, _apListFactory_, _apQueryFactory_, _apUtilityService_, _toastr_) {
-            this.Model = Model;
-            $q = _$q_;
-            apCacheService = _apCacheService_;
-            apConfig = _apConfig_;
-            apDataService = _apDataService_;
-            apDecodeService = _apDecodeService_;
-            apFieldService = _apFieldService_;
-            apIndexedCacheFactory = _apIndexedCacheFactory_;
-            apListFactory = _apListFactory_;
-            apQueryFactory = _apQueryFactory_;
-            apUtilityService = _apUtilityService_;
-            toastr = _toastr_;
-        }
-        ModelFactory.prototype.create = function (config) {
-            return new Model(config);
-        };
-        ModelFactory.$inject = ['$q', 'apCacheService', 'apConfig', 'apDataService', 'apDecodeService', 'apFieldService', 'apIndexedCacheFactory', 'apListFactory', 'apQueryFactory', 'apUtilityService', 'toastr'];
-        return ModelFactory;
-    })();
-    ap.ModelFactory = ModelFactory;
-    angular
-        .module('angularPoint')
-        .service('apModelFactory', ModelFactory);
-})(ap || (ap = {}));
-
-/// <reference path="../app.module.ts" />
-var ap;
-(function (ap) {
-    'use strict';
-    var $q, apIndexedCacheFactory, apConfig, apDefaultListItemQueryOptions, apDataService, apDecodeService, apLogger;
-    var LocalStorageQuery = (function () {
-        function LocalStorageQuery(key, stringifiedQuery) {
-            this.key = key;
-            var parsedQuery = JSON.parse(stringifiedQuery);
-            _.assign(this, parsedQuery);
-            this.lastRun = new Date(parsedQuery.lastRun);
-        }
-        LocalStorageQuery.prototype.hasExpired = function (localStorageExpiration) {
-            if (localStorageExpiration === void 0) { localStorageExpiration = apConfig.localStorageExpiration; }
-            var hasExpired = true;
-            if (_.isNaN(localStorage)) {
-                throw new Error('Local storage expiration is required to be a numeric value and instead is ' + localStorageExpiration);
-            }
-            else if (localStorageExpiration === 0) {
-                //No expiration
-                hasExpired = false;
-            }
-            else {
-                //Evaluate if cache has exceeded expiration
-                hasExpired = this.lastRun.getMilliseconds() + localStorageExpiration <= new Date().getMilliseconds();
-            }
-            return hasExpired;
-        };
-        LocalStorageQuery.prototype.removeItem = function () {
-            localStorage.removeItem(this.key);
-        };
-        return LocalStorageQuery;
-    })();
-    ap.LocalStorageQuery = LocalStorageQuery;
-    /**
-     * @ngdoc function
-     * @name Query
-     * @description
-     * Primary constructor that all queries inherit from. This object is a passthrough to [SPServices](http: //spservices.codeplex.com/).  All
-     * options to passed through to [dataService.executeQuery](#/api/dataService.executeQuery).
-     * @param {object} queryOptions Initialization parameters.
-     * @param {boolean} [queryOptions.force=false] Ignore cached data and force server query.
-     * @param {number} [queryOptions.listItemID] Optionally request for a single list item by id.
-     * @param {boolean} [queryOptions.localStorage=false] Should we store data from this query in local storage to speed up requests in the future.
-     * @param {number} [queryOptions.localStorageExpiration=86400000] Set expiration in milliseconds - Defaults to a day
-     * and if set to 0 doesn't expire.  Can be updated globally using apConfig.localStorageExpiration.
-     * @param {string} [queryOptions.name=primary] The name that we use to identify this query.
-     * @param {string} [queryOptions.operation=GetListItemChangesSinceToken] Optionally use 'GetListItems' to
-     * receive a more efficient response, just don't have the ability to check for changes since the last time
-     * the query was called. Defaults to [GetListItemChangesSinceToken](http://msdn.microsoft.com/en-us/library/lists.lists.getlistitemchangessincetoken%28v=office.12%29.aspx)
-     * but for a smaller payload and faster response you can use [GetListItems](http: //spservices.codeplex.com/wikipage?title=GetListItems&referringTitle=Lists).
-     * @param {string} [queryOptions.query=Ordered ascending by ID] CAML query passed to SharePoint to control
-     * the data SharePoint returns. Josh McCarty has a good quick reference [here](http: //joshmccarty.com/2012/06/a-caml-query-quick-reference).
-     * @param {string} [queryOptions.queryOptions] SharePoint options xml as string.
-     * <pre>
-     * <QueryOptions>
-     *    <IncludeMandatoryColumns>FALSE</IncludeMandatoryColumns>
-     *    <IncludeAttachmentUrls>TRUE</IncludeAttachmentUrls>
-     *    <IncludeAttachmentVersion>FALSE</IncludeAttachmentVersion>
-     *    <ExpandUserField>FALSE</ExpandUserField>
-     * </QueryOptions>
-     * </pre>
-     * @param {string} [queryOptions.rowLimit] The number of list items to return, 0 returns all list items.
-     * @param {boolean} [queryOptions.runOnce] Pertains to GetListItems only, optionally run a single time and return initial value for all future
-     * calls.  Works well with data that isn't expected to change throughout the session but unlike localStorage or sessionStorage
-     * the data doesn't persist between sessions.
-     * @param {boolean} [queryOptions.sessionStorage=false] Use the browsers sessionStorage to cache the list items and uses the
-     * queryOptions.localStorageExpiration param to validate how long the cache is good for.
-     * @param {string} [queryOptions.viewFields] XML as string that specifies fields to return.
-     * @param {string} [queryOptions.webURL] Used to override the default URL if list is located somewhere else.
-     * @param {object} model Reference to the parent model for the query.  Allows us to reference when out of
-     * scope.
-     * @example
-     * <pre>
-     * // Query to retrieve the most recent 25 modifications
-     * model.registerQuery({
-     *    name: 'recentChanges',
-     *    CAMLRowLimit: 25,
-     *    query: '' +
-     *        '<Query>' +
-     *        '   <OrderBy>' +
-     *        '       <FieldRef Name="Modified" Ascending="FALSE"/>' +
-     *        '   </OrderBy>' +
-     *            // Prevents any records from being returned if user
-     *            // doesn't have permissions on project
-     *        '   <Where>' +
-     *        '       <IsNotNull>' +
-     *        '           <FieldRef Name="Project"/>' +
-     *        '       </IsNotNull>' +
-     *        '   </Where>' +
-     *        '</Query>'
-     * });
-     * </pre>
-     */
-    var Query = (function () {
-        function Query(queryOptions, model) {
-            /** Very memory intensive to enable cacheXML which is disabled by default*/
-            this.cacheXML = false;
-            this.force = false;
-            /** Key value hash map with key being the id of the entity */
-            this.indexedCache = apIndexedCacheFactory.create();
-            /** Promise resolved after first time query is executed */
-            this.initialized = $q.defer();
-            /** Should we store data from this query in local storage to speed up requests in the future */
-            this.localStorage = false;
-            /** Set expiration in milliseconds - Defaults to a day and if set to 0 doesn't expire */
-            this.localStorageExpiration = apConfig.localStorageExpiration;
-            /** Flag to prevent us from makeing concurrent requests */
-            this.negotiatingWithServer = false;
-            /** Every time we run we want to check to update our cached data with
-             * any changes made on the server */
-            this.operation = 'GetListItemChangesSinceToken';
-            /** Default query returns list items in ascending ID order */
-            this.query = "\n        <Query>\n           <OrderBy>\n               <FieldRef Name=\"ID\" Ascending=\"TRUE\"/>\n           </OrderBy>\n        </Query>";
-            this.queryOptions = ap.DefaultListItemQueryOptions;
-            this.runOnce = false;
-            this.sessionStorage = false;
-            //Use the default viewFields from the model
-            this.viewFields = model.list.viewFields;
-            /** Set the default url if the config param is defined, otherwise let SPServices handle it */
-            if (apConfig.defaultUrl) {
-                this.webURL = apConfig.defaultUrl;
-            }
-            //Allow all values on query to be overwritten by queryOptions object
-            _.assign(this, queryOptions);
-            /** Allow the model to be referenced at a later time */
-            this.getModel = function () { return model; };
-        }
-        Object.defineProperty(Query.prototype, "listName", {
-            get: function () {
-                return this.getModel().getListId();
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(Query.prototype, "localStorageKey", {
-            /** They key we use for local storage */
-            get: function () {
-                var model = this.getModel();
-                return model.getListId() + '.query.' + this.name;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        /**
-         * @ngdoc function
-         * @name Query.execute
-         * @methodOf Query
-         * @description
-         * Query SharePoint, pull down all initial records on first call along with list definition if using
-         * "GetListItemChangesSinceToken".  Note: this is  substantially larger than "GetListItems" on first call.
-         * Subsequent calls pulls down changes (Assuming operation: "GetListItemChangesSinceToken").
-         * @param {object} [options] Any options that should be passed to dataService.executeQuery.
-         * @returns {object[]} Array of list item objects.
-         */
-        Query.prototype.execute = function (options) {
-            var _this = this;
-            var query = this;
-            var model = query.getModel();
-            var deferred = $q.defer();
-            /** Return existing promise if request is already underway or has been previously executed in the past
-            * 1/10th of a second */
-            if (query.negotiatingWithServer || (_.isDate(query.lastRun) && query.lastRun.getTime() + apConfig.queryDebounceTime > new Date().getTime())) {
-                return query.promise;
-            }
-            else {
-                /** Set flag to prevent another call while this query is active */
-                query.negotiatingWithServer = true;
-                var localStorageData = this.getLocalStorage();
-                //Check to see if we have a version in localStorage
-                var defaults = {
-                    /** Designate the central cache for this query if not already set */
-                    target: query.getCache()
-                };
-                /** Extend defaults with any options */
-                var queryOptions = _.assign(defaults, options);
-                /** Flag used to determine if we need to make a request to the server */
-                var makeRequest = true;
-                /** See if we already have data in local storage and hydrate if it hasn't expired, which
-                * then allows us to only request the changes. */
-                if (!query.force && localStorageData) {
-                    switch (this.operation) {
-                        case 'GetListItemChangesSinceToken':
-                            //Only run the first time, after that the token/data are already in sync
-                            if (!query.lastRun) {
-                                query.hydrateFromLocalStorage(localStorageData);
-                            }
-                            break;
-                        case 'GetListItems':
-                            query.hydrateFromLocalStorage(localStorageData);
-                            //Use cached data if we have data already available
-                            makeRequest = this.getCache().count() > 0;
-                    }
-                }
-                /** Optionally handle query.runOnce for GetListItems when initial call has already been made */
-                if (this.operation === 'GetListItems' && !query.lastRun && this.runOnce) {
-                    makeRequest = false;
-                }
-                if (makeRequest) {
-                    apDataService.executeQuery(model, query, queryOptions).then(function (results) {
-                        _this.processResults(results, deferred, queryOptions);
-                    });
-                }
-                else {
-                    this.processResults(this.getCache(), deferred, queryOptions);
-                }
-                /** Save reference on the query **/
-                query.promise = deferred.promise;
-                return deferred.promise;
-            }
-        };
-        /**
-         * @ngdoc function
-         * @name Query.getCache
-         * @methodOf Query
-         * @description
-         * Use this to return the cache instead of using the actual property to allow for future refactoring.
-         * @returns {IndexedCache<T>} Indexed Cache containing all elements in query.
-         */
-        Query.prototype.getCache = function () {
-            return this.indexedCache;
-        };
-        /**
-         * @ngdoc function
-         * @name Query.getLocalStorage
-         * @methodOf Query
-         * @description
-         * Use this to return query data currenty saved in user's local or session storage.
-         * @returns {LocalStorageQuery} Local storage data for this query.
-         */
-        Query.prototype.getLocalStorage = function () {
-            var parsedQuery;
-            var stringifiedQuery = localStorage.getItem(this.localStorageKey) || sessionStorage.getItem(this.localStorageKey);
-            if (stringifiedQuery) {
-                parsedQuery = new LocalStorageQuery(this.localStorageKey, stringifiedQuery);
-            }
-            return parsedQuery;
-        };
-        /**
-         * @ngdoc function
-         * @name Query.hydrateFromLocalStorage
-         * @methodOf Query
-         * @description
-         * If data already exists in browser local storage, we rehydrate JSON using list item constructor and
-         * then have the ability to just check the server to see what has changed from the current state.
-         */
-        Query.prototype.hydrateFromLocalStorage = function (localStorageQuery) {
-            if (localStorageQuery.hasExpired(this.localStorageExpiration)) {
-                //Don't continue and purge if data has exceeded expiration
-                localStorageQuery.removeItem();
-            }
-            else {
-                var listItemProvider = apDecodeService.createListItemProvider(this.getModel(), this, this.getCache());
-                //Hydrate each raw list item and add to cache
-                _.each(localStorageQuery.indexedCache, function (rawObject) {
-                    listItemProvider(rawObject);
-                });
-                //Set the last run date
-                this.lastRun = localStorageQuery.lastRun;
-                //Store the change token
-                this.changeToken = localStorageQuery.changeToken;
-                //Resolve initial query promise in case any other concurrent requests are waiting for the data
-                this.initialized.resolve(this.getCache());
-            }
-        };
-        /**
-         * @ngdoc function
-         * @name Query.processResults
-         * @methodOf Query
-         * @description
-         * Internal method exposed to allow for testing.  Handle cleanup after query execution is complete.
-         */
-        Query.prototype.processResults = function (results, deferred, queryOptions) {
-            var query = this;
-            var model = query.getModel();
-            /** Set flag if this if the first time this query has been run */
-            var firstRunQuery = _.isNull(query.lastRun);
-            if (firstRunQuery) {
-                /** Promise resolved the first time query is completed */
-                query.initialized.resolve(queryOptions.target);
-            }
-            /** Set list permissions if not already set */
-            var list = model.getList();
-            if (!list.permissions && results.first()) {
-                /** Query needs to have returned at least 1 item so we can use permMask */
-                list.extendPermissionsFromListItem(results.first());
-            }
-            /** Remove lock to allow for future requests */
-            query.negotiatingWithServer = false;
-            /** Store query completion date/time on model to allow us to identify age of data */
-            model.lastServerUpdate = new Date();
-            deferred.resolve(queryOptions.target);
-            /** Overwrite local storage value with updated state so we can potentially restore in
-             * future sessions. */
-            if (query.localStorage || query.sessionStorage) {
-                query.saveToLocalStorage();
-            }
-        };
-        /**
-         * @ngdoc function
-         * @name Query.saveToLocalStorage
-         * @methodOf Query
-         * @description
-         * Save a snapshot of the current state to local/session storage so we can speed up calls
-         * for data already residing on the users machine.
-         */
-        Query.prototype.saveToLocalStorage = function () {
-            //Don't use storage when running offline
-            if (apConfig.offline)
-                return;
-            var model = this.getModel();
-            var store = {
-                changeToken: this.changeToken,
-                indexedCache: this.getCache(),
-                lastRun: this.lastRun
-            };
-            var stringifiedQuery = JSON.stringify(store);
-            var storageType = this.localStorage ? 'local' : 'session';
-            //Use try/catch in case we've exceeded browser storage limit (typically 5MB)
-            try {
-                if (this.localStorage) {
-                    localStorage.setItem(this.localStorageKey, stringifiedQuery);
-                }
-                else {
-                    sessionStorage.setItem(this.localStorageKey, stringifiedQuery);
-                }
-            }
-            catch (e) {
-                if (e.code == 22) {
-                }
-                apLogger.debug('Looks like we\'re out of space in ' + storageType + ' storage.', {
-                    json: {
-                        query: this.name,
-                        model: this.getModel().list.title
-                    }
-                });
-                if (this.localStorage) {
-                    localStorage.clear();
-                }
-                else {
-                    sessionStorage.clear();
-                }
-                //Disable storage for remainder of session to prevent throwing additional errors
-                this.localStorage = false;
-                this.sessionStorage = false;
-            }
-        };
-        return Query;
-    })();
-    ap.Query = Query;
-    var QueryFactory = (function () {
-        function QueryFactory(_$q_, _apConfig_, _apDataService_, _apDefaultListItemQueryOptions_, _apIndexedCacheFactory_, _apDecodeService_, _apLogger_) {
-            this.Query = Query;
-            $q = _$q_;
-            apConfig = _apConfig_;
-            apDataService = _apDataService_;
-            apDefaultListItemQueryOptions = _apDefaultListItemQueryOptions_;
-            apIndexedCacheFactory = _apIndexedCacheFactory_;
-            apDecodeService = _apDecodeService_;
-            apLogger = _apLogger_;
-        }
-        /**
-         * @ngdoc function
-         * @name angularPoint.apQueryFactory:create
-         * @methodOf angularPoint.apQueryFactory
-         * @param {object} config Options object.
-         * @param {object} model Reference to the model.
-         * @description
-         * Instantiates and returns a new Query.
-         */
-        QueryFactory.prototype.create = function (config, model) {
-            return new Query(config, model);
-        };
-        QueryFactory.$inject = ['$q', 'apConfig', 'apDataService', 'apDefaultListItemQueryOptions', 'apIndexedCacheFactory', 'apDecodeService', 'apLogger'];
-        return QueryFactory;
-    })();
-    ap.QueryFactory = QueryFactory;
-    /**
-     * @ngdoc object
-     * @name angularPoint.apQueryFactory
-     * @description
-     * Exposes the Query prototype and a constructor to instantiate a new Query.
-     *
-     * @requires angularPoint.apDataService
-     * @requires angularPoint.apConfig
-     */
-    angular.module('angularPoint')
-        .service('apQueryFactory', QueryFactory);
-})(ap || (ap = {}));
-
-/// <reference path="../app.module.ts" />
-var ap;
-(function (ap) {
-    'use strict';
-    var apUtilityService;
-    /**
-     * @ngdoc function
-     * @name User
-     * @description
-     * Allows for easier distinction when debugging if object type is shown as a User.  Turns a delimited ";#"
-     * string into an object shown below depeinding on field settings:
-     * <pre>
-     * {
-         *      lookupId: 1,
-         *      lookupValue: 'Joe User'
-         * }
-     * </pre>
-     * or
-     * <pre>
-     * {
-         *      lookupId: 1,
-         *      lookupValue: 'Joe User',
-         *      loginName: 'joe.user',
-         *      email: 'joe@company.com',
-         *      sipAddress: 'whatever',
-         *      title: 'Sr. Widget Maker'
-         * }
-     * </pre>
-     * @param {string} s Delimited string used to create a User object.
-     * @constructor
-     */
-    var User = (function () {
-        function User(str) {
-            var self = this;
-            var thisUser = new apUtilityService.SplitIndex(str);
-            var thisUserExpanded = thisUser.value.split(',#');
-            if (thisUserExpanded.length === 1) {
-                //Standard user columns only return a id,#value pair
-                self.lookupId = thisUser.id;
-                self.lookupValue = thisUser.value;
-            }
-            else {
-                //Allow for case where user adds additional properties when setting up field
-                self.lookupId = thisUser.id;
-                self.lookupValue = thisUserExpanded[0].replace(/(,,)/g, ',');
-                self.loginName = thisUserExpanded[1].replace(/(,,)/g, ',');
-                self.email = thisUserExpanded[2].replace(/(,,)/g, ',');
-                self.sipAddress = thisUserExpanded[3].replace(/(,,)/g, ',');
-                self.title = thisUserExpanded[4].replace(/(,,)/g, ',');
-            }
-        }
-        return User;
-    })();
-    var UserFactory = (function () {
-        function UserFactory(_apUtilityService_) {
-            this.User = User;
-            apUtilityService = _apUtilityService_;
-        }
-        /**
-         * @ngdoc function
-         * @name angularPoint.apUserFactory:create
-         * @methodOf angularPoint.apUserFactory
-         * @description
-         * Instantiates and returns a new User field.
-         */
-        UserFactory.prototype.create = function (s) {
-            return new User(s);
-        };
-        UserFactory.$inject = ['apUtilityService'];
-        return UserFactory;
-    })();
-    ap.UserFactory = UserFactory;
-    /**
-     * @ngdoc function
-     * @name angularPoint.apUserFactory
-     * @description
-     * Tools to assist with the creation of CAML queries.
-     *
-     */
-    angular.module('angularPoint')
-        .service('apUserFactory', UserFactory);
-})(ap || (ap = {}));
-
-/// <reference path="../app.module.ts" />
 /// <reference path="../../typings/tsd.d.ts" />
 
 /// <reference path="../app.module.ts" />
@@ -4081,7 +916,7 @@ var ap;
          */
         CacheService.prototype.registerEntity = function (entity, targetCache) {
             var model = entity.getModel();
-            var entityContainer = this.getEntityContainer(model.list.getListId(), entity.id);
+            var entityContainer = this.getEntityContainer(model.getListId(), entity.id);
             /** Maintain a single object in cache for this entity */
             if (!_.isObject(entityContainer.entity)) {
                 /** Entity isn't currently in the cache */
@@ -4116,8 +951,8 @@ var ap;
          * @param {object} model Model to create the cache for.
          */
         CacheService.prototype.registerModel = function (model) {
-            if (model.list && model.list.getListId() && model.list.title) {
-                var listId = model.list.getListId().toLowerCase();
+            if (model.list && model.getListId() && model.list.title) {
+                var listId = model.getListId().toLowerCase();
                 /** Store a reference to the model by list title */
                 listNameToIdMap[model.list.title] = {
                     model: model,
@@ -4238,7 +1073,7 @@ var ap;
                 batchCmd: 'New',
                 buildValuePairs: true,
                 indexedCache: apIndexedCacheFactory.create({}),
-                listName: model.list.getListId(),
+                listName: model.getListId(),
                 operation: 'UpdateListItems',
                 target: undefined,
                 valuePairs: [],
@@ -4316,7 +1151,7 @@ var ap;
             var defaults = {
                 target: _.isFunction(listItem.getCache) ? listItem.getCache() : model.getCache(),
                 operation: 'UpdateListItems',
-                listName: model.list.getListId(),
+                listName: model.getListId(),
                 batchCmd: 'Delete',
                 ID: listItem.id,
                 webURL: model.list.identifyWebURL()
@@ -4565,7 +1400,7 @@ var ap;
          * var options = {
          *        operation: 'GetVersionCollection',
          *        webURL: apConfig.defaultUrl,
-         *        strlistID: model.list.getListId(),
+         *        strlistID: model.getListId(),
          *        strlistItemID: listItem.id,
          *        strFieldName: fieldDefinition.staticName
          *    };
@@ -4953,7 +1788,7 @@ var ap;
                 batchCmd: 'Update',
                 buildValuePairs: true,
                 ID: listItem.id,
-                listName: model.list.getListId(),
+                listName: model.getListId(),
                 operation: 'UpdateListItems',
                 target: listItem.getCache(),
                 valuePairs: [],
@@ -8473,6 +5308,3152 @@ var ap;
      */
     angular.module('angularPoint')
         .service('apXMLToJSONService', XMLToJSONService);
+})(ap || (ap = {}));
+
+/// <reference path="../app.module.ts" />
+var ap;
+(function (ap) {
+    'use strict';
+    var CamlFactory = (function () {
+        function CamlFactory() {
+        }
+        /**
+         * @ngdoc function
+         * @name angularPoint.apCamlFactory:camlContainsQuery
+         * @methodOf angularPoint.apCamlFactory
+         * @parameter {object[]} fieldDefinitionsArray Array of fields to search for a given search string.
+         * @parameter {string} searchString String of text to search records for.
+         * @description
+         * Returns a combination of selectors using CAML '<Or></Or>' elements
+         * @returns {string} Caml select string.
+         * @example
+         * <pre>
+         *
+         * var testHTML = {objectType: 'HTML', staticName: 'HTML'};
+         * var testJSON = {objectType: 'JSON', staticName: 'JSON'};
+         * var testText = {objectType: 'Text', staticName: 'Text'};
+         * var testText2 = {objectType: 'Text', staticName: 'Text'};
+         *
+         * var testCaml = camlContainsQuery([testHTML, testText, testJSON, testText2], 'Test Query');
+         * console.log(testCaml);
+         *
+         * //Returns
+         * <Or><Contains><FieldRef Name=\"HTML\" /><Value Type=\"Text\"><![CDATA[Test Query]]>
+         * </Value></Contains><Or><Contains><FieldRef Name=\"Text\" /><Value Type=\"Text\">Test Query</Value>
+         * </Contains><Or><Contains><FieldRef Name=\"JSON\" /><Value Type=\"Text\"><![CDATA[Test Query]]>
+         * </Value></Contains><Contains><FieldRef Name=\"Text\" /><Value Type=\"Text\">Test Query</Value>
+         * </Contains></Or></Or></Or>
+         * </pre>
+         */
+        CamlFactory.prototype.camlContainsQuery = function (fieldDefinitionsArray, searchString) {
+            var _this = this;
+            var selectStatements = [];
+            /** Create a select statement for each field */
+            _.each(fieldDefinitionsArray, function (fieldDefinition, definitionIndex) {
+                selectStatements.push(_this.createCamlContainsSelector(fieldDefinition, searchString));
+            });
+            return this.chainCamlSelects(selectStatements, 'And');
+        };
+        /**
+         * @ngdoc function
+         * @name angularPoint.apCamlFactory:chainCamlSelects
+         * @methodOf angularPoint.apCamlFactory
+         * @description
+         * Used to combine multiple caml selectors into a single CAML query string wrapped properly.
+         * @param {object[]} selectStatements An array of select statements to wrap in "<Or>".
+         * @param {string} joinType Valid caml join type ('Or', 'And', ...).
+         * @returns {string} CAML query string.
+         */
+        CamlFactory.prototype.chainCamlSelects = function (selectStatements, joinType) {
+            var camlQuery = '', camlQueryClosure = '';
+            _.each(selectStatements, function (statement, statementIndex) {
+                /** Add an or clause if we still have additional fields to process */
+                if (statementIndex < selectStatements.length - 1) {
+                    camlQuery += '<' + joinType + '>';
+                    camlQueryClosure = '</' + joinType + '>' + camlQueryClosure;
+                }
+                camlQuery += statement;
+            });
+            return camlQuery + camlQueryClosure;
+        };
+        /**
+         * @ngdoc function
+         * @name angularPoint.apCamlFactory:createCamlContainsSelector
+         * @methodOf angularPoint.apCamlFactory
+         * @description
+         * Escapes characters that SharePoint gets upset about based on field type.
+         * @example
+         * <pre>
+         * var testHTML = {objectType: 'HTML', staticName: 'HTML'};
+         *
+         * var testCaml = createCamlContainsSelector(testHTML, 'Test Query');
+         * console.log(testCaml);
+         *
+         * //Returns
+         * <Contains>
+         *   <FieldRef Name=\"HTML\" />
+         *   <Value Type=\"Text\"><![CDATA[Test Query]]></Value>
+         * </Contains>
+         * </pre>
+         */
+        CamlFactory.prototype.createCamlContainsSelector = function (fieldDefinition, searchString) {
+            var camlSelector;
+            switch (fieldDefinition.objectType) {
+                case 'HTML':
+                case 'JSON':
+                    camlSelector = '' +
+                        '<Contains>' +
+                        '<FieldRef Name="' + fieldDefinition.staticName + '" />' +
+                        /** Use CDATA wrapper to escape [&, <, > ] */
+                        '<Value Type="Text"><![CDATA[' + searchString + ']]></Value>' +
+                        '</Contains>';
+                    break;
+                default:
+                    camlSelector = '' +
+                        '<Contains>' +
+                        '<FieldRef Name="' + fieldDefinition.staticName + '" />' +
+                        '<Value Type="Text">' + searchString + '</Value>' +
+                        '</Contains>';
+            }
+            return camlSelector;
+        };
+        return CamlFactory;
+    })();
+    ap.CamlFactory = CamlFactory;
+    /**
+     * @ngdoc function
+     * @name angularPoint.apCamlFactory
+     * @description
+     * Tools to assist with the creation of CAML queries.
+     *
+     */
+    angular.module('angularPoint')
+        .service('apCamlFactory', CamlFactory);
+})(ap || (ap = {}));
+
+/// <reference path="../app.module.ts" />
+var ap;
+(function (ap) {
+    'use strict';
+    var apFieldService, apUtilityService, apFormattedFieldValueService;
+    /**
+     * @ngdoc object
+     * @name Field
+     * @description
+     * Defined in the MODEL.list.fieldDefinitions array.  Each field definition object maps an internal field
+     * in a SharePoint list/library to a JavaScript object using the internal SharePoint field name, the field
+     * type, and the desired JavaScript property name to add onto the parsed list item object. Ignore shown usage,
+     * each field definition is just an object within the fieldDefinitions array.
+     * @param {object} obj Field definition.
+     * @param {string} obj.staticName The actual SharePoint field name.
+     * @param {string} [obj.objectType='Text']
+     * <dl>
+     *     <dt>Boolean</dt>
+     *     <dd>Used to store a TRUE/FALSE value (stored in SharePoint as 0 or 1).</dd>
+     *     <dt>Calc</dt>
+     *     <dd>";#" Delimited String: The first value will be the calculated column value
+     *     type, the second will be the value</dd>
+     *     <dt>Choice</dt>
+     *     <dd>Simple text string but when processing the initial list definition, we
+     *     look for a Choices XML element within the field definition and store each
+     *     value.  We can then retrieve the valid Choices with one of the following:
+     *     ```var fieldDefinition = LISTITEM.getFieldDefinition('CHOICE_FIELD_NAME');```
+     *                                      or
+     *     ```var fieldDefinition = MODELNAME.getFieldDefinition('CHOICE_FIELD_NAME');```
+     *     ```var choices = fieldDefinition.Choices;```
+     *     </dd>
+     *     <dt>Counter</dt>
+     *     <dd>Same as Integer. Generally used only for the internal ID field. Its integer
+     *     value is set automatically to be unique with respect to every other item in the
+     *     current list. The Counter type is always read-only and cannot be set through a
+     *     form post.</dd>
+     *     <dt>Currency</dt>
+     *     <dd>Floating point number.</dd>
+     *     <dt>DateTime</dt>
+     *     <dd>Replace dashes with slashes and the "T" deliminator with a space if found.  Then
+     *     converts into a valid JS date object.</dd>
+     *     <dt>Float</dt>
+     *     <dd>Floating point number.</dd>
+     *     <dt>HTML</dt>
+     *     <dd>```_.unescape(STRING)```</dd>
+     *     <dt>Integer</dt>
+     *     <dd>Parses the string to a base 10 int.</dd>
+     *     <dt>JSON</dt>
+     *     <dd>Parses JSON if valid and converts into a a JS object.  If not valid, an error is
+     *     thrown with additional info on specifically what is invalid.</dd>
+     *     <dt>Lookup</dt>
+     *     <dd>Passes string to Lookup constructor where it is broken into an object containing
+     *     a "lookupValue" and "lookupId" attribute.  Inherits additional prototype methods from
+     *     Lookup.  See [Lookup](#/api/Lookup) for more information.
+     *     </dd>
+     *     <dt>LookupMulti</dt>
+     *     <dd>Converts multiple delimited ";#" strings into an array of Lookup objects.</dd>
+     *     <dt>MultiChoice</dt>
+     *     <dd>Converts delimited ";#" string into an array of strings representing each of the
+     *     selected choices.  Similar to the single "Choice", the XML Choices are stored in the
+     *     field definition after the initial call is returned from SharePoint so we can reference
+     *     later.
+     *     </dd>
+     *     <dt>Number</dt>
+     *     <dd>Treats as a float.</dd>
+     *     <dt>Text</dt>
+     *     <dd>**Default** No processing of the text string from XML.</dd>
+     *     <dt>User</dt>
+     *     <dd>Similar to Lookup but uses the "User" prototype as a constructor to convert into a
+     *     User object with "lookupId" and "lookupValue" attributes.  The lookupId is the site collection
+     *     ID for the user and the lookupValue is typically the display name.
+     *     See [User](#/api/User) for more information.
+     *     </dd>
+     *     <dt>UserMulti</dt>
+     *     <dd>Parses delimited string to returns an array of User objects.</dd>
+     * </dl>
+     * @param {string} obj.mappedName The attribute name we'd like to use
+     * for this field on the newly created JS object.
+     * @param {boolean} [obj.readOnly=false] When saving, we only push fields
+     * that are mapped and not read only.
+     * @param {boolean} [obj.required=false] Allows us to validate the field to ensure it is valid based
+     * on field type.
+     * @returns {object} Field
+     *
+     * @requires angularPoint.apFieldFactory
+     * @constructor
+     */
+    var FieldDefinition = (function () {
+        function FieldDefinition(obj) {
+            this.objectType = 'Text';
+            this.readOnly = false;
+            _.assign(this, obj);
+            this.displayName = this.displayName ? this.displayName : apUtilityService.fromCamelCase(this.mappedName);
+            /** Deprecated internal name and replace with staticName but maintain compatibility */
+            this.staticName = this.staticName || this.internalName;
+        }
+        /**
+         * @ngdoc function
+         * @name Field:getDefaultValueForType
+         * @methodOf Field
+         * @description
+         * Can return mock data appropriate for the field type, by default it dynamically generates data but
+         * the staticValue param will instead return a hard coded type specific value.
+         */
+        FieldDefinition.prototype.getDefaultValueForType = function () {
+            return apFieldService.getDefaultValueForType(this.objectType);
+        };
+        /**
+         * @ngdoc function
+         * @name Field:getFormattedValue
+         * @methodOf Field
+         * @description
+         * By default uses the formatted field service to convert a field value into a formatted string
+         * readable by user.  Optionally can override in field definition with formatter property to return
+         * custom formatted value. A good example of this would be to stringify a discussion thread.
+         * @param {ListItem<any>} listItem List used to generate field value.
+         * @param {object} [options] Pass through to apFormattedFieldValueService.getFormattedFieldValue.
+         * @returns {string} Formatted field value suitable for outputting to user.
+         * @example
+         * <pre>
+         *  //In model.list.customFields defining a field
+         * {
+         * 	  mappedName: 'lookup',
+         * 	  objectType: 'Lookup',
+         *    staticName: 'MyAwesomeLookup',
+         * 	  formatter: (listItem: ListItem<any>, fieldDefinition: IFieldDefinition, options?: Object) => {
+         * 	  	 return listItem[fieldDefinition.mappedName].lookupValue.toUpperCase();
+         * 	  }
+         * }
+         * </pre>
+         */
+        FieldDefinition.prototype.getFormattedValue = function (listItem, options) {
+            //Optionally provide a custom method to convert a field value into a formatted string
+            return _.isFunction(this.formatter) ? this.formatter(listItem, this, options) :
+                apFormattedFieldValueService
+                    .getFormattedFieldValue(listItem[this.mappedName], this.objectType, options);
+        };
+        /**
+         * @ngdoc function
+         * @name Field:getMockData
+         * @methodOf Field
+         * @param {object} [options] Optional params passed to apFieldService.getMockData.
+         * @param {boolean} [options.staticValue=false] Default to dynamically build mock data.
+         * @returns {*} mockData
+         */
+        FieldDefinition.prototype.getMockData = function (options) {
+            return apFieldService.getMockData(this.objectType, options);
+        };
+        return FieldDefinition;
+    })();
+    ap.FieldDefinition = FieldDefinition;
+    /**
+     * @ngdoc service
+     * @name angularPoint.apFieldFactory
+     * @description
+     * Contains the Field constructor and prototype definitions.
+     * @property {constructor} Field The Field constructor.
+     *
+     * @requires angularPoint.apFieldService
+     * @requires angularPoint.apUtilityService
+     *
+     */
+    var FieldFactory = (function () {
+        function FieldFactory(_apFieldService_, _apUtilityService_, _apFormattedFieldValueService_) {
+            this.FieldDefinition = FieldDefinition;
+            apFieldService = _apFieldService_;
+            apUtilityService = _apUtilityService_;
+            apFormattedFieldValueService = _apFormattedFieldValueService_;
+        }
+        FieldFactory.$inject = ['apFieldService', 'apUtilityService', 'apFormattedFieldValueService'];
+        return FieldFactory;
+    })();
+    ap.FieldFactory = FieldFactory;
+    angular
+        .module('angularPoint')
+        .service('apFieldFactory', FieldFactory);
+})(ap || (ap = {}));
+
+/// <reference path="../app.module.ts" />
+var ap;
+(function (ap) {
+    'use strict';
+    /**
+     * @ngdoc object
+     * @name IndexedCache
+     * @description
+     * Cache constructor that is extended to make it easier to work with via prototype methods.  Located in
+     * apIndexedCacheFactory.
+     * @param {object} [object] Optionally extend new cache with provided object.
+     * @requires angularPoint.apIndexedCacheFactory
+     * @constructor
+     */
+    var IndexedCache = (function () {
+        function IndexedCache(object) {
+            if (object) {
+                _.assign(this, object);
+            }
+        }
+        /**
+         * @ngdoc function
+         * @name IndexedCache.addEntity
+         * @methodOf IndexedCache
+         * @description
+         * Adds a new key to the cache if not already there with a value of the new listItem.
+         * @param {object} listItem Entity to add to the cache.
+         */
+        IndexedCache.prototype.addEntity = function (listItem) {
+            if (_.isObject(listItem) && !!listItem.id) {
+                /** Only add the listItem to the cache if it's not already there */
+                if (!this[listItem.id]) {
+                    this[listItem.id] = listItem;
+                }
+            }
+            else {
+                throw new Error('A valid listItem wasn\'t provided: ' + JSON.stringify(listItem));
+            }
+        };
+        /**
+         * @ngdoc function
+         * @name IndexedCache.clear
+         * @methodOf IndexedCache
+         * @description
+         * Clears all cached elements from the containing cache object.
+         */
+        IndexedCache.prototype.clear = function () {
+            var _this = this;
+            _.each(this, function (listItem, key) { return delete _this[key]; });
+        };
+        /**
+         * @ngdoc function
+         * @name IndexedCache.count
+         * @methodOf IndexedCache
+         * @description
+         * Returns the number of entities in the cache.
+         * @returns {number} Number of entities in the cache.
+         */
+        IndexedCache.prototype.count = function () {
+            return this.keys().length;
+        };
+        /**
+         * @ngdoc function
+         * @name IndexedCache.first
+         * @methodOf IndexedCache
+         * @description
+         * Returns the first listItem in the index (smallest ID).
+         * @returns {object} First listItem in cache.
+         */
+        IndexedCache.prototype.first = function () {
+            return this.nthEntity(0);
+        };
+        /**
+         * @ngdoc function
+         * @name IndexedCache.keys
+         * @methodOf IndexedCache
+         * @description
+         * Returns the array of keys (listItem ID's) for the cache.
+         * @returns {string[]} Array of listItem id's as strings.
+         */
+        IndexedCache.prototype.keys = function () {
+            return _.keys(this);
+        };
+        /**
+         * @ngdoc function
+         * @name IndexedCache.last
+         * @methodOf IndexedCache
+         * @description
+         * Returns the last listItem in the index (largest ID).
+         * @returns {object} Last listItem in cache.
+         */
+        IndexedCache.prototype.last = function () {
+            var keys = this.keys();
+            return this[keys[keys.length - 1]];
+        };
+        /**
+         * @ngdoc function
+         * @name IndexedCache.nthEntity
+         * @methodOf IndexedCache
+         * @description
+         * Based on the
+         * @param {number} index The index of the item requested.
+         * @returns {object} First listItem in cache.
+         */
+        IndexedCache.prototype.nthEntity = function (index) {
+            var keys = this.keys();
+            return this[keys[index]];
+        };
+        /**
+         * @ngdoc function
+         * @name IndexedCache.removeEntity
+         * @methodOf IndexedCache
+         * @description
+         * Removes a listItem from the cache.
+         * @param {object|number} listItem Entity to remove or ID of listItem to be removed.
+         */
+        IndexedCache.prototype.removeEntity = function (listItem) {
+            if (_.isObject(listItem) && listItem.id && this[listItem.id]) {
+                delete this[listItem.id];
+            }
+            else if (_.isNumber(listItem)) {
+                /** Allow listItem ID to be used instead of then listItem */
+                delete this[listItem];
+            }
+        };
+        /**
+         * @ngdoc function
+         * @name IndexedCache.toArray
+         * @methodOf IndexedCache
+         * @description
+         * Turns the cache object into an array of entities.
+         * @returns {object[]} Returns the array of entities currently in the cache.
+         */
+        IndexedCache.prototype.toArray = function () {
+            return _.toArray(this);
+        };
+        return IndexedCache;
+    })();
+    ap.IndexedCache = IndexedCache;
+    /**
+     * @ngdoc object
+     * @name angularPoint.apIndexedCacheFactory
+     * @description
+     * Exposes the EntityFactory prototype and a constructor to instantiate a new Entity Factory in apCacheService.
+     *
+     */
+    var IndexedCacheFactory = (function () {
+        function IndexedCacheFactory() {
+            this.IndexedCache = IndexedCache;
+        }
+        /**
+         * @ngdoc function
+         * @name angularPoint.apIndexedCacheFactory:create
+         * @methodOf angularPoint.apIndexedCacheFactory
+         * @description
+         * Instantiates and returns a new Indexed Cache.grunt
+         */
+        IndexedCacheFactory.prototype.create = function (overrides) {
+            return new IndexedCache(overrides);
+        };
+        return IndexedCacheFactory;
+    })();
+    ap.IndexedCacheFactory = IndexedCacheFactory;
+    angular.module('angularPoint')
+        .service('apIndexedCacheFactory', IndexedCacheFactory);
+})(ap || (ap = {}));
+
+/// <reference path="../app.module.ts" />
+var ap;
+(function (ap) {
+    'use strict';
+    var apConfig, apDefaultFields, apFieldFactory;
+    /**
+     * @ngdoc object
+     * @name List
+     * @description
+     * List Object Constructor.  This is handled automatically when creating a new model so there shouldn't be
+     * any reason to manually call.
+     * @param {object} config Initialization parameters.
+     * @param {string} config.guid Unique SharePoint GUID for the list we'll be basing the model on
+     * ex:'{4D74831A-42B2-4558-A67F-B0B5ADBC0EAC}'
+     * @param {string} config.title Maps to the offline XML file in dev folder (no spaces)
+     * ex: 'ProjectsList' so the offline XML file would be located at apConfig.offlineXML + 'ProjectsList.xml'
+     * @param {object[]} [config.customFields] Mapping of SharePoint field names to the internal names we'll be using
+     * in our application.  Also contains field type, readonly attribute, and any other non-standard settings.
+     * <pre>
+     * [
+     *   {
+         *       staticName: "Title",
+         *       objectType: "Text",
+         *       mappedName: "lastName",
+         *       readOnly:false
+         *   },
+     *   {
+         *       staticName: "FirstName",
+         *       objectType: "Text",
+         *       mappedName: "firstName",
+         *       readOnly:false
+         *   },
+     *   {
+         *       staticName: "Organization",
+         *       objectType: "Lookup",
+         *       mappedName: "organization",
+         *       readOnly:false
+         *   },
+     *   {
+         *       staticName: "Account",
+         *       objectType: "User",
+         *       mappedName: "account",
+         *       readOnly:false
+         *   },
+     *   {
+         *       staticName: "Details",
+         *       objectType: "Text",
+         *       mappedName: "details",
+         *       readOnly:false
+         *   }
+     * ]
+     * </pre>
+     * @property {string} viewFields XML string defining each of the fields to include in all CRUD requests,
+     * generated when the Model.List is instantiated.
+     * <pre>
+     *     <ViewFields>...</ViewFields>
+     * </pre>
+     * @property {Field[]} fields Generated when the Model.List is instantiated.  Combines the standard
+     * default fields for all lists with the fields identified in the config.customFields and instantiates each
+     * with the Field constructor.
+     * @requires angularPoint.apListFactory
+     * @constructor
+     */
+    var List = (function () {
+        function List(config) {
+            this.customFields = [];
+            this.fields = [];
+            this.guid = '';
+            this.isReady = false;
+            this.mapping = {};
+            this.title = '';
+            this.viewFields = '';
+            this.webURL = apConfig.defaultUrl;
+            _.assign(this, config);
+            this.environments = this.environments || { production: this.guid };
+            this.extendFieldDefinitions();
+        }
+        /**
+         * @description
+         * 1. Populates the fields array which uses the Field constructor to combine the default
+         * SharePoint fields with those defined in the list definition on the model
+         * 2. Creates the list.viewFields XML string that defines the fields to be requested on a query
+         *
+         * @param {object} list Reference to the list within a model.
+         */
+        List.prototype.extendFieldDefinitions = function () {
+            var _this = this;
+            /**
+             * Constructs the field
+             * - adds to viewField
+             * - create ows_ mapping
+             * @param fieldDefinition
+             */
+            var buildField = function (fieldDefinition) {
+                var field = new apFieldFactory.FieldDefinition(fieldDefinition);
+                _this.fields.push(field);
+                _this.viewFields += '<FieldRef Name="' + field.staticName + '"/>';
+                _this.mapping['ows_' + field.staticName] = {
+                    mappedName: field.mappedName,
+                    objectType: field.objectType
+                };
+            };
+            /** Open viewFields */
+            this.viewFields += '<ViewFields>';
+            /** Add the default fields */
+            _.each(apDefaultFields, function (field) { return buildField(field); });
+            /** Add each of the fields defined in the model */
+            _.each(this.customFields, function (field) { return buildField(field); });
+            /** Close viewFields */
+            this.viewFields += '</ViewFields>';
+        };
+        /**
+         * @ngdoc function
+         * @name List:extendPermissionsFromListItem
+         * @methodOf List
+         * @param {ListItem} listItem List item to use as sample of user's permisssions for list.
+         * @description
+         * If the user permissions haven't been resolved for the list, use the permissions from a
+         * sample list item and assume they're the same for the entire list
+         * @returns {IUserPermissionsObject} Resolved permissions for the list item.
+         */
+        List.prototype.extendPermissionsFromListItem = function (listItem) {
+            if (!listItem) {
+                throw new Error('A valid list item is required in order to extend list permissions.');
+            }
+            this.permissions = listItem.resolvePermissions();
+            return this.permissions;
+        };
+        /**
+         * @ngdoc function
+         * @name List:getListId
+         * @methodOf List
+         * @description
+         * Defaults to list.guid.  For a multi-environment setup, we accept a list.environments object with a property for each named
+         * environment with a corresponding value of the list guid.  The active environment can be selected
+         * by setting apConfig.environment to the string name of the desired environment.
+         * @returns {string} List ID.
+         */
+        List.prototype.getListId = function () {
+            if (_.isString(this.environments[apConfig.environment])) {
+                /**
+                 * For a multi-environment setup, we accept a list.environments object with a property for each named
+                 * environment with a corresponding value of the list guid.  The active environment can be selected
+                 * by setting apConfig.environment to the string name of the desired environment.
+                 */
+                return this.environments[apConfig.environment];
+            }
+            else {
+                throw new Error('There isn\'t a valid environment definition for apConfig.environment=' + apConfig.environment + '  ' +
+                    'Please confirm that the list "' + this.title + '" has the necessary environmental configuration.');
+            }
+        };
+        /**
+         * @ngdoc function
+         * @name List:identifyWebURL
+         * @methodOf List
+         * @description
+         * If a list is extended, use the provided webURL, otherwise use list.webURL.  If never set it will default
+         * to apConfig.defaultUrl.
+         * @returns {string} webURL param.
+         */
+        List.prototype.identifyWebURL = function () {
+            return this.WebFullUrl ? this.WebFullUrl : this.webURL;
+        };
+        return List;
+    })();
+    ap.List = List;
+    /**
+     * @ngdoc service
+     * @name angularPoint.apListFactory
+     * @description
+     * Exposes the List prototype and a constructor to instantiate a new List.
+     *
+     * @property {constructor} List The List constructor.
+     *
+     * @requires angularPoint.apConfig
+     * @requires angularPoint.apDefaultFields
+     * @requires angularPoint.apFieldFactory
+     */
+    var ListFactory = (function () {
+        function ListFactory(_apConfig_, _apDefaultFields_, _apFieldFactory_) {
+            this.List = List;
+            apConfig = _apConfig_;
+            apDefaultFields = _apDefaultFields_;
+            apFieldFactory = _apFieldFactory_;
+        }
+        /**
+         * @ngdoc function
+         * @name angularPoint.apListFactory:create
+         * @methodOf angularPoint.apListFactory
+         * @param {object} config Options object.
+         * @description
+         * Instantiates and returns a new List.
+         */
+        ListFactory.prototype.create = function (config) {
+            return new List(config);
+        };
+        ListFactory.$inject = ['apConfig', 'apDefaultFields', 'apFieldFactory'];
+        return ListFactory;
+    })();
+    ap.ListFactory = ListFactory;
+    angular.module('angularPoint')
+        .service('apListFactory', ListFactory);
+})(ap || (ap = {}));
+
+/// <reference path="../app.module.ts" />
+var ap;
+(function (ap) {
+    'use strict';
+    var $q, toastr, apCacheService, apDataService, apDecodeService, apEncodeService, apUtilityService, apConfig, apListItemVersionFactory;
+    /**
+     * @ngdoc object
+     * @name ListItem
+     * @description
+     * Base prototype which all list items inherit from.  All methods can be accessed through this prototype so all CRUD
+     * functionality can be called directly from a given list item.
+     * @constructor
+     */
+    var ListItem = (function () {
+        function ListItem() {
+        }
+        /**
+         * @ngdoc function
+         * @name ListItem.changes
+         * @description
+         * Checks a given list item compared to its pristine state and retuns a field change summary
+         * with information on any significant changes to non-readonly fields.
+         * @returns {FieldChangeSummary<T>} Change summary of all fields that have been modified
+         * since last save.
+         */
+        ListItem.prototype.changes = function () {
+            return new apListItemVersionFactory.FieldChangeSummary(this, this.getPristine());
+        };
+        /**
+         * @ngdoc function
+         * @name ListItem.deleteAttachment
+         * @description
+         * Delete an attachment from a list item.
+         * @param {string} url Requires the URL for the attachment we want to delete.
+         * @returns {object} Promise which resolves with the updated attachment collection.
+         * @example
+         * <pre>
+         * $scope.deleteAttachment = function (attachment) {
+         *     var confirmation = window.confirm("Are you sure you want to delete this file?");
+         *     if (confirmation) {
+         *         scope.listItem.deleteAttachment(attachment).then(function () {
+         *             alert("Attachment successfully deleted");
+         *         });
+         *     }
+         * };
+         * </pre>
+         */
+        ListItem.prototype.deleteAttachment = function (url) {
+            var listItem = this;
+            return apDataService.deleteAttachment({
+                listItemID: listItem.id,
+                url: url,
+                listName: listItem.getListId()
+            });
+        };
+        /**
+         * @ngdoc function
+         * @name ListItem.deleteItem
+         * @description
+         * Deletes record directly from the object and removes record from user cache.
+         * @param {object} [options] Optionally pass params to the dataService.
+         * @param {boolean} [options.updateAllCaches=false] Iterate over each of the query cache's and ensure the listItem is
+         * removed everywhere.  This is more process intensive so by default we only remove the cached listItem in the
+         * cache where this listItem is currently stored.
+         * @returns {object} Promise which really only lets us know the request is complete.
+         * @example
+         * ```
+         * <ul>
+         *    <li ng-repeat="task in tasks">
+         *        {{task.title}} <a href ng-click="task.deleteItem()>delete</a>
+         *    </li>
+         * </ul>
+         * ```
+         * List of tasks.  When the delete link is clicked, the list item item is removed from the local cache and
+         * the view is updated to no longer show the task.
+         */
+        ListItem.prototype.deleteItem = function (options) {
+            var listItem = this;
+            var model = listItem.getModel();
+            var deferred = $q.defer();
+            if (_.isFunction(listItem.preDeleteAction) && !listItem.preDeleteAction()) {
+                //preDeleteAction exists but returned false so we don't delete
+                deferred.reject('Pre-Delete Action Returned False');
+            }
+            else {
+                apDataService.deleteListItem(model, listItem, options)
+                    .then(function (response) {
+                    deferred.resolve(response);
+                    /** Optionally broadcast change event */
+                    apUtilityService.registerChange(model, 'delete', listItem.id);
+                });
+            }
+            return deferred.promise;
+        };
+        /**
+         * @ngdoc function
+         * @name ListItem.getAttachmentCollection
+         * @description
+         * Requests all attachments for a given list item.
+         * @returns {object} Promise which resolves with all attachments for a list item.
+         * @example
+         * <pre>
+         * //Pull down all attachments for the current list item
+         * var fetchAttachments = function (listItem) {
+         *     listItem.getAttachmentCollection()
+         *         .then(function (attachments) {
+         *             scope.attachments = attachments;
+         *         });
+         * };
+         * </pre>
+         */
+        ListItem.prototype.getAttachmentCollection = function () {
+            var listItem = this;
+            return apDataService.getCollection({
+                operation: 'GetAttachmentCollection',
+                listName: listItem.getListId(),
+                webURL: listItem.getList().webURL,
+                ID: listItem.id,
+                filterNode: 'Attachment'
+            });
+        };
+        /**
+         * @ngdoc function
+         * @name ListItem.getAvailableWorkflows
+         * @description
+         * Wrapper for apDataService.getAvailableWorkflows.  Simply passes the current item in.
+         * @returns {promise} Array of objects defining each of the available workflows.
+         */
+        ListItem.prototype.getAvailableWorkflows = function () {
+            var listItem = this;
+            return apDataService.getAvailableWorkflows(listItem.fileRef.lookupValue);
+        };
+        /**
+         * @ngdoc function
+         * @name ListItem.getChanges
+         * @description
+         * Wrapper for model.getListItemById.  Queries server for any changes and extends the existing
+         * list item with those changes.
+         * @returns {promise} Promise which resolves with the updated list item.
+         */
+        ListItem.prototype.getChanges = function () {
+            var model = this.getModel();
+            return model.getListItemById(this.id);
+        };
+        /**
+         * @ngdoc function
+         * @name ListItem.getChangeSummary
+         * @description
+         * Uses ListItem.getVersionHistory and determines what information changed between each list item
+         * version.
+         * @param {string[] | string} [fieldNames] An array/single string of field names on the list item to fetch a version
+         * history for.
+         * @returns {ng.IPromise<ChangeSummary<T>>} Promise which resolves with an array of list item versions.
+         * @example
+         * Assuming we have a modal form where we want to display each version of the title and project fields
+         * of a given list item.
+         * <pre>
+         * myGenericListItem.getChangeSummary(['title', 'project'])
+         *     .then(function(changeSummary: ChangeSummary) {
+         *            // We now have an array of every version of these fields
+         *            vm.changeSummary = changeSummary;
+         *      };
+         * </pre>
+         */
+        ListItem.prototype.getChangeSummary = function (fieldNames) {
+            return this.getVersionHistory(fieldNames)
+                .then(function (versionHistoryCollection) { return versionHistoryCollection.generateChangeSummary(); });
+        };
+        /**
+         * @ngdoc function
+         * @name ListItem.getFieldChoices
+         * @param {string} fieldName Internal field name.
+         * @description
+         * Uses the field definition defined in the model to attempt to find the choices array for a given Lookup or
+         * MultiLookup type field.  The default value is fieldDefinition.choices which can optionally be added to a
+         * given field definition.  If this isn't found, we check fieldDefinition.Choices which is populated after a
+         * GetListItemsSinceToken operation or a Model.extendListMetadata operation.  Finally if that isn't available
+         * we return an empty array.
+         * @returns {string[]} An array of choices for a Choice or MultiChoice type field.
+         */
+        ListItem.prototype.getFieldChoices = function (fieldName) {
+            var listItem = this;
+            var fieldDefinition = listItem.getFieldDefinition(fieldName);
+            return fieldDefinition.choices || fieldDefinition.Choices || [];
+        };
+        /**
+         * @ngdoc function
+         * @name ListItem.getFieldDefinition
+         * @description
+         * Returns the field definition from the definitions defined in the custom fields array within a model.
+         * @example
+         * <pre>
+         * var project = {
+         *    title: 'Project 1',
+         *    location: {
+         *        lookupId: 5,
+         *        lookupValue: 'Some Building'
+         *    }
+         * };
+         *
+         * //To get field metadata
+         * var locationDefinition = project.getFieldDefinition('location');
+         * </pre>
+         * @param {string} fieldName Internal field name.
+         * @returns {object} Field definition.
+         */
+        ListItem.prototype.getFieldDefinition = function (fieldName) {
+            var listItem = this;
+            return listItem.getModel().getFieldDefinition(fieldName);
+        };
+        /**
+         * @ngdoc function
+         * @name ListItem.getFieldDescription
+         * @param {string} fieldName Internal field name.
+         * @description
+         * Uses the field definition defined in the model to attempt to find the description for a given field.  The default
+         * value is fieldDefinition.Description which is populated after a GetListItemsSinceToken operation or a
+         * Model.extendListMetadata operation.  If this isn't available we look for an optional attribute of a field
+         * fieldDefinition.description.  Finally if that have anything it returns an empty string.
+         * @returns {string} The description for a given field object.
+         */
+        ListItem.prototype.getFieldDescription = function (fieldName) {
+            var listItem = this;
+            var fieldDefinition = listItem.getFieldDefinition(fieldName);
+            return fieldDefinition.description || fieldDefinition.Description || '';
+        };
+        /**
+         * @ngdoc function
+         * @name ListItem.getFieldLabel
+         * @param {string} fieldName Internal field name.
+         * @description
+         * Uses the field definition defined in the model to attempt to find the label for a given field.  The default
+         * value is fieldDefinition.label.  If not available it will then use fieldDefinition.DisplayName which is
+         * populated after a GetListItemsSinceToken operation or a Model.extendListMetadata operation.  If this isn't
+         * available it will fallback to the the fieldDefinition.DisplayName which is a best guess at converting the
+         * caml case version of the mapped name using apUtilityService.fromCamelCase.
+         * @returns {string} The label for a given field object.
+         */
+        ListItem.prototype.getFieldLabel = function (fieldName) {
+            var listItem = this;
+            var fieldDefinition = listItem.getFieldDefinition(fieldName);
+            return fieldDefinition.label || fieldDefinition.DisplayName || fieldDefinition.displayName;
+        };
+        /**
+         * @ngdoc function
+         * @name ListItem.getFormattedValue
+         * @description
+         * Given the attribute name on a listItem, we can lookup the field type and from there return a formatted
+         * string representation of that value.
+         * @param {string} fieldName Attribute name on the object that contains the value to stringify.
+         * @param {object} [options] Pass through to apFormattedFieldValueService.getFormattedFieldValue or any
+         * custom method specified on the field definition.
+         * @returns {string} Formatted string representing the field value.
+         */
+        ListItem.prototype.getFormattedValue = function (fieldName, options) {
+            var listItem = this;
+            var fieldDefinition = listItem.getFieldDefinition(fieldName);
+            if (!fieldDefinition) {
+                throw new Error("A field definition for a field named " + fieldName + " wasn't found.");
+            }
+            return fieldDefinition.getFormattedValue(this, options);
+        };
+        /**
+         * @ngdoc function
+         * @name ListItem.getList
+         * @description
+         * Abstraction to allow logic in model to be used instead of defining the list location in more than one place.
+         * @returns {object} List for the list item.
+         */
+        ListItem.prototype.getList = function () {
+            var model = this.getModel();
+            return model.getList();
+        };
+        /**
+         * @ngdoc function
+         * @name ListItem.getListId
+         * @description
+         * Allows us to reference the list ID directly from the list item.  This is added to the
+         * model.factory prototype in apModelFactory.
+         * @returns {string} List ID.
+         */
+        ListItem.prototype.getListId = function () {
+            var model = this.getModel();
+            return model.getListId();
+        };
+        /**
+         * @ngdoc function
+         * @name ListItem.getLookupReference
+         * @description
+         * Allows us to retrieve the listItem being referenced in a given lookup field.
+         * @param {string} fieldName Name of the lookup property on the list item that references a listItem.
+         * @param {number} [lookupId=listItem.fieldName.lookupId] The listItem.lookupId of the lookup object.  This allows us to also use this logic
+         * on a multi-select by iterating over each of the lookups.
+         * @example
+         * <pre>
+         * var project = {
+         *    title: 'Project 1',
+         *    location: {
+         *        lookupId: 5,
+         *        lookupValue: 'Some Building'
+         *    }
+         * };
+         *
+         * //To get the location listItem
+         * var listItem = project.getLookupReference('location');
+         * </pre>
+         * @returns {object} The listItem the lookup is referencing or undefined if not in the cache.
+         */
+        ListItem.prototype.getLookupReference = function (fieldName, lookupId) {
+            var listItem = this;
+            var lookupReference;
+            if (_.isUndefined(fieldName)) {
+                throw new Error('A field name is required.');
+            }
+            else if (_.isEmpty(listItem[fieldName])) {
+                lookupReference = '';
+            }
+            else {
+                var model = listItem.getModel();
+                var fieldDefinition = model.getFieldDefinition(fieldName);
+                /** Ensure the field definition has the List attribute which contains the GUID of the list
+                 *  that a lookup is referencing. */
+                if (fieldDefinition && fieldDefinition.List) {
+                    var targetId = lookupId || listItem[fieldName].lookupId;
+                    lookupReference = apCacheService.getCachedEntity(fieldDefinition.List, targetId);
+                }
+                else {
+                    throw new Error('This isn\'t a valid Lookup field or the field definitions need to be extended ' +
+                        'before we can complete this request.');
+                }
+            }
+            return lookupReference;
+        };
+        /**
+         * @ngdoc function
+         * @name ListItem.getVersionHistory
+         * @description
+         * Takes an array of field names, finds the version history for field, and returns a snapshot of the object at each
+         * version.  If no fields are provided, we look at the field definitions in the model and pull all non-readonly
+         * fields.  The only way to do this that I've been able to get working is to get the version history for each
+         * field independently and then build the history by combining the server responses for each requests into a
+         * snapshot of the object.  Each version has the standard modified date but also includes a version property with
+         * the version number.
+         * @param {string[]} [fieldNames] An array of field names or single field name of properties on the list item
+         * that we're interested in.
+         * @returns {ng.IPromise<VersionHistoryCollection<T>>} Promise which resolves with an object with keys=version
+         * and values = ListItemVersion.
+         * @example
+         * Assuming we have a modal form where we want to display each version of the title and project fields
+         * of a given list item.
+         * <pre>
+         * myGenericListItem.getVersionHistory(['title', 'project'])
+         *     .then(function(versionHistory) {
+         *            // We now have an array of every version of these fields
+         *            vm.versionHistory = versionHistory;
+         *      };
+         * </pre>
+         */
+        ListItem.prototype.getVersionHistory = function (fieldNames) {
+            var listItem = this;
+            var model = listItem.getModel();
+            var promiseArray = [];
+            if (!fieldNames) {
+                /** If fields aren't provided, pull the version history for all NON-readonly fields */
+                var targetFields = _.where(model.list.fields, { readOnly: false });
+                fieldNames = [];
+                _.each(targetFields, function (field) {
+                    fieldNames.push(field.mappedName);
+                });
+            }
+            else if (_.isString(fieldNames)) {
+                /** If a single field name is provided, add it to an array so we can process it more easily */
+                fieldNames = [fieldNames];
+            }
+            /** Generate promises for each field */
+            _.each(fieldNames, function (fieldName) {
+                var promise = createPromise(fieldName);
+                promiseArray.push(promise);
+            });
+            /** Pause until all requests are resolved */
+            return $q.all(promiseArray)
+                .then(function (fieldVersionCollections) {
+                var versionHistoryCollection = new apListItemVersionFactory.VersionHistoryCollection(fieldVersionCollections, model.factory);
+                return versionHistoryCollection;
+            });
+            /** Constructor that creates a promise for each field */
+            function createPromise(fieldName) {
+                var fieldDefinition = listItem.getFieldDefinition(fieldName);
+                var payload = {
+                    operation: 'GetVersionCollection',
+                    strlistID: model.getListId(),
+                    strlistItemID: listItem.id,
+                    strFieldName: fieldDefinition.staticName,
+                    webURL: undefined
+                };
+                /** Manually set site url if defined, prevents SPServices from making a blocking call to fetch it. */
+                if (apConfig.defaultUrl) {
+                    payload.webURL = apConfig.defaultUrl;
+                }
+                return apDataService.getFieldVersionHistory(payload, fieldDefinition);
+            }
+        };
+        /**
+         * @ngdoc function
+         * @name ListItem.isPristine
+         * @description
+         * Determines if a list item has changed since it was instantiated.
+         * @returns {boolean} The list item is unchanged.
+         */
+        ListItem.prototype.isPristine = function () {
+            return !this.changes().hasMajorChanges;
+        };
+        /**
+         * @ngdoc function
+         * @name ListItem.prototype.registerPreDeleteAction
+         * @param {Function} action Function that accepts no arguments and returns a boolean determining if delete can continue.
+         * @returns {Function} Function that can be called to unregister.
+         * @description
+         * Register a function on the list item prototype that is executed prior to deleting.  Good use case
+         * is to perform cleanup prior to deleting or determining if user can delete.  Method returns boolean and if
+         * true delete will continue, otherwise delete is prevented. There is no ListItem.registerPostDeleteAction because
+         * the list item no longer exists.
+         *
+         * @example
+         * <pre>
+         * //In example projectsModel.ts
+         *  export class Project extends ap.ListItem<Project>{
+         *      title: string;
+         *      users: User[];
+         *      ...some other expected attributes
+         *      constructor(obj) {
+         *          super(obj);
+         *          _.assign(this, obj);
+         *      }
+         *  }
+         *
+         *  let unregister = Project.prototype.registerPreDeleteAction(function() {
+         *      //Do some validation here and return true if user can delete
+         *      //otherwise return false to prevent delete action
+         *  });
+         *
+         *  //At some point in the future if no longer necessary
+         *  unregister();
+         *
+         * </pre>
+         */
+        ListItem.prototype.registerPreDeleteAction = function (action) {
+            var _this = this;
+            this.preDeleteAction = action;
+            //Return function to unregister
+            return function () { return _this.preDeleteAction = undefined; };
+        };
+        /**
+         * @ngdoc function
+         * @name ListItem.prototype.registerPreSaveAction
+         * @param {Function} action Function that accepts no arguments and returns a boolean determining is save can continue.
+         * @returns {Function} Function that can be called to unregister.
+         * @description
+         * Register a function on the list item prototype that is executed prior to saving.  Good use case
+         * is to validate list item or perform cleanup prior to saving.  Method returns boolean and if
+         * true save will continue, otherwise save is prevented.
+         *
+         * @example
+         * <pre>
+         * //In example projectsModel.ts
+         *  export class Project extends ap.ListItem<Project>{
+         *      title: string;
+         *      users: User[];
+         *      ...some other expected attributes
+         *      constructor(obj) {
+         *          super(obj);
+         *          _.assign(this, obj);
+         *      }
+         *  }
+         *
+         *  let unregister = Project.prototype.registerPreSaveAction(function() {
+         *      //Do some validation here and return true if user can save
+         *      //otherwise return false to prevent save action
+         *  });
+         *
+         *  //At some point in the future if no longer necessary
+         *  unregister();
+         *
+         * </pre>
+         */
+        ListItem.prototype.registerPreSaveAction = function (action) {
+            var _this = this;
+            this.preSaveAction = action;
+            //Return function to unregister
+            return function () { return _this.preSaveAction = undefined; };
+        };
+        /**
+         * @ngdoc function
+         * @name ListItem.prototype.registerPostSaveAction
+         * @param {Function} action Callback function that accepts no arguments, returns nothing, and is called
+         * after a list item has completed saving.
+         * @returns {Function} Function that can be called to unregister.
+         * @description
+         * Register a function on the model prototype that is executed after saving.  Good use case
+         * is to perform cleanup after save.
+         *
+         * @example
+         * <pre>
+         * //In example projectsModel.ts
+         *  export class Project extends ap.ListItem<Project>{
+         *      title: string;
+         *      users: User[];
+         *      ...some other expected attributes
+         *      constructor(obj) {
+         *          super(obj);
+         *          _.assign(this, obj);
+         *      }
+         *  }
+         *
+         *  let unregister = Project.prototype.registerPostSaveAction(function() {
+         *      //Use this method to perform any cleanup after save event
+         *      //for any list item of this type
+         *  });
+         *
+         *  //At some point in the future if no longer necessary
+         *  unregister();
+         *
+         * </pre>
+         */
+        ListItem.prototype.registerPostSaveAction = function (action) {
+            var _this = this;
+            this.postSaveAction = action;
+            //Return function to unregister
+            return function () { return delete _this.postSaveAction; };
+        };
+        /**
+         * @ngdoc function
+         * @name ListItem.resolvePermissions
+         * @description
+         * See apModelService.resolvePermissions for details on what we expect to have returned.
+         * @returns {Object} Contains properties for each permission level evaluated for current user.
+         * @example
+         * Lets assume we're checking to see if a user has edit rights for a given task list item.
+         * <pre>
+         * var canUserEdit = function(task) {
+         *      var userPermissions = task.resolvePermissions();
+         *      return userPermissions.EditListItems;
+         * };
+         * </pre>
+         * Example of what the returned object would look like
+         * for a site admin.
+         * <pre>
+         * userPermissions = {
+         *    "ViewListItems": true,
+         *    "AddListItems": true,
+         *    "EditListItems": true,
+         *    "DeleteListItems": true,
+         *    "ApproveItems": true,
+         *    "OpenItems": true,
+         *    "ViewVersions": true,
+         *    "DeleteVersions": true,
+         *    "CancelCheckout": true,
+         *    "PersonalViews": true,
+         *    "ManageLists": true,
+         *    "ViewFormPages": true,
+         *    "Open": true,
+         *    "ViewPages": true,
+         *    "AddAndCustomizePages": true,
+         *    "ApplyThemeAndBorder": true,
+         *    "ApplyStyleSheets": true,
+         *    "ViewUsageData": true,
+         *    "CreateSSCSite": true,
+         *    "ManageSubwebs": true,
+         *    "CreateGroups": true,
+         *    "ManagePermissions": true,
+         *    "BrowseDirectories": true,
+         *    "BrowseUserInfo": true,
+         *    "AddDelPrivateWebParts": true,
+         *    "UpdatePersonalWebParts": true,
+         *    "ManageWeb": true,
+         *    "UseRemoteAPIs": true,
+         *    "ManageAlerts": true,
+         *    "CreateAlerts": true,
+         *    "EditMyUserInfo": true,
+         *    "EnumeratePermissions": true,
+         *    "FullMask": true
+         * }
+         * </pre>
+         */
+        ListItem.prototype.resolvePermissions = function () {
+            return apUtilityService.resolvePermissions(this.permMask);
+        };
+        /**
+         * @ngdoc function
+         * @name ListItem.saveChanges
+         * @description
+         * Updates record directly from the object
+         * @param {object} [options] Optionally pass params to the data service.
+         * @param {boolean} [options.updateAllCaches=false] Search through the cache for each query to ensure listItem is
+         * updated everywhere.  This is more process intensive so by default we only update the cached listItem in the
+         * cache where this listItem is currently stored.
+         * @returns {object} Promise which resolved with the updated list item from the server.
+         * @example
+         * <pre>
+         * // Example of save function on a fictitious
+         * // app/modules/tasks/TaskDetailsCtrl.js modal form.
+         * $scope.saveChanges = function(task) {
+         *      task.saveChanges().then(function() {
+         *          // Successfully saved so we can do something
+         *          // like close form
+         *
+         *          }, function() {
+         *          // Failure
+         *
+         *          });
+         * }
+         * </pre>
+         */
+        ListItem.prototype.saveChanges = function (options) {
+            var listItem = this;
+            var model = listItem.getModel();
+            var deferred = $q.defer();
+            if (_.isFunction(listItem.preSaveAction) && !listItem.preSaveAction()) {
+                //preSaveAction exists but returned false so we don't save
+                deferred.reject('Pre-Save Action Returned False');
+            }
+            else {
+                //Either no preSaveAction registered or it passed validation
+                /** Redirect if the request is actually creating a new list item.  This can occur if we create
+                 * an empty item that is instantiated from the model and then attempt to save instead of using
+                 * model.addNewItem */
+                if (!listItem.id) {
+                    return model.addNewItem(listItem, options);
+                }
+                apDataService.updateListItem(model, listItem, options)
+                    .then(function (updatedListItem) {
+                    deferred.resolve(updatedListItem);
+                    /** Optionally broadcast change event */
+                    apUtilityService.registerChange(model, 'update', updatedListItem.id);
+                    //Optionally perform any post save cleanup if registered
+                    if (_.isFunction(listItem.postSaveAction)) {
+                        listItem.postSaveAction();
+                    }
+                    ;
+                });
+            }
+            return deferred.promise;
+        };
+        /**
+         * @ngdoc function
+         * @name ListItem.saveFields
+         * @description
+         * Saves a named subset of fields back to SharePoint.  This is an alternative to saving all fields.
+         * @param {array|string} fieldArray Array of internal field names that should be saved to SharePoint or a single
+         * string to save an individual field.
+         * @param {object} [options] Optionally pass params to the data service.
+         * @param {boolean} [options.updateAllCaches=false] Search through the cache for each query to ensure listItem is
+         * updated everywhere.  This is more process intensive so by default we only update the cached listItem in the
+         * cache where this listItem is currently stored.
+         * @returns {object} Promise which resolves with the updated list item from the server.
+         * @example
+         * <pre>
+         * // Example of saveFields function on a fictitious
+         * // app/modules/tasks/TaskDetailsCtrl.js modal form.
+         * // Similar to saveChanges but instead we only save
+         * // specified fields instead of pushing everything.
+         * $scope.updateStatus = function(task) {
+         *      task.saveFields(['status', 'notes']).then(function() {
+         *          // Successfully updated the status and
+         *          // notes fields for the given task
+         *
+         *          }, function() {
+         *          // Failure to update the field
+         *
+         *          });
+         * }
+         * </pre>
+         */
+        ListItem.prototype.saveFields = function (fieldArray, options) {
+            var listItem = this;
+            var model = listItem.getModel();
+            var definitions = [];
+            /** Allow a string to be passed in to save a single field */
+            var fieldNames = _.isString(fieldArray) ? [fieldArray] : fieldArray;
+            /** Find the field definition for each of the requested fields */
+            _.each(fieldNames, function (field) {
+                var match = _.find(model.list.customFields, { mappedName: field });
+                if (match) {
+                    definitions.push(match);
+                }
+            });
+            /** Generate value pairs for specified fields */
+            var valuePairs = apEncodeService.generateValuePairs(definitions, listItem);
+            var defaults = { buildValuePairs: false, valuePairs: valuePairs };
+            /** Extend defaults with any provided options */
+            var opts = _.assign({}, defaults, options);
+            return apDataService.updateListItem(model, listItem, opts)
+                .then(function (updatedListItem) {
+                /** Optionally broadcast change event */
+                apUtilityService.registerChange(model, 'update', updatedListItem.id);
+                return updatedListItem;
+            });
+        };
+        /**
+         * @ngdoc function
+         * @name ListItem.setPristine
+         * @param {ListItem} [listItem] Optionally pass list item object back to the list item constructor to
+         * run any initialization logic.  Otherwise we just overwrite existing values on the object with a copy from the
+         * original object.
+         * @description
+         * Resets all list item properties back to a pristine state but doesn't update any properties added
+         * manually to the list item.
+         */
+        ListItem.prototype.setPristine = function (listItem) {
+            if (!this.id || !_.isFunction(this.getPristine)) {
+                throw new Error('Unable to find the pristine state for this list item.');
+            }
+            var pristineState = this.getPristine();
+            if (listItem) {
+                listItem.constructor(pristineState);
+            }
+            else {
+                _.assign(this, pristineState);
+            }
+        };
+        /**
+         * @ngdoc function
+         * @name ListItem.startWorkflow
+         * @description
+         * Given a workflow name or templateId we initiate a given workflow using apDataService.startWorkflow.
+         * @param {object} options Params for method and pass through options to apDataService.startWorkflow.
+         * @param {string} [options.templateId] Used to directly start the workflow without looking up the templateId.
+         * @param {string} [options.workflowName] Use this value to lookup the templateId and then start the workflow.
+         * @returns {promise} Resolves with server response.
+         */
+        ListItem.prototype.startWorkflow = function (options) {
+            var listItem = this, deferred = $q.defer();
+            /** Set the relative file reference */
+            options.fileRef = listItem.fileRef.lookupValue;
+            if (!options.templateId && !options.workflowName) {
+                throw new Error('Either a templateId or workflowName is required to initiate a workflow.');
+            }
+            else if (options.templateId) {
+                /** The templateId is already provided so we don't need to look for it */
+                initiateRequest();
+            }
+            else {
+                /** We first need to get the template GUID for the workflow */
+                listItem.getAvailableWorkflows()
+                    .then(function (workflows) {
+                    var targetWorklow = _.findWhere(workflows, { name: options.workflowName });
+                    if (!targetWorklow) {
+                        throw new Error('A workflow with the specified name wasn\'t found.');
+                    }
+                    /** Create an extended set of options to pass any overrides to apDataService */
+                    options.templateId = targetWorklow.templateId;
+                    initiateRequest();
+                });
+            }
+            return deferred.promise;
+            function initiateRequest() {
+                apDataService.startWorkflow(options)
+                    .then(function (xmlResponse) {
+                    deferred.resolve(xmlResponse);
+                });
+            }
+        };
+        /**
+         * @ngdoc function
+         * @name ListItem.validateEntity
+         * @description
+         * Helper function that passes the current item to Model.validateEntity
+         * @param {object} [options] Optionally pass params to the dataService.
+         * @param {boolean} [options.toast=true] Set to false to prevent toastr messages from being displayed.
+         * @returns {boolean} Evaluation of validity.
+         */
+        ListItem.prototype.validateEntity = function (options) {
+            var listItem = this, model = listItem.getModel();
+            return model.validateEntity(listItem, options);
+        };
+        return ListItem;
+    })();
+    ap.ListItem = ListItem;
+    /** In the event that a factory isn't specified, just use a
+     * standard constructor to allow it to inherit from ListItem */
+    var StandardListItem = (function () {
+        function StandardListItem(obj) {
+            _.assign(this, obj);
+        }
+        return StandardListItem;
+    })();
+    ap.StandardListItem = StandardListItem;
+    /**
+     * @ngdoc object
+     * @name apListItemFactory
+     * @description
+     * Exposes the ListItem prototype and a constructor to instantiate a new ListItem.
+     * See [ListItem](#/api/ListItem) for details of the methods available on the prototype.
+     *
+     * @requires ListItem
+     * @requires apCacheService
+     * @requires apDataService
+     * @requires apUtilityService
+     */
+    var ListItemFactory = (function () {
+        function ListItemFactory(_$q_, _apCacheService_, _apConfig_, _apDataService_, _apDecodeService_, _apEncodeService_, _apUtilityService_, _toastr_, _apListItemVersionFactory_) {
+            this.ListItem = ListItem;
+            $q = _$q_;
+            apCacheService = _apCacheService_;
+            apConfig = _apConfig_;
+            apDataService = _apDataService_;
+            apDecodeService = _apDecodeService_;
+            apEncodeService = _apEncodeService_;
+            apUtilityService = _apUtilityService_;
+            toastr = _toastr_;
+            apListItemVersionFactory = _apListItemVersionFactory_;
+        }
+        /**
+         * @ngdoc function
+         * @name apListItemFactory: create
+         * @methodOf apListItemFactory
+         * @description
+         * Instantiates and returns a new ListItem.
+         */
+        ListItemFactory.prototype.create = function () {
+            return new ListItem();
+        };
+        /**
+         * @ngdoc function
+         * @name apListItemFactory: createGenericFactory
+         * @methodOf apListItemFactory
+         * @description
+         * In the event that a factory isn't specified, just use a
+         * standard constructor to allow it to inherit from ListItem
+         */
+        ListItemFactory.prototype.createGenericFactory = function () {
+            return new StandardListItem();
+        };
+        ListItemFactory.$inject = ['$q', 'apCacheService', 'apConfig', 'apDataService', 'apDecodeService', 'apEncodeService', 'apUtilityService', 'toastr', 'apListItemVersionFactory'];
+        return ListItemFactory;
+    })();
+    ap.ListItemFactory = ListItemFactory;
+    angular
+        .module('angularPoint')
+        .service('apListItemFactory', ListItemFactory);
+})(ap || (ap = {}));
+
+/// <reference path="../app.module.ts" />
+var __extends = (this && this.__extends) || function (d, b) {
+    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+    function __() { this.constructor = d; }
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+};
+var ap;
+(function (ap) {
+    'use strict';
+    /**
+     * @ngdoc object
+     * @name apListItemVersionFactory.FieldVersionCollection
+     * @param {FieldDefinition} fieldDefinition Field definition of each version of the field added.
+     * @description
+     * Object that contains the entire version history for a given list item field/property.
+     */
+    var FieldVersionCollection = (function () {
+        function FieldVersionCollection(fieldDefinition) {
+            this.versions = {};
+            this.fieldDefinition = fieldDefinition;
+        }
+        /**
+        * @ngdoc object
+        * @name apListItemVersionFactory.FieldVersionCollection.addVersion
+        * @methodOf apListItemVersionFactory.FieldVersionCollection
+        * @param {IUser} editor User who made the change.
+        * @param {Date} modified Date modified.
+        * @param {any} value Value of the field at this version.
+        * @param {number} version The version number.
+        * @description
+        * Used to add a single version to the collection.
+        */
+        FieldVersionCollection.prototype.addVersion = function (editor, modified, value, version) {
+            this.versions[version] = {
+                editor: editor,
+                modified: modified,
+                value: value,
+                version: version
+            };
+        };
+        Object.defineProperty(FieldVersionCollection.prototype, "mappedName", {
+            get: function () {
+                return this.fieldDefinition.mappedName;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(FieldVersionCollection.prototype, "length", {
+            get: function () {
+                return _.keys(this.versions).length;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        return FieldVersionCollection;
+    })();
+    ap.FieldVersionCollection = FieldVersionCollection;
+    var FieldChange = (function () {
+        function FieldChange(propertyName, fieldDefinition, newerVersion, previousVersion) {
+            if (previousVersion === void 0) { previousVersion = {}; }
+            this.fieldName = fieldDefinition.displayName;
+            this.newerVersion = newerVersion;
+            /** Need to set property name before calling this.getFormattedValue */
+            this.propertyName = propertyName;
+            this.newValue = this.getFormattedValue(newerVersion);
+            this.oldValue = this.getFormattedValue(previousVersion);
+            this.previousVersion = previousVersion;
+        }
+        FieldChange.prototype.getFormattedValue = function (version) {
+            var propertyValue = '';
+            if (version.getFormattedValue) {
+                propertyValue = version.getFormattedValue(this.propertyName);
+            }
+            return propertyValue;
+        };
+        return FieldChange;
+    })();
+    /**
+     * @ngdoc object
+     * @name apListItemVersionFactory.FieldChangeSummary
+     * @param {ListItem<T>} newerVersion Updated version of list item.
+     * @param {ListItem<T>} [previousVersion={}] Previous version of list item.
+     * @description
+     * Generates a snapshot between 2 versions of a list item and locates diferences.
+     */
+    var FieldChangeSummary = (function () {
+        function FieldChangeSummary(newerVersion, previousVersion) {
+            var _this = this;
+            if (previousVersion === void 0) { previousVersion = {}; }
+            this.fieldsChanged = {};
+            /** Loop through each of the properties on the newer list item */
+            _.each(newerVersion, function (val, propertyName) {
+                var fieldDefinition = newerVersion.getFieldDefinition(propertyName);
+                /** Only log non-readonly fields that aren't the same */
+                if (fieldDefinition && !fieldDefinition.readOnly &&
+                    JSON.stringify(newerVersion[propertyName]) !== JSON.stringify(previousVersion[propertyName])) {
+                    var fieldChange = new FieldChange(propertyName, fieldDefinition, newerVersion, previousVersion);
+                    if (fieldChange.newValue !== fieldChange.oldValue) {
+                        /** This field has changed */
+                        _this.fieldsChanged[propertyName] = fieldChange;
+                    }
+                }
+            });
+            this.changeCount = _.keys(this.fieldsChanged).length;
+        }
+        Object.defineProperty(FieldChangeSummary.prototype, "hasMajorChanges", {
+            get: function () {
+                return _.isNumber(this.changeCount) && this.changeCount > 0;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        return FieldChangeSummary;
+    })();
+    ap.FieldChangeSummary = FieldChangeSummary;
+    /**
+     * @ngdoc object
+     * @name apListItemVersionFactory.VersionSummary
+     * @param {IListItemVersion<T>} newerVersion Updated version of list item.
+     * @param {IListItemVersion<T>} [previousVersion={}] Previous version of list item.
+     * @description
+     * Used specifically to determine difference between 2 distinct versions of a list item using the
+     * version history.  Extends FieldChangeSummary.
+     */
+    var VersionSummary = (function (_super) {
+        __extends(VersionSummary, _super);
+        function VersionSummary(newerVersion, previousVersion) {
+            if (previousVersion === void 0) { previousVersion = {}; }
+            _super.call(this, newerVersion, previousVersion);
+            this.listItemVersion = newerVersion;
+            this.version = newerVersion.version;
+        }
+        Object.defineProperty(VersionSummary.prototype, "editor", {
+            get: function () {
+                return this.listItemVersion.editor;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(VersionSummary.prototype, "modified", {
+            get: function () {
+                return this.listItemVersion.modified;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        return VersionSummary;
+    })(FieldChangeSummary);
+    ap.VersionSummary = VersionSummary;
+    /**
+     * @ngdoc object
+     * @name apListItemVersionFactory.ChangeSummary
+     * @param {IListItemVersions} versions Multiple versions of a list item.
+     * @description
+     * Used to summarize all changes for a given list item.
+     */
+    var ChangeSummary = (function () {
+        function ChangeSummary(versions) {
+            var _this = this;
+            /** The number of versions where list item data actually changed */
+            this.significantVersionCount = 0;
+            this.versionSummaryCollection = {};
+            /** First version won't have a previous version */
+            var previousVersion;
+            _.each(versions, function (version) {
+                var versionSummary = new VersionSummary(version, previousVersion);
+                if (versionSummary.hasMajorChanges) {
+                    _this.significantVersionCount++;
+                }
+                _this.versionSummaryCollection[versionSummary.version] = versionSummary;
+                /** Store this version so we can compare to the next version */
+                previousVersion = version;
+            });
+        }
+        Object.defineProperty(ChangeSummary.prototype, "changes", {
+            //Use getter in case we need to alter the way we store this in future
+            get: function () {
+                return this.versionSummaryCollection;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        ChangeSummary.prototype.count = function () {
+            return _.keys(this.versionSummaryCollection).length;
+        };
+        ChangeSummary.prototype.toArray = function () {
+            return _.toArray(this.versionSummaryCollection);
+        };
+        return ChangeSummary;
+    })();
+    ap.ChangeSummary = ChangeSummary;
+    var VersionHistoryCollection = (function () {
+        // getFactory: () => IModelFactory;
+        function VersionHistoryCollection(fieldVersionCollections, factory) {
+            var _this = this;
+            /** Iterate through each of the field version collections */
+            _.each(fieldVersionCollections, function (fieldVersionCollection) {
+                _this.addFieldCollection(fieldVersionCollection, factory);
+            });
+        }
+        VersionHistoryCollection.prototype.addFieldCollection = function (fieldVersionCollection, factory) {
+            var _this = this;
+            /** Iterate through each version of this field */
+            _.each(fieldVersionCollection.versions, function (fieldVersion, versionNumber) {
+                /** Create a new version object if it doesn't already exist */
+                _this[versionNumber] = _this[versionNumber] || new factory({
+                    editor: fieldVersion.editor,
+                    modified: fieldVersion.modified,
+                    /** Iterating over object properties which converts everything to string so convert back */
+                    version: parseInt(versionNumber)
+                });
+                /** Add field to the version history for this version with computed property name */
+                _this[versionNumber][fieldVersionCollection.mappedName] = fieldVersion.value;
+            });
+        };
+        VersionHistoryCollection.prototype.count = function () {
+            return _.keys(this).length;
+        };
+        VersionHistoryCollection.prototype.generateChangeSummary = function () {
+            return new ChangeSummary(this);
+        };
+        VersionHistoryCollection.prototype.toArray = function () {
+            return _.toArray(this);
+        };
+        return VersionHistoryCollection;
+    })();
+    ap.VersionHistoryCollection = VersionHistoryCollection;
+    var ListItemVersionFactory = (function () {
+        function ListItemVersionFactory() {
+            this.ChangeSummary = ChangeSummary;
+            this.FieldChangeSummary = FieldChangeSummary;
+            this.FieldVersionCollection = FieldVersionCollection;
+            this.VersionHistoryCollection = VersionHistoryCollection;
+            this.VersionSummary = VersionSummary;
+        }
+        return ListItemVersionFactory;
+    })();
+    ap.ListItemVersionFactory = ListItemVersionFactory;
+    /**
+    * @ngdoc function
+    * @name apListItemVersionFactory
+    * @description
+    * Factory which handles parsing list item versions and identifying changes.
+    *
+    */
+    angular.module('angularPoint')
+        .service('apListItemVersionFactory', ListItemVersionFactory);
+})(ap || (ap = {}));
+
+/// <reference path="../app.module.ts" />
+var ap;
+(function (ap) {
+    'use strict';
+    var $q, apUtilityService;
+    /**
+     * @ngdoc function
+     * @name Lookup
+     * @description
+     * Allows for easier distinction when debugging if object type is shown as either Lookup or User.  Also allows us
+     * to create an async request for the entity being referenced by the lookup
+     * @param {string} s String to split into lookupValue and lookupId
+     * @param {object} options Contains a reference to the parent list item and the property name.
+     * @param {object} options.entity Reference to parent list item.
+     * @param {object} options.propertyName Key on list item object.
+     * @constructor
+     */
+    var Lookup = (function () {
+        function Lookup(s, options) {
+            var lookup = this;
+            var thisLookup = new apUtilityService.SplitIndex(s);
+            lookup.lookupId = thisLookup.id;
+            lookup.lookupValue = thisLookup.value || '';
+        }
+        return Lookup;
+    })();
+    ap.Lookup = Lookup;
+    var LookupFactory = (function () {
+        function LookupFactory(_$q_, _apUtilityService_) {
+            this.Lookup = Lookup;
+            $q = _$q_;
+            apUtilityService = _apUtilityService_;
+        }
+        /**
+         * @ngdoc function
+         * @name angularPoint.apLookupFactory:create
+         * @methodOf angularPoint.apLookupFactory
+         * @description
+         * Instantiates and returns a new Lookup field.
+         */
+        LookupFactory.prototype.create = function (s, options) {
+            return new Lookup(s, options);
+        };
+        LookupFactory.$inject = ['$q', 'apUtilityService'];
+        return LookupFactory;
+    })();
+    ap.LookupFactory = LookupFactory;
+    /**
+     * @ngdoc function
+     * @name angularPoint.apLookupFactory
+     * @description
+     * Tools to assist with the creation of CAML queries.
+     *
+     */
+    angular.module('angularPoint')
+        .service('apLookupFactory', LookupFactory);
+})(ap || (ap = {}));
+
+/// <reference path="../app.module.ts" />
+var ap;
+(function (ap) {
+    'use strict';
+    var apCacheService, apDataService, apListFactory, apQueryFactory, apUtilityService, apFieldService, apConfig, apIndexedCacheFactory, apDecodeService, $q, toastr;
+    /**
+     * @ngdoc function
+     * @name Model
+     * @description
+     * Model Constructor
+     * Provides the Following
+     * - adds an empty "data" array
+     * - adds an empty "queries" object
+     * - adds a deferred obj "ready"
+     * - builds "model.list" with constructor
+     * - adds "getAllListItems" function
+     * - adds "addNewItem" function
+     * @param {object} config Object containing optional params.
+     * @param {object} [config.factory = apListItemFactory.createGenericFactory()] - Constructor function for
+     * individual list items.
+     * @param {boolean} [config.fieldDefinitionsExtended=false] Queries using the GetListItemChangesSinceToken
+     * operation return the full list definition along with the requested entities.  The first time one of these
+     * queries is executed we will try to extend our field definitions defined in the model with the additional
+     * information provided from the server.  Examples are options for a Choice field, display name of the field,
+     * field description, and any other field information provided for the fields specified in the model.  This
+     * flag is set once the first query is complete so we don't process again.
+     * @param {object} config.list - Definition of the list in SharePoint.
+     * be passed to the list constructor to extend further
+     * @param {string} config.list.title - List name, no spaces.  Offline XML file will need to be
+     * named the same (ex: CustomList so xml file would be apConfig.offlineXML + '/CustomList.xml')
+     * @param {string} config.list.getListId() - Unique SharePoint ID (ex: '{3DBEB25A-BEF0-4213-A634-00DAF46E3897}')
+     * @param {object[]} config.list.customFields - Maps SharePoint fields with names we'll use within the
+     * application.  Identifies field types and formats accordingly.  Also denotes if a field is read only.
+     * @constructor
+     *
+     * @example
+     * <pre>
+     * //Taken from a fictitious projectsModel.ts
+     *
+     * export class ProjectsModel extends ap.Model {
+     *      constructor() {
+     *          super({
+     *              factory: Project,
+     *              list: {
+     *                  guid: '{PROJECT LIST GUID}',
+     *                  title: 'Projects',
+     *                  customFields: [
+     *                      {
+     *                         staticName: 'Title',
+     *                         objectType: 'Text',
+     *                         mappedName: 'title',
+     *                         readOnly: false
+     *                      },
+     *                      {
+     *                         staticName: 'Customer',
+     *                         objectType: 'Lookup',
+     *                         mappedName: 'customer',
+     *                         readOnly: false
+     *                      },
+     *                      {
+     *                         staticName: 'ProjectDescription',
+     *                         objectType: 'Text',
+     *                         mappedName: 'projectDescription',
+     *                         readOnly: false
+     *                      },
+     *                      {
+     *                         staticName: 'Status',
+     *                         objectType: 'Text',
+     *                         mappedName: 'status',
+     *                         readOnly: false
+     *                      },
+     *                      {
+     *                         staticName: 'TaskManager',
+     *                         objectType: 'User',
+     *                         mappedName: 'taskManager',
+     *                         readOnly: false
+     *                      },
+     *                      {
+     *                         staticName: 'ProjectGroup',
+     *                         objectType: 'Lookup',
+     *                         mappedName: 'group',
+     *                         readOnly: false
+     *                      },
+     *                      {
+     *                         staticName: 'CostEstimate',
+     *                         objectType: 'Currency',
+     *                         mappedName: 'costEstimate',
+     *                         readOnly: false
+     *                      },
+     *                      {
+     *                         staticName: 'Active',
+     *                         objectType: 'Boolean',
+     *                         mappedName: 'active',
+     *                         readOnly: false
+     *                      },
+     *                      {
+     *                         staticName: 'Attachments',
+     *                         objectType: 'Attachments',
+     *                         mappedName: 'attachments',
+     *                         readOnly: true
+     *                      }
+     *                  ]
+     *              }
+     *          });
+     *
+     *          var model = this;
+     *
+     *          //Any other model setup
+     *      }
+     *      someExposedModelMethod() {
+     *          this.dosomething...
+     *      }
+     *
+     *   }
+     * </pre>
+     */
+    var Model = (function () {
+        function Model(config) {
+            var _this = this;
+            this.data = [];
+            this.fieldDefinitionsExtended = false;
+            this.queries = {};
+            /** Assign all properties of config to the model */
+            _.assign(this, config);
+            /** Allow us to reference the model directly from the list item's factory prototype */
+            this.factory.prototype.getModel = function () { return _this; };
+            /** Use list constructor to instantiate valid list */
+            this.list = new ap.List(this.list);
+            /** Register cache name with cache service so we can map factory name with list GUID */
+            apCacheService.registerModel(this);
+            /** Convenience querys that simply returns all list items within a list. */
+            this.registerQuery({
+                name: '__getAllListItems',
+                operation: 'GetListItems'
+            });
+            /** Get a single list item from a list, primarily used to quickly identify user
+             *  permissions on list using the ows_PermMask property.  List items can have unique permissions
+             *  so can't rely on this 100% to correctly resolve list permissions.  In the case where that is
+             *  necessary you will need to use a similar query using GetListItemChangesSinceToken method which
+             *  will take longer but will correctly resolve the list permissions. */
+            this.registerQuery({
+                name: '__sample',
+                operation: 'GetListItems',
+                CAMLRowLimit: 1
+            });
+        }
+        /**
+         * @ngdoc function
+         * @name Model.addNewItem
+         * @module Model
+         * @description
+         * Using the definition of a list stored in a model, create a new list item in SharePoint.
+         * @param {object} entity An object that will be converted into key/value pairs based on the field definitions
+         * defined in the model.
+         * @param {object} [options] - Pass additional options to the data service.
+         * @returns {object} A promise which when resolved will returned the newly created list item from there server.
+         * This allows us to update the view with a valid new object that contains a unique list item id.
+         *
+         * @example
+         * <pre>
+         * <file name="app/modules/project/projectsModel.js">
+         * projectModel.addNewItem({
+         *        title: 'A Project',
+         *        customer: {lookupValue: 'My Customer', lookupId: 123},
+         *        description: 'This is the project description'
+         *     }).then(function(newEntityFromServer) {
+         *         //The local query cache is automatically updated but
+         *         //any other dependent logic can go here
+         * };
+         * </file>
+         * </pre>
+         */
+        Model.prototype.addNewItem = function (entity, options) {
+            var model = this;
+            return apDataService.createListItem(model, entity, options)
+                .then(function (listItem) {
+                /** Optionally broadcast change event */
+                apUtilityService.registerChange(model, 'create', listItem.id);
+                return listItem;
+            });
+        };
+        /**
+         * @ngdoc function
+         * @name Model.createEmptyItem
+         * @module Model
+         * @description
+         * Creates an object using the editable fields from the model, all attributes are empty based on the field
+         * type unless an overrides object is passed in.  The overrides object extends the defaults.  A benefit to this
+         * approach is the returned object inherits from the ListItem prototype so we have the ability to call
+         * entity.saveChanges instead of calling the model.addNewItem(entity).
+         *
+         * @param {object} [overrides] - Optionally extend the new empty item with specific values.
+         * @returns {object} Newly created list item.
+         */
+        Model.prototype.createEmptyItem = function (overrides) {
+            var model = this;
+            var newItem = {};
+            _.each(model.list.customFields, function (fieldDefinition) {
+                /** Create attributes for each non-readonly field definition */
+                if (!fieldDefinition.readOnly) {
+                    /** Create an attribute with the expected empty value based on field definition type */
+                    newItem[fieldDefinition.mappedName] = apFieldService.getDefaultValueForType(fieldDefinition.objectType);
+                }
+            });
+            /** Extend any values that should override the default empty values */
+            var rawObject = _.assign({}, newItem, overrides);
+            return new model.factory(rawObject);
+        };
+        /**
+         * @ngdoc function
+         * @name Model.executeQuery
+         * @module Model
+         * @description
+         * The primary method for retrieving data from a query registered on a model.  It returns a promise
+         * which resolves to the local cache after post processing entities with constructors.
+         *
+         * @param {string} [queryName=apConfig.defaultQueryName] A unique key to identify this query
+         * @param {object} [options] Pass options to the data service.
+         * @returns {object} Promise that when resolves returns an array of list items which inherit from ListItem and
+         * optionally go through a defined constructor on the model.
+         *
+         * @example To call the query or check for changes since the last call.
+         * <pre>
+         * projectModel.executeQuery('MyCustomQuery').then(function(entities) {
+         *      //We now have a reference to array of entities stored in the local cache
+         *      //These inherit from the ListItem prototype as well as the Project prototype on the model
+         *      $scope.subsetOfProjects = entities;
+         *  });
+         * </pre>
+         */
+        Model.prototype.executeQuery = function (queryName, options) {
+            var model = this;
+            var query = model.getQuery(queryName);
+            if (query) {
+                return query.execute(options);
+            }
+        };
+        /**
+         * @ngdoc function
+         * @name Model.extendListMetadata
+         * @module Model
+         * @description
+         * Extends the List and Fields with list information returned from the server.  Only runs once and after that
+         * returns the existing promise.
+         * @param {object} [options] Pass-through options to apDataService.getList
+         * @returns {ng.IPromise<Model>} Promise that is resolved with the extended model.
+         */
+        Model.prototype.extendListMetadata = function (options) {
+            var model = this, deferred = $q.defer(), defaults = { listName: model.getListId() };
+            /** Only request information if the list hasn't already been extended and is not currently being requested */
+            if (!model.deferredListDefinition) {
+                /** All Future Requests get this */
+                model.deferredListDefinition = deferred.promise;
+                var opts = _.assign({}, defaults, options);
+                var getListAction = apDataService.getList(opts);
+                /** We can potentially have 2 seperate requests for data so store them in array so we can wait until
+                 * all are resolved. */
+                var promiseArray = [getListAction];
+                /** Add a request for a sample list item to the server requests if we haven't
+                 * already resolved user permissions for the list. */
+                if (!model.getList().permissions) {
+                    /** Permissions not set yet, when the query is resolved with a sample list item
+                     * the query class will use the permMask from the list item to set the temp permissions
+                     * for the list until a time where we can run a GetListItemChangesSinceToken request and
+                     * set the actual permissions. */
+                    promiseArray.push(model.executeQuery('__sample'));
+                }
+                $q.all(promiseArray)
+                    .then(function (resolvedPromises) {
+                    apDecodeService.extendListMetadata(model, resolvedPromises[0]);
+                    deferred.resolve(model);
+                });
+            }
+            return model.deferredListDefinition;
+        };
+        /**
+         * @ngdoc function
+         * @name Model.generateMockData
+         * @module Model
+         * @description
+         * Generates 'n' mock records for testing using the field types defined in the model to provide something to visualize.
+         *
+         * @param {object} [options] Object containing optional parameters.
+         * @param {number} [options.quantity=10] The requested number of mock records to return.
+         * @param {string} [options.permissionLevel=FullMask] Sets the mask on the mock records to simulate desired
+         * permission level.
+         * @param {boolean} [options.staticValue=false] By default all mock data is dynamically created but if set,
+         * this will cause static data to be used instead.
+         */
+        Model.prototype.generateMockData = function (options) {
+            var mockData = [], model = this;
+            var defaults = {
+                quantity: 10,
+                staticValue: false,
+                permissionLevel: 'FullMask'
+            };
+            /** Extend defaults with any provided options */
+            var opts = _.assign({}, defaults, options);
+            _.times(opts.quantity, function (count) {
+                var mock = {
+                    id: count + 1
+                };
+                /** Create an attribute with mock data for each field */
+                _.each(model.list.fields, function (field) {
+                    mock[field.mappedName] = field.getMockData(opts);
+                });
+                /** Use the factory on the model to extend the object */
+                mockData.push(new model.factory(mock));
+            });
+            return mockData;
+        };
+        /**
+         * @ngdoc function
+         * @name Model.getAllListItems
+         * @module Model
+         * @description
+         * Inherited from Model constructor
+         * Gets all list items in the current list, processes the xml, and caches the data in model.
+         * @returns {object} Promise returning all list items when resolved.
+         * @example
+         * <pre>
+         * //Taken from a fictitious projectsModel.js
+         * projectModel.getAllListItems().then(function(entities) {
+         *     //Do something with all of the returned entities
+         *     $scope.projects = entities;
+         * };
+         * </pre>
+         */
+        Model.prototype.getAllListItems = function () {
+            var model = this;
+            var query = this.getQuery('__getAllListItems');
+            return apDataService.executeQuery(model, query, { target: query.indexedCache });
+        };
+        /**
+         * @ngdoc function
+         * @name Model.getCache
+         * @module Model
+         * @description
+         * Helper function that return the local cache for a named query if provided, otherwise
+         * it returns the cache for the primary query for the model.  Useful if you know the query
+         * has already been resolved and there's no need to check SharePoint for changes.
+         *
+         * @param {string} [queryName=apConfig.defaultQueryName] A unique key to identify this query.
+         * @returns {Array} Returns the contents of the current cache for a named query.
+         *
+         * @example
+         * <pre>
+         * var primaryQueryCache = projectModel.getCache();
+         * </pre>
+         *
+         * <pre>
+         * var primaryQueryCache = projectModel.getCache('primary');
+         * </pre>
+         *
+         * <pre>
+         * var namedQueryCache = projectModel.getCache('customQuery');
+         * </pre>
+         */
+        Model.prototype.getCache = function (queryName) {
+            var model = this, query, cache;
+            query = model.getQuery(queryName);
+            if (query && query.indexedCache) {
+                cache = query.indexedCache;
+            }
+            return cache;
+        };
+        /**
+         * @ngdoc function
+         * @name Model.getCachedEntities
+         * @module Model
+         * @description
+         * Returns all entities registered for this model regardless of query.
+         * @returns {IndexedCache<T>} All registered entities for this model.
+         */
+        Model.prototype.getCachedEntities = function () {
+            var model = this;
+            return apCacheService.getCachedEntities(model.getListId());
+        };
+        /**
+         * @ngdoc function
+         * @name Model.getCachedEntity
+         * @module Model
+         * @description
+         * Attempts to locate a model listItem by id.
+         * @param {number} listItemId The ID of the requested listItem.
+         * @returns {object} Returns either the requested listItem or undefined if it's not found.
+         */
+        Model.prototype.getCachedEntity = function (listItemId) {
+            var model = this;
+            return apCacheService.getCachedEntity(model.getListId(), listItemId);
+        };
+        /**
+         * @ngdoc function
+         * @name Model.getFieldDefinition
+         * @module Model
+         * @description
+         * Returns the field definition from the definitions defined in the custom fields array within a model.
+         * <pre>
+         * var project = {
+         *    title: 'Project 1',
+         *    location: {
+         *        lookupId: 5,
+         *        lookupValue: 'Some Building'
+         *    }
+         * };
+         *
+         * //To get field metadata
+         * var locationDefinition = projectsModel.getFieldDefinition('location');
+         * </pre>
+         * @param {string} fieldName Internal field name.
+         * @returns {object} Field definition.
+         */
+        Model.prototype.getFieldDefinition = function (fieldName) {
+            var model = this;
+            return _.find(model.list.fields, { mappedName: fieldName });
+        };
+        /**
+         * @ngdoc function
+         * @name ListItem.getList
+         * @description
+         * Allows us to reference the list definition directly from the list item.  This is added to the
+         * model.factory prototype in apModelFactory.  See the [List](#/api/List) documentation for more info.
+         * @returns {object} List for the list item.
+         */
+        Model.prototype.getList = function () {
+            return this.list;
+        };
+        /**
+         * @ngdoc function
+         * @name ListItem.getListId
+         * @description
+         * Allows us to reference the list ID directly from the model.
+         * @returns {string} List ID.
+         */
+        Model.prototype.getListId = function () {
+            return this.list.getListId();
+        };
+        /**
+         * @ngdoc function
+         * @name Model.getListItemById
+         * @param {number} listItemId Id of the item being requested.
+         * @param {object} options Used to override apDataService defaults.
+         * @description
+         * Inherited from Model constructor
+         * Attempts to retrieve the requested list item from the server.
+         * @returns {object} Promise that resolves with the requested list item if found.  Otherwise it returns undefined.
+         * @example
+         * <pre>
+         * //Taken from a fictitious projectsModel.js
+         * projectModel.getListItemById(12).then(function(listItem) {
+         *     //Do something with the located listItem
+         *     $scope.project = listItem;
+         * };
+         * </pre>
+         */
+        Model.prototype.getListItemById = function (listItemId, options) {
+            var model = this, 
+            /** Unique Query Name */
+            queryKey = 'GetListItemById-' + listItemId;
+            /** Register a new Query if it doesn't already exist */
+            if (!model.getQuery(queryKey)) {
+                var defaults = {
+                    name: queryKey,
+                    operation: 'GetListItems',
+                    CAMLRowLimit: 1,
+                    CAMLQuery: '' +
+                        '<Query>' +
+                        ' <Where>' +
+                        '   <Eq>' +
+                        '     <FieldRef Name="ID"/>' +
+                        '     <Value Type="Number">' + listItemId + '</Value>' +
+                        '   </Eq>' +
+                        ' </Where>' +
+                        '</Query>'
+                };
+                /** Allows us to override defaults */
+                var opts = _.assign({}, defaults, options);
+                model.registerQuery(opts);
+            }
+            return model.executeQuery(queryKey)
+                .then(function (indexedCache) {
+                /** Should return an indexed cache object with a single listItem so just return the requested listItem */
+                return indexedCache.first();
+            });
+        };
+        /**
+         * @ngdoc function
+         * @name ListItem.getModel
+         * @description
+         * Allows us to reference the parent model directly from the list item.  This is added to the
+         * model.factory prototype in apModelFactory.  See the [List](#/api/List) documentation for more info.
+         * @returns {object} Model for the list item.
+         */
+        Model.prototype.getModel = function () {
+            return this;
+        };
+        /**
+         * @ngdoc function
+         * @name Model.getQuery
+         * @module Model
+         * @description
+         * Helper function that attempts to locate and return a reference to the requested or catchall query.
+         * @param {string} [queryName=apConfig.defaultQueryName] A unique key to identify this query.
+         * @returns {object} See Query prototype for additional details on what a Query looks like.
+         *
+         * @example
+         * <pre>
+         * var primaryQuery = projectModel.getQuery();
+         * </pre>
+         *
+         * <pre>
+         * var primaryQuery = projectModel.getQuery('primary');
+         * </pre>
+         *
+         * <pre>
+         * var namedQuery = projectModel.getQuery('customQuery');
+         * </pre>
+         */
+        Model.prototype.getQuery = function (queryName) {
+            var model = this, query;
+            if (_.isObject(model.queries[queryName])) {
+                /** The named query exists */
+                query = model.queries[queryName];
+            }
+            else if (_.isObject(model.queries[apConfig.defaultQueryName]) && !queryName) {
+                /** A named query wasn't specified and the catchall query exists */
+                query = model.queries[apConfig.defaultQueryName];
+            }
+            else {
+                /** Requested query not found */
+                query = undefined;
+            }
+            return query;
+        };
+        /**
+         * @ngdoc function
+         * @name Model.isInitialised
+         * @module Model
+         * @description
+         * Methods which allows us to easily determine if we've successfully made any queries this session.
+         * @returns {boolean} Returns evaluation.
+         */
+        Model.prototype.isInitialised = function () {
+            var model = this;
+            return _.isDate(model.lastServerUpdate);
+        };
+        /**
+        * @ngdoc function
+        * @name Model.registerQuery
+        * @module Model
+        * @description
+        * Constructor that allows us create a static query with the option to build dynamic queries as seen in the
+        * third example.  This construct is a passthrough to [SPServices](http: //spservices.codeplex.com/)
+        * @param {object} queryOptions Initialization parameters.
+        * @param {boolean} [queryOptions.force=false] Ignore cached data and force server query.
+        * @param {number} [queryOptions.listItemID] Optionally request for a single list item by id.
+        * @param {boolean} [queryOptions.localStorage=false] Should we store data from this query in local storage to speed up requests in the future.
+        * @param {number} [queryOptions.localStorageExpiration=86400000] Set expiration in milliseconds - Defaults to a day
+        * and if set to 0 doesn't expire.  Can be updated globally using apConfig.localStorageExpiration.
+        * @param {string} [queryOptions.name=primary] The name that we use to identify this query.
+        * @param {string} [queryOptions.operation=GetListItemChangesSinceToken] Optionally use 'GetListItems' to
+        * receive a more efficient response, just don't have the ability to check for changes since the last time
+        * the query was called. Defaults to [GetListItemChangesSinceToken](http://msdn.microsoft.com/en-us/library/lists.lists.getlistitemchangessincetoken%28v=office.12%29.aspx)
+        * but for a smaller payload and faster response you can use [GetListItems](http: //spservices.codeplex.com/wikipage?title=GetListItems&referringTitle=Lists).
+        * @param {string} [queryOptions.query=Ordered ascending by ID] CAML query passed to SharePoint to control
+        * the data SharePoint returns. Josh McCarty has a good quick reference [here](http: //joshmccarty.com/2012/06/a-caml-query-quick-reference).
+        * @param {string} [queryOptions.queryOptions] SharePoint options xml as string.
+        * <pre>
+        * <QueryOptions>
+        *    <IncludeMandatoryColumns>FALSE</IncludeMandatoryColumns>
+        *    <IncludeAttachmentUrls>TRUE</IncludeAttachmentUrls>
+        *    <IncludeAttachmentVersion>FALSE</IncludeAttachmentVersion>
+        *    <ExpandUserField>FALSE</ExpandUserField>
+        * </QueryOptions>
+        * </pre>
+        * @param {string} [queryOptions.rowLimit] The number of list items to return, 0 returns all list items.
+        * @param {boolean} [queryOptions.runOnce] Pertains to GetListItems only, optionally run a single time and return initial value for all future
+        * calls.  Works well with data that isn't expected to change throughout the session but unlike localStorage or sessionStorage
+        * the data doesn't persist between sessions.
+        * @param {boolean} [queryOptions.sessionStorage=false] Use the browsers sessionStorage to cache the list items and uses the
+        * queryOptions.localStorageExpiration param to validate how long the cache is good for.
+        * @param {string} [queryOptions.viewFields] XML as string that specifies fields to return.
+        * @param {string} [queryOptions.webURL] Used to override the default URL if list is located somewhere else.
+        * @returns {object} Query Returns a new query object.
+        *
+        * @example
+        * <h4>Example #1</h4>
+        * <pre>
+        * // Query to retrieve the most recent 25 modifications
+        * model.registerQuery({
+        *    name: 'recentChanges',
+        *    rowLimit: 25,
+        *    query: '' +
+        *        '<Query>' +
+        *        '   <OrderBy>' +
+        *        '       <FieldRef Name="Modified" Ascending="FALSE"/>' +
+        *        '   </OrderBy>' +
+        *            //Prevents any records from being returned if user doesn't
+        *            // have permissions on project
+        *        '   <Where>' +
+        *        '       <IsNotNull>' +
+        *        '           <FieldRef Name="Project"/>' +
+        *        '       </IsNotNull>' +
+        *        '   </Where>' +
+        *        '</Query>'
+        * });
+        * </pre>
+        *
+        * <h4>Example #2</h4>
+        * <pre>
+        * // Could be placed on the projectModel and creates the query but doesn't
+        * // call it.  Uses the session cache to make the initial call faster.
+        * projectModel.registerQuery({
+        *     name: 'primary',
+        *     sessionCache: true,
+        *     //Set an expiration value of 8 hours rather than use the default of 24
+        *     localStorageExpiration: 28800000,
+        *     query: '' +
+        *         '<Query>' +
+        *         '   <OrderBy>' +
+        *         '       <FieldRef Name="Title" Ascending="TRUE"/>' +
+        *         '   </OrderBy>' +
+        *         '</Query>'
+        * });
+        *
+        * //To call the query or check for changes since the last call
+        * projectModel.executeQuery('primary')
+        *   .then((entities) => {
+        *     // We now have a reference to array of entities stored in the local
+        *     // cache.  These inherit from the ListItem prototype as well as the
+        *     // Project prototype on the model
+        *     vm.projects = entities;
+        *   })
+        *   .catch((err) => {
+        *       //Handle error
+        *   })
+        * </pre>
+        *
+        * <h4>Example #3</h4>
+        * <pre>
+        * // Advanced functionality that would allow us to dynamically create
+        * // queries for list items with a lookup field associated with a specific
+        * // project id.  Let's assume this is on the projectTasksModel.
+        * model.queryByProjectId(projectId) {
+        *     // Unique query name
+        *     var queryKey = 'pid' + projectId;
+        *
+        *     // Register project query if it doesn't exist
+        *     if (!_.isObject(model.queries[queryKey])) {
+        *         model.registerQuery({
+        *             name: queryKey,
+        *             query: '' +
+        *                 '<Query>' +
+        *                 '   <OrderBy>' +
+        *                 '       <FieldRef Name="ID" Ascending="TRUE"/>' +
+        *                 '   </OrderBy>' +
+        *                 '   <Where>' +
+        *                 '       <And>' +
+        *                              // Prevents any records from being returned
+        *                              //if user doesn't have permissions on project
+        *                 '           <IsNotNull>' +
+        *                 '               <FieldRef Name="Project"/>' +
+        *                 '           </IsNotNull>' +
+        *                              // Return all records for the project matching
+        *                              // param projectId
+        *                 '           <Eq>' +
+        *                 '               <FieldRef Name="Project" LookupId="TRUE"/>' +
+        *                 '               <Value Type="Lookup">' + projectId + '</Value>' +
+        *                 '           </Eq>' +
+        *                 '       </And>' +
+        *                 '   </Where>' +
+        *                 '</Query>'
+        *         });
+        *     }
+        *     //Still using execute query but now we have a custom query
+        *     return model.executeQuery(queryKey);
+        * };
+        * </pre>
+        */
+        Model.prototype.registerQuery = function (queryOptions) {
+            var model = this;
+            var defaults = {
+                /** If name isn't set, assume this is the only model and designate as primary */
+                name: apConfig.defaultQueryName
+            };
+            queryOptions = _.assign({}, defaults, queryOptions);
+            model.queries[queryOptions.name] = apQueryFactory.create(queryOptions, model);
+            /** Return the newly created query */
+            return model.queries[queryOptions.name];
+        };
+        /**
+         * @ngdoc function
+         * @name Model.resolvePermissions
+         * @module Model
+         * @description
+         * See apModelFactory.resolvePermissions for details on what we expect to have returned.
+         * @returns {Object} Contains properties for each permission level evaluated for current user.
+         * @example
+         * Lets assume we're checking to see if a user has edit rights for a given list.
+         * <pre>
+         * var userPermissions = tasksModel.resolvePermissions();
+         * var userCanEdit = userPermissions.EditListItems;
+         * </pre>
+         * Example of what the returned object would look like
+         * for a site admin.
+         * <pre>
+         * perm = {
+            *    "ViewListItems": true,
+            *    "AddListItems": true,
+            *    "EditListItems": true,
+            *    "DeleteListItems": true,
+            *    "ApproveItems": true,
+            *    "OpenItems": true,
+            *    "ViewVersions": true,
+            *    "DeleteVersions": true,
+            *    "CancelCheckout": true,
+            *    "PersonalViews": true,
+            *    "ManageLists": true,
+            *    "ViewFormPages": true,
+            *    "Open": true,
+            *    "ViewPages": true,
+            *    "AddAndCustomizePages": true,
+            *    "ApplyThemeAndBorder": true,
+            *    "ApplyStyleSheets": true,
+            *    "ViewUsageData": true,
+            *    "CreateSSCSite": true,
+            *    "ManageSubwebs": true,
+            *    "CreateGroups": true,
+            *    "ManagePermissions": true,
+            *    "BrowseDirectories": true,
+            *    "BrowseUserInfo": true,
+            *    "AddDelPrivateWebParts": true,
+            *    "UpdatePersonalWebParts": true,
+            *    "ManageWeb": true,
+            *    "UseRemoteAPIs": true,
+            *    "ManageAlerts": true,
+            *    "CreateAlerts": true,
+            *    "EditMyUserInfo": true,
+            *    "EnumeratePermissions": true,
+            *    "FullMask": true
+            * }
+         * </pre>
+         */
+        Model.prototype.resolvePermissions = function () {
+            var model = this, list = model.getList();
+            if (list && list.permissions) {
+                /** If request has been made to GetListItemChangesSinceToken we have already stored the
+                 * permission for this list. */
+                return list.permissions;
+            }
+            else if (model.getCachedEntities().first()) {
+                /** Next option is to use the same permission as one of the
+                 * already cached list items for this model. */
+                return list.extendPermissionsFromListItem(model.getCachedEntities().first());
+            }
+            else {
+                window.console.error('Attempted to resolve permissions of a model that hasn\'t been initialized.', model);
+                return new ap.BasePermissionObject();
+            }
+        };
+        /**
+         * @ngdoc function
+         * @name Model.validateEntity
+         * @module Model
+         * @description
+         * Uses the custom fields defined in an model to ensure each field (required = true) is evaluated
+         * based on field type
+         *
+         * @param {object} listItem SharePoint list item.
+         * @param {object} [options] Object containing optional parameters.
+         * @param {boolean} [options.toast=true] Should toasts be generated to alert the user of issues.
+         * @returns {boolean} Evaluation of validity.
+         */
+        Model.prototype.validateEntity = function (listItem, options) {
+            var valid = true, model = this;
+            var defaults = {
+                toast: true
+            };
+            /** Extend defaults with any provided options */
+            var opts = _.assign({}, defaults, options);
+            var checkObject = function (fieldValue) {
+                return _.isObject(fieldValue) && _.isNumber(fieldValue.lookupId);
+            };
+            _.each(model.list.customFields, function (fieldDefinition) {
+                var fieldValue = listItem[fieldDefinition.mappedName];
+                var fieldDescriptor = '"' + fieldDefinition.objectType + '" value.';
+                /** Only evaluate required fields */
+                if ((fieldDefinition.required || fieldDefinition.Required) && valid) {
+                    switch (fieldDefinition.objectType) {
+                        case 'Boolean':
+                            valid = _.isBoolean(fieldValue);
+                            break;
+                        case 'DateTime':
+                            valid = _.isDate(fieldValue);
+                            break;
+                        case 'Lookup':
+                        case 'User':
+                            valid = checkObject(fieldValue);
+                            break;
+                        case 'LookupMulti':
+                        case 'UserMulti':
+                            /** Ensure it's a valid array containing objects */
+                            valid = _.isArray(fieldValue) && fieldValue.length > 0;
+                            if (valid) {
+                                /** Additionally check that each lookup/person contains a lookupId */
+                                _.each(fieldValue, function (fieldObject) {
+                                    if (valid) {
+                                        valid = checkObject(fieldObject);
+                                    }
+                                    else {
+                                        /** Short circuit */
+                                        return false;
+                                    }
+                                });
+                            }
+                            break;
+                        default:
+                            /** Evaluate everything else as a string */
+                            valid = !_.isEmpty(fieldValue);
+                    }
+                    if (!valid && opts.toast) {
+                        var fieldName = fieldDefinition.label || fieldDefinition.staticName;
+                        toastr.error(fieldName + ' does not appear to be a valid ' + fieldDescriptor);
+                    }
+                }
+                if (!valid) {
+                    return false;
+                }
+            });
+            return valid;
+        };
+        return Model;
+    })();
+    ap.Model = Model;
+    var ModelFactory = (function () {
+        function ModelFactory(_$q_, _apCacheService_, _apConfig_, _apDataService_, _apDecodeService_, _apFieldService_, _apIndexedCacheFactory_, _apListFactory_, _apQueryFactory_, _apUtilityService_, _toastr_) {
+            this.Model = Model;
+            $q = _$q_;
+            apCacheService = _apCacheService_;
+            apConfig = _apConfig_;
+            apDataService = _apDataService_;
+            apDecodeService = _apDecodeService_;
+            apFieldService = _apFieldService_;
+            apIndexedCacheFactory = _apIndexedCacheFactory_;
+            apListFactory = _apListFactory_;
+            apQueryFactory = _apQueryFactory_;
+            apUtilityService = _apUtilityService_;
+            toastr = _toastr_;
+        }
+        ModelFactory.prototype.create = function (config) {
+            return new Model(config);
+        };
+        ModelFactory.$inject = ['$q', 'apCacheService', 'apConfig', 'apDataService', 'apDecodeService', 'apFieldService', 'apIndexedCacheFactory', 'apListFactory', 'apQueryFactory', 'apUtilityService', 'toastr'];
+        return ModelFactory;
+    })();
+    ap.ModelFactory = ModelFactory;
+    angular
+        .module('angularPoint')
+        .service('apModelFactory', ModelFactory);
+})(ap || (ap = {}));
+
+/// <reference path="../app.module.ts" />
+var ap;
+(function (ap) {
+    'use strict';
+    var $q, apIndexedCacheFactory, apConfig, apDefaultListItemQueryOptions, apDataService, apDecodeService, apLogger;
+    var LocalStorageQuery = (function () {
+        function LocalStorageQuery(key, stringifiedQuery) {
+            this.key = key;
+            var parsedQuery = JSON.parse(stringifiedQuery);
+            _.assign(this, parsedQuery);
+            this.lastRun = new Date(parsedQuery.lastRun);
+        }
+        LocalStorageQuery.prototype.hasExpired = function (localStorageExpiration) {
+            if (localStorageExpiration === void 0) { localStorageExpiration = apConfig.localStorageExpiration; }
+            var hasExpired = true;
+            if (_.isNaN(localStorage)) {
+                throw new Error('Local storage expiration is required to be a numeric value and instead is ' + localStorageExpiration);
+            }
+            else if (localStorageExpiration === 0) {
+                //No expiration
+                hasExpired = false;
+            }
+            else {
+                //Evaluate if cache has exceeded expiration
+                hasExpired = this.lastRun.getMilliseconds() + localStorageExpiration <= new Date().getMilliseconds();
+            }
+            return hasExpired;
+        };
+        LocalStorageQuery.prototype.removeItem = function () {
+            localStorage.removeItem(this.key);
+        };
+        return LocalStorageQuery;
+    })();
+    ap.LocalStorageQuery = LocalStorageQuery;
+    /**
+     * @ngdoc function
+     * @name Query
+     * @description
+     * Primary constructor that all queries inherit from. This object is a passthrough to [SPServices](http: //spservices.codeplex.com/).  All
+     * options to passed through to [dataService.executeQuery](#/api/dataService.executeQuery).
+     * @param {object} queryOptions Initialization parameters.
+     * @param {boolean} [queryOptions.force=false] Ignore cached data and force server query.
+     * @param {number} [queryOptions.listItemID] Optionally request for a single list item by id.
+     * @param {boolean} [queryOptions.localStorage=false] Should we store data from this query in local storage to speed up requests in the future.
+     * @param {number} [queryOptions.localStorageExpiration=86400000] Set expiration in milliseconds - Defaults to a day
+     * and if set to 0 doesn't expire.  Can be updated globally using apConfig.localStorageExpiration.
+     * @param {string} [queryOptions.name=primary] The name that we use to identify this query.
+     * @param {string} [queryOptions.operation=GetListItemChangesSinceToken] Optionally use 'GetListItems' to
+     * receive a more efficient response, just don't have the ability to check for changes since the last time
+     * the query was called. Defaults to [GetListItemChangesSinceToken](http://msdn.microsoft.com/en-us/library/lists.lists.getlistitemchangessincetoken%28v=office.12%29.aspx)
+     * but for a smaller payload and faster response you can use [GetListItems](http: //spservices.codeplex.com/wikipage?title=GetListItems&referringTitle=Lists).
+     * @param {string} [queryOptions.query=Ordered ascending by ID] CAML query passed to SharePoint to control
+     * the data SharePoint returns. Josh McCarty has a good quick reference [here](http: //joshmccarty.com/2012/06/a-caml-query-quick-reference).
+     * @param {string} [queryOptions.queryOptions] SharePoint options xml as string.
+     * <pre>
+     * <QueryOptions>
+     *    <IncludeMandatoryColumns>FALSE</IncludeMandatoryColumns>
+     *    <IncludeAttachmentUrls>TRUE</IncludeAttachmentUrls>
+     *    <IncludeAttachmentVersion>FALSE</IncludeAttachmentVersion>
+     *    <ExpandUserField>FALSE</ExpandUserField>
+     * </QueryOptions>
+     * </pre>
+     * @param {string} [queryOptions.rowLimit] The number of list items to return, 0 returns all list items.
+     * @param {boolean} [queryOptions.runOnce] Pertains to GetListItems only, optionally run a single time and return initial value for all future
+     * calls.  Works well with data that isn't expected to change throughout the session but unlike localStorage or sessionStorage
+     * the data doesn't persist between sessions.
+     * @param {boolean} [queryOptions.sessionStorage=false] Use the browsers sessionStorage to cache the list items and uses the
+     * queryOptions.localStorageExpiration param to validate how long the cache is good for.
+     * @param {string} [queryOptions.viewFields] XML as string that specifies fields to return.
+     * @param {string} [queryOptions.webURL] Used to override the default URL if list is located somewhere else.
+     * @param {object} model Reference to the parent model for the query.  Allows us to reference when out of
+     * scope.
+     * @example
+     * <pre>
+     * // Query to retrieve the most recent 25 modifications
+     * model.registerQuery({
+     *    name: 'recentChanges',
+     *    CAMLRowLimit: 25,
+     *    query: '' +
+     *        '<Query>' +
+     *        '   <OrderBy>' +
+     *        '       <FieldRef Name="Modified" Ascending="FALSE"/>' +
+     *        '   </OrderBy>' +
+     *            // Prevents any records from being returned if user
+     *            // doesn't have permissions on project
+     *        '   <Where>' +
+     *        '       <IsNotNull>' +
+     *        '           <FieldRef Name="Project"/>' +
+     *        '       </IsNotNull>' +
+     *        '   </Where>' +
+     *        '</Query>'
+     * });
+     * </pre>
+     */
+    var Query = (function () {
+        function Query(queryOptions, model) {
+            /** Very memory intensive to enable cacheXML which is disabled by default*/
+            this.cacheXML = false;
+            this.force = false;
+            /** Key value hash map with key being the id of the entity */
+            this.indexedCache = apIndexedCacheFactory.create();
+            /** Promise resolved after first time query is executed */
+            this.initialized = $q.defer();
+            /** Should we store data from this query in local storage to speed up requests in the future */
+            this.localStorage = false;
+            /** Set expiration in milliseconds - Defaults to a day and if set to 0 doesn't expire */
+            this.localStorageExpiration = apConfig.localStorageExpiration;
+            /** Flag to prevent us from makeing concurrent requests */
+            this.negotiatingWithServer = false;
+            /** Every time we run we want to check to update our cached data with
+             * any changes made on the server */
+            this.operation = 'GetListItemChangesSinceToken';
+            /** Default query returns list items in ascending ID order */
+            this.query = "\n        <Query>\n           <OrderBy>\n               <FieldRef Name=\"ID\" Ascending=\"TRUE\"/>\n           </OrderBy>\n        </Query>";
+            this.queryOptions = ap.DefaultListItemQueryOptions;
+            this.runOnce = false;
+            this.sessionStorage = false;
+            var list = model.getList();
+            //Use the default viewFields from the model
+            this.viewFields = list.viewFields;
+            this.listName = model.getListId();
+            /** Set the default url if the config param is defined, otherwise let SPServices handle it */
+            if (apConfig.defaultUrl) {
+                this.webURL = apConfig.defaultUrl;
+            }
+            //Allow all values on query to be overwritten by queryOptions object
+            _.assign(this, queryOptions);
+            /** Allow the model to be referenced at a later time */
+            this.getModel = function () { return model; };
+        }
+        /**
+         * @ngdoc function
+         * @name Query.execute
+         * @methodOf Query
+         * @description
+         * Query SharePoint, pull down all initial records on first call along with list definition if using
+         * "GetListItemChangesSinceToken".  Note: this is  substantially larger than "GetListItems" on first call.
+         * Subsequent calls pulls down changes (Assuming operation: "GetListItemChangesSinceToken").
+         * @param {object} [options] Any options that should be passed to dataService.executeQuery.
+         * @returns {object[]} Array of list item objects.
+         */
+        Query.prototype.execute = function (options) {
+            var _this = this;
+            var query = this;
+            var model = query.getModel();
+            var deferred = $q.defer();
+            /** Return existing promise if request is already underway or has been previously executed in the past
+            * 1/10th of a second */
+            if (query.negotiatingWithServer || (_.isDate(query.lastRun) && query.lastRun.getTime() + apConfig.queryDebounceTime > new Date().getTime())) {
+                return query.promise;
+            }
+            else {
+                /** Set flag to prevent another call while this query is active */
+                query.negotiatingWithServer = true;
+                var localStorageData = this.getLocalStorage();
+                //Check to see if we have a version in localStorage
+                var defaults = {
+                    /** Designate the central cache for this query if not already set */
+                    target: query.getCache()
+                };
+                /** Extend defaults with any options */
+                var queryOptions = _.assign(defaults, options);
+                /** Flag used to determine if we need to make a request to the server */
+                var makeRequest = true;
+                /** See if we already have data in local storage and hydrate if it hasn't expired, which
+                * then allows us to only request the changes. */
+                if (!query.force && localStorageData) {
+                    switch (this.operation) {
+                        case 'GetListItemChangesSinceToken':
+                            //Only run the first time, after that the token/data are already in sync
+                            if (!query.lastRun) {
+                                query.hydrateFromLocalStorage(localStorageData);
+                            }
+                            break;
+                        case 'GetListItems':
+                            query.hydrateFromLocalStorage(localStorageData);
+                            //Use cached data if we have data already available
+                            makeRequest = this.getCache().count() > 0;
+                    }
+                }
+                /** Optionally handle query.runOnce for GetListItems when initial call has already been made */
+                if (this.operation === 'GetListItems' && !query.lastRun && this.runOnce) {
+                    makeRequest = false;
+                }
+                if (makeRequest) {
+                    apDataService.executeQuery(model, query, queryOptions).then(function (results) {
+                        _this.processResults(results, deferred, queryOptions);
+                    });
+                }
+                else {
+                    this.processResults(this.getCache(), deferred, queryOptions);
+                }
+                /** Save reference on the query **/
+                query.promise = deferred.promise;
+                return deferred.promise;
+            }
+        };
+        /**
+         * @ngdoc function
+         * @name Query.getCache
+         * @methodOf Query
+         * @description
+         * Use this to return the cache instead of using the actual property to allow for future refactoring.
+         * @returns {IndexedCache<T>} Indexed Cache containing all elements in query.
+         */
+        Query.prototype.getCache = function () {
+            return this.indexedCache;
+        };
+        /**
+         * @ngdoc function
+         * @name Query.getLocalStorage
+         * @methodOf Query
+         * @description
+         * Use this to return query data currenty saved in user's local or session storage.
+         * @returns {LocalStorageQuery} Local storage data for this query.
+         */
+        Query.prototype.getLocalStorage = function () {
+            var parsedQuery, localStorageKey = this.getLocalStorageKey();
+            var stringifiedQuery = localStorage.getItem(localStorageKey) || sessionStorage.getItem(localStorageKey);
+            if (stringifiedQuery) {
+                parsedQuery = new LocalStorageQuery(localStorageKey, stringifiedQuery);
+            }
+            return parsedQuery;
+        };
+        /**
+         * @ngdoc function
+         * @name Query.hydrateFromLocalStorage
+         * @methodOf Query
+         * @description
+         * If data already exists in browser local storage, we rehydrate JSON using list item constructor and
+         * then have the ability to just check the server to see what has changed from the current state.
+         */
+        Query.prototype.hydrateFromLocalStorage = function (localStorageQuery) {
+            if (localStorageQuery.hasExpired(this.localStorageExpiration)) {
+                //Don't continue and purge if data has exceeded expiration
+                localStorageQuery.removeItem();
+            }
+            else {
+                var listItemProvider = apDecodeService.createListItemProvider(this.getModel(), this, this.getCache());
+                //Hydrate each raw list item and add to cache
+                _.each(localStorageQuery.indexedCache, function (rawObject) {
+                    listItemProvider(rawObject);
+                });
+                //Set the last run date
+                this.lastRun = localStorageQuery.lastRun;
+                //Store the change token
+                this.changeToken = localStorageQuery.changeToken;
+                //Resolve initial query promise in case any other concurrent requests are waiting for the data
+                this.initialized.resolve(this.getCache());
+            }
+        };
+        /**
+         * @ngdoc function
+         * @name Query.processResults
+         * @methodOf Query
+         * @description
+         * Internal method exposed to allow for testing.  Handle cleanup after query execution is complete.
+         */
+        Query.prototype.processResults = function (results, deferred, queryOptions) {
+            var query = this;
+            var model = query.getModel();
+            /** Set flag if this if the first time this query has been run */
+            var firstRunQuery = _.isNull(query.lastRun);
+            if (firstRunQuery) {
+                /** Promise resolved the first time query is completed */
+                query.initialized.resolve(queryOptions.target);
+            }
+            /** Set list permissions if not already set */
+            var list = model.getList();
+            if (!list.permissions && results.first()) {
+                /** Query needs to have returned at least 1 item so we can use permMask */
+                list.extendPermissionsFromListItem(results.first());
+            }
+            /** Remove lock to allow for future requests */
+            query.negotiatingWithServer = false;
+            /** Store query completion date/time on model to allow us to identify age of data */
+            model.lastServerUpdate = new Date();
+            deferred.resolve(queryOptions.target);
+            /** Overwrite local storage value with updated state so we can potentially restore in
+             * future sessions. */
+            if (query.localStorage || query.sessionStorage) {
+                query.saveToLocalStorage();
+            }
+        };
+        /**
+         * @ngdoc function
+         * @name Query.saveToLocalStorage
+         * @methodOf Query
+         * @description
+         * Save a snapshot of the current state to local/session storage so we can speed up calls
+         * for data already residing on the users machine.
+         */
+        Query.prototype.saveToLocalStorage = function () {
+            //Don't use storage when running offline
+            if (apConfig.offline)
+                return;
+            var model = this.getModel();
+            var store = {
+                changeToken: this.changeToken,
+                indexedCache: this.getCache(),
+                lastRun: this.lastRun
+            };
+            var stringifiedQuery = JSON.stringify(store);
+            var storageType = this.localStorage ? 'local' : 'session';
+            var localStorageKey = this.getLocalStorageKey();
+            //Use try/catch in case we've exceeded browser storage limit (typically 5MB)
+            try {
+                if (this.localStorage) {
+                    localStorage.setItem(localStorageKey, stringifiedQuery);
+                }
+                else {
+                    sessionStorage.setItem(localStorageKey, stringifiedQuery);
+                }
+            }
+            catch (e) {
+                if (e.code == 22) {
+                }
+                apLogger.debug('Looks like we\'re out of space in ' + storageType + ' storage.', {
+                    json: {
+                        query: this.name,
+                        model: this.getModel().list.title
+                    }
+                });
+                if (this.localStorage) {
+                    localStorage.clear();
+                }
+                else {
+                    sessionStorage.clear();
+                }
+                //Disable storage for remainder of session to prevent throwing additional errors
+                this.localStorage = false;
+                this.sessionStorage = false;
+            }
+        };
+        /** They key we use for local storage */
+        Query.prototype.getLocalStorageKey = function () {
+            var model = this.getModel();
+            return model.getListId() + '.query.' + this.name;
+        };
+        return Query;
+    })();
+    ap.Query = Query;
+    var QueryFactory = (function () {
+        function QueryFactory(_$q_, _apConfig_, _apDataService_, _apDefaultListItemQueryOptions_, _apIndexedCacheFactory_, _apDecodeService_, _apLogger_) {
+            this.Query = Query;
+            $q = _$q_;
+            apConfig = _apConfig_;
+            apDataService = _apDataService_;
+            apDefaultListItemQueryOptions = _apDefaultListItemQueryOptions_;
+            apIndexedCacheFactory = _apIndexedCacheFactory_;
+            apDecodeService = _apDecodeService_;
+            apLogger = _apLogger_;
+        }
+        /**
+         * @ngdoc function
+         * @name angularPoint.apQueryFactory:create
+         * @methodOf angularPoint.apQueryFactory
+         * @param {object} config Options object.
+         * @param {object} model Reference to the model.
+         * @description
+         * Instantiates and returns a new Query.
+         */
+        QueryFactory.prototype.create = function (config, model) {
+            return new Query(config, model);
+        };
+        QueryFactory.$inject = ['$q', 'apConfig', 'apDataService', 'apDefaultListItemQueryOptions', 'apIndexedCacheFactory', 'apDecodeService', 'apLogger'];
+        return QueryFactory;
+    })();
+    ap.QueryFactory = QueryFactory;
+    /**
+     * @ngdoc object
+     * @name angularPoint.apQueryFactory
+     * @description
+     * Exposes the Query prototype and a constructor to instantiate a new Query.
+     *
+     * @requires angularPoint.apDataService
+     * @requires angularPoint.apConfig
+     */
+    angular.module('angularPoint')
+        .service('apQueryFactory', QueryFactory);
+})(ap || (ap = {}));
+
+/// <reference path="../app.module.ts" />
+var ap;
+(function (ap) {
+    'use strict';
+    var apUtilityService;
+    /**
+     * @ngdoc function
+     * @name User
+     * @description
+     * Allows for easier distinction when debugging if object type is shown as a User.  Turns a delimited ";#"
+     * string into an object shown below depeinding on field settings:
+     * <pre>
+     * {
+         *      lookupId: 1,
+         *      lookupValue: 'Joe User'
+         * }
+     * </pre>
+     * or
+     * <pre>
+     * {
+         *      lookupId: 1,
+         *      lookupValue: 'Joe User',
+         *      loginName: 'joe.user',
+         *      email: 'joe@company.com',
+         *      sipAddress: 'whatever',
+         *      title: 'Sr. Widget Maker'
+         * }
+     * </pre>
+     * @param {string} s Delimited string used to create a User object.
+     * @constructor
+     */
+    var User = (function () {
+        function User(str) {
+            var self = this;
+            var thisUser = new apUtilityService.SplitIndex(str);
+            var thisUserExpanded = thisUser.value.split(',#');
+            if (thisUserExpanded.length === 1) {
+                //Standard user columns only return a id,#value pair
+                self.lookupId = thisUser.id;
+                self.lookupValue = thisUser.value;
+            }
+            else {
+                //Allow for case where user adds additional properties when setting up field
+                self.lookupId = thisUser.id;
+                self.lookupValue = thisUserExpanded[0].replace(/(,,)/g, ',');
+                self.loginName = thisUserExpanded[1].replace(/(,,)/g, ',');
+                self.email = thisUserExpanded[2].replace(/(,,)/g, ',');
+                self.sipAddress = thisUserExpanded[3].replace(/(,,)/g, ',');
+                self.title = thisUserExpanded[4].replace(/(,,)/g, ',');
+            }
+        }
+        return User;
+    })();
+    var UserFactory = (function () {
+        function UserFactory(_apUtilityService_) {
+            this.User = User;
+            apUtilityService = _apUtilityService_;
+        }
+        /**
+         * @ngdoc function
+         * @name angularPoint.apUserFactory:create
+         * @methodOf angularPoint.apUserFactory
+         * @description
+         * Instantiates and returns a new User field.
+         */
+        UserFactory.prototype.create = function (s) {
+            return new User(s);
+        };
+        UserFactory.$inject = ['apUtilityService'];
+        return UserFactory;
+    })();
+    ap.UserFactory = UserFactory;
+    /**
+     * @ngdoc function
+     * @name angularPoint.apUserFactory
+     * @description
+     * Tools to assist with the creation of CAML queries.
+     *
+     */
+    angular.module('angularPoint')
+        .service('apUserFactory', UserFactory);
 })(ap || (ap = {}));
 
 //# sourceMappingURL=angular-point.js.map

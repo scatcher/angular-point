@@ -16,7 +16,8 @@ var ap;
         };
         return ModelChangeQueue;
     })();
-    var activeEntities = {}, changeQueue = {}, mockId = 10000, xmlNS = {
+    var activeEntities = {}, //{ listItem.id: ListItem, ...}
+    changeQueue = {}, mockId = 10000, xmlNS = {
         listItems: "xmlns:s=\"uuid:BDC6E3F0-6DA3-11d1-A2A3-00AA00C14882\" xmlns:dt=\"uuid:C2F41010-65B3-11d1-A29F-00AA00C14882\" xmlns:rs=\"urn:schemas-microsoft-com:rowset\" xmlns:z=\"#RowsetSchema\"",
         soap: "xmlns:soap=\"http://schemas.xmlsoap.org/soap/envelope/\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\""
     };

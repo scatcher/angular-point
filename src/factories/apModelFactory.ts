@@ -20,7 +20,7 @@ module ap {
         getCache<T extends ListItem<any>>(queryName?: string): IndexedCache<T>;
         getCachedEntities<T extends ListItem<any>>(): IndexedCache<T>;
         getCachedEntity<T extends ListItem<any>>(listItemId: number): T;
-        getFieldDefinition(fieldName: string): IExtendedFieldDefinition | FieldDefinition;
+        getFieldDefinition(fieldName: string): IFieldDefinition;
         getList(): List;
         getListId(): string;
         getListItemById<T extends ListItem<any>>(listItemId: number, options?: Object): ng.IPromise<T>;
@@ -314,7 +314,7 @@ module ap {
         extendListMetadata(options?: Object): ng.IPromise<Model> {
             var model = this,
                 deferred = $q.defer(),
-                defaults = { listName: model.list.getListId() };
+                defaults = { listName: model.getListId() };
 
             /** Only request information if the list hasn't already been extended and is not currently being requested */
             if (!model.deferredListDefinition) {
@@ -380,7 +380,7 @@ module ap {
                     id: count + 1
                 };
                 /** Create an attribute with mock data for each field */
-                _.each(model.list.fields, (field: FieldDefinition) => {
+                _.each(model.list.fields, (field: IFieldDefinition) => {
                     mock[field.mappedName] = field.getMockData(opts);
                 });
 
@@ -457,7 +457,7 @@ module ap {
          */
         getCachedEntities<T extends ListItem<any>>(): IndexedCache<T> {
             var model = this;
-            return apCacheService.getCachedEntities<T>(model.list.getListId());
+            return apCacheService.getCachedEntities<T>(model.getListId());
         }
 
 
@@ -472,7 +472,7 @@ module ap {
          */
         getCachedEntity<T extends ListItem<any>>(listItemId: number): T {
             var model = this;
-            return apCacheService.getCachedEntity<T>(model.list.getListId(), listItemId);
+            return apCacheService.getCachedEntity<T>(model.getListId(), listItemId);
         }
 
 
@@ -497,7 +497,7 @@ module ap {
          * @param {string} fieldName Internal field name.
          * @returns {object} Field definition.
          */
-        getFieldDefinition(fieldName: string): IExtendedFieldDefinition {
+        getFieldDefinition(fieldName: string): IFieldDefinition {
             var model = this;
             return _.find(model.list.fields, { mappedName: fieldName });
         }
@@ -894,7 +894,7 @@ module ap {
                 return _.isObject(fieldValue) && _.isNumber(fieldValue.lookupId);
             };
 
-            _.each(model.list.customFields, (fieldDefinition: IExtendedFieldDefinition) => {
+            _.each(model.list.customFields, (fieldDefinition: IFieldDefinition) => {
                 var fieldValue = listItem[fieldDefinition.mappedName];
                 var fieldDescriptor = '"' + fieldDefinition.objectType + '" value.';
                 /** Only evaluate required fields */

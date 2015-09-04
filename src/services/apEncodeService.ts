@@ -51,7 +51,7 @@ module ap {
          * @param {*} value Current field value.
          * @returns {Array} [fieldName, fieldValue]
          */
-        createValuePair(fieldDefinition: FieldDefinition, value: any): [string, string] {
+        createValuePair(fieldDefinition: IFieldDefinition, value: any): [string, string] {
             var encodedValue = this.encodeValue(fieldDefinition.objectType, value);
             return [fieldDefinition.staticName, encodedValue];
         }
@@ -120,7 +120,7 @@ module ap {
          * @example
          * [[fieldName1, fieldValue1], [fieldName2, fieldValue2], ...]
          */
-        generateValuePairs(fieldDefinitions: FieldDefinition[], listItem: ListItem<any>): [string, string][] {
+        generateValuePairs(fieldDefinitions: IFieldDefinition[], listItem: ListItem<any>): [string, string][] {
             var pairs = [];
             _.each(fieldDefinitions, (field) => {
                 /** Check to see if item contains data for this field */

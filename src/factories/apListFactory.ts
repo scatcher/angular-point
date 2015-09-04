@@ -6,7 +6,7 @@ module ap {
     var apConfig: IAPConfig, apDefaultFields, apFieldFactory: FieldFactory;
 
     export interface IUninstantiatedList {
-        customFields: IFieldDefinition[];
+        customFields: IFieldConfigurationObject[];
         environments?: { [key: string]: string };
         guid?: string;
         title: string;
@@ -83,9 +83,9 @@ module ap {
     }
 
     export interface IList extends IUninstantiatedList, IXMLList {
-        customFields: FieldDefinition[];
+        customFields: IFieldDefinition[];
         environments: { [key: string]: string };
-        fields: FieldDefinition[];
+        fields: IFieldDefinition[];
         getListId(): string;
         guid: string;
         identifyWebURL(): string;

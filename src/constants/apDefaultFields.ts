@@ -3,7 +3,7 @@
 module ap {
     'use strict';
 
-    export var DefaultFields: IFieldDefinition[] = [
+    export var DefaultFields: IFieldConfigurationObject[] = [
         { staticName: 'ID', objectType: 'Counter', mappedName: 'id', readOnly: true },
         { staticName: 'Modified', objectType: 'DateTime', mappedName: 'modified', readOnly: true },
         { staticName: 'Created', objectType: 'DateTime', mappedName: 'created', readOnly: true },

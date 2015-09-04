@@ -159,6 +159,7 @@ module ap {
         /** Date/Time last run */
         lastRun: Date;
         listItemID: number;
+        listName: string;
         /** Should we store data from this query in local storage to speed up requests in the future */
         localStorage = false;
         /** Set expiration in milliseconds - Defaults to a day and if set to 0 doesn't expire */
@@ -184,14 +185,12 @@ module ap {
         viewFields: string;
         webURL: string;
 
-        get listName() {
-            return this.getModel().getListId();
-        }
-
         constructor(queryOptions: IQueryOptions, model: Model) {
+            let list = model.getList();
             //Use the default viewFields from the model
-            this.viewFields = model.list.viewFields;
-
+            this.viewFields = list.viewFields;
+            this.listName = model.getListId();
+            
             /** Set the default url if the config param is defined, otherwise let SPServices handle it */
             if (apConfig.defaultUrl) {
                 this.webURL = apConfig.defaultUrl;
@@ -204,11 +203,7 @@ module ap {
             this.getModel = () => model;
         }
 
-        /** They key we use for local storage */
-        private get localStorageKey() {
-            var model = this.getModel();
-            return model.getListId() + '.query.' + this.name;
-        }
+
 
         /**
          * @ngdoc function
@@ -304,10 +299,10 @@ module ap {
          * @returns {LocalStorageQuery} Local storage data for this query.
          */
         getLocalStorage(): LocalStorageQuery {
-            let parsedQuery;
-            let stringifiedQuery = localStorage.getItem(this.localStorageKey) || sessionStorage.getItem(this.localStorageKey);
+            let parsedQuery, localStorageKey = this.getLocalStorageKey();
+            let stringifiedQuery = localStorage.getItem(localStorageKey) || sessionStorage.getItem(localStorageKey);
             if (stringifiedQuery) {
-                parsedQuery = new LocalStorageQuery(this.localStorageKey, stringifiedQuery);
+                parsedQuery = new LocalStorageQuery(localStorageKey, stringifiedQuery);
             }
             return parsedQuery;
         }
@@ -391,7 +386,7 @@ module ap {
         saveToLocalStorage(): void {
             //Don't use storage when running offline
             if (apConfig.offline) return;
-            
+
             let model = this.getModel();
             let store = {
                 changeToken: this.changeToken,
@@ -400,12 +395,13 @@ module ap {
             }
             let stringifiedQuery = JSON.stringify(store);
             let storageType = this.localStorage ? 'local' : 'session';
+            let localStorageKey = this.getLocalStorageKey();
             //Use try/catch in case we've exceeded browser storage limit (typically 5MB)
             try {
                 if (this.localStorage) {
-                    localStorage.setItem(this.localStorageKey, stringifiedQuery);
+                    localStorage.setItem(localStorageKey, stringifiedQuery);
                 } else {
-                    sessionStorage.setItem(this.localStorageKey, stringifiedQuery);
+                    sessionStorage.setItem(localStorageKey, stringifiedQuery);
                 }
             } catch (e) {
                 if (e.code == 22) {
@@ -426,6 +422,12 @@ module ap {
                 this.localStorage = false;
                 this.sessionStorage = false;
             }
+        }
+        
+        /** They key we use for local storage */
+        private getLocalStorageKey() {
+            var model = this.getModel();
+            return model.getListId() + '.query.' + this.name;
         }
     }
 

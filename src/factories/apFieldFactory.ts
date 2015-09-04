@@ -6,15 +6,15 @@ module ap {
     var apFieldService: FieldService, apUtilityService: UtilityService, apFormattedFieldValueService: FormattedFieldValueService;
 
     export interface IXMLFieldDefinition {
-        ID: string;
-        Type: string;
-        ReadOnly: string;
-        Hidden: string;
-        DisplayName: string;
-        Required: string;
-        SourceID: string;
-        ColName: string;
-        StaticName: string;
+        ID?: string;
+        Type?: string;
+        ReadOnly?: string;
+        Hidden?: string;
+        DisplayName?: string;
+        Required?: string;
+        SourceID?: string;
+        ColName?: string;
+        StaticName?: string;
         Choices?: string[];
         Description?: string;
         Indexed?: string;
@@ -33,11 +33,11 @@ module ap {
         Format?: string;
     }
 
-    export interface IFieldDefinition {
+    export interface IFieldConfigurationObject {
         choices?: string[];
         description?: string;
         displayName?: string;
-        formatter?: (listItem: ListItem<any>, fieldDefinition: FieldDefinition, options?: Object) => string;
+        formatter?: (listItem: ListItem<any>, fieldDefinition: IFieldDefinition, options?: Object) => string;
         label?: string;
         mappedName: string;
         objectType: string;
@@ -47,8 +47,10 @@ module ap {
     }
 
     //An extended field definition combines the user defined field definition with the XML returned by SharePoint
-    export interface IExtendedFieldDefinition extends IXMLFieldDefinition, FieldDefinition {
-
+    export interface IFieldDefinition extends IXMLFieldDefinition, IFieldConfigurationObject {
+        getDefaultValueForType(): any;
+        getFormattedValue(listItem: ListItem<any>, options?: Object): string;
+        getMockData(options): any;
     }
 
 
@@ -136,7 +138,7 @@ module ap {
      */
     export class FieldDefinition implements IFieldDefinition {
         displayName: string;
-        formatter: (listItem: ListItem<any>, fieldDefinition: FieldDefinition, options?: Object) => string;
+        formatter: (listItem: ListItem<any>, fieldDefinition: IFieldDefinition, options?: Object) => string;
         internalName: string;
         label: string;
         mappedName: string;
@@ -156,22 +158,10 @@ module ap {
          * @name Field:getDefaultValueForType
          * @methodOf Field
          * @description
-         * Returns an object defining a specific field type
-         * @returns {object} { defaultValue: '...':string, staticMock: '...':string, dynamicMock: ...:Function}
-         */
-        getDefinition() {
-            return apFieldService.getDefinition(this.objectType);
-        }
-
-        /**
-         * @ngdoc function
-         * @name Field:getDefaultValueForType
-         * @methodOf Field
-         * @description
          * Can return mock data appropriate for the field type, by default it dynamically generates data but
          * the staticValue param will instead return a hard coded type specific value.
          */
-        getDefaultValueForType() {
+        getDefaultValueForType(): any {
             return apFieldService.getDefaultValueForType(this.objectType);
         }
 
@@ -214,7 +204,7 @@ module ap {
          * @param {boolean} [options.staticValue=false] Default to dynamically build mock data.
          * @returns {*} mockData
          */
-        getMockData(options) {
+        getMockData(options): any {
             return apFieldService.getMockData(this.objectType, options);
         }
 
