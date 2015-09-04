@@ -5,6 +5,7 @@
 var fs = require('fs');
 var gulp = require('gulp');
 var ghPages = require('gulp-gh-pages');
+
 //var inject = require('inject');
 var projectDir = __dirname + '/';
 var merge = require('merge2');
@@ -46,15 +47,15 @@ gulp.task('build', ['gen-ts-refs'], function () {
 * Generate docs from code in docs folder.
 */
 gulp.task('ngdocs', ['build'], function () {
-    
+
     // return gulp
     //     .src([paths.tsFiles])
-    //     .pipe(typedoc({ 
-    //         // module: "commonjs", 
+    //     .pipe(typedoc({
+    //         // module: "commonjs",
     //         gaID: 'UA-51195298-1',
     //         gaSite: 'scatcher.github.io',
-    //         out: "./docs/", 
-    //         name: "angular-point", 
+    //         out: "./docs/",
+    //         name: "angular-point",
     //         target: "es5",
     //         includeDeclarations: true
     //     }));

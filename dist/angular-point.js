@@ -544,6 +544,9 @@ var ap;
 })(ap || (ap = {}));
 
 /// <reference path="../app.module.ts" />
+/// <reference path="../../typings/tsd.d.ts" />
+
+/// <reference path="../app.module.ts" />
 var ap;
 (function (ap) {
     'use strict';
@@ -2071,7 +2074,8 @@ var ap;
 var __extends = (this && this.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
-    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    __.prototype = b.prototype;
+    d.prototype = new __();
 };
 var ap;
 (function (ap) {
@@ -2921,135 +2925,138 @@ var ap;
             return _.isDate(model.lastServerUpdate);
         };
         /**
-         * @ngdoc function
-         * @name Model.registerQuery
-         * @module Model
-         * @description
-         * Constructor that allows us create a static query with the option to build dynamic queries as seen in the
-         * third example.  This construct is a passthrough to [SPServices](http: //spservices.codeplex.com/)
-         * @param {object} [queryOptions] Optional options to pass through to the
-         * [dataService](#/api/dataService.executeQuery).
-         * @param {string} [queryOptions.name=apConfig.defaultQueryName] Optional name of the new query (recommended but will
-         * default to 'Primary' if not specified)
-         * @param {string} [queryOptions.operation="GetListItemChangesSinceToken"] Defaults to
-         * [GetListItemChangesSinceToken](http: //msdn.microsoft.com/en-us/library/lists.lists.getlistitemchangessincetoken%28v=office.12%29.aspx)
-         * but for a smaller payload and faster response you can use
-         * [GetListItems](http: //spservices.codeplex.com/wikipage?title=GetListItems&referringTitle=Lists).
-         * @param {boolean} [queryOptions.cacheXML=false] Typically don't need to store the XML response because it
-         * has already been parsed into JS objects.
-         * @param {string} [queryOptions.offlineXML] Optionally reference a specific XML file to use for this query instead
-         * of using the shared XML file used by all queries on this model.  Useful to mock custom query results.
-         * @param {string} [queryOptions.query] CAML Query - Josh McCarty has a good quick reference
-         * [here](http: //joshmccarty.com/2012/06/a-caml-query-quick-reference)
-         * @param {string} [queryOptions.queryOptions]
-         * <pre>
-         * // Default options
-         * '<QueryOptions>' +
-         * '   <IncludeMandatoryColumns>' +
-         *      'FALSE' +
-         *     '</IncludeMandatoryColumns>' +
-         * '   <IncludeAttachmentUrls>' +
-         *      'TRUE' +
-         *     '</IncludeAttachmentUrls>' +
-         * '   <IncludeAttachmentVersion>' +
-         *      'FALSE' +
-         *     '</IncludeAttachmentVersion>' +
-         * '   <ExpandUserField>' +
-         *      'FALSE' +
-         *     '</ExpandUserField>' +
-         * '</QueryOptions>',
-         * </pre>
-         *
-         *
-         * @returns {object} Query Returns a new query object.
-         *
-         * @example
-         * <h4>Example #1</h4>
-         * <pre>
-         * // Query to retrieve the most recent 25 modifications
-         * model.registerQuery({
-         *    name: 'recentChanges',
-         *    CAMLRowLimit: 25,
-         *    query: '' +
-         *        '<Query>' +
-         *        '   <OrderBy>' +
-         *        '       <FieldRef Name="Modified" Ascending="FALSE"/>' +
-         *        '   </OrderBy>' +
-         *            //Prevents any records from being returned if user doesn't
-         *            // have permissions on project
-         *        '   <Where>' +
-         *        '       <IsNotNull>' +
-         *        '           <FieldRef Name="Project"/>' +
-         *        '       </IsNotNull>' +
-         *        '   </Where>' +
-         *        '</Query>'
-         * });
-         * </pre>
-         *
-         * <h4>Example #2</h4>
-         * <pre>
-         * // Could be placed on the projectModel and creates the query but doesn't
-         * // call it
-         * projectModel.registerQuery({
-         *     name: 'primary',
-         *     query: '' +
-         *         '<Query>' +
-         *         '   <OrderBy>' +
-         *         '       <FieldRef Name="Title" Ascending="TRUE"/>' +
-         *         '   </OrderBy>' +
-         *         '</Query>'
-         * });
-         *
-         * //To call the query or check for changes since the last call
-         * projectModel.executeQuery('primary').then(function(entities) {
-         *     // We now have a reference to array of entities stored in the local
-         *     // cache.  These inherit from the ListItem prototype as well as the
-         *     // Project prototype on the model
-         *     $scope.projects = entities;
-         * });
-         * </pre>
-         *
-         * <h4>Example #3</h4>
-         * <pre>
-         * // Advanced functionality that would allow us to dynamically create
-         * // queries for list items with a lookup field associated with a specific
-         * // project id.  Let's assume this is on the projectTasksModel.
-         * model.queryByProjectId(projectId) {
-         *     // Unique query name
-         *     var queryKey = 'pid' + projectId;
-         *
-         *     // Register project query if it doesn't exist
-         *     if (!_.isObject(model.queries[queryKey])) {
-         *         model.registerQuery({
-         *             name: queryKey,
-         *             query: '' +
-         *                 '<Query>' +
-         *                 '   <OrderBy>' +
-         *                 '       <FieldRef Name="ID" Ascending="TRUE"/>' +
-         *                 '   </OrderBy>' +
-         *                 '   <Where>' +
-         *                 '       <And>' +
-         *                              // Prevents any records from being returned
-         *                              //if user doesn't have permissions on project
-         *                 '           <IsNotNull>' +
-         *                 '               <FieldRef Name="Project"/>' +
-         *                 '           </IsNotNull>' +
-         *                              // Return all records for the project matching
-         *                              // param projectId
-         *                 '           <Eq>' +
-         *                 '               <FieldRef Name="Project" LookupId="TRUE"/>' +
-         *                 '               <Value Type="Lookup">' + projectId + '</Value>' +
-         *                 '           </Eq>' +
-         *                 '       </And>' +
-         *                 '   </Where>' +
-         *                 '</Query>'
-         *         });
-         *     }
-         *     //Still using execute query but now we have a custom query
-         *     return model.executeQuery(queryKey);
-         * };
-         * </pre>
-         */
+        * @ngdoc function
+        * @name Model.registerQuery
+        * @module Model
+        * @description
+        * Constructor that allows us create a static query with the option to build dynamic queries as seen in the
+        * third example.  This construct is a passthrough to [SPServices](http: //spservices.codeplex.com/)
+        * @param {object} queryOptions Initialization parameters.
+        * @param {boolean} [queryOptions.force=false] Ignore cached data and force server query.
+        * @param {number} [queryOptions.listItemID] Optionally request for a single list item by id.
+        * @param {boolean} [queryOptions.localStorage=false] Should we store data from this query in local storage to speed up requests in the future.
+        * @param {number} [queryOptions.localStorageExpiration=86400000] Set expiration in milliseconds - Defaults to a day
+        * and if set to 0 doesn't expire.  Can be updated globally using apConfig.localStorageExpiration.
+        * @param {string} [queryOptions.name=primary] The name that we use to identify this query.
+        * @param {string} [queryOptions.operation=GetListItemChangesSinceToken] Optionally use 'GetListItems' to
+        * receive a more efficient response, just don't have the ability to check for changes since the last time
+        * the query was called. Defaults to [GetListItemChangesSinceToken](http://msdn.microsoft.com/en-us/library/lists.lists.getlistitemchangessincetoken%28v=office.12%29.aspx)
+        * but for a smaller payload and faster response you can use [GetListItems](http: //spservices.codeplex.com/wikipage?title=GetListItems&referringTitle=Lists).
+        * @param {string} [queryOptions.query=Ordered ascending by ID] CAML query passed to SharePoint to control
+        * the data SharePoint returns. Josh McCarty has a good quick reference [here](http: //joshmccarty.com/2012/06/a-caml-query-quick-reference).
+        * @param {string} [queryOptions.queryOptions] SharePoint options xml as string.
+        * <pre>
+        * <QueryOptions>
+        *    <IncludeMandatoryColumns>FALSE</IncludeMandatoryColumns>
+        *    <IncludeAttachmentUrls>TRUE</IncludeAttachmentUrls>
+        *    <IncludeAttachmentVersion>FALSE</IncludeAttachmentVersion>
+        *    <ExpandUserField>FALSE</ExpandUserField>
+        * </QueryOptions>
+        * </pre>
+        * @param {string} [queryOptions.rowLimit] The number of list items to return, 0 returns all list items.
+        * @param {boolean} [queryOptions.runOnce] Pertains to GetListItems only, optionally run a single time and return initial value for all future
+        * calls.  Works well with data that isn't expected to change throughout the session but unlike localStorage or sessionStorage
+        * the data doesn't persist between sessions.
+        * @param {boolean} [queryOptions.sessionStorage=false] Use the browsers sessionStorage to cache the list items and uses the
+        * queryOptions.localStorageExpiration param to validate how long the cache is good for.
+        * @param {string} [queryOptions.viewFields] XML as string that specifies fields to return.
+        * @param {string} [queryOptions.webURL] Used to override the default URL if list is located somewhere else.
+        * @returns {object} Query Returns a new query object.
+        *
+        * @example
+        * <h4>Example #1</h4>
+        * <pre>
+        * // Query to retrieve the most recent 25 modifications
+        * model.registerQuery({
+        *    name: 'recentChanges',
+        *    rowLimit: 25,
+        *    query: '' +
+        *        '<Query>' +
+        *        '   <OrderBy>' +
+        *        '       <FieldRef Name="Modified" Ascending="FALSE"/>' +
+        *        '   </OrderBy>' +
+        *            //Prevents any records from being returned if user doesn't
+        *            // have permissions on project
+        *        '   <Where>' +
+        *        '       <IsNotNull>' +
+        *        '           <FieldRef Name="Project"/>' +
+        *        '       </IsNotNull>' +
+        *        '   </Where>' +
+        *        '</Query>'
+        * });
+        * </pre>
+        *
+        * <h4>Example #2</h4>
+        * <pre>
+        * // Could be placed on the projectModel and creates the query but doesn't
+        * // call it.  Uses the session cache to make the initial call faster.
+        * projectModel.registerQuery({
+        *     name: 'primary',
+        *     sessionCache: true,
+        *     //Set an expiration value of 8 hours rather than use the default of 24
+        *     localStorageExpiration: 28800000,
+        *     query: '' +
+        *         '<Query>' +
+        *         '   <OrderBy>' +
+        *         '       <FieldRef Name="Title" Ascending="TRUE"/>' +
+        *         '   </OrderBy>' +
+        *         '</Query>'
+        * });
+        *
+        * //To call the query or check for changes since the last call
+        * projectModel.executeQuery('primary')
+        *   .then((entities) => {
+        *     // We now have a reference to array of entities stored in the local
+        *     // cache.  These inherit from the ListItem prototype as well as the
+        *     // Project prototype on the model
+        *     vm.projects = entities;
+        *   })
+        *   .catch((err) => {
+        *       //Handle error
+        *   })
+        * </pre>
+        *
+        * <h4>Example #3</h4>
+        * <pre>
+        * // Advanced functionality that would allow us to dynamically create
+        * // queries for list items with a lookup field associated with a specific
+        * // project id.  Let's assume this is on the projectTasksModel.
+        * model.queryByProjectId(projectId) {
+        *     // Unique query name
+        *     var queryKey = 'pid' + projectId;
+        *
+        *     // Register project query if it doesn't exist
+        *     if (!_.isObject(model.queries[queryKey])) {
+        *         model.registerQuery({
+        *             name: queryKey,
+        *             query: '' +
+        *                 '<Query>' +
+        *                 '   <OrderBy>' +
+        *                 '       <FieldRef Name="ID" Ascending="TRUE"/>' +
+        *                 '   </OrderBy>' +
+        *                 '   <Where>' +
+        *                 '       <And>' +
+        *                              // Prevents any records from being returned
+        *                              //if user doesn't have permissions on project
+        *                 '           <IsNotNull>' +
+        *                 '               <FieldRef Name="Project"/>' +
+        *                 '           </IsNotNull>' +
+        *                              // Return all records for the project matching
+        *                              // param projectId
+        *                 '           <Eq>' +
+        *                 '               <FieldRef Name="Project" LookupId="TRUE"/>' +
+        *                 '               <Value Type="Lookup">' + projectId + '</Value>' +
+        *                 '           </Eq>' +
+        *                 '       </And>' +
+        *                 '   </Where>' +
+        *                 '</Query>'
+        *         });
+        *     }
+        *     //Still using execute query but now we have a custom query
+        *     return model.executeQuery(queryKey);
+        * };
+        * </pre>
+        */
         Model.prototype.registerQuery = function (queryOptions) {
             var model = this;
             var defaults = {
@@ -3270,73 +3277,71 @@ var ap;
      * @ngdoc function
      * @name Query
      * @description
-     * Primary constructor that all queries inherit from.
-     * @param {object} config Initialization parameters.
-     * @param {string} [config.operation=GetListItemChangesSinceToken] Optionally use 'GetListItems' to
-     * receive a more efficient response, just don't have the ability to check for changes since the last time
-     * the query was called.
-     * @param {boolean} [config.force=false] Ignore cached data and force server query.
-     * @param {boolean} [config.cacheXML=true] Set to false if you want a fresh request.
-     * @param {boolean} [config.localStorage=false] Should we store data from this query in local storage to speed up requests in the future.
-     * @param {number} [config.localStorageExpiration=86400000] Set expiration in milliseconds - Defaults to a day
+     * Primary constructor that all queries inherit from. This object is a passthrough to [SPServices](http: //spservices.codeplex.com/).  All
+     * options to passed through to [dataService.executeQuery](#/api/dataService.executeQuery).
+     * @param {object} queryOptions Initialization parameters.
+     * @param {boolean} [queryOptions.force=false] Ignore cached data and force server query.
+     * @param {number} [queryOptions.listItemID] Optionally request for a single list item by id.
+     * @param {boolean} [queryOptions.localStorage=false] Should we store data from this query in local storage to speed up requests in the future.
+     * @param {number} [queryOptions.localStorageExpiration=86400000] Set expiration in milliseconds - Defaults to a day
      * and if set to 0 doesn't expire.  Can be updated globally using apConfig.localStorageExpiration.
-     * @param {string} [config.offlineXML] Optionally reference a specific XML file to use for this query instead
-     * of using the shared XML file for this list.
-     * @param {string} [config.query=Ordered ascending by ID] CAML query passed to SharePoint to control
-     * the data SharePoint returns.
-     * @param {string} [config.queryOptions] SharePoint options.
-     * @param {boolean} [config.runOnce] Pertains to GetListItems only, optionally run a single time and return initial value for all future
+     * @param {string} [queryOptions.name=primary] The name that we use to identify this query.
+     * @param {string} [queryOptions.operation=GetListItemChangesSinceToken] Optionally use 'GetListItems' to
+     * receive a more efficient response, just don't have the ability to check for changes since the last time
+     * the query was called. Defaults to [GetListItemChangesSinceToken](http://msdn.microsoft.com/en-us/library/lists.lists.getlistitemchangessincetoken%28v=office.12%29.aspx)
+     * but for a smaller payload and faster response you can use [GetListItems](http: //spservices.codeplex.com/wikipage?title=GetListItems&referringTitle=Lists).
+     * @param {string} [queryOptions.query=Ordered ascending by ID] CAML query passed to SharePoint to control
+     * the data SharePoint returns. Josh McCarty has a good quick reference [here](http: //joshmccarty.com/2012/06/a-caml-query-quick-reference).
+     * @param {string} [queryOptions.queryOptions] SharePoint options xml as string.
+     * <pre>
+     * <QueryOptions>
+     *    <IncludeMandatoryColumns>FALSE</IncludeMandatoryColumns>
+     *    <IncludeAttachmentUrls>TRUE</IncludeAttachmentUrls>
+     *    <IncludeAttachmentVersion>FALSE</IncludeAttachmentVersion>
+     *    <ExpandUserField>FALSE</ExpandUserField>
+     * </QueryOptions>
+     * </pre>
+     * @param {string} [queryOptions.rowLimit] The number of list items to return, 0 returns all list items.
+     * @param {boolean} [queryOptions.runOnce] Pertains to GetListItems only, optionally run a single time and return initial value for all future
      * calls.  Works well with data that isn't expected to change throughout the session but unlike localStorage or sessionStorage
      * the data doesn't persist between sessions.
-     * <pre>
-     * //Default
-     * queryOptions: '' +
-     * '<QueryOptions>' +
-     * '   <IncludeMandatoryColumns>' +
-     *      'FALSE' +
-     *     '</IncludeMandatoryColumns>' +
-     * '   <IncludeAttachmentUrls>' +
-     *      'TRUE' +
-     *     '</IncludeAttachmentUrls>' +
-     * '   <IncludeAttachmentVersion>' +
-     *      'FALSE' +
-     *     '</IncludeAttachmentVersion>' +
-     * '   <ExpandUserField>' +
-     *      'FALSE' +
-     *     '</ExpandUserField>' +
-     * '</QueryOptions>',
-     * </pre>
+     * @param {boolean} [queryOptions.sessionStorage=false] Use the browsers sessionStorage to cache the list items and uses the
+     * queryOptions.localStorageExpiration param to validate how long the cache is good for.
+     * @param {string} [queryOptions.viewFields] XML as string that specifies fields to return.
+     * @param {string} [queryOptions.webURL] Used to override the default URL if list is located somewhere else.
      * @param {object} model Reference to the parent model for the query.  Allows us to reference when out of
      * scope.
-     * @constructor
-     *
      * @example
      * <pre>
      * // Query to retrieve the most recent 25 modifications
      * model.registerQuery({
-         *    name: 'recentChanges',
-         *    CAMLRowLimit: 25,
-         *    query: '' +
-         *        '<Query>' +
-         *        '   <OrderBy>' +
-         *        '       <FieldRef Name="Modified" Ascending="FALSE"/>' +
-         *        '   </OrderBy>' +
-         *            // Prevents any records from being returned if user
-         *            // doesn't have permissions on project
-         *        '   <Where>' +
-         *        '       <IsNotNull>' +
-         *        '           <FieldRef Name="Project"/>' +
-         *        '       </IsNotNull>' +
-         *        '   </Where>' +
-         *        '</Query>'
-         * });
+     *    name: 'recentChanges',
+     *    CAMLRowLimit: 25,
+     *    query: '' +
+     *        '<Query>' +
+     *        '   <OrderBy>' +
+     *        '       <FieldRef Name="Modified" Ascending="FALSE"/>' +
+     *        '   </OrderBy>' +
+     *            // Prevents any records from being returned if user
+     *            // doesn't have permissions on project
+     *        '   <Where>' +
+     *        '       <IsNotNull>' +
+     *        '           <FieldRef Name="Project"/>' +
+     *        '       </IsNotNull>' +
+     *        '   </Where>' +
+     *        '</Query>'
+     * });
      * </pre>
      */
     var Query = (function () {
-        function Query(config, model) {
+        function Query(queryOptions, model) {
             /** Very memory intensive to enable cacheXML which is disabled by default*/
             this.cacheXML = false;
             this.force = false;
+            /** Key value hash map with key being the id of the entity */
+            this.indexedCache = apIndexedCacheFactory.create();
+            /** Promise resolved after first time query is executed */
+            this.initialized = $q.defer();
             /** Should we store data from this query in local storage to speed up requests in the future */
             this.localStorage = false;
             /** Set expiration in milliseconds - Defaults to a day and if set to 0 doesn't expire */
@@ -3348,21 +3353,27 @@ var ap;
             this.operation = 'GetListItemChangesSinceToken';
             /** Default query returns list items in ascending ID order */
             this.query = "\n        <Query>\n           <OrderBy>\n               <FieldRef Name=\"ID\" Ascending=\"TRUE\"/>\n           </OrderBy>\n        </Query>";
+            this.queryOptions = ap.DefaultListItemQueryOptions;
             this.runOnce = false;
             this.sessionStorage = false;
-            this.indexedCache = apIndexedCacheFactory.create();
-            this.initialized = $q.defer();
-            this.listName = model.list.getListId();
-            this.queryOptions = apDefaultListItemQueryOptions;
+            //Use the default viewFields from the model
             this.viewFields = model.list.viewFields;
             /** Set the default url if the config param is defined, otherwise let SPServices handle it */
             if (apConfig.defaultUrl) {
                 this.webURL = apConfig.defaultUrl;
             }
-            _.assign(this, config);
+            //Allow all values on query to be overwritten by queryOptions object
+            _.assign(this, queryOptions);
             /** Allow the model to be referenced at a later time */
             this.getModel = function () { return model; };
         }
+        Object.defineProperty(Query.prototype, "listName", {
+            get: function () {
+                return this.getModel().getListId();
+            },
+            enumerable: true,
+            configurable: true
+        });
         Object.defineProperty(Query.prototype, "localStorageKey", {
             /** They key we use for local storage */
             get: function () {
@@ -3411,7 +3422,7 @@ var ap;
                 if (!query.force && localStorageData) {
                     switch (this.operation) {
                         case 'GetListItemChangesSinceToken':
-                            //Only run the first time, after that the token/data are already in sync    
+                            //Only run the first time, after that the token/data are already in sync
                             if (!query.lastRun) {
                                 query.hydrateFromLocalStorage(localStorageData);
                             }
@@ -3699,108 +3710,11 @@ var ap;
 })(ap || (ap = {}));
 
 /// <reference path="../app.module.ts" />
-/// <reference path="../../typings/tsd.d.ts" />
-
-/// <reference path="../app.module.ts" />
-var ap;
-(function (ap) {
-    'use strict';
-    /** Local references to cached promises */
-    var _getGroupCollection, _getUserProfile;
-    var UserModel = (function () {
-        function UserModel($q, apDataService) {
-            this.$q = $q;
-            this.apDataService = apDataService;
-        }
-        /**
-         * @ngdoc function
-         * @name angularPoint.apUserModel:checkIfMember
-         * @methodOf angularPoint.apUserModel
-         * @description
-         * Checks to see if current user is a member of the specified group.
-         * @param {string} groupName Name of the group.
-         * @param {boolean} [force=false] Ignore any cached value.
-         * @returns {object} Returns the group definition if the user is a member. {ID:string, Name:string, Description:string, OwnerId:string, OwnerIsUser:string}
-         * @example
-         * <pre>{ID: "190", Name: "Blog Contributors", Description: "We are bloggers...", OwnerID: "126", OwnerIsUser: "False"}</pre>
-         */
-        UserModel.prototype.checkIfMember = function (groupName, force) {
-            if (force === void 0) { force = false; }
-            //Allow function to be called before group collection is ready
-            var deferred = this.$q.defer();
-            //Initially ensure groups are ready, any future calls will receive the return
-            this.getGroupCollection(force).then(function (groupCollection) {
-                var groupDefinition = _.find(groupCollection, { Name: groupName });
-                deferred.resolve(groupDefinition);
-            });
-            return deferred.promise;
-        };
-        /**
-         * @ngdoc function
-         * @name angularPoint.apUserModel:getGroupCollection
-         * @methodOf angularPoint.apUserModel
-         * @description
-         * Returns the group definitions for the current user and caches results.
-         * @param {boolean} [force=false] Ignore any cached value.
-         * @returns {IGroupDefinition[]} Promise which resolves with the array of groups the user belongs to.
-         */
-        UserModel.prototype.getGroupCollection = function (force) {
-            var _this = this;
-            if (force === void 0) { force = false; }
-            if (!_getGroupCollection || force) {
-                /** Create a new deferred object if not already defined */
-                var deferred = this.$q.defer();
-                this.getUserProfile(force).then(function (userProfile) {
-                    _this.apDataService.getGroupCollectionFromUser(userProfile.userLoginName)
-                        .then(function (groupCollection) {
-                        deferred.resolve(groupCollection);
-                    });
-                });
-                _getGroupCollection = deferred.promise;
-            }
-            return _getGroupCollection;
-        };
-        /**
-         * @ngdoc function
-         * @name angularPoint.apUserModel:getUserProfile
-         * @methodOf angularPoint.apUserModel
-         * @description
-         * Returns the user profile for the current user and caches results.
-         * Pull user profile info and parse into a profile object
-         * http://spservices.codeplex.com/wikipage?title=GetUserProfileByName
-         * @param {boolean} [force=false] Ignore any cached value.
-         * @returns {object} Promise which resolves with the requested user profile.
-         */
-        UserModel.prototype.getUserProfile = function (force) {
-            if (force === void 0) { force = false; }
-            if (!_getUserProfile || force) {
-                /** Create a new deferred object if not already defined */
-                _getUserProfile = this.apDataService.getUserProfileByName();
-            }
-            return _getUserProfile;
-        };
-        UserModel.$inject = ['$q', 'apDataService'];
-        return UserModel;
-    })();
-    ap.UserModel = UserModel;
-    /**
-     * @ngdoc service
-     * @name angularPoint.apUserModel
-     * @description
-     * Simple service that allows us to request and cache both the current user and their group memberships.
-     *
-     * @requires apDataService
-     *
-     */
-    angular.module('angularPoint')
-        .service('apUserModel', UserModel);
-})(ap || (ap = {}));
-
-/// <reference path="../app.module.ts" />
 var __extends = (this && this.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
-    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    __.prototype = b.prototype;
+    d.prototype = new __();
 };
 var ap;
 (function (ap) {
@@ -8463,6 +8377,101 @@ var ap;
      */
     angular.module('angularPoint')
         .service('apXMLToJSONService', XMLToJSONService);
+})(ap || (ap = {}));
+
+/// <reference path="../app.module.ts" />
+var ap;
+(function (ap) {
+    'use strict';
+    /** Local references to cached promises */
+    var _getGroupCollection, _getUserProfile;
+    var UserModel = (function () {
+        function UserModel($q, apDataService) {
+            this.$q = $q;
+            this.apDataService = apDataService;
+        }
+        /**
+         * @ngdoc function
+         * @name angularPoint.apUserModel:checkIfMember
+         * @methodOf angularPoint.apUserModel
+         * @description
+         * Checks to see if current user is a member of the specified group.
+         * @param {string} groupName Name of the group.
+         * @param {boolean} [force=false] Ignore any cached value.
+         * @returns {object} Returns the group definition if the user is a member. {ID:string, Name:string, Description:string, OwnerId:string, OwnerIsUser:string}
+         * @example
+         * <pre>{ID: "190", Name: "Blog Contributors", Description: "We are bloggers...", OwnerID: "126", OwnerIsUser: "False"}</pre>
+         */
+        UserModel.prototype.checkIfMember = function (groupName, force) {
+            if (force === void 0) { force = false; }
+            //Allow function to be called before group collection is ready
+            var deferred = this.$q.defer();
+            //Initially ensure groups are ready, any future calls will receive the return
+            this.getGroupCollection(force).then(function (groupCollection) {
+                var groupDefinition = _.find(groupCollection, { Name: groupName });
+                deferred.resolve(groupDefinition);
+            });
+            return deferred.promise;
+        };
+        /**
+         * @ngdoc function
+         * @name angularPoint.apUserModel:getGroupCollection
+         * @methodOf angularPoint.apUserModel
+         * @description
+         * Returns the group definitions for the current user and caches results.
+         * @param {boolean} [force=false] Ignore any cached value.
+         * @returns {IGroupDefinition[]} Promise which resolves with the array of groups the user belongs to.
+         */
+        UserModel.prototype.getGroupCollection = function (force) {
+            var _this = this;
+            if (force === void 0) { force = false; }
+            if (!_getGroupCollection || force) {
+                /** Create a new deferred object if not already defined */
+                var deferred = this.$q.defer();
+                this.getUserProfile(force).then(function (userProfile) {
+                    _this.apDataService.getGroupCollectionFromUser(userProfile.userLoginName)
+                        .then(function (groupCollection) {
+                        deferred.resolve(groupCollection);
+                    });
+                });
+                _getGroupCollection = deferred.promise;
+            }
+            return _getGroupCollection;
+        };
+        /**
+         * @ngdoc function
+         * @name angularPoint.apUserModel:getUserProfile
+         * @methodOf angularPoint.apUserModel
+         * @description
+         * Returns the user profile for the current user and caches results.
+         * Pull user profile info and parse into a profile object
+         * http://spservices.codeplex.com/wikipage?title=GetUserProfileByName
+         * @param {boolean} [force=false] Ignore any cached value.
+         * @returns {object} Promise which resolves with the requested user profile.
+         */
+        UserModel.prototype.getUserProfile = function (force) {
+            if (force === void 0) { force = false; }
+            if (!_getUserProfile || force) {
+                /** Create a new deferred object if not already defined */
+                _getUserProfile = this.apDataService.getUserProfileByName();
+            }
+            return _getUserProfile;
+        };
+        UserModel.$inject = ['$q', 'apDataService'];
+        return UserModel;
+    })();
+    ap.UserModel = UserModel;
+    /**
+     * @ngdoc service
+     * @name angularPoint.apUserModel
+     * @description
+     * Simple service that allows us to request and cache both the current user and their group memberships.
+     *
+     * @requires apDataService
+     *
+     */
+    angular.module('angularPoint')
+        .service('apUserModel', UserModel);
 })(ap || (ap = {}));
 
 //# sourceMappingURL=angular-point.js.map
