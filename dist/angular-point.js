@@ -544,9 +544,6 @@ var ap;
 })(ap || (ap = {}));
 
 /// <reference path="../app.module.ts" />
-/// <reference path="../../typings/tsd.d.ts" />
-
-/// <reference path="../app.module.ts" />
 var ap;
 (function (ap) {
     'use strict';
@@ -1243,7 +1240,17 @@ var ap;
          * since last save.
          */
         ListItem.prototype.changes = function () {
-            return new apListItemVersionFactory.FieldChangeSummary(this, this.getPristine());
+            //Instantiate a copy of the original list item for comparrison
+            var pristineListItem = _.cloneDeep(this.getPristine());
+            if (!pristineListItem) {
+                throw new Error('Could not retrieve a pristine version of this list item.');
+            }
+            //Remove id so when we instantiate we don't register in cache
+            pristineListItem.id = undefined;
+            //Need to instantiate using the same factory as the current list item
+            var factory = this.constructor;
+            var instantiatedPristineListItem = new factory(pristineListItem);
+            return new apListItemVersionFactory.FieldChangeSummary(this, instantiatedPristineListItem);
         };
         /**
          * @ngdoc function
@@ -3693,6 +3700,9 @@ var ap;
 })(ap || (ap = {}));
 
 /// <reference path="../app.module.ts" />
+/// <reference path="../../typings/tsd.d.ts" />
+
+/// <reference path="../app.module.ts" />
 var ap;
 (function (ap) {
     'use strict';
@@ -5107,7 +5117,13 @@ var ap;
                 }
                 //Store the value instead of just a reference to the original object
                 var pristineValue = _.cloneDeep(rawObject);
-                //Allow us to reference the uninstantiated version of this list item
+                /**
+                * @ngdoc function
+                * @name ListItem.getPristine
+                * @description
+                * Allow us to reference the uninstantiated version of this list item.  Reference set
+                * via angularPoint.apDecodeService:createListItemProvider.
+                */
                 listItem.getPristine = function () { return pristineValue; };
                 return indexedCache[rawObject.id];
             };

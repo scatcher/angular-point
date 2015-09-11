@@ -104,7 +104,13 @@ module ap {
                 //Store the value instead of just a reference to the original object
                 var pristineValue = _.cloneDeep(rawObject);
 
-                //Allow us to reference the uninstantiated version of this list item
+                /**
+                * @ngdoc function
+                * @name ListItem.getPristine
+                * @description
+                * Allow us to reference the uninstantiated version of this list item.  Reference set
+                * via angularPoint.apDecodeService:createListItemProvider. 
+                */                
                 listItem.getPristine = () => pristineValue;
 
                 return indexedCache[rawObject.id];

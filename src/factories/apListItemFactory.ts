@@ -84,7 +84,18 @@ module ap {
          * since last save.
          */
         changes(): FieldChangeSummary<T> {
-            return new apListItemVersionFactory.FieldChangeSummary(this, this.getPristine());
+            //Instantiate a copy of the original list item for comparrison
+            let pristineListItem = _.cloneDeep(this.getPristine());
+            if (!pristineListItem) {
+                throw new Error('Could not retrieve a pristine version of this list item.');
+            }
+            //Remove id so when we instantiate we don't register in cache
+            pristineListItem.id = undefined;
+            //Need to instantiate using the same factory as the current list item
+            let factory = this.constructor;           
+            let instantiatedPristineListItem = new factory(pristineListItem);
+            
+            return new apListItemVersionFactory.FieldChangeSummary(this, instantiatedPristineListItem);
         }
 
         /**
