@@ -9,3 +9,4 @@ coverage/
 .settings
 .publish
 .DS_Store
+.vscode
