@@ -143,7 +143,8 @@ declare module ngTable {
         defaultSort?: string; //options: ['asc', 'desc']
         groupBy?: string | Function;
         filterDelay?: number;
-        getData($defer: ng.IDeferred<ap.ListItem<any>[]>, params: INGTableParamsReference): void;
+        /** Return eiter a data array or promise that resolves with a data array */
+        getData(params: INGTableParamsReference): void;
     }
 
     export interface INGTableParams {
