@@ -190,7 +190,7 @@ module ap {
             //Use the default viewFields from the model
             this.viewFields = list.viewFields;
             this.listName = model.getListId();
-            
+
             /** Set the default url if the config param is defined, otherwise let SPServices handle it */
             if (apConfig.defaultUrl) {
                 this.webURL = apConfig.defaultUrl;
@@ -232,9 +232,18 @@ module ap {
                 let localStorageData = this.getLocalStorage();
                 //Check to see if we have a version in localStorage
 
+                let defaultCache = query.getCache();
+
+                /** Clear out existing cached list items if GetListItems is the selected operation because otherwise
+                 * we could potentially have stale data if a list item no longer meets the query parameters but already
+                 * exists in the cache from a previous request. */
+                if(this.operation === 'GetListItems') {
+                    defaultCache.clear();
+                }
+
                 let defaults = {
                     /** Designate the central cache for this query if not already set */
-                    target: query.getCache()
+                    target: defaultCache
                 };
 
                 /** Extend defaults with any options */
@@ -423,7 +432,7 @@ module ap {
                 this.sessionStorage = false;
             }
         }
-        
+
         /** They key we use for local storage */
         private getLocalStorageKey() {
             var model = this.getModel();

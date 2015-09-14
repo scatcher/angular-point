@@ -2070,7 +2070,8 @@ var ap;
 var __extends = (this && this.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
-    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    __.prototype = b.prototype;
+    d.prototype = new __();
 };
 var ap;
 (function (ap) {
@@ -3390,9 +3391,16 @@ var ap;
                 query.negotiatingWithServer = true;
                 var localStorageData = this.getLocalStorage();
                 //Check to see if we have a version in localStorage
+                var defaultCache = query.getCache();
+                /** Clear out existing cached list items if GetListItems is the selected operation because otherwise
+                 * we could potentially have stale data if a list item no longer meets the query parameters but already
+                 * exists in the cache from a previous request. */
+                if (this.operation === 'GetListItems') {
+                    defaultCache.clear();
+                }
                 var defaults = {
                     /** Designate the central cache for this query if not already set */
-                    target: query.getCache()
+                    target: defaultCache
                 };
                 /** Extend defaults with any options */
                 var queryOptions = _.assign(defaults, options);
@@ -3801,7 +3809,8 @@ var ap;
 var __extends = (this && this.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
-    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    __.prototype = b.prototype;
+    d.prototype = new __();
 };
 var ap;
 (function (ap) {
