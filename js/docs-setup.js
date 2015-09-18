@@ -469,7 +469,7 @@ NG_DOCS={
       "type": "object",
       "moduleName": "Field",
       "shortDescription": "Defined in the MODEL.list.fieldDefinitions array.  Each field definition object maps an internal field",
-      "keywords": "actual add additional allows angularpoint apfieldfactory apfieldservice apformattedfieldvalueservice api appropriate array attribute attributes automatically base based broken build calculated call choice choice_field_name choices coded collection column convert converts counter created current custom customfields dashes data default defaultvalue defined defining definition deliminator delimited desired discussion display dynamically dynamicmock element ensure error example field fielddefinition fielddefinitions fields float form formatted formatter function generally generate generates getfielddefinition getformattedfieldvalue getmockdata good hard ifielddefinition ignore info inherits initial int integer internal invalid item javascript js json list listitem lookup lookupid lookupvalue mapped mappedname maps methods mock mockdata model modelname multiple myawesomelookup newly number obj object objects objecttype optional optionally options outputting override param params parsed pass passed point post processing property prototype push read read-only readable readonly reference representing required respect retrieve return returned returns saving second selected service set sharepoint single site slashes space specific staticmock staticname staticvalue store stored string stringify strings suitable text thread thrown touppercase true type typically unescape unique usage user valid validate var xml"
+      "keywords": "actual add additional allows angularpoint apfieldfactory apfieldservice apformattedfieldvalueservice api appropriate array attribute attributes automatically base based broken build calculated call choice choice_field_name choices coded collection column convert converts counter created current custom customfields dashes data default defined defining definition deliminator delimited desired discussion display dynamically element ensure error example field fielddefinition fielddefinitions fields float form formatted formatter function generally generate generates getfielddefinition getformattedfieldvalue getmockdata good hard ifielddefinition ignore info inherits initial int integer internal invalid item javascript js json list listitem lookup lookupid lookupvalue mapped mappedname maps methods mock mockdata model modelname multiple myawesomelookup newly number obj object objects objecttype optional optionally options outputting override param params parsed pass passed point post processing property prototype push read read-only readable readonly reference representing required respect retrieve return returned returns saving second selected service set sharepoint single site slashes space specific staticname staticvalue store stored string stringify strings suitable text thread thrown touppercase true type typically unescape unique usage user valid validate var xml"
     },
     {
       "section": "api",
@@ -612,8 +612,8 @@ NG_DOCS={
       "shortName": "ListItem.getList",
       "type": "function",
       "moduleName": "ListItem",
-      "shortDescription": "Allows us to reference the list definition directly from the list item.  This is added to the",
-      "keywords": "allows api apmodelfactory definition directly documentation factory function getlist info item list listitem model prototype reference"
+      "shortDescription": "Abstraction to allow logic in model to be used instead of defining the list location in more than one place.",
+      "keywords": "abstraction allow api defining function getlist item list listitem location logic model place"
     },
     {
       "section": "api",
@@ -621,17 +621,8 @@ NG_DOCS={
       "shortName": "ListItem.getList",
       "type": "function",
       "moduleName": "ListItem",
-      "shortDescription": "Abstraction to allow logic in model to be used instead of defining the list location in more than one place.",
-      "keywords": "abstraction allow api defining function getlist item list listitem location logic model place"
-    },
-    {
-      "section": "api",
-      "id": "ListItem.getListId",
-      "shortName": "ListItem.getListId",
-      "type": "function",
-      "moduleName": "ListItem",
-      "shortDescription": "Allows us to reference the list ID directly from the list item.  This is added to the",
-      "keywords": "allows api apmodelfactory directly factory function getlistid item list listitem model prototype reference"
+      "shortDescription": "Allows us to reference the list definition directly from the list item.  This is added to the",
+      "keywords": "allows api apmodelfactory definition directly documentation factory function getlist info item list listitem model prototype reference"
     },
     {
       "section": "api",
@@ -641,6 +632,15 @@ NG_DOCS={
       "moduleName": "ListItem",
       "shortDescription": "Allows us to reference the list ID directly from the model.",
       "keywords": "allows api directly function getlistid list listitem model reference"
+    },
+    {
+      "section": "api",
+      "id": "ListItem.getListId",
+      "shortName": "ListItem.getListId",
+      "type": "function",
+      "moduleName": "ListItem",
+      "shortDescription": "Allows us to reference the list ID directly from the list item.  This is added to the",
+      "keywords": "allows api apmodelfactory directly factory function getlistid item list listitem model prototype reference"
     },
     {
       "section": "api",
@@ -659,6 +659,15 @@ NG_DOCS={
       "moduleName": "ListItem",
       "shortDescription": "Allows us to reference the parent model directly from the list item.  This is added to the",
       "keywords": "allows api apmodelfactory directly documentation factory function getmodel info item list listitem model parent prototype reference"
+    },
+    {
+      "section": "api",
+      "id": "ListItem.getPristine",
+      "shortName": "ListItem.getPristine",
+      "type": "function",
+      "moduleName": "ListItem",
+      "shortDescription": "Allow us to reference the uninstantiated version of this list item.  Reference set",
+      "keywords": "allow angularpoint apdecodeservice api function getpristine item list listitem reference set uninstantiated version"
     },
     {
       "section": "api",

@@ -1,0 +1,271 @@
+<h1><code ng:non-bindable="">apDataService</code>
+<div><span class="hint">service in module <code ng:non-bindable="">angularPoint</code>
+</span>
+</div>
+</h1>
+<div><h2 id="description">Description</h2>
+<div class="description"><div class="angularpoint-apdataservice-page"><p>Abstracts much of the functionality from Marc Anderson&#39;s SPServices and serves as a wrapper for all interactions
+with SharePoint.</p>
+</div></div>
+<div class="member method"><h2 id="methods">Methods</h2>
+<ul class="methods"><li><h3 id="methods_createlistitem">createListItem(model, listItem, [options])</h3>
+<div class="createlistitem"><div class="angularpoint-apdataservice-createlistitem-page"><p>Creates a new list item for the provided model.</p>
+</div><h5 id="methods_createlistitem_parameters">Parameters</h5><table class="variables-matrix table table-bordered table-striped"><thead><tr><th>Param</th><th>Type</th><th>Details</th></tr></thead><tbody><tr><td>model</td><td><a href="" class="label type-hint type-hint-object">object</a></td><td><div class="angularpoint-apdataservice-createlistitem-page"><p>Reference to the entities model.</p>
+</div></td></tr><tr><td>listItem</td><td><a href="" class="label type-hint type-hint-object">object</a></td><td><div class="angularpoint-apdataservice-createlistitem-page"><p>JavaScript object representing the SharePoint list item.</p>
+</div></td></tr><tr><td>[options]</td><td><a href="" class="label type-hint type-hint-object">object</a></td><td><div class="angularpoint-apdataservice-createlistitem-page"><p>Optional configuration params.</p>
+</div></td></tr><tr><td>options.buildValuePairs</td><td><a href="" class="label type-hint type-hint-boolean">boolean</a></td><td><div class="angularpoint-apdataservice-createlistitem-page"><p>Automatically generate pairs based on fields defined in model.</p>
+</div> <p><em>(default: true)</em></p></td></tr><tr><td>options.indexedCache</td><td><a href="" class="label type-hint type-hint-object">object</a></td><td><div class="angularpoint-apdataservice-createlistitem-page"><p>Optionally place new item in a specified cache.</p>
+</div> <p><em>(default: apIndexedCacheFactory.create({}))</em></p></td></tr><tr><td>[options.valuePairs]</td><td><a href="" class="label type-hint type-hint-array">Array[]</a></td><td><div class="angularpoint-apdataservice-createlistitem-page"><p>Precomputed value pairs to use instead of generating them for each
+field identified in the model.</p>
+</div></td></tr></tbody></table><h5 id="methods_createlistitem_returns">Returns</h5><table class="variables-matrix"><tr><td><a href="" class="label type-hint type-hint-object">object</a></td><td><div class="angularpoint-apdataservice-createlistitem-page"><p>Promise which resolves with the newly created item.</p>
+</div></td></tr></table></div>
+</li>
+<li><h3 id="methods_deleteattachment">deleteAttachment(options)</h3>
+<div class="deleteattachment"><div class="angularpoint-apdataservice-deleteattachment-page"><p>Deletes and attachment on a list item.  Most commonly used by ListItem.deleteAttachment which is shown
+in the example.</p>
+</div><h5 id="methods_deleteattachment_parameters">Parameters</h5><table class="variables-matrix table table-bordered table-striped"><thead><tr><th>Param</th><th>Type</th><th>Details</th></tr></thead><tbody><tr><td>options</td><td><a href="" class="label type-hint type-hint-object">object</a></td><td><div class="angularpoint-apdataservice-deleteattachment-page"><p>Configuration parameters.</p>
+</div></td></tr><tr><td>options.listItemId</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="angularpoint-apdataservice-deleteattachment-page"><p>ID of the list item with the attachment.</p>
+</div></td></tr><tr><td>options.url</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="angularpoint-apdataservice-deleteattachment-page"><p>Requires the URL for the attachment we want to delete.</p>
+</div></td></tr><tr><td>options.listName</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="angularpoint-apdataservice-deleteattachment-page"><p>Best option is the GUID of the list.
+<pre class="prettyprint linenums">'{37388A98-534C-4A28-BFFA-22429276897B}'</pre>
+</div></td></tr></tbody></table><h5 id="methods_deleteattachment_returns">Returns</h5><table class="variables-matrix"><tr><td><a href="" class="label type-hint type-hint-object">object</a></td><td><div class="angularpoint-apdataservice-deleteattachment-page"><p>Promise which resolves with the updated attachment collection.</p>
+</div></td></tr></table><h4 id="methods_deleteattachment_example">Example</h4>
+<div class="example"><div class="angularpoint-apdataservice-deleteattachment-page"><pre class="prettyprint linenums">
+ListItem.prototype.deleteAttachment = function (url) {
+   var listItem = this;
+   return DataService.deleteAttachment({
+       listItemId: listItem.id,
+       url: url,
+       listName: listItem.getModel().list.getListId()
+   });
+};
+</pre>
+</div></div>
+</div>
+</li>
+<li><h3 id="methods_deletelistitem">deleteListItem(model, listItem, [options])</h3>
+<div class="deletelistitem"><div class="angularpoint-apdataservice-deletelistitem-page"><p>Typically called directly from a list item, removes the list item from SharePoint
+and the local cache.</p>
+</div><h5 id="methods_deletelistitem_parameters">Parameters</h5><table class="variables-matrix table table-bordered table-striped"><thead><tr><th>Param</th><th>Type</th><th>Details</th></tr></thead><tbody><tr><td>model</td><td><a href="" class="label type-hint type-hint-object">object</a></td><td><div class="angularpoint-apdataservice-deletelistitem-page"><p>Reference to the entities model.</p>
+</div></td></tr><tr><td>listItem</td><td><a href="" class="label type-hint type-hint-object">object</a></td><td><div class="angularpoint-apdataservice-deletelistitem-page"><p>JavaScript object representing the SharePoint list item.</p>
+</div></td></tr><tr><td>[options]</td><td><a href="" class="label type-hint type-hint-object">object</a></td><td><div class="angularpoint-apdataservice-deletelistitem-page"><p>Optional configuration params.</p>
+</div></td></tr><tr><td>options.target</td><td><a href="" class="label type-hint type-hint-array">Array</a></td><td><div class="angularpoint-apdataservice-deletelistitem-page"><p>Optional location to search through and remove the
+local cached copy.</p>
+</div> <p><em>(default: item.getCache())</em></p></td></tr></tbody></table><h5 id="methods_deletelistitem_returns">Returns</h5><table class="variables-matrix"><tr><td><a href="" class="label type-hint type-hint-object">object</a></td><td><div class="angularpoint-apdataservice-deletelistitem-page"><p>Promise which resolves when the operation is complete.  Nothing of importance is returned.</p>
+</div></td></tr></table></div>
+</li>
+<li><h3 id="methods_executequery">executeQuery(model, query, [options])</h3>
+<div class="executequery"><div class="angularpoint-apdataservice-executequery-page"><p>Primary method of retrieving list items from SharePoint.  Look at Query and Model for specifics.</p>
+</div><h5 id="methods_executequery_parameters">Parameters</h5><table class="variables-matrix table table-bordered table-striped"><thead><tr><th>Param</th><th>Type</th><th>Details</th></tr></thead><tbody><tr><td>model</td><td><a href="" class="label type-hint type-hint-object">object</a></td><td><div class="angularpoint-apdataservice-executequery-page"><p>Reference to the model where the Query resides.</p>
+</div></td></tr><tr><td>query</td><td><a href="" class="label type-hint type-hint-object">object</a></td><td><div class="angularpoint-apdataservice-executequery-page"><p>Reference to the Query making the call.</p>
+</div></td></tr><tr><td>[options]</td><td><a href="" class="label type-hint type-hint-object">object</a></td><td><div class="angularpoint-apdataservice-executequery-page"><p>Optional configuration parameters.</p>
+</div></td></tr><tr><td>options.target</td><td><a href="" class="label type-hint type-hint-object">object</a></td><td><div class="angularpoint-apdataservice-executequery-page"><p>The target destination for returned entities</p>
+</div> <p><em>(default: model.getCache())</em></p></td></tr></tbody></table><h5 id="methods_executequery_returns">Returns</h5><table class="variables-matrix"><tr><td><a href="" class="label type-hint type-hint-object">object</a></td><td><div class="angularpoint-apdataservice-executequery-page"><ul>
+<li>Key value hash containing all list item id&#39;s as keys with the listItem as the value.</li>
+</ul>
+</div></td></tr></table></div>
+</li>
+<li><h3 id="methods_generatewebserviceurl">generateWebServiceUrl(service, [webURL])</h3>
+<div class="generatewebserviceurl"><div class="angularpoint-apdataservice-generatewebserviceurl-page"><p>Builds the appropriate SharePoint resource URL.  If a URL isn&#39;t provided and it hasn&#39;t already been cached
+we make a call to the server to find the root URL.  All future requests will then use this cached value.</p>
+</div><h5 id="methods_generatewebserviceurl_parameters">Parameters</h5><table class="variables-matrix table table-bordered table-striped"><thead><tr><th>Param</th><th>Type</th><th>Details</th></tr></thead><tbody><tr><td>service</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="angularpoint-apdataservice-generatewebserviceurl-page"><p>The name of the service the SOAP operation is using.</p>
+</div></td></tr><tr><td>[webURL]</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="angularpoint-apdataservice-generatewebserviceurl-page"><p>Optionally provide the URL so we don&#39;t need to make a call to the server.</p>
+</div></td></tr></tbody></table><h5 id="methods_generatewebserviceurl_returns">Returns</h5><table class="variables-matrix"><tr><td><a href="" class="label type-hint type-hint-promise">promise</a></td><td><div class="angularpoint-apdataservice-generatewebserviceurl-page"><p>Resolves with the url for the service.</p>
+</div></td></tr></table></div>
+</li>
+<li><h3 id="methods_getavailableworkflows">getAvailableWorkflows(fileRefString)</h3>
+<div class="getavailableworkflows"><div class="angularpoint-apdataservice-getavailableworkflows-page"><p>Given a list item or document, return an array of all available workflows.  This is used in combination with
+DataService.startWorkflow because it requires the template GUID for the target workflow.</p>
+</div><h5 id="methods_getavailableworkflows_parameters">Parameters</h5><table class="variables-matrix table table-bordered table-striped"><thead><tr><th>Param</th><th>Type</th><th>Details</th></tr></thead><tbody><tr><td>fileRefString</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="angularpoint-apdataservice-getavailableworkflows-page"><p>Relative or static url referencing the item.</p>
+</div></td></tr></tbody></table><h5 id="methods_getavailableworkflows_returns">Returns</h5><table class="variables-matrix"><tr><td><a href="" class="label type-hint type-hint-object">object</a></td><td><div class="angularpoint-apdataservice-getavailableworkflows-page"><p>Resolves with an array of objects defining each of the available workflows for the item.</p>
+</div></td></tr></table><h4 id="methods_getavailableworkflows_example">Example</h4>
+<div class="example"><div class="angularpoint-apdataservice-getavailableworkflows-page"><pre class="prettyprint linenums">
+DataService.getAvailableWorkflows(listItem.fileRef.lookupValue)
+    .then(function(templateArray) {
+         ....templateArray = [{
+             "name": "WidgetApproval",
+             "instantiationUrl": "https: //sharepoint.mycompany.com/_layouts/IniWrkflIP.aspx?List=fc17890e-8c0…311-cea9-40d1-a183-6edde9333815}&Web={ec744d8e-ae0a-45dd-bcd1-8a63b9b399bd}",
+             "templateId": "59062311-cea9-40d1-a183-6edde9333815"
+         }]
+    });
+</pre>
+</div></div>
+</div>
+</li>
+<li><h3 id="methods_getcollection">getCollection(options)</h3>
+<div class="getcollection"><div class="angularpoint-apdataservice-getcollection-page"><p>Used to handle any of the Get[filterNode]Collection calls to SharePoint</p>
+</div><h5 id="methods_getcollection_parameters">Parameters</h5><table class="variables-matrix table table-bordered table-striped"><thead><tr><th>Param</th><th>Type</th><th>Details</th></tr></thead><tbody><tr><td>options</td><td><a href="" class="label type-hint type-hint-object">Object</a></td><td><div class="angularpoint-apdataservice-getcollection-page"><ul>
+<li>object used to extend payload and needs to include all SPServices required attributes</li>
+</ul>
+</div></td></tr><tr><td>options.operation</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="angularpoint-apdataservice-getcollection-page"><p>Can be any of the below or any other requests for collections:</p>
+<ul>
+<li>GetAttachmentCollection @requires options.listName &amp; options.ID</li>
+<li>GetGroupCollectionFromSite</li>
+<li>GetGroupCollectionFromUser @requires options.userLoginName</li>
+<li>GetListCollection</li>
+<li>GetUserCollectionFromGroup @requires options.groupName</li>
+<li>GetUserCollectionFromSite</li>
+<li>GetViewCollection @requires options.listName</li>
+</ul>
+</div></td></tr><tr><td>options.filterNode</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="angularpoint-apdataservice-getcollection-page"><p>Value to iterate over in returned XML
+if not provided it&#39;s extracted from the name of the operation
+ex: Get[User]CollectionFromSite, &quot;User&quot; is used as the filterNode</p>
+</div></td></tr><tr><td>[options.groupName]</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="angularpoint-apdataservice-getcollection-page"><p>Valid for &#39;GetUserCollectionFromGroup&#39;</p>
+</div></td></tr><tr><td>[options.listName]</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="angularpoint-apdataservice-getcollection-page"><p>Valid for &#39;GetViewCollection&#39; or &#39;GetAttachmentCollection&#39;</p>
+</div></td></tr><tr><td>[options.userLoginName]</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="angularpoint-apdataservice-getcollection-page"><p>Valid for &#39;GetGroupCollectionFromUser&#39;</p>
+</div></td></tr></tbody></table><h5 id="methods_getcollection_returns">Returns</h5><table class="variables-matrix"><tr><td><a href="" class="label type-hint type-hint-promise">Promise&lt;object[]&gt;</a></td><td><div class="angularpoint-apdataservice-getcollection-page"><p>Promise which when resolved will contain an array of objects representing the
+requested collection.</p>
+</div></td></tr></table><h4 id="methods_getcollection_example">Example</h4>
+<div class="example"><div class="angularpoint-apdataservice-getcollection-page"><pre class="prettyprint linenums">
+DataService.getCollection({
+       operation: "GetGroupCollectionFromUser",
+       userLoginName: $scope.state.selectedUser.LoginName
+       }).then(function (response) {
+           postProcessFunction(response);
+      });
+</pre>
+</div></div>
+</div>
+</li>
+<li><h3 id="methods_getcurrentsite">getCurrentSite()</h3>
+<div class="getcurrentsite"><div class="angularpoint-apdataservice-getcurrentsite-page"><p>Requests and caches the root url for the current site.  It caches the response so any future calls receive
+the cached promise.</p>
+</div><h5 id="methods_getcurrentsite_returns">Returns</h5><table class="variables-matrix"><tr><td><a href="" class="label type-hint type-hint-promise">promise</a></td><td><div class="angularpoint-apdataservice-getcurrentsite-page"><p>Resolves with the current site root url.</p>
+</div></td></tr></table></div>
+</li>
+<li><h3 id="methods_getfieldversionhistory">getFieldVersionHistory(options, fieldDefinition)</h3>
+<div class="getfieldversionhistory"><div class="angularpoint-apdataservice-getfieldversionhistory-page"><p>Returns the version history for a field in a list item.</p>
+</div><h5 id="methods_getfieldversionhistory_parameters">Parameters</h5><table class="variables-matrix table table-bordered table-striped"><thead><tr><th>Param</th><th>Type</th><th>Details</th></tr></thead><tbody><tr><td>options</td><td><a href="" class="label type-hint type-hint-object">object</a></td><td><div class="angularpoint-apdataservice-getfieldversionhistory-page"><p>Configuration object passed to SPServices.
+<pre class="prettyprint linenums">
+var options = {
+       operation: 'GetVersionCollection',
+       webURL: apConfig.defaultUrl,
+       strlistID: model.getListId(),
+       strlistItemID: listItem.id,
+       strFieldName: fieldDefinition.staticName
+   };
+</pre>
+</div></td></tr><tr><td>fieldDefinition</td><td><a href="" class="label type-hint type-hint-object">object</a></td><td><div class="angularpoint-apdataservice-getfieldversionhistory-page"><p>Field definition object from the model.</p>
+</div></td></tr></tbody></table><h5 id="methods_getfieldversionhistory_returns">Returns</h5><table class="variables-matrix"><tr><td><a href="" class="label type-hint type-hint-object">object[]</a></td><td><div class="angularpoint-apdataservice-getfieldversionhistory-page"><p>Promise which resolves with an array of list item changes for the specified field.</p>
+</div></td></tr></table></div>
+</li>
+<li><h3 id="methods_getgroupcollectionfromuser">getGroupCollectionFromUser(login)</h3>
+<div class="getgroupcollectionfromuser"><div class="angularpoint-apdataservice-getgroupcollectionfromuser-page"><p>Fetches an array of group names the user is a member of.  If no user is provided we use the current user.</p>
+</div><h5 id="methods_getgroupcollectionfromuser_parameters">Parameters</h5><table class="variables-matrix table table-bordered table-striped"><thead><tr><th>Param</th><th>Type</th><th>Details</th></tr></thead><tbody><tr><td>login</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="angularpoint-apdataservice-getgroupcollectionfromuser-page"><p>Optional param of another user&#39;s login to return the profile for.</p>
+</div> <p><em>(default: CurrentUser)</em></p></td></tr></tbody></table><h5 id="methods_getgroupcollectionfromuser_returns">Returns</h5><table class="variables-matrix"><tr><td><a href="" class="label type-hint type-hint-string">string[]</a></td><td><div class="angularpoint-apdataservice-getgroupcollectionfromuser-page"><p>Promise which resolves with the array of groups the user belongs to.</p>
+</div></td></tr></table></div>
+</li>
+<li><h3 id="methods_getlist">getList(options)</h3>
+<div class="getlist"><div class="angularpoint-apdataservice-getlist-page"><p>Returns all list details including field and list config.</p>
+</div><h5 id="methods_getlist_parameters">Parameters</h5><table class="variables-matrix table table-bordered table-striped"><thead><tr><th>Param</th><th>Type</th><th>Details</th></tr></thead><tbody><tr><td>options</td><td><a href="" class="label type-hint type-hint-object">object</a></td><td><div class="angularpoint-apdataservice-getlist-page"><p>Configuration parameters.</p>
+</div></td></tr><tr><td>options.listName</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="angularpoint-apdataservice-getlist-page"><p>GUID of the list.</p>
+</div></td></tr></tbody></table><h5 id="methods_getlist_returns">Returns</h5><table class="variables-matrix"><tr><td><a href="" class="label type-hint type-hint-object">object</a></td><td><div class="angularpoint-apdataservice-getlist-page"><p>Promise which resolves with an object defining field and list config.</p>
+</div></td></tr></table></div>
+</li>
+<li><h3 id="methods_getlistfields">getListFields(options)</h3>
+<div class="getlistfields"><div class="angularpoint-apdataservice-getlistfields-page"><p>Returns field definitions for a specified list.</p>
+</div><h5 id="methods_getlistfields_parameters">Parameters</h5><table class="variables-matrix table table-bordered table-striped"><thead><tr><th>Param</th><th>Type</th><th>Details</th></tr></thead><tbody><tr><td>options</td><td><a href="" class="label type-hint type-hint-object">object</a></td><td><div class="angularpoint-apdataservice-getlistfields-page"><p>Configuration parameters.</p>
+</div></td></tr><tr><td>options.listName</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="angularpoint-apdataservice-getlistfields-page"><p>GUID of the list.</p>
+</div></td></tr></tbody></table><h5 id="methods_getlistfields_returns">Returns</h5><table class="variables-matrix"><tr><td><a href="" class="label type-hint type-hint-promise">Promise</a></td><td><div class="angularpoint-apdataservice-getlistfields-page"><p>Promise which resolves with an array of field definitions for the list.</p>
+</div></td></tr></table></div>
+</li>
+<li><h3 id="methods_getuserprofile">getUserProfile(login)</h3>
+<div class="getuserprofile"><div class="angularpoint-apdataservice-getuserprofile-page"><p>Returns the profile for an optional user, but defaults the the current user if one isn&#39;t provided.
+Pull user profile info and parse into a profile object
+http: //spservices.codeplex.com/wikipage?title=GetUserProfileByName</p>
+</div><h5 id="methods_getuserprofile_parameters">Parameters</h5><table class="variables-matrix table table-bordered table-striped"><thead><tr><th>Param</th><th>Type</th><th>Details</th></tr></thead><tbody><tr><td>login</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="angularpoint-apdataservice-getuserprofile-page"><p>Optional param of another user&#39;s login to return the profile for.</p>
+</div> <p><em>(default: CurrentUser)</em></p></td></tr></tbody></table><h5 id="methods_getuserprofile_returns">Returns</h5><table class="variables-matrix"><tr><td><a href="" class="label type-hint type-hint-object">object</a></td><td><div class="angularpoint-apdataservice-getuserprofile-page"><p>Promise which resolves with the requested user profile.</p>
+</div></td></tr></table></div>
+</li>
+<li><h3 id="methods_processchangetokenxml">processChangeTokenXML(model, query, responseXML, opts)</h3>
+<div class="processchangetokenxml"><div class="angularpoint-apdataservice-processchangetokenxml-page"><p>The initial call to GetListItemChangesSinceToken also includes the field definitions for the
+list so extend the existing field definitions and list defined in the model.  After that, store
+the change token and make any changes to the user&#39;s permissions for the list.</p>
+</div><h5 id="methods_processchangetokenxml_parameters">Parameters</h5><table class="variables-matrix table table-bordered table-striped"><thead><tr><th>Param</th><th>Type</th><th>Details</th></tr></thead><tbody><tr><td>model</td><td><a href="" class="label type-hint type-hint-model">Model</a></td><td><div class="angularpoint-apdataservice-processchangetokenxml-page"><p>List model.</p>
+</div></td></tr><tr><td>query</td><td><a href="" class="label type-hint type-hint-iquery">IQuery</a></td><td><div class="angularpoint-apdataservice-processchangetokenxml-page"><p>Valid query object.</p>
+</div></td></tr><tr><td>responseXML</td><td><a href="" class="label type-hint type-hint-xmldocument">XMLDocument</a></td><td><div class="angularpoint-apdataservice-processchangetokenxml-page"><p>XML response from the server.</p>
+</div></td></tr><tr><td>opts</td><td><a href="" class="label type-hint type-hint-object">object</a></td><td><div class="angularpoint-apdataservice-processchangetokenxml-page"><p>Config options built up along the way.</p>
+</div></td></tr></tbody></table></div>
+</li>
+<li><h3 id="methods_processdeletionssincetoken">processDeletionsSinceToken(responseXML, indexedCache)</h3>
+<div class="processdeletionssincetoken"><div class="angularpoint-apdataservice-processdeletionssincetoken-page"><p>GetListItemChangesSinceToken returns items that have been added as well as deleted so we need
+to remove the deleted items from the local cache.</p>
+</div><h5 id="methods_processdeletionssincetoken_parameters">Parameters</h5><table class="variables-matrix table table-bordered table-striped"><thead><tr><th>Param</th><th>Type</th><th>Details</th></tr></thead><tbody><tr><td>responseXML</td><td><a href="" class="label type-hint type-hint-xmldocument">XMLDocument</a></td><td><div class="angularpoint-apdataservice-processdeletionssincetoken-page"><p>XML response from the server.</p>
+</div></td></tr><tr><td>indexedCache</td><td><a href="" class="label type-hint type-hint-object">Object</a></td><td><div class="angularpoint-apdataservice-processdeletionssincetoken-page"><p>Cached object of key value pairs.</p>
+</div></td></tr></tbody></table></div>
+</li>
+<li><h3 id="methods_requestdata">requestData(opts)</h3>
+<div class="requestdata"><div class="angularpoint-apdataservice-requestdata-page"><p>The primary function that handles all communication with the server.  This is very low level and isn&#39;t
+intended to be called directly.</p>
+</div><h5 id="methods_requestdata_parameters">Parameters</h5><table class="variables-matrix table table-bordered table-striped"><thead><tr><th>Param</th><th>Type</th><th>Details</th></tr></thead><tbody><tr><td>opts</td><td><a href="" class="label type-hint type-hint-object">object</a></td><td><div class="angularpoint-apdataservice-requestdata-page"><p>Payload object containing the details of the request.</p>
+</div></td></tr></tbody></table><h5 id="methods_requestdata_returns">Returns</h5><table class="variables-matrix"><tr><td><a href="" class="label type-hint type-hint-promise">promise</a></td><td><div class="angularpoint-apdataservice-requestdata-page"><p>Promise that resolves with the server response.</p>
+</div></td></tr></table></div>
+</li>
+<li><h3 id="methods_retrievechangetoken">retrieveChangeToken(responseXML)</h3>
+<div class="retrievechangetoken"><div class="angularpoint-apdataservice-retrievechangetoken-page"><p>Returns the change token from the xml response of a GetListItemChangesSinceToken query
+Note: this attribute is only found when using &#39;GetListItemChangesSinceToken&#39;</p>
+</div><h5 id="methods_retrievechangetoken_parameters">Parameters</h5><table class="variables-matrix table table-bordered table-striped"><thead><tr><th>Param</th><th>Type</th><th>Details</th></tr></thead><tbody><tr><td>responseXML</td><td><a href="" class="label type-hint type-hint-xmldocument">XMLDocument</a></td><td><div class="angularpoint-apdataservice-retrievechangetoken-page"><p>XML response from the server.</p>
+</div></td></tr></tbody></table></div>
+</li>
+<li><h3 id="methods_retrievelistpermissions">retrieveListPermissions(responseXML)</h3>
+<div class="retrievelistpermissions"><div class="angularpoint-apdataservice-retrievelistpermissions-page"><p>Returns the text representation of the users permission mask
+Note: this attribute is only found when using &#39;GetListItemChangesSinceToken&#39;</p>
+</div><h5 id="methods_retrievelistpermissions_parameters">Parameters</h5><table class="variables-matrix table table-bordered table-striped"><thead><tr><th>Param</th><th>Type</th><th>Details</th></tr></thead><tbody><tr><td>responseXML</td><td><a href="" class="label type-hint type-hint-xmldocument">XMLDocument</a></td><td><div class="angularpoint-apdataservice-retrievelistpermissions-page"><p>XML response from the server.</p>
+</div></td></tr></tbody></table></div>
+</li>
+<li><h3 id="methods_servicewrapper">serviceWrapper(options)</h3>
+<div class="servicewrapper"><div class="angularpoint-apdataservice-servicewrapper-page"><p>Generic wrapper for any SPServices web service call.  The big benefit to this function is it allows us
+to continue to use the $q promise model throughout the application instead of using the promise
+implementation used in SPServices so we have a more consistent experience.
+Check http: //spservices.codeplex.com/documentation for details on expected parameters for each operation.</p>
+</div><h5 id="methods_servicewrapper_parameters">Parameters</h5><table class="variables-matrix table table-bordered table-striped"><thead><tr><th>Param</th><th>Type</th><th>Details</th></tr></thead><tbody><tr><td>options</td><td><a href="" class="label type-hint type-hint-object">object</a></td><td><div class="angularpoint-apdataservice-servicewrapper-page"><p>Payload params that is directly passed to SPServices.</p>
+</div></td></tr><tr><td>[options.filterNode]</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="angularpoint-apdataservice-servicewrapper-page"><p>XML filter string used to find the elements to iterate over.
+This is typically &#39;z: row&#39; for list items.</p>
+</div></td></tr><tr><td>[options.postProcess]</td><td><a href="" class="label type-hint type-hint-function">Function</a></td><td><div class="angularpoint-apdataservice-servicewrapper-page"><p>Method to process responseXML prior to returning.</p>
+</div></td></tr><tr><td>[options.webURL]</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="angularpoint-apdataservice-servicewrapper-page"><p>XML filter string used to find the elements to iterate over.</p>
+</div></td></tr></tbody></table><h5 id="methods_servicewrapper_returns">Returns</h5><table class="variables-matrix"><tr><td><a href="" class="label type-hint type-hint-object">object</a></td><td><div class="angularpoint-apdataservice-servicewrapper-page"><p>Returns a promise which when resolved either returns clean objects parsed by the value
+in options.filterNode or the raw XML response if a options.filterNode</p>
+<pre><code> If options.filterNode is provided, returns XML parsed by node name
+ Otherwise returns the server response
+</code></pre></div></td></tr></table></div>
+</li>
+<li><h3 id="methods_startworkflow">startWorkflow(options)</h3>
+<div class="startworkflow"><div class="angularpoint-apdataservice-startworkflow-page"><p>Initiate a workflow for a given list item or document.  You can view additional info at
+<a href="http: //spservices.codeplex.com/wikipage?title=StartWorkflow&amp;referringTitle=Workflow">StartWorkflow</a>.</p>
+</div><h5 id="methods_startworkflow_parameters">Parameters</h5><table class="variables-matrix table table-bordered table-striped"><thead><tr><th>Param</th><th>Type</th><th>Details</th></tr></thead><tbody><tr><td>options</td><td><a href="" class="label type-hint type-hint-object">object</a></td><td><div class="angularpoint-apdataservice-startworkflow-page"><p>Configuration options.</p>
+</div></td></tr><tr><td>options.item</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="angularpoint-apdataservice-startworkflow-page"><p>Full fileRef for the given list item/document.</p>
+</div></td></tr><tr><td>options.templateId</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="angularpoint-apdataservice-startworkflow-page"><p>The workflow template GUID.  You can use dataService.getAvailableWorkflows
+to locate to appropriate one.</p>
+</div></td></tr><tr><td>options.workflowParameters</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="angularpoint-apdataservice-startworkflow-page"><p>Optionally provide paramaters to the workflow.</p>
+</div> <p><em>(default: '<root />')</em></p></td></tr><tr><td>[options.fileRef]</td><td><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="angularpoint-apdataservice-startworkflow-page"><p>Optionally pass in the relative fileRef of an listItem and then we can
+convert it to options.item.</p>
+</div></td></tr></tbody></table><h5 id="methods_startworkflow_returns">Returns</h5><table class="variables-matrix"><tr><td><a href="" class="label type-hint type-hint-object">object</a></td><td><div class="angularpoint-apdataservice-startworkflow-page"><p>Deferred object that resolves once complete.</p>
+</div></td></tr></table><h4 id="methods_startworkflow_example">Example</h4>
+<div class="example"><div class="angularpoint-apdataservice-startworkflow-page"><pre class="prettyprint linenums">
+DataService.startWorkflow({
+    item: "https: //server/site/Lists/item" + idData + "_.000",
+    templateId: "{c29c1291-a25c-47d7-9345-8fb1de2a1fa3}",
+    workflowParameters: "&lt;Data&gt;&lt;monthName&gt;" + txtBox.value + "&lt;/monthName&gt;&lt;/Data&gt;",
+  ...}).then(function() {
+      //Success
+  }, function(err) {
+      //Error
+  })
+</pre>
+</div></div>
+</div>
+</li>
+<li><h3 id="methods_updatelistitem">updateListItem(model, listItem, [options])</h3>
+<div class="updatelistitem"><div class="angularpoint-apdataservice-updatelistitem-page"><p>Updates an existing list item.</p>
+</div><h5 id="methods_updatelistitem_parameters">Parameters</h5><table class="variables-matrix table table-bordered table-striped"><thead><tr><th>Param</th><th>Type</th><th>Details</th></tr></thead><tbody><tr><td>model</td><td><a href="" class="label type-hint type-hint-object">object</a></td><td><div class="angularpoint-apdataservice-updatelistitem-page"><p>Reference to the entities model.</p>
+</div></td></tr><tr><td>listItem</td><td><a href="" class="label type-hint type-hint-object">object</a></td><td><div class="angularpoint-apdataservice-updatelistitem-page"><p>JavaScript object representing the SharePoint list item.</p>
+</div></td></tr><tr><td>[options]</td><td><a href="" class="label type-hint type-hint-object">object</a></td><td><div class="angularpoint-apdataservice-updatelistitem-page"><p>Optional configuration params.</p>
+</div></td></tr><tr><td>options.buildValuePairs</td><td><a href="" class="label type-hint type-hint-boolean">boolean</a></td><td><div class="angularpoint-apdataservice-updatelistitem-page"><p>Automatically generate pairs based on fields defined in model.</p>
+</div> <p><em>(default: true)</em></p></td></tr><tr><td>[options.valuePairs]</td><td><a href="" class="label type-hint type-hint-array">Array[]</a></td><td><div class="angularpoint-apdataservice-updatelistitem-page"><p>Precomputed value pairs to use instead of generating them for each
+field identified in the model.</p>
+</div></td></tr></tbody></table><h5 id="methods_updatelistitem_returns">Returns</h5><table class="variables-matrix"><tr><td><a href="" class="label type-hint type-hint-object">object</a></td><td><div class="angularpoint-apdataservice-updatelistitem-page"><p>Promise which resolves with the newly created item.</p>
+</div></td></tr></table></div>
+</li>
+</ul>
+</div>
+</div>
