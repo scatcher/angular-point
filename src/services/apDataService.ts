@@ -604,7 +604,7 @@ module ap {
             if (!model.deferredListDefinition) {
                 //Extend our local list definition and field definitions with XML
                 apDecodeService.extendListMetadata(model, responseXML);
-                
+
                 /**If loaded from local or session cache the list/field definitions won't be extended so ensure we check before
                  * resolving promise verifying list has been extended.  One of the attributes we'd expect to see on all List/Libraries
                  * is "BaseType" */
