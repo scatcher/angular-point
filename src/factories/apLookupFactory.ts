@@ -5,7 +5,13 @@ module ap {
 
     var $q: ng.IQService, apUtilityService: UtilityService;
 
-    export interface ILookup {
+    /** Lookup referencing a ListItem of the specified type.  The "lookupId""
+     * will be the same as the referenced <T>.id.  The "lookupValue"" by default
+     * should be the <T>.title but it can be changed to another text field
+     * in the SharePoint list settings for this list. Only the lookupValue is
+     * required and will be sent to the server when saving.  The lookupValue is
+     * ignored.  */
+    export interface ILookup<T> {
         lookupValue: string;
         lookupId: number;
     }
@@ -22,9 +28,9 @@ module ap {
      * @param {object} options.propertyName Key on list item object.
      * @constructor
      */
-    export class Lookup implements ILookup{
-        lookupId:number;
-        lookupValue:string;
+    export class Lookup<T> implements ILookup<T> {
+        lookupId: number;
+        lookupValue: string;
 
         constructor(s, options) {
             var lookup = this;
@@ -36,8 +42,9 @@ module ap {
 
 
     export class LookupFactory {
-        Lookup = Lookup;
         static $inject = ['$q', 'apUtilityService'];
+        Lookup = Lookup;
+
         constructor(_$q_, _apUtilityService_) {
             $q = _$q_;
             apUtilityService = _apUtilityService_;
@@ -50,8 +57,8 @@ module ap {
          * @description
          * Instantiates and returns a new Lookup field.
          */
-        create(s, options) {
-            return new Lookup(s, options);
+        create<T>(s, options) {
+            return new Lookup<T>(s, options);
         }
     }
 
