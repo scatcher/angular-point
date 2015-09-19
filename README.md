@@ -19,25 +19,49 @@ mirrored across users).  The data isn't saved to [Firebase](https://www.firebase
 * Over 200 supporting unit tests
 * Used in several very large production environments.
 * All CRUD functionality is inherited from the model, list, and list item base classes so you can easily call this shared functionality from any of these objects
- 
-        <!-- I produce a lot of inputs -->
-        <div ng-repeat="listItem in vm.listItems" class="form-control"> 
-          <input ng-model="listItem.title>
-          <button ng-click="vm.saveMe(listItem)>Save</button>
-        </div>
 
-        vm.saveMe = function(listItem) {
-          listItem.saveChanges()
-            .then((results) => {
-                //Item saved without issue, local cache is updated, and Angular updates the view
-                //Can do something with results if I want
-            })
-            .catch((err) => {
-                //Bad things...
-                throw new Error(err);
-            });
+````html
+    <!-- I produce a lot of inputs that can be updated and saved -->
+    <div ng-repeat="todo in vm.todos" class="form-control"> 
+      <input ng-model="todo.title>
+      <button ng-click="vm.save(todo)>Save</button>
+    </div>
+````
+
+````typescript
+
+module app {
+    'use strict';
+
+    class TodoController {
+        todos: Todo[];
+        constructor(todoModel: TodoModel) {
+            var vm = this;
+            todosModel.executeQuery('myTodos')
+                .then((todoCache: ap.IndexedCache<Todo>) => {
+                    //I now have my cached todos but I need to convert to array for some reason...
+                    vm.todos = todoCache.toArray();
+                  
+                });
         }
+        saveMe(todo: Todo) {
+            todo.saveChanges()
+                .then((results) => {
+                    //Item saved without issue, local cache is updated, and Angular updates the view
+                    //Can do something with results if I want
+                })
+                .catch((err) => {
+                    //Bad things...
+                    throw new Error(err);
+                });
+        }
+    }
 
+    angular.module('angular-point-example')
+        .controller('todoController', TodoController);
+}
+
+````
 
 ##Background
 This project evolved out of the necessity to create rich custom "apps" in a range of SharePoint environments (2007+) 
@@ -66,138 +90,140 @@ extended using the base "ap.ListItem" class that includes the default methods av
 can be found for each of the available methods [here](http://scatcher.github.io/angular-point/#/api/angularPoint) under 
 the "ListItem" nav on the left side.
 
-    
-    module app {
-        'use strict';
-        
+````typescript
 
-        //List item constructor
-        export class Project extends ap.ListItem<Project>{
-            active: boolean;
-            attachments: string[];
-            costEstimate: number;
-            customer: ap.ILookup;
-            group: ap.ILookup;
-            projectDescription: string;
-            status: string;
-            taskManager: ap.IUser;
-            title: string;
-            users: ap.IUser[];
-            constructor(obj) {
-                super(obj);
-                _.assign(this, obj);
-            }
-            //Simple getter
-            get label(): string {
-                return 'Project Name is ' + this.title;
-            }
-            //Method that all projects now are able to call which reaches out to the model for this list item
-            doSomethingOnModel(): void {
-                //GetModel along with many other methods added when extending from ap.ListItem.  In this case
-                //it would return the instantiated ProjectsModel below.
-                let model = this.getModel();
-                return model.someExposedModelMethod();
-            }
-            
+module app {
+    'use strict';
+    
+    //List item constructor
+    export class Project extends ap.ListItem<Project>{
+        active: boolean;
+        attachments: string[];
+        costEstimate: number;
+        customer: ap.ILookup;
+        group: ap.ILookup;
+        projectDescription: string;
+        status: string;
+        taskManager: ap.IUser;
+        title: string;
+        users: ap.IUser[];
+        constructor(obj) {
+            super(obj);
+            _.assign(this, obj);
+        }
+        //Simple getter
+        get label(): string {
+            return 'Project Name is ' + this.title;
+        }
+        //Method that all projects now are able to call which reaches out to the model for this list item
+        doSomethingOnModel(): void {
+            //GetModel along with many other methods added when extending from ap.ListItem.  In this case
+            //it would return the instantiated ProjectsModel below.
+            let model = this.getModel();
+            return model.someExposedModelMethod();
         }
         
-        //Model definition, contains list information, field definitions, and model specific methods
-        export class ProjectsModel extends ap.Model {
-           constructor() {
-               super({
-                   factory: Project, //References the list item constructor above
-                   list: {
-                       guid: '{PROJECT LIST GUID}', //The magic that all list/library based requests require
-                       title: 'Projects',
-                       customFields: [
-                           {
-                              staticName: 'Title', //Name that SharePoint uses
-                              objectType: 'Text',  //Type of object to decode
-                              mappedName: 'title'  //JavaScript property name on list item
-                           },
-                           {
-                              staticName: 'Customer',
-                              objectType: 'Lookup',
-                              mappedName: 'customer'
-                           },
-                           {
-                              staticName: 'ProjectDescription',
-                              objectType: 'Text',
-                              mappedName: 'projectDescription'
-                           },
-                           {
-                              staticName: 'Status',
-                              objectType: 'Text',
-                              mappedName: 'status'
-                           },
-                           {
-                              staticName: 'TaskManager',
-                              objectType: 'User',
-                              mappedName: 'taskManager'
-                           },
-                           {
-                              staticName: 'ProjectGroup',
-                              objectType: 'Lookup',
-                              mappedName: 'group'
-                           },
-                           {
-                              staticName: 'CostEstimate',
-                              objectType: 'Currency',
-                              mappedName: 'costEstimate'
-                           },
-                           {
-                              staticName: 'Active',
-                              objectType: 'Boolean',
-                              mappedName: 'active'
-                           },
-                           {
-                              staticName: 'Attachments',
-                              objectType: 'Attachments',
-                              mappedName: 'attachments',
-                              readOnly: true
-                           }
-                       ]
-                   }
-               });
-               
-               let model = this;
+    }
     
-               /** 
-               * Query to retrieve the most recent 25 modifications, gets all records the first 
-               * time it's called and just gets changes for each additional call but still
-               * resolves with entire cache for this query.  To execute we just call model.executeQuery('recentChanges').
-               */
-               model.registerQuery({
-                  name: 'recentChanges', //Unique name for this query
-                  rowLimit: 25, //Defaults to all list items is not specified
-                  query: '' +
-                      '<Query>' +
-                      '   <OrderBy>' +
-                      '       <FieldRef Name="Modified" Ascending="FALSE"/>' +
-                      '   </OrderBy>' +
-                          // Prevents any records from being returned if user
-                          // doesn't have permissions on project lookup list
-                      '   <Where>' +
-                      '       <IsNotNull>' +
-                      '           <FieldRef Name="Project"/>' +
-                      '       </IsNotNull>' +
-                      '   </Where>' +
-                      '</Query>'
-               });
-               
-               //When called simply fetches all list items
-               model.registerQuery({ name: 'simpleQuery' });
-                 
-                 
-               //Any other model setup
-           }
-           someExposedModelMethod(): void {
-               this.dosomething...
-           }
-        }
+    //Model definition, contains list information, field definitions, and model specific methods
+    export class ProjectsModel extends ap.Model {
+       constructor() {
+           super({
+               factory: Project, //References the list item constructor above
+               list: {
+                   guid: '{PROJECT LIST GUID}', //The magic that all list/library based requests require
+                   title: 'Projects',
+                   customFields: [
+                       {
+                          staticName: 'Title', //Name that SharePoint uses
+                          objectType: 'Text',  //Type of object to decode
+                          mappedName: 'title'  //JavaScript property name on list item
+                       },
+                       {
+                          staticName: 'Customer',
+                          objectType: 'Lookup',
+                          mappedName: 'customer'
+                       },
+                       {
+                          staticName: 'ProjectDescription',
+                          objectType: 'Text',
+                          mappedName: 'projectDescription'
+                       },
+                       {
+                          staticName: 'Status',
+                          objectType: 'Text',
+                          mappedName: 'status'
+                       },
+                       {
+                          staticName: 'TaskManager',
+                          objectType: 'User',
+                          mappedName: 'taskManager'
+                       },
+                       {
+                          staticName: 'ProjectGroup',
+                          objectType: 'Lookup',
+                          mappedName: 'group'
+                       },
+                       {
+                          staticName: 'CostEstimate',
+                          objectType: 'Currency',
+                          mappedName: 'costEstimate'
+                       },
+                       {
+                          staticName: 'Active',
+                          objectType: 'Boolean',
+                          mappedName: 'active'
+                       },
+                       {
+                          staticName: 'Attachments',
+                          objectType: 'Attachments',
+                          mappedName: 'attachments',
+                          readOnly: true
+                       }
+                   ]
+               }
+           });
+           
+           let model = this;
 
+           /** 
+           * Query to retrieve the most recent 25 modifications, gets all records the first 
+           * time it's called and just gets changes for each additional call but still
+           * resolves with entire cache for this query.  To execute we just call
+           * model.executeQuery('recentChanges').
+           */
+           model.registerQuery({
+              name: 'recentChanges', //Unique name for this query
+              rowLimit: 25, //Defaults to all list items is not specified
+              query: '' +
+                  '<Query>' +
+                  '   <OrderBy>' +
+                  '       <FieldRef Name="Modified" Ascending="FALSE"/>' +
+                  '   </OrderBy>' +
+                      // Prevents any records from being returned if user
+                      // doesn't have permissions on project lookup list
+                  '   <Where>' +
+                  '       <IsNotNull>' +
+                  '           <FieldRef Name="Project"/>' +
+                  '       </IsNotNull>' +
+                  '   </Where>' +
+                  '</Query>'
+           });
+           
+           //When called simply fetches all list items
+           model.registerQuery({ name: 'simpleQuery' });
+             
+             
+           //Any other model setup
+       }
+       someExposedModelMethod(): void {
+           this.dosomething...
+       }
     }
 
+}
+
+````
 
 The first important thing that needs to be defined here is the list.guid 
 because this is the unique identifier used in all web service calls to interact with the SOAP web services for this 
@@ -212,26 +238,29 @@ At this point it's time to define our named queries using the
 [model.registerQuery](http://scatcher.github.io/angular-point/#/api/Model.registerQuery) method on the instantiated
 model.  Once registered, you'll be able to execute this query from anywhere in the application using 
 
-    module app {
-        'use strict';
+````typescript
 
-        class ProjectController {
-            projects: Project[];
-            constructor(projectsModel: ProjectsModel) {
-                var vm = this;
-                projectsModel.executeQuery('recentChanges')
-                    .then((projectCache: ap.IndexedCache<Project>) => {
-                        //I now have my cached projects but I need to convert to array
-                        vm.projects = projectCache.toArray();
-                      
-                    });
-            }
+module app {
+    'use strict';
+
+    class ProjectController {
+        projects: Project[];
+        constructor(projectsModel: ProjectsModel) {
+            var vm = this;
+            projectsModel.executeQuery('recentChanges')
+                .then((projectCache: ap.IndexedCache<Project>) => {
+                    //I now have my cached projects but I need to convert to array
+                    vm.projects = projectCache.toArray();
+                  
+                });
         }
-    
-        angular.module('angular-point-example')
-            .controller('projectController', ProjectController);
     }
-        
+
+    angular.module('angular-point-example')
+        .controller('projectController', ProjectController);
+}
+````
+
 Additional info on the model.executeQuery method can be found [here](http://scatcher.github.io/angular-point/#/api/Model.executeQuery).  It will be
 return inside of an [IndexedCache](http://scatcher.github.io/angular-point/#/api/IndexedCache).
 
