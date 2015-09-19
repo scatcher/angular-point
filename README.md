@@ -21,11 +21,13 @@ mirrored across users).  The data isn't saved to [Firebase](https://www.firebase
 * All CRUD functionality is inherited from the model, list, and list item base classes so you can easily call this shared functionality from any of these objects
 
 ````html
-    <!-- I produce a lot of inputs that can be updated and saved -->
-    <div ng-repeat="todo in vm.todos" class="form-control"> 
-      <input ng-model="todo.title>
-      <button ng-click="vm.save(todo)>Save</button>
-    </div>
+<!-- I produce a lot of inputs that can be updated and saved -->
+<div ng-repeat="todo in vm.todos" class="form-group"> 
+    <input ng-model="todo.title" class="form-control">
+    <button ng-click="vm.save(todo) 
+        ng-disabled="vm.negotiatingWithServer" 
+        class="btn btn-primary">Save</button>
+</div>
 ````
 
 ````typescript
@@ -34,6 +36,7 @@ module app {
     'use strict';
 
     class TodoController {
+        negotiatingWithServer = false;
         todos: Todo[];
         constructor(todoModel: TodoModel) {
             var vm = this;
@@ -43,14 +46,24 @@ module app {
                     //convert to array for some reason...
                     vm.todos = todoCache.toArray();
                   
+                })
+                .catch((err) => {
+                    //Looks like we have an issue!
+                    throw new Error(err);
                 });
         }
         saveMe(todo: Todo) {
+            //Disable save to prevent multiple submissions
+            this.negotiatingWithServer = true;
+            
+            //Async save
             todo.saveChanges()
                 .then((results) => {
                     //Item saved without issue, local cache is 
                     //updated, and Angular updates the view
-                    //Can do something with results if I want
+                    
+                    //Enable buttons again
+                    this.negotiatingWithServer = false;
                 })
                 .catch((err) => {
                     //Bad things...
@@ -75,10 +88,7 @@ This project originally evolved as a collection of enhancements to Marc Anderson
 library.  Since that point, a lot has changed but much of the core transactional logic still relies on pieces of SPServices.  Thanks Marc!
 
 Over the past year this project has been converted from vanilla ES5 to TypeScript and the benefits of having strong 
-typing in all projects that use this library is pretty amazing.  A simple example project needs to be created but for
-now I've stripped out all proprietary data from one of our older sample applications which can be found here: 
-[angular-point-example](https://github.com/scatcher/angular-point-example).  There's a lot going on in this example but 
-it should provide some insight into how this library can be used.
+typing in all projects that use this library is pretty amazing.  
 
 ##Getting Started
 (1) Install with bower
@@ -95,6 +105,21 @@ tsd link
 ````
 
 (5) Create your models which represents your lists or library (details below).
+
+
+##Examples
+A simple example project needs to be created but for
+now I've stripped out all proprietary data from one of our older sample applications which can be found here: 
+[angular-point-example](https://github.com/scatcher/angular-point-example).  There's a lot going on in this example but 
+it should provide some insight into how this library can be used.
+
+##Dependencies
+The only required library that angular-point depends on is [lodash](https://lodash.com/).  Optionally also include [angular-toastr](https://github.com/Foxandxss/angular-toastr) in your project if you'd like to utilize built in toasts.
+````cmd
+bower install lodash --save
+bower install angular-toastr --save
+````
+Make sure these are loaded prior to angular-point.
 
 ##Model
 The model is where we define the list item constructor and the [list](http://scatcher.github.io/angular-point/#/api/List) itself.  It is extended
@@ -140,109 +165,143 @@ module app {
             let model = this.getModel();
             return model.someExposedModelMethod();
         }
-        
+
     }
     
     //Model definition, contains list information, field definitions, and 
     //model specific methods
     export class ProjectsModel extends ap.Model {
-       constructor() {
-           super({
-               factory: Project, //References the list item constructor above
-               list: {
+        constructor() {
+            super({
+                factory: Project, //References the list item constructor above
+                list: {
                     //The magic that all list/library based requests require
-                   guid: '{PROJECT LIST GUID}', 
-                   title: 'Projects',
-                   customFields: [
-                       {
-                          staticName: 'Title', //Name that SharePoint uses
-                          objectType: 'Text',  //Type of object to decode
-                          mappedName: 'title'  //JavaScript property name on list item
-                       },
-                       {
-                          staticName: 'Customer',
-                          objectType: 'Lookup',
-                          mappedName: 'customer'
-                       },
-                       {
-                          staticName: 'ProjectDescription',
-                          objectType: 'Text',
-                          mappedName: 'projectDescription'
-                       },
-                       {
-                          staticName: 'Status',
-                          objectType: 'Text',
-                          mappedName: 'status'
-                       },
-                       {
-                          staticName: 'TaskManager',
-                          objectType: 'User',
-                          mappedName: 'taskManager'
-                       },
-                       {
-                          staticName: 'ProjectGroup',
-                          objectType: 'Lookup',
-                          mappedName: 'group'
-                       },
-                       {
-                          staticName: 'CostEstimate',
-                          objectType: 'Currency',
-                          mappedName: 'costEstimate'
-                       },
-                       {
-                          staticName: 'Active',
-                          objectType: 'Boolean',
-                          mappedName: 'active'
-                       },
-                       {
-                          staticName: 'Attachments',
-                          objectType: 'Attachments',
-                          mappedName: 'attachments',
-                          readOnly: true
-                       }
-                   ]
-               }
-           });
-           
-           let model = this;
+                    guid: '{PROJECT LIST GUID}',
+                    title: 'Projects',
+                    customFields: [
+                        {
+                            staticName: 'Title', //Name that SharePoint uses
+                            objectType: 'Text',  //Type of object to decode
+                            mappedName: 'title'  //JavaScript property name on list item
+                        },
+                        {
+                            staticName: 'Customer',
+                            objectType: 'Lookup',
+                            mappedName: 'customer'
+                        },
+                        {
+                            staticName: 'ProjectDescription',
+                            objectType: 'Text',
+                            mappedName: 'projectDescription'
+                        },
+                        {
+                            staticName: 'Status',
+                            objectType: 'Text',
+                            mappedName: 'status'
+                        },
+                        {
+                            staticName: 'TaskManager',
+                            objectType: 'User',
+                            mappedName: 'taskManager'
+                        },
+                        {
+                            staticName: 'ProjectGroup',
+                            objectType: 'Lookup',
+                            mappedName: 'group'
+                        },
+                        {
+                            staticName: 'CostEstimate',
+                            objectType: 'Currency',
+                            mappedName: 'costEstimate'
+                        },
+                        {
+                            staticName: 'Active',
+                            objectType: 'Boolean',
+                            mappedName: 'active'
+                        },
+                        {
+                            staticName: 'Attachments',
+                            objectType: 'Attachments',
+                            mappedName: 'attachments',
+                            readOnly: true
+                        }
+                    ]
+                }
+            });
 
-           /** 
-           * Query to retrieve the most recent 25 modifications, gets all records the first 
-           * time it's called and just gets changes for each additional call but still
-           * resolves with entire cache for this query.  To execute we just call
-           * model.executeQuery('recentChanges').
-           */
-           model.registerQuery({
-              name: 'recentChanges', //Unique name for this query
-              rowLimit: 25, //Defaults to all list items is not specified
-              query: '' +
-                  '<Query>' +
-                  '   <OrderBy>' +
-                  '       <FieldRef Name="Modified" Ascending="FALSE"/>' +
-                  '   </OrderBy>' +
-                      // Prevents any records from being returned if user
-                      // doesn't have permissions on project lookup list
-                  '   <Where>' +
-                  '       <IsNotNull>' +
-                  '           <FieldRef Name="Project"/>' +
-                  '       </IsNotNull>' +
-                  '   </Where>' +
-                  '</Query>'
-           });
+            let model = this;
+
+            /** 
+            * Query to retrieve the most recent 25 modifications, gets all records the first 
+            * time it's called and just gets changes for each additional call but still
+            * resolves with entire cache for this query.  To execute we just call
+            * model.executeQuery('recentChanges').
+            */
+            model.registerQuery({
+                name: 'recentChanges', //Unique name for this query
+                rowLimit: 25, //Defaults to all list items if not specified
+                query: '' +
+                '<Query>' +
+                '   <OrderBy>' +
+                //Get most recent list items
+                '       <FieldRef Name="Modified" Ascending="FALSE"/>' +
+                '   </OrderBy>' +
+                // Prevents any records from being returned if user
+                // doesn't have permissions on project lookup list
+                '   <Where>' +
+                '       <IsNotNull>' +
+                '           <FieldRef Name="Project"/>' +
+                '       </IsNotNull>' +
+                '   </Where>' +
+                '</Query>'
+            });
            
-           //When called simply fetches all list items
-           model.registerQuery({ name: 'simpleQuery' });
+            /**
+            * When called simply fetches all list items using
+            * GetListItemChangesSinceToken (Default) operation.  Initial
+            * call pulls entire list and we receive a change token.
+            * All future calls use the change token from the previous
+            * call to retrieve the list items that have 
+            * changed and the returned IndexedCache is updated 
+            * accordingly.
+            */
+            model.registerQuery({ name: 'simpleQuery' });
+
+            /**
+             * Similar to above, but this query will store the 
+             * list items and change token in browser session 
+             * storage so if user comes back before storage 
+             * expires we just rehydrate stored list items and
+             * request changes since the last request.
+             */            
+            model.registerQuery({
+                name: 'sessionStorageQuery',
+                sessionStorage: true,
+                //Defaults to 24 hours but we are overiding to 8 hours
+                localStorageExpiration: 28800000
+            });
+            
+            /**
+             * In this example we request the list items a single
+             * time and all subsequent calls get the already resolved
+             * initial promise.  This works well for data that doesn't
+             * change often and the GetListItems operation is much smaller
+             * than the default GetListItemChangesSinceToken operation. */            
+            model.registerQuery({
+                name: 'runOnce',
+                operation: 'GetListItems',
+                runOnce: true
+            });
+
              
              
-           //Any other model setup
-       }
-       someExposedModelMethod(): void {
-           this.dosomething...
-       }
+            //Any other model setup
+        }
+        someExposedModelMethod(): void {
+            this.dosomething...
+        }
     }
-
 }
-
 ````
 
 The first important thing that needs to be defined here is the list.guid 
@@ -287,7 +346,9 @@ return inside of an [IndexedCache](http://scatcher.github.io/angular-point/#/api
 At this point the data source is ready to be used within the application.
 
 
-##Offline Development (Made to work with [angular-point-tools](https://github.com/scatcher/angular-point-tools))
+##Offline Development 
+#####(Made to work with [angular-point-tools](https://github.com/scatcher/angular-point-tools))
+
 The offline development environment included with library attempts to utilize cached XML query responses from the 
 lists you're planning to use.  As a fallback, the offline environment attempts to generate mock XML responses 
 (although not very well).  
