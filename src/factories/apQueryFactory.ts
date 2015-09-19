@@ -270,7 +270,7 @@ module ap {
                 }
 
                 /** Optionally handle query.runOnce for GetListItems when initial call has already been made */
-                if (this.operation === 'GetListItems' && !query.lastRun && this.runOnce) {
+                if (this.operation === 'GetListItems' && _.isDate(query.lastRun) && this.runOnce) {
                     makeRequest = false;
                 }
 

@@ -544,6 +544,9 @@ var ap;
 })(ap || (ap = {}));
 
 /// <reference path="../app.module.ts" />
+/// <reference path="../../typings/tsd.d.ts" />
+
+/// <reference path="../app.module.ts" />
 var ap;
 (function (ap) {
     'use strict';
@@ -3422,7 +3425,7 @@ var ap;
                     }
                 }
                 /** Optionally handle query.runOnce for GetListItems when initial call has already been made */
-                if (this.operation === 'GetListItems' && !query.lastRun && this.runOnce) {
+                if (this.operation === 'GetListItems' && _.isDate(query.lastRun) && this.runOnce) {
                     makeRequest = false;
                 }
                 if (makeRequest) {
@@ -3705,9 +3708,6 @@ var ap;
     angular.module('angularPoint')
         .service('apUserFactory', UserFactory);
 })(ap || (ap = {}));
-
-/// <reference path="../app.module.ts" />
-/// <reference path="../../typings/tsd.d.ts" />
 
 /// <reference path="../app.module.ts" />
 var ap;
