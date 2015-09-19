@@ -5,6 +5,14 @@ module ap {
 
     var apUtilityService: UtilityService;
 
+    /**
+     * Represents a reference to a site collection user.  This is
+     * very similar to an ap.ILookup except additional properties
+     * can be provided if setup to include them in the request.
+     * The site collection user is created the first time a user
+     * accesses a site collection.  The downside is a user will have
+     * different site collection ID's for each site collection.
+     */
     export interface IUser {
         email?:string;
         loginName?:string;
