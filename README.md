@@ -39,7 +39,8 @@ module app {
             var vm = this;
             todosModel.executeQuery('myTodos')
                 .then((todoCache: ap.IndexedCache<Todo>) => {
-                    //I now have my cached todos but I need to convert to array for some reason...
+                    //I now have my cached todos but I need to
+                    //convert to array for some reason...
                     vm.todos = todoCache.toArray();
                   
                 });
@@ -47,7 +48,8 @@ module app {
         saveMe(todo: Todo) {
             todo.saveChanges()
                 .then((results) => {
-                    //Item saved without issue, local cache is updated, and Angular updates the view
+                    //Item saved without issue, local cache is 
+                    //updated, and Angular updates the view
                     //Can do something with results if I want
                 })
                 .catch((err) => {
@@ -78,6 +80,18 @@ now I've stripped out all proprietary data from one of our older sample applicat
 [angular-point-example](https://github.com/scatcher/angular-point-example).  There's a lot going on in this example but 
 it should provide some insight into how this library can be used.
 
+##Getting Started
+(1) Install with bower
+````cmd
+bower install angular-point
+````
+(2) Add bower_components/angular-point/dist/angular-point.js to your index.html.
+
+(3) Add 'angular-point' to your main module's list of dependencies
+
+(4) If using tsd, optionally run tsd link to add a referece to angular-point type definitions to your tsd references.
+
+(5) Create your models which represents your lists or library (details below).
 
 ##Model
 The model is where we define the list item constructor and the [list](http://scatcher.github.io/angular-point/#/api/List) itself.  It is extended
@@ -115,7 +129,8 @@ module app {
         get label(): string {
             return 'Project Name is ' + this.title;
         }
-        //Method that all projects now are able to call which reaches out to the model for this list item
+        //Method that all projects now are able to call which reaches 
+        //out to the model for this list item
         doSomethingOnModel(): void {
             //GetModel along with many other methods added when extending from ap.ListItem.  In this case
             //it would return the instantiated ProjectsModel below.
@@ -125,13 +140,15 @@ module app {
         
     }
     
-    //Model definition, contains list information, field definitions, and model specific methods
+    //Model definition, contains list information, field definitions, and 
+    //model specific methods
     export class ProjectsModel extends ap.Model {
        constructor() {
            super({
                factory: Project, //References the list item constructor above
                list: {
-                   guid: '{PROJECT LIST GUID}', //The magic that all list/library based requests require
+                    //The magic that all list/library based requests require
+                   guid: '{PROJECT LIST GUID}', 
                    title: 'Projects',
                    customFields: [
                        {
