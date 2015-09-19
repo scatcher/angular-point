@@ -52,7 +52,7 @@ module app {
                     throw new Error(err);
                 });
         }
-        saveMe(todo: Todo) {
+        save(todo: Todo) {
             //Disable save to prevent multiple submissions
             this.negotiatingWithServer = true;
             
@@ -142,8 +142,8 @@ module app {
         active: boolean;
         attachments: string[];
         costEstimate: number;
-        customer: ap.ILookup;
-        group: ap.ILookup;
+        customer: ap.ILookup<Customer>;
+        group: ap.ILookup<Group>;
         projectDescription: string;
         status: string;
         taskManager: ap.IUser;
@@ -181,7 +181,7 @@ module app {
                     customFields: [
                         {
                             staticName: 'Title', //Name that SharePoint uses
-                            objectType: 'Text',  //Type of object to decode
+                            objectType: 'Text',  //Type of object to decode/encode
                             mappedName: 'title'  //JavaScript property name on list item
                         },
                         {
@@ -330,7 +330,10 @@ module app {
                 .then((projectCache: ap.IndexedCache<Project>) => {
                     //I now have my cached projects but I need to convert to array
                     vm.projects = projectCache.toArray();
-                  
+                })
+                .catch((err) => {
+                    //The ball has been dropped
+                    throw new Error(err);
                 });
         }
     }
