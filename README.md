@@ -89,7 +89,10 @@ bower install angular-point
 
 (3) Add 'angular-point' to your main module's list of dependencies
 
-(4) If using tsd, optionally run tsd link to add a referece to angular-point type definitions to your tsd references.
+(4) If using tsd, optionally let tsd know where the angular-point TypeScript code is so we can benefit from library typings.
+````cmd
+tsd link
+````
 
 (5) Create your models which represents your lists or library (details below).
 
