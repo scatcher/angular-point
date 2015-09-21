@@ -1,5 +1,8 @@
 #angular-point [![Build Status](https://travis-ci.org/scatcher/angular-point.png?branch=master)](https://travis-ci.org/scatcher/angular-point)
 
+##AngularJS + SharePoint = angular-point
+
+angular-point was created to make the client-side development story on the SharePoint more staightforward for JavaScript developers and reduce startup time for new projects.  We utilize SharePoint as the hosting provider, data store, and authentication mechanism but from there all application logic moves to the client's browser.  This approach can dramatically improve application performance as well as user perception of performance due to the fact that there is onle a single page load throughout the entire user session.  angular-point embraces the [Single-Page Application (SPA)](https://en.wikipedia.org/wiki/Single-page_application) approach and relies heavily on Google's [AngularJS](https://angularjs.org/) framework.
 
 This library is the core component in all angular-point based SharePoint/AngularJS SPA applications.
 
