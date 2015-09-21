@@ -108,10 +108,10 @@ tsd link
 
 
 ##Examples
-A simple example project needs to be created but for
-now I've stripped out all proprietary data from one of our older sample applications which can be found here: 
-[angular-point-example](https://github.com/scatcher/angular-point-example).  There's a lot going on in this example but 
-it should provide some insight into how this library can be used.
+
+A simple TodoMVC sample app can be found here at the [angular-point-todomvc](https://github.com/scatcher/angular-point-todomvc) repo.  It's a pretty simple tweak of the TypeScript & AngularJS TodoMVC project but it adds the necessary methods to connect to a real SharePoint Todo list and perform the normal CRUD events.  It also includes mock data so you can play with it locally without deployment to SharePoint.
+
+A much more complex example can be found here ( [angular-point-example](https://github.com/scatcher/angular-point-example)) although due to the amount of prorietary content that needed to be removed it might serve to be more confussing that helpful.  
 
 ##Dependencies
 The only required library that angular-point depends on is [lodash](https://lodash.com/).  Optionally also include [angular-toastr](https://github.com/Foxandxss/angular-toastr) in your project if you'd like to utilize built in toasts.
