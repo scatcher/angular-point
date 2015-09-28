@@ -544,9 +544,6 @@ var ap;
 })(ap || (ap = {}));
 
 /// <reference path="../app.module.ts" />
-/// <reference path="../../typings/tsd.d.ts" />
-
-/// <reference path="../app.module.ts" />
 var ap;
 (function (ap) {
     'use strict';
@@ -1222,6 +1219,42 @@ var ap;
 (function (ap) {
     'use strict';
     var $q, toastr, apCacheService, apDataService, apDecodeService, apEncodeService, apUtilityService, apConfig, apListItemVersionFactory;
+    // interface IListItem<T extends ListItem<any>> {
+    //     author?: IUser;
+    //     created?: Date;
+    //     editor?: IUser;
+    //     fileRef?: ILookup;
+    //     id?: number;
+    //     modified?: Date;
+    //     permMask?: string;
+    //     uniqueId?: string;
+    //     deleteAttachment(url: string): ng.IPromise<any>;
+    //     deleteItem(options?: IListItemCrudOptions<T>): ng.IPromise<any>;
+    //     getAttachmentCollection: () => ng.IPromise<string[]>;
+    //     getAvailableWorkflows: () => ng.IPromise<IWorkflowDefinition[]>;
+    //     getCache?: () => IndexedCache<T>;
+    //     getChanges: () => ng.IPromise<T>;
+    //     getChangeSummary: (fieldNames: string[]| string) => ng.IPromise<ChangeSummary<T>>;
+    //     getFieldChoices: (fieldName: string) => string[];
+    //     getFieldDefinition(fieldName: string): IFieldDefinition;
+    //     getFieldDescription: (fieldName: string) => string;
+    //     getFieldLabel: (fieldName: string) => string;
+    //     getFormattedValue: (fieldName: string, options?: Object) => string;
+    //     getList: () => List;
+    //     getListId: () => string;
+    //     getLookupReference: <T2 extends ListItem<any>>(fieldName: string, lookupId?: number) => T2;
+    //     getVersionHistory: (fieldNames: string[]| string) => ng.IPromise<VersionHistoryCollection<T>>;
+    //     resolvePermissions: () => IUserPermissionsObject;
+    //     saveChanges: (options?: IListItemCrudOptions<T>) => ng.IPromise<T>;
+    //     saveFields: (fieldArray: string[], options?: IListItemCrudOptions<T>) => ng.IPromise<T>;
+    //     setPristine: () => void;
+    //     startWorkflow: (options: IStartWorkflowParams) => ng.IPromise<any>;
+    //     validateEntity: (options?: Object) => boolean;
+    //     // Added by Model Instantiation
+    //     getModel?: () => Model;
+    //     getPristine?: () => Object;
+    //     getQuery?: () => IQuery<T>;
+    // }
     /**
      * @ngdoc object
      * @name ListItem
@@ -3803,6 +3836,9 @@ var ap;
     angular.module('angularPoint')
         .service('apUserModel', UserModel);
 })(ap || (ap = {}));
+
+/// <reference path="../app.module.ts" />
+/// <reference path="../../typings/tsd.d.ts" />
 
 /// <reference path="../app.module.ts" />
 var __extends = (this && this.__extends) || function (d, b) {

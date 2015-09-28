@@ -7,45 +7,45 @@ module ap {
         apEncodeService: EncodeService, apUtilityService: UtilityService, apConfig: IAPConfig,
         apListItemVersionFactory: ListItemVersionFactory;
 
-    interface IListItem<T extends ListItem<any>> {
-        author?: IUser;
-        created?: Date;
-        editor?: IUser;
-        fileRef?: ILookup;
-        id?: number;
-        modified?: Date;
-        permMask?: string;
-        uniqueId?: string;
+    // interface IListItem<T extends ListItem<any>> {
+    //     author?: IUser;
+    //     created?: Date;
+    //     editor?: IUser;
+    //     fileRef?: ILookup;
+    //     id?: number;
+    //     modified?: Date;
+    //     permMask?: string;
+    //     uniqueId?: string;
 
-        deleteAttachment(url: string): ng.IPromise<any>;
-        deleteItem(options?: IListItemCrudOptions<T>): ng.IPromise<any>;
-        getAttachmentCollection: () => ng.IPromise<string[]>;
-        getAvailableWorkflows: () => ng.IPromise<IWorkflowDefinition[]>;
-        getCache?: () => IndexedCache<T>;
-        getChanges: () => ng.IPromise<T>;
-        getChangeSummary: (fieldNames: string[]| string) => ng.IPromise<ChangeSummary<T>>;
-        getFieldChoices: (fieldName: string) => string[];
-        getFieldDefinition(fieldName: string): IFieldDefinition;
-        getFieldDescription: (fieldName: string) => string;
-        getFieldLabel: (fieldName: string) => string;
-        getFormattedValue: (fieldName: string, options?: Object) => string;
-        getList: () => List;
-        getListId: () => string;
-        getLookupReference: <T2 extends ListItem<any>>(fieldName: string, lookupId?: number) => T2;
-        getVersionHistory: (fieldNames: string[]| string) => ng.IPromise<VersionHistoryCollection<T>>;
-        resolvePermissions: () => IUserPermissionsObject;
-        saveChanges: (options?: IListItemCrudOptions<T>) => ng.IPromise<T>;
-        saveFields: (fieldArray: string[], options?: IListItemCrudOptions<T>) => ng.IPromise<T>;
-        setPristine: () => void;
-        startWorkflow: (options: IStartWorkflowParams) => ng.IPromise<any>;
-        validateEntity: (options?: Object) => boolean;
+    //     deleteAttachment(url: string): ng.IPromise<any>;
+    //     deleteItem(options?: IListItemCrudOptions<T>): ng.IPromise<any>;
+    //     getAttachmentCollection: () => ng.IPromise<string[]>;
+    //     getAvailableWorkflows: () => ng.IPromise<IWorkflowDefinition[]>;
+    //     getCache?: () => IndexedCache<T>;
+    //     getChanges: () => ng.IPromise<T>;
+    //     getChangeSummary: (fieldNames: string[]| string) => ng.IPromise<ChangeSummary<T>>;
+    //     getFieldChoices: (fieldName: string) => string[];
+    //     getFieldDefinition(fieldName: string): IFieldDefinition;
+    //     getFieldDescription: (fieldName: string) => string;
+    //     getFieldLabel: (fieldName: string) => string;
+    //     getFormattedValue: (fieldName: string, options?: Object) => string;
+    //     getList: () => List;
+    //     getListId: () => string;
+    //     getLookupReference: <T2 extends ListItem<any>>(fieldName: string, lookupId?: number) => T2;
+    //     getVersionHistory: (fieldNames: string[]| string) => ng.IPromise<VersionHistoryCollection<T>>;
+    //     resolvePermissions: () => IUserPermissionsObject;
+    //     saveChanges: (options?: IListItemCrudOptions<T>) => ng.IPromise<T>;
+    //     saveFields: (fieldArray: string[], options?: IListItemCrudOptions<T>) => ng.IPromise<T>;
+    //     setPristine: () => void;
+    //     startWorkflow: (options: IStartWorkflowParams) => ng.IPromise<any>;
+    //     validateEntity: (options?: Object) => boolean;
 
-        // Added by Model Instantiation
-        getModel?: () => Model;
-        getPristine?: () => Object;
-        getQuery?: () => IQuery<T>;
+    //     // Added by Model Instantiation
+    //     getModel?: () => Model;
+    //     getPristine?: () => Object;
+    //     getQuery?: () => IQuery<T>;
 
-    }
+    // }
 
 
     /**
@@ -56,13 +56,13 @@ module ap {
      * functionality can be called directly from a given list item.
      * @constructor
      */
-    export class ListItem<T extends ListItem<any>> implements IListItem<T> {
+    export class ListItem<T extends ListItem<any>> {
         author: IUser;
         created: Date;
         editor: IUser;
-        fileRef: ILookup;
+        fileRef: ILookup<T>;
         getCache: () => IndexedCache<T>;
-        getModel: () => Model;
+        getModel: <M extends Model>() => M;
         getPristine: () => Object;
         getQuery: () => IQuery<T>;
         id: number;

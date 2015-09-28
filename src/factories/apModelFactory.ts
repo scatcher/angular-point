@@ -8,32 +8,32 @@ module ap {
         apFieldService: FieldService, apConfig: IAPConfig, apIndexedCacheFactory: IndexedCacheFactory,
         apDecodeService: DecodeService, $q: ng.IQService, toastr: toastr;
 
-    export interface IModel {
-        addNewItem<T extends ListItem<any>>(entity: Object, options?: Object): ng.IPromise<T>;
-        createEmptyItem<T extends ListItem<any>>(overrides?: Object): T;
-        deferredListDefinition: ng.IPromise<Object>;
-        executeQuery<T extends ListItem<any>>(queryName?: string, options?: Object): ng.IPromise<IndexedCache<T>>;
-        extendListMetadata(options?: Object): ng.IPromise<any>;
-        factory: IModelFactory;
-        generateMockData<T extends ListItem<any>>(options?: Object): T[];
-        getAllListItems<T extends ListItem<any>>(): ng.IPromise<IndexedCache<T>>;
-        getCache<T extends ListItem<any>>(queryName?: string): IndexedCache<T>;
-        getCachedEntities<T extends ListItem<any>>(): IndexedCache<T>;
-        getCachedEntity<T extends ListItem<any>>(listItemId: number): T;
-        getFieldDefinition(fieldName: string): IFieldDefinition;
-        getList(): List;
-        getListId(): string;
-        getListItemById<T extends ListItem<any>>(listItemId: number, options?: Object): ng.IPromise<T>;
-        getModel(): Model;
-        getQuery<T extends ListItem<any>>(queryName: string): IQuery<T>;
-        isInitialised(): boolean;
-        lastServerUpdate: Date;
-        list: List;
-        queries: IQueriesContainer;
-        registerQuery<T extends ListItem<any>>(queryOptions: IQueryOptions): IQuery<T>;
-        resolvePermissions(): IUserPermissionsObject;
-        validateEntity<T extends ListItem<any>>(listItem: T, options?: Object): boolean;
-    }
+    // export interface IModel {
+    //     addNewItem<T extends ListItem<any>>(entity: Object, options?: Object): ng.IPromise<T>;
+    //     createEmptyItem<T extends ListItem<any>>(overrides?: Object): T;
+    //     deferredListDefinition: ng.IPromise<Object>;
+    //     executeQuery<T extends ListItem<any>>(queryName?: string, options?: Object): ng.IPromise<IndexedCache<T>>;
+    //     extendListMetadata(options?: Object): ng.IPromise<any>;
+    //     factory: IModelFactory;
+    //     generateMockData<T extends ListItem<any>>(options?: Object): T[];
+    //     getAllListItems<T extends ListItem<any>>(): ng.IPromise<IndexedCache<T>>;
+    //     getCache<T extends ListItem<any>>(queryName?: string): IndexedCache<T>;
+    //     getCachedEntities<T extends ListItem<any>>(): IndexedCache<T>;
+    //     getCachedEntity<T extends ListItem<any>>(listItemId: number): T;
+    //     getFieldDefinition(fieldName: string): IFieldDefinition;
+    //     getList(): List;
+    //     getListId(): string;
+    //     getListItemById<T extends ListItem<any>>(listItemId: number, options?: Object): ng.IPromise<T>;
+    //     getModel(): Model;
+    //     getQuery<T extends ListItem<any>>(queryName: string): IQuery<T>;
+    //     isInitialised(): boolean;
+    //     lastServerUpdate: Date;
+    //     list: List;
+    //     queries: IQueriesContainer;
+    //     registerQuery<T extends ListItem<any>>(queryOptions: IQueryOptions): IQuery<T>;
+    //     resolvePermissions(): IUserPermissionsObject;
+    //     validateEntity<T extends ListItem<any>>(listItem: T, options?: Object): boolean;
+    // }
 
     export interface IUninitializedModel {
         factory: Function;
@@ -162,7 +162,7 @@ module ap {
      *   }
      * </pre>
      */
-    export class Model implements IModel {
+    export class Model {
         data = [];
         deferredListDefinition;
         list: List;

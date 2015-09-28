@@ -782,7 +782,23 @@ declare module angular {
          *
          * @param name Name of the filter function to retrieve
          */
-        (name: string): Function;
+        (name: string): IFilterFunc;
+    }
+    
+    interface IFilterFunc {
+        <T>(array: T[], expression: string | IFilterPatternObject | IFilterPredicateFunc<T>, comparator?: IFilterComparatorFunc<T>|boolean): T[];
+    }
+    
+    interface IFilterPatternObject {
+        [name: string]: string;
+    }
+    
+    interface IFilterPredicateFunc<T> {
+        (value: T, index: number, array: T[]): T[];
+    }
+    
+    interface IFilterComparatorFunc<T> {
+        (actual: T, expected: T): boolean;
     }
 
     /**
@@ -1230,8 +1246,9 @@ declare module angular {
     ///////////////////////////////////////////////////////////////////////////
     interface IControllerService {
         // Although the documentation doesn't state this, locals are optional
-        (controllerConstructor: Function, locals?: any, bindToController?: any): any;
-        (controllerName: string, locals?: any, bindToController?: any): any;
+        <T>(controllerConstructor: new (...args: any[]) => T, locals?: any, bindToController?: any): T;
+        <T>(controllerConstructor: Function, locals?: any, bindToController?: any): T;
+        <T>(controllerName: string, locals?: any, bindToController?: any): T;
     }
 
     interface IControllerProvider extends IServiceProvider {
@@ -1695,18 +1712,6 @@ declare module angular {
         inheritedData(key: string, value: any): JQuery;
         inheritedData(obj: { [key: string]: any; }): JQuery;
         inheritedData(key?: string): any;
-    }
-
-    ///////////////////////////////////////////////////////////////////////
-    // AnimateService
-    // see http://docs.angularjs.org/api/ng.$animate
-    ///////////////////////////////////////////////////////////////////////
-    interface IAnimateService {
-        addClass(element: JQuery, className: string, done?: Function): IPromise<any>;
-        enter(element: JQuery, parent: JQuery, after: JQuery, done?: Function): void;
-        leave(element: JQuery, done?: Function): void;
-        move(element: JQuery, parent: JQuery, after: JQuery, done?: Function): void;
-        removeClass(element: JQuery, className: string, done?: Function): void;
     }
 
     ///////////////////////////////////////////////////////////////////////////
