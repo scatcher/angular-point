@@ -3,7 +3,7 @@
 module ap {
 
     function exceptionLoggingService($log, $injector) {
-        function error(exception, cause) {
+        function error(exception: Error, cause: string) {
 
             /** Need to inject otherwise get circular dependency when using dependency injection */
             var apLogger: ILogger = $injector.get('apLogger');
@@ -19,6 +19,13 @@ module ap {
         return error;
     }
 
+    /**
+     * @ngdoc service
+     * @name angularPoint.$exceptionHandler
+     * @description
+     * Replaces the default angular implementation and handles logging errors to the apLogger service.
+     * @requires angularPoint.apLogger
+     */    
     angular
         .module('angularPoint')
 		.factory('$exceptionHandler', exceptionLoggingService);
