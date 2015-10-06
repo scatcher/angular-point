@@ -30,4 +30,4 @@ var ap;
     });
 })(ap || (ap = {}));
 
-//# sourceMappingURL=../../spec/factories/apFieldFactory.spec.js.map
+//# sourceMappingURL=apFieldFactory.spec.js.map

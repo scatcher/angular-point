@@ -67,4 +67,4 @@ var ap;
         .service('mockLookupModel', MockLookupModel);
 })(ap || (ap = {}));
 
-//# sourceMappingURL=../../mock/models/lookupModel.mock.js.map
+//# sourceMappingURL=lookupModel.mock.js.map

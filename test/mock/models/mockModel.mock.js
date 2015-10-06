@@ -110,4 +110,4 @@ var ap;
         .service('mockModel', MockModel);
 })(ap || (ap = {}));
 
-//# sourceMappingURL=../../mock/models/mockModel.mock.js.map
+//# sourceMappingURL=mockModel.mock.js.map

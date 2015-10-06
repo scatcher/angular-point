@@ -72,4 +72,4 @@ var ap;
     });
 })(ap || (ap = {}));
 
-//# sourceMappingURL=../../spec/factories/apQueryFactory.spec.js.map
+//# sourceMappingURL=apQueryFactory.spec.js.map

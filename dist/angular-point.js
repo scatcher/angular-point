@@ -1587,8 +1587,7 @@ var ap;
                     lookupReference = apCacheService.getCachedEntity(fieldDefinition.List, targetId);
                 }
                 else {
-                    throw new Error('This isn\'t a valid Lookup field or the field definitions need to be extended ' +
-                        'before we can complete this request.');
+                    throw new Error("This isn't a valid Lookup field or the field definitions need to be extended\n                        before we can complete this request.");
                 }
             }
             return lookupReference;
@@ -3400,6 +3399,22 @@ var ap;
             /** Allow the model to be referenced at a later time */
             this.getModel = function () { return model; };
         }
+        Object.defineProperty(Query.prototype, "hasExecuted", {
+            /** Has this query been executed at least once. */
+            get: function () {
+                return _.isDate(this.lastRun);
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Query.prototype, "usesBrowserStorage", {
+            /** Is this query setup to use browser storage. */
+            get: function () {
+                return this.localStorage || this.sessionStorage;
+            },
+            enumerable: true,
+            configurable: true
+        });
         /**
          * @ngdoc function
          * @name Query.execute
@@ -3424,13 +3439,16 @@ var ap;
             else {
                 /** Set flag to prevent another call while this query is active */
                 query.negotiatingWithServer = true;
-                var localStorageData = this.getLocalStorage();
+                var localStorageData;
+                if (this.usesBrowserStorage) {
+                    localStorageData = this.getLocalStorage();
+                }
                 //Check to see if we have a version in localStorage
                 var defaultCache = query.getCache();
                 /** Clear out existing cached list items if GetListItems is the selected operation because otherwise
                  * we could potentially have stale data if a list item no longer meets the query parameters but already
-                 * exists in the cache from a previous request. */
-                if (this.operation === 'GetListItems') {
+                 * exists in the cache from a previous request. Don't clear the cache in the case where runOnce is set.*/
+                if (this.operation === 'GetListItems' && !this.runOnce) {
                     defaultCache.clear();
                 }
                 var defaults = {
@@ -3447,20 +3465,21 @@ var ap;
                     switch (this.operation) {
                         case 'GetListItemChangesSinceToken':
                             //Only run the first time, after that the token/data are already in sync
-                            if (!query.lastRun) {
+                            if (!query.hasExecuted) {
                                 query.hydrateFromLocalStorage(localStorageData);
                             }
                             break;
                         case 'GetListItems':
                             query.hydrateFromLocalStorage(localStorageData);
                             //Use cached data if we have data already available
-                            makeRequest = this.getCache().count() > 0;
+                            makeRequest = this.getCache().count() === 0;
                     }
                 }
                 /** Optionally handle query.runOnce for GetListItems when initial call has already been made */
-                if (this.operation === 'GetListItems' && _.isDate(query.lastRun) && this.runOnce) {
+                if (this.hasExecuted && this.runOnce) {
                     makeRequest = false;
                 }
+                /** Only make server request if necessary. */
                 if (makeRequest) {
                     apDataService.executeQuery(model, query, queryOptions).then(function (results) {
                         _this.processResults(results, deferred, queryOptions);
@@ -3557,7 +3576,7 @@ var ap;
             deferred.resolve(queryOptions.target);
             /** Overwrite local storage value with updated state so we can potentially restore in
              * future sessions. */
-            if (query.localStorage || query.sessionStorage) {
+            if (query.usesBrowserStorage) {
                 query.saveToLocalStorage();
             }
         };
@@ -3743,6 +3762,9 @@ var ap;
 })(ap || (ap = {}));
 
 /// <reference path="../app.module.ts" />
+/// <reference path="../../typings/tsd.d.ts" />
+
+/// <reference path="../app.module.ts" />
 var ap;
 (function (ap) {
     'use strict';
@@ -3836,9 +3858,6 @@ var ap;
     angular.module('angularPoint')
         .service('apUserModel', UserModel);
 })(ap || (ap = {}));
-
-/// <reference path="../app.module.ts" />
-/// <reference path="../../typings/tsd.d.ts" />
 
 /// <reference path="../app.module.ts" />
 var __extends = (this && this.__extends) || function (d, b) {
@@ -4919,10 +4938,11 @@ var ap;
             }
             return this.requestData(opts)
                 .then(function (responseXML) {
-                /** Failure */
+                /** Success */
                 var data = opts.postProcess(responseXML);
                 return data;
-            }, function (err) {
+            })
+                .catch(function (err) {
                 /** Failure */
                 toastr.error('Failed to complete the requested ' + opts.operation + ' operation.');
                 return err;
@@ -5901,6 +5921,13 @@ var ap;
         }
         return error;
     }
+    /**
+     * @ngdoc service
+     * @name angularPoint.$exceptionHandler
+     * @description
+     * Replaces the default angular implementation and handles logging errors to the apLogger service.
+     * @requires angularPoint.apLogger
+     */
     angular
         .module('angularPoint')
         .factory('$exceptionHandler', exceptionLoggingService);
@@ -6721,8 +6748,8 @@ var ap;
         }
         /**
          * @ngdoc function
-         * @name apLogger.debug
-         * @methodOf apLogger
+         * @name angularPoint.apLogger.debug
+         * @methodOf angularPoint.apLogger
          * @param {string} message Message to log.
          * @param {ILogger} [optionsOverride] Override any log options.
          */
@@ -6736,8 +6763,8 @@ var ap;
         ;
         /**
          * @ngdoc function
-         * @name apLogger.error
-         * @methodOf apLogger
+         * @name angularPoint.apLogger.error
+         * @methodOf angularPoint.apLogger
          * @param {string} message Message to log.
          * @param {ILogger} [optionsOverride] Override any log options.
          */
@@ -6751,19 +6778,18 @@ var ap;
         ;
         /**
          * @ngdoc function
-         * @name apLogger.exception
-         * @methodOf apLogger
+         * @name angularPoint.apLogger.exception
+         * @methodOf angularPoint.apLogger
          * @param {Error} exception Error which caused event.
          * @param {string} [cause] Angular sometimes provides cause.
          * @param {ILogger} optionsOverride Override any log options.
          */
         Logger.prototype.exception = function (exception, cause, optionsOverride) {
             try {
-                var errorMessage = exception.toString();
                 // generate a stack trace
                 /* global printStackTrace:true */
-                var stackTrace = printStackTrace({ e: exception });
-                this.error(errorMessage, _.assign({}, {
+                var stackTrace = window.printStackTrace({ e: exception });
+                this.error(exception.message, _.assign({}, {
                     event: 'exception',
                     stackTrace: stackTrace,
                     cause: (cause || "")
@@ -6776,8 +6802,8 @@ var ap;
         };
         /**
          * @ngdoc function
-         * @name apLogger.info
-         * @methodOf apLogger
+         * @name angularPoint.apLogger.info
+         * @methodOf angularPoint.apLogger
          * @param {string} message Message to log.
          * @param {ILogger} [optionsOverride] Override any log options.
          */
@@ -6791,8 +6817,8 @@ var ap;
         ;
         /**
          * @ngdoc function
-         * @name apLogger.log
-         * @methodOf apLogger
+         * @name angularPoint.apLogger.log
+         * @methodOf angularPoint.apLogger
          * @param {string} message Message to log.
          * @param {ILogger} [optionsOverride] Override any log options.
          */
@@ -6813,8 +6839,8 @@ var ap;
         };
         /**
          * @ngdoc function
-         * @name apLogger.subscribe
-         * @methodOf apLogger
+         * @name angularPoint.apLogger.subscribe
+         * @methodOf angularPoint.apLogger
          * @param {Function} callback Callend when event occurs.
          * @description Callback fired when log event occurs
          */
@@ -6823,8 +6849,8 @@ var ap;
         };
         /**
         * @ngdoc function
-        * @name apLogger.warn
-        * @methodOf apLogger
+        * @name angularPoint.apLogger.warn
+        * @methodOf angularPoint.apLogger
         * @param {string} message Message to log.
         * @param {ILogger} [optionsOverride] Override any log options.
         */
@@ -6852,7 +6878,7 @@ var ap;
     ap.Logger = Logger;
     /**
      * @ngdoc service
-     * @name apLogger
+     * @name angularPoint.apLogger
      * @description
      * Common definitions used in the application.
      *

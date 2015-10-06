@@ -22,4 +22,4 @@ var ap;
         .service('apMockUtils', MockUtils);
 })(ap || (ap = {}));
 
-//# sourceMappingURL=../mock/apMockUtils.mock.js.map
+//# sourceMappingURL=apMockUtils.mock.js.map

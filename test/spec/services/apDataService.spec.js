@@ -257,4 +257,4 @@ var ap;
     });
 })(ap || (ap = {}));
 
-//# sourceMappingURL=../../spec/services/apDataService.spec.js.map
+//# sourceMappingURL=apDataService.spec.js.map

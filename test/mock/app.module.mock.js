@@ -41,4 +41,4 @@ var ap;
     });
 })(ap || (ap = {}));
 
-//# sourceMappingURL=../mock/app.module.mock.js.map
+//# sourceMappingURL=app.module.mock.js.map

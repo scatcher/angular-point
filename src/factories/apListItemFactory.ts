@@ -421,8 +421,8 @@ module ap {
                     var targetId = lookupId || listItem[fieldName].lookupId;
                     lookupReference = apCacheService.getCachedEntity(fieldDefinition.List, targetId);
                 } else {
-                    throw new Error('This isn\'t a valid Lookup field or the field definitions need to be extended ' +
-                        'before we can complete this request.');
+                    throw new Error(`This isn't a valid Lookup field or the field definitions need to be extended
+                        before we can complete this request.`);
                 }
             }
             return lookupReference;

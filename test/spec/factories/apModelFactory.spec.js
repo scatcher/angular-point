@@ -241,4 +241,4 @@ var ap;
     });
 })(ap || (ap = {}));
 
-//# sourceMappingURL=../../spec/factories/apModelFactory.spec.js.map
+//# sourceMappingURL=apModelFactory.spec.js.map
