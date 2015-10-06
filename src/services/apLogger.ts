@@ -39,8 +39,8 @@ module ap {
 
         /**
          * @ngdoc function
-         * @name apLogger.debug
-         * @methodOf apLogger
+         * @name angularPoint.apLogger.debug
+         * @methodOf angularPoint.apLogger
          * @param {string} message Message to log.
          * @param {ILogger} [optionsOverride] Override any log options.
          */
@@ -54,8 +54,8 @@ module ap {
 
         /**
          * @ngdoc function
-         * @name apLogger.error
-         * @methodOf apLogger
+         * @name angularPoint.apLogger.error
+         * @methodOf angularPoint.apLogger
          * @param {string} message Message to log.
          * @param {ILogger} [optionsOverride] Override any log options.
          */
@@ -69,20 +69,19 @@ module ap {
 
         /**
          * @ngdoc function
-         * @name apLogger.exception
-         * @methodOf apLogger
+         * @name angularPoint.apLogger.exception
+         * @methodOf angularPoint.apLogger
          * @param {Error} exception Error which caused event.
          * @param {string} [cause] Angular sometimes provides cause.
          * @param {ILogger} optionsOverride Override any log options.
          */
-        exception(exception: Object, cause?, optionsOverride?: ILogEvent): void {
+        exception(exception: Error, cause?, optionsOverride?: ILogEvent): void {
             try {
-                var errorMessage = exception.toString();
                 // generate a stack trace
                 /* global printStackTrace:true */
-                var stackTrace = printStackTrace({ e: exception });
+                var stackTrace = window.printStackTrace({ e: exception });
 
-                this.error(errorMessage, _.assign({}, {
+                this.error(exception.message, _.assign({}, {
                     event: 'exception',
                     stackTrace: stackTrace,
                     cause: (cause || "")
@@ -97,8 +96,8 @@ module ap {
 
         /**
          * @ngdoc function
-         * @name apLogger.info
-         * @methodOf apLogger
+         * @name angularPoint.apLogger.info
+         * @methodOf angularPoint.apLogger
          * @param {string} message Message to log.
          * @param {ILogger} [optionsOverride] Override any log options.
          */
@@ -112,8 +111,8 @@ module ap {
 
         /**
          * @ngdoc function
-         * @name apLogger.log
-         * @methodOf apLogger
+         * @name angularPoint.apLogger.log
+         * @methodOf angularPoint.apLogger
          * @param {string} message Message to log.
          * @param {ILogger} [optionsOverride] Override any log options.
          */
@@ -135,8 +134,8 @@ module ap {
 
         /**
          * @ngdoc function
-         * @name apLogger.subscribe
-         * @methodOf apLogger
+         * @name angularPoint.apLogger.subscribe
+         * @methodOf angularPoint.apLogger
          * @param {Function} callback Callend when event occurs.
          * @description Callback fired when log event occurs
          */
@@ -146,8 +145,8 @@ module ap {
 
         /**
         * @ngdoc function
-        * @name apLogger.warn
-        * @methodOf apLogger
+        * @name angularPoint.apLogger.warn
+        * @methodOf angularPoint.apLogger
         * @param {string} message Message to log.
         * @param {ILogger} [optionsOverride] Override any log options.
         */
@@ -174,7 +173,7 @@ module ap {
 
     /**
      * @ngdoc service
-     * @name apLogger
+     * @name angularPoint.apLogger
      * @description
      * Common definitions used in the application.
      *
