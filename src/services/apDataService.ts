@@ -794,11 +794,12 @@ module ap {
             }
 
             return this.requestData(opts)
-                .then(function(responseXML) {
-                    /** Failure */
+                .then((responseXML) => {
+                    /** Success */
                     var data = opts.postProcess(responseXML);
                     return data;
-                }, function(err) {
+                })
+                .catch((err: Error) => {
                     /** Failure */
                     toastr.error('Failed to complete the requested ' + opts.operation + ' operation.');
                     return err;
