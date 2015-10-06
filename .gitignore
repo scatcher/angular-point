@@ -10,3 +10,4 @@ coverage/
 .publish
 .DS_Store
 .vscode
+docs/
