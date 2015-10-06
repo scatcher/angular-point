@@ -184,6 +184,15 @@ module ap {
         sessionStorage = false;
         viewFields: string;
         webURL: string;
+        
+        /** Has this query been executed at least once. */
+        get hasExecuted(): boolean {
+            return _.isDate(this.lastRun);
+        }
+        /** Is this query setup to use browser storage. */
+        get usesBrowserStorage(): boolean {
+            return this.localStorage || this.sessionStorage;
+        }
 
         constructor(queryOptions: IQueryOptions, model: Model) {
             let list = model.getList();
@@ -229,15 +238,19 @@ module ap {
                 /** Set flag to prevent another call while this query is active */
                 query.negotiatingWithServer = true;
 
-                let localStorageData = this.getLocalStorage();
+                let localStorageData;
+                
+                if (this.usesBrowserStorage) {
+                    localStorageData = this.getLocalStorage();
+                }
                 //Check to see if we have a version in localStorage
 
                 let defaultCache = query.getCache();
 
                 /** Clear out existing cached list items if GetListItems is the selected operation because otherwise
                  * we could potentially have stale data if a list item no longer meets the query parameters but already
-                 * exists in the cache from a previous request. */
-                if(this.operation === 'GetListItems') {
+                 * exists in the cache from a previous request. Don't clear the cache in the case where runOnce is set.*/
+                if(this.operation === 'GetListItems' && !this.runOnce) {
                     defaultCache.clear();
                 }
 
@@ -258,22 +271,23 @@ module ap {
                     switch (this.operation) {
                         case 'GetListItemChangesSinceToken':
                             //Only run the first time, after that the token/data are already in sync
-                            if (!query.lastRun) {
+                            if (!query.hasExecuted) {
                                 query.hydrateFromLocalStorage(localStorageData);
                             }
                             break;
                         case 'GetListItems':
                             query.hydrateFromLocalStorage(localStorageData);
                             //Use cached data if we have data already available
-                            makeRequest = this.getCache().count() > 0;
+                            makeRequest = this.getCache().count() === 0;
                     }
                 }
 
                 /** Optionally handle query.runOnce for GetListItems when initial call has already been made */
-                if (this.operation === 'GetListItems' && _.isDate(query.lastRun) && this.runOnce) {
+                if (this.hasExecuted && this.runOnce) {
                     makeRequest = false;
                 }
 
+                /** Only make server request if necessary. */                
                 if (makeRequest) {
                     apDataService.executeQuery<T>(model, query, queryOptions).then((results) => {
                         this.processResults(results, deferred, queryOptions);
@@ -379,7 +393,7 @@ module ap {
 
             /** Overwrite local storage value with updated state so we can potentially restore in
              * future sessions. */
-            if (query.localStorage || query.sessionStorage) {
+            if (query.usesBrowserStorage) {
                 query.saveToLocalStorage();
             }
         }
