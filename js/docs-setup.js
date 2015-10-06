@@ -14,6 +14,15 @@ NG_DOCS={
     },
     {
       "section": "api",
+      "id": "angularPoint.$exceptionHandler",
+      "shortName": "angularPoint.$exceptionHandler",
+      "type": "service",
+      "moduleName": "angularPoint",
+      "shortDescription": "Replaces the default angular implementation and handles logging errors to the apLogger service.",
+      "keywords": "$exceptionhandler angular angularpoint api aplogger default errors handles implementation logging replaces service"
+    },
+    {
+      "section": "api",
       "id": "angularPoint.apCacheService",
       "shortName": "angularPoint.apCacheService",
       "type": "service",
@@ -122,6 +131,15 @@ NG_DOCS={
     },
     {
       "section": "api",
+      "id": "angularPoint.apLogger",
+      "shortName": "angularPoint.apLogger",
+      "type": "service",
+      "moduleName": "angularPoint",
+      "shortDescription": "Common definitions used in the application.",
+      "keywords": "access add angular angularpoint ap api aplogger application assign callback callend caused change class common console control create createemptyitem customfields debug definitions dependencies description display email ensure error event events exception export extends factory false fired formatted formattedstacktrace function guid ilogevent info instantiated json list listitem ll log logcounter logger logging logs logsmodel logtype loop mappedname maxlogspersesssion message model newlog note notification obj object objecttype occurs options optionsoverride override prevents readable readonly register representation savechanges server service spamming stacktrace staticname stored string subscribe super text title trace type url var warn write"
+    },
+    {
+      "section": "api",
       "id": "angularPoint.apLookupFactory",
       "shortName": "angularPoint.apLookupFactory",
       "type": "function",
@@ -171,8 +189,8 @@ NG_DOCS={
       "shortName": "angularPoint.apXMLListAttributeTypes",
       "type": "object",
       "moduleName": "angularPoint",
-      "shortDescription": "Constant object map which contains many common XML attributes found on a field definition with their",
-      "keywords": "angularpoint api apxmllistattributetypes attributes common constant corresponding definition field map object type xml"
+      "shortDescription": "Constant object map which contains many common XML attributes found on a list definition with their",
+      "keywords": "angularpoint api apxmllistattributetypes attributes common constant corresponding definition list map object type xml"
     },
     {
       "section": "api",
@@ -180,8 +198,8 @@ NG_DOCS={
       "shortName": "angularPoint.apXMLListAttributeTypes",
       "type": "object",
       "moduleName": "angularPoint",
-      "shortDescription": "Constant object map which contains many common XML attributes found on a list definition with their",
-      "keywords": "angularpoint api apxmllistattributetypes attributes common constant corresponding definition list map object type xml"
+      "shortDescription": "Constant object map which contains many common XML attributes found on a field definition with their",
+      "keywords": "angularpoint api apxmllistattributetypes attributes common constant corresponding definition field map object type xml"
     },
     {
       "section": "api",
@@ -254,15 +272,6 @@ NG_DOCS={
       "moduleName": "apListItemVersionFactory",
       "shortDescription": "Used specifically to determine difference between 2 distinct versions of a list item using the",
       "keywords": "api aplistitemversionfactory determine difference distinct extends fieldchangesummary history item list newerversion object previous updated version versions versionsummary"
-    },
-    {
-      "section": "api",
-      "id": "apLogger",
-      "shortName": "apLogger",
-      "type": "service",
-      "moduleName": "apLogger",
-      "shortDescription": "Common definitions used in the application.",
-      "keywords": "access add angular ap api aplogger application assign callback callend caused change class common console control create createemptyitem customfields debug definitions dependencies description display email ensure error event events exception export extends factory false fired formatted formattedstacktrace function guid ilogevent info instantiated json list listitem ll log logcounter logger logging logs logsmodel logtype loop mappedname maxlogspersesssion message model newlog note notification obj object objecttype occurs options optionsoverride override prevents readable readonly register representation savechanges server service spamming stacktrace staticname stored string subscribe super text title trace type url var warn write"
     },
     {
       "section": "api",
