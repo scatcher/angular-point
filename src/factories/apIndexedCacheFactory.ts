@@ -41,7 +41,7 @@ module ap {
                     this[listItem.id] = listItem;
                 }
             } else {
-                throw new Error('A valid listItem wasn\'t provided: ' + JSON.stringify(listItem));
+                throw new Error('A valid listItem wasn\'t provided: ' + JSON.stringify(listItem, null, 2));
             }
         }
 

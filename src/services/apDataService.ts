@@ -942,8 +942,8 @@ module ap {
             //Log error to any server side logging list
             apLogger.error(errorMsg, {
                 json: {
-                    request: JSON.stringify(soapData),
-                    response: JSON.stringify(response)
+                    request: JSON.stringify(soapData, null, 2),
+                    response: JSON.stringify(response, null, 2)
                 }
             });
 
