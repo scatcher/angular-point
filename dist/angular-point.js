@@ -544,6 +544,9 @@ var ap;
 })(ap || (ap = {}));
 
 /// <reference path="../app.module.ts" />
+/// <reference path="../../typings/tsd.d.ts" />
+
+/// <reference path="../app.module.ts" />
 var ap;
 (function (ap) {
     'use strict';
@@ -878,7 +881,7 @@ var ap;
                 }
             }
             else {
-                throw new Error('A valid listItem wasn\'t provided: ' + JSON.stringify(listItem));
+                throw new Error('A valid listItem wasn\'t provided: ' + JSON.stringify(listItem, null, 2));
             }
         };
         /**
@@ -3506,6 +3509,18 @@ var ap;
         };
         /**
          * @ngdoc function
+         * @name Query.getList
+         * @methodOf Query
+         * @description
+         * Shortcut to retrieve the list definition from the model this query belongs to.
+         * @returns {List} List definition for model.
+         */
+        Query.prototype.getList = function () {
+            var model = this.getModel();
+            return model.getList();
+        };
+        /**
+         * @ngdoc function
          * @name Query.getLocalStorage
          * @methodOf Query
          * @description
@@ -3529,15 +3544,24 @@ var ap;
          * then have the ability to just check the server to see what has changed from the current state.
          */
         Query.prototype.hydrateFromLocalStorage = function (localStorageQuery) {
+            var _this = this;
             if (localStorageQuery.hasExpired(this.localStorageExpiration)) {
                 //Don't continue and purge if data has exceeded expiration
                 localStorageQuery.removeItem();
             }
             else {
                 var listItemProvider = apDecodeService.createListItemProvider(this.getModel(), this, this.getCache());
+                var fieldDefinitions = this.getList().fields;
+                //Identify all DateTime JSON fields so we can cast as Date objects
+                var dateTimeProperties = _.map(fieldDefinitions, function (fieldDefinition) {
+                    if (fieldDefinition.objectType === 'DateTime') {
+                        return fieldDefinition.staticName;
+                    }
+                });
                 //Hydrate each raw list item and add to cache
-                _.each(localStorageQuery.indexedCache, function (rawObject) {
-                    listItemProvider(rawObject);
+                _.each(localStorageQuery.indexedCache, function (jsonObject) {
+                    _this.hydrateJSONDates(jsonObject, dateTimeProperties);
+                    listItemProvider(jsonObject);
                 });
                 //Set the last run date
                 this.lastRun = localStorageQuery.lastRun;
@@ -3546,6 +3570,22 @@ var ap;
                 //Resolve initial query promise in case any other concurrent requests are waiting for the data
                 this.initialized.resolve(this.getCache());
             }
+        };
+        /**
+         * @ngdoc function
+         * @name Query.hydrateJSONDates
+         * @methodOf Query
+         * @description
+         * Objects pulled from local storage have JSON date strings so we need to convert to real dates.
+         * @returns {Object} JSON object with date strings converted to Date objects.
+         */
+        Query.prototype.hydrateJSONDates = function (jsonObject, dateTimeProperties) {
+            _.each(dateTimeProperties, function (prop) {
+                if (_.isString(jsonObject[prop])) {
+                    jsonObject[prop] = new Date(jsonObject[prop]);
+                }
+            });
+            return jsonObject;
         };
         /**
          * @ngdoc function
@@ -3760,9 +3800,6 @@ var ap;
     angular.module('angularPoint')
         .service('apUserFactory', UserFactory);
 })(ap || (ap = {}));
-
-/// <reference path="../app.module.ts" />
-/// <reference path="../../typings/tsd.d.ts" />
 
 /// <reference path="../app.module.ts" />
 var ap;
@@ -5069,8 +5106,8 @@ var ap;
             //Log error to any server side logging list
             apLogger.error(errorMsg, {
                 json: {
-                    request: JSON.stringify(soapData),
-                    response: JSON.stringify(response)
+                    request: JSON.stringify(soapData, null, 2),
+                    response: JSON.stringify(response, null, 2)
                 }
             });
             deferred.reject(errorMsg);
