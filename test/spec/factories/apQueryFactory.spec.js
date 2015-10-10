@@ -57,6 +57,23 @@ var ap;
                 expect(mockQuery.negotiatingWithServer).toBe(false);
             });
         });
+        describe('Method: hydrateJSONDates', function () {
+            it('converts JSON dates to JS date object', function () {
+                var date1 = new Date();
+                var date2 = new Date(2012, 5, 10);
+                var jsonString = JSON.stringify({
+                    aDate: date1,
+                    aString: 'testing',
+                    anotherDate: date2
+                });
+                var jsonObject = JSON.parse(jsonString);
+                expect(_.isString(jsonObject.aDate)).toBeTruthy();
+                expect(_.isDate(jsonObject.aDate)).toBeFalsy();
+                var revivedObject = mockQuery.hydrateJSONDates(jsonObject, ['aDate', 'anotherDate']);
+                expect(revivedObject.aDate).toEqual(date1);
+                expect(revivedObject.anotherDate).toEqual(date2);
+            });
+        });
         // describe('Class: LocalStorageQuery', function() {
         //     it('returns the model', function() {
         //         expect(mockQuery.getModel()).toBe(mockModel);

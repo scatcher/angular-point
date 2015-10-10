@@ -312,6 +312,19 @@ module ap {
         getCache(): IndexedCache<T> {
             return this.indexedCache;
         }
+        
+        /**
+         * @ngdoc function
+         * @name Query.getList
+         * @methodOf Query
+         * @description
+         * Shortcut to retrieve the list definition from the model this query belongs to.
+         * @returns {List} List definition for model.
+         */
+        getList(): List {
+            let model = this.getModel();
+            return model.getList();
+        }
 
         /**
          * @ngdoc function
@@ -344,10 +357,21 @@ module ap {
                 localStorageQuery.removeItem();
             } else {
                 let listItemProvider = apDecodeService.createListItemProvider<T>(this.getModel(), this, this.getCache());
-                //Hydrate each raw list item and add to cache
-                _.each(localStorageQuery.indexedCache, (rawObject: Object) => {
-                    listItemProvider(rawObject);
+                let fieldDefinitions = this.getList().fields;
+                
+                //Identify all DateTime JSON fields so we can cast as Date objects
+                let dateTimeProperties = _.map(fieldDefinitions, (fieldDefinition: FieldDefinition) => {
+                    if (fieldDefinition.objectType === 'DateTime') {
+                        return fieldDefinition.staticName;
+                    }
                 });
+                
+                //Hydrate each raw list item and add to cache
+                _.each(localStorageQuery.indexedCache, (jsonObject: Object) => {
+                    this.hydrateJSONDates(jsonObject, dateTimeProperties);
+                    listItemProvider(jsonObject);
+                });
+                
                 //Set the last run date
                 this.lastRun = localStorageQuery.lastRun;
                 //Store the change token
@@ -355,6 +379,23 @@ module ap {
                 //Resolve initial query promise in case any other concurrent requests are waiting for the data
                 this.initialized.resolve(this.getCache());
             }
+        }
+        
+        /**
+         * @ngdoc function
+         * @name Query.hydrateJSONDates
+         * @methodOf Query
+         * @description
+         * Objects pulled from local storage have JSON date strings so we need to convert to real dates.
+         * @returns {Object} JSON object with date strings converted to Date objects.
+         */
+        hydrateJSONDates(jsonObject: Object, dateTimeProperties: string[]): Object  {
+            _.each(dateTimeProperties, (prop: string) => {
+                if (_.isString(jsonObject[prop])) {
+                    jsonObject[prop] = new Date(jsonObject[prop]);
+                }
+            });
+            return jsonObject;
         }
 
         /**
