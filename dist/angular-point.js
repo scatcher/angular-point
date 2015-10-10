@@ -544,9 +544,6 @@ var ap;
 })(ap || (ap = {}));
 
 /// <reference path="../app.module.ts" />
-/// <reference path="../../typings/tsd.d.ts" />
-
-/// <reference path="../app.module.ts" />
 var ap;
 (function (ap) {
     'use strict';
@@ -2108,7 +2105,8 @@ var ap;
 var __extends = (this && this.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
-    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    __.prototype = b.prototype;
+    d.prototype = new __();
 };
 var ap;
 (function (ap) {
@@ -3553,15 +3551,18 @@ var ap;
                 var listItemProvider = apDecodeService.createListItemProvider(this.getModel(), this, this.getCache());
                 var fieldDefinitions = this.getList().fields;
                 //Identify all DateTime JSON fields so we can cast as Date objects
-                var dateTimeProperties = _.map(fieldDefinitions, function (fieldDefinition) {
-                    if (fieldDefinition.objectType === 'DateTime') {
-                        return fieldDefinition.staticName;
-                    }
-                });
+                var dateTimeProperties = _.chain(fieldDefinitions)
+                    .filter(function (fieldDefinition) {
+                    return fieldDefinition.objectType === 'DateTime';
+                })
+                    .map(function (fieldDefinition) {
+                    return fieldDefinition.mappedName;
+                })
+                    .value();
                 //Hydrate each raw list item and add to cache
                 _.each(localStorageQuery.indexedCache, function (jsonObject) {
-                    _this.hydrateJSONDates(jsonObject, dateTimeProperties);
-                    listItemProvider(jsonObject);
+                    var hydratedObject = _this.hydrateJSONDates(jsonObject, dateTimeProperties);
+                    listItemProvider(hydratedObject);
                 });
                 //Set the last run date
                 this.lastRun = localStorageQuery.lastRun;
@@ -3802,6 +3803,9 @@ var ap;
 })(ap || (ap = {}));
 
 /// <reference path="../app.module.ts" />
+/// <reference path="../../typings/tsd.d.ts" />
+
+/// <reference path="../app.module.ts" />
 var ap;
 (function (ap) {
     'use strict';
@@ -3900,7 +3904,8 @@ var ap;
 var __extends = (this && this.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
-    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    __.prototype = b.prototype;
+    d.prototype = new __();
 };
 var ap;
 (function (ap) {

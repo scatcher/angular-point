@@ -184,7 +184,7 @@ module ap {
         sessionStorage = false;
         viewFields: string;
         webURL: string;
-        
+
         /** Has this query been executed at least once. */
         get hasExecuted(): boolean {
             return _.isDate(this.lastRun);
@@ -239,7 +239,7 @@ module ap {
                 query.negotiatingWithServer = true;
 
                 let localStorageData;
-                
+
                 if (this.usesBrowserStorage) {
                     localStorageData = this.getLocalStorage();
                 }
@@ -287,7 +287,7 @@ module ap {
                     makeRequest = false;
                 }
 
-                /** Only make server request if necessary. */                
+                /** Only make server request if necessary. */
                 if (makeRequest) {
                     apDataService.executeQuery<T>(model, query, queryOptions).then((results) => {
                         this.processResults(results, deferred, queryOptions);
@@ -312,7 +312,7 @@ module ap {
         getCache(): IndexedCache<T> {
             return this.indexedCache;
         }
-        
+
         /**
          * @ngdoc function
          * @name Query.getList
@@ -358,20 +358,23 @@ module ap {
             } else {
                 let listItemProvider = apDecodeService.createListItemProvider<T>(this.getModel(), this, this.getCache());
                 let fieldDefinitions = this.getList().fields;
-                
+
                 //Identify all DateTime JSON fields so we can cast as Date objects
-                let dateTimeProperties = _.map(fieldDefinitions, (fieldDefinition: FieldDefinition) => {
-                    if (fieldDefinition.objectType === 'DateTime') {
-                        return fieldDefinition.staticName;
-                    }
-                });
-                
+                var dateTimeProperties = _.chain(fieldDefinitions)
+                    .filter((fieldDefinition: FieldDefinition) => {
+                        return fieldDefinition.objectType === 'DateTime';
+                    })
+                    .map((fieldDefinition: FieldDefinition) => {
+                        return fieldDefinition.mappedName;
+                    })
+                    .value();
+
                 //Hydrate each raw list item and add to cache
                 _.each(localStorageQuery.indexedCache, (jsonObject: Object) => {
-                    this.hydrateJSONDates(jsonObject, dateTimeProperties);
-                    listItemProvider(jsonObject);
+                    let hydratedObject = this.hydrateJSONDates(jsonObject, dateTimeProperties);
+                    listItemProvider(hydratedObject);
                 });
-                
+
                 //Set the last run date
                 this.lastRun = localStorageQuery.lastRun;
                 //Store the change token
@@ -380,7 +383,7 @@ module ap {
                 this.initialized.resolve(this.getCache());
             }
         }
-        
+
         /**
          * @ngdoc function
          * @name Query.hydrateJSONDates
