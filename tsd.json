@@ -6,31 +6,31 @@
   "bundle": "typings/tsd.d.ts",
   "installed": {
     "angularjs/angular.d.ts": {
-      "commit": "d0adccc436197cc7c3559322721e9df86b892bd6"
+      "commit": "3fc1377ce29dd9670975cb68615edf1b819fc4a5"
     },
     "jquery/jquery.d.ts": {
-      "commit": "d0adccc436197cc7c3559322721e9df86b892bd6"
+      "commit": "3fc1377ce29dd9670975cb68615edf1b819fc4a5"
     },
     "lodash/lodash.d.ts": {
-      "commit": "d0adccc436197cc7c3559322721e9df86b892bd6"
+      "commit": "3fc1377ce29dd9670975cb68615edf1b819fc4a5"
     },
     "jasmine/jasmine.d.ts": {
-      "commit": "d0adccc436197cc7c3559322721e9df86b892bd6"
+      "commit": "3fc1377ce29dd9670975cb68615edf1b819fc4a5"
     },
     "angularjs/angular-mocks.d.ts": {
-      "commit": "d0adccc436197cc7c3559322721e9df86b892bd6"
+      "commit": "3fc1377ce29dd9670975cb68615edf1b819fc4a5"
     },
     "angularjs/angular-sanitize.d.ts": {
-      "commit": "d0adccc436197cc7c3559322721e9df86b892bd6"
+      "commit": "3fc1377ce29dd9670975cb68615edf1b819fc4a5"
     },
     "karma-jasmine/karma-jasmine.d.ts": {
-      "commit": "d0adccc436197cc7c3559322721e9df86b892bd6"
+      "commit": "3fc1377ce29dd9670975cb68615edf1b819fc4a5"
     },
     "chance/chance.d.ts": {
-      "commit": "d0adccc436197cc7c3559322721e9df86b892bd6"
+      "commit": "3fc1377ce29dd9670975cb68615edf1b819fc4a5"
     },
     "node/node.d.ts": {
-      "commit": "d0adccc436197cc7c3559322721e9df86b892bd6"
+      "commit": "3fc1377ce29dd9670975cb68615edf1b819fc4a5"
     }
   }
 }
