@@ -873,7 +873,7 @@ module ap {
                     .then((workflows) => {
                         var targetWorklow = _.findWhere(workflows, { name: options.workflowName });
                         if (!targetWorklow) {
-                            throw new Error('A workflow with the specified name wasn\'t found.');
+                            throw new Error(`A workflow with the name ${options.workflowName} wasn't found.  The workflows available are [${_.map(workflows, 'name').toString()}].`);
                         }
                         /** Create an extended set of options to pass any overrides to apDataService */
                         options.templateId = targetWorklow.templateId;
