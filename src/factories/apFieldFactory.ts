@@ -39,6 +39,7 @@ module ap {
         displayName?: string;
         formatter?: (listItem: ListItem<any>, fieldDefinition: IFieldDefinition, options?: Object) => string;
         label?: string;
+        //JS property name that we use to store the value for this field.
         mappedName: string;
         objectType: string;
         readOnly?: boolean;
