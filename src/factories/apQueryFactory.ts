@@ -128,7 +128,7 @@ module ap {
      * // Query to retrieve the most recent 25 modifications
      * model.registerQuery({
      *    name: 'recentChanges',
-     *    CAMLRowLimit: 25,
+     *    rowLimit: 25,
      *    query: '' +
      *        '<Query>' +
      *        '   <OrderBy>' +

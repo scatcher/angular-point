@@ -199,7 +199,7 @@ module ap {
             this.registerQuery({
                 name: '__sample',
                 operation: 'GetListItems',
-                CAMLRowLimit: 1
+                rowLimit: 1
             });
 
         }
@@ -556,7 +556,7 @@ module ap {
                 var defaults = {
                     name: queryKey,
                     operation: 'GetListItems',
-                    CAMLRowLimit: 1,
+                    rowLimit: 1,
                     CAMLQuery: '' +
                     '<Query>' +
                     ' <Where>' +
