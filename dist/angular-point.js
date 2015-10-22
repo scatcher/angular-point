@@ -2006,7 +2006,7 @@ var ap;
                     .then(function (workflows) {
                     var targetWorklow = _.findWhere(workflows, { name: options.workflowName });
                     if (!targetWorklow) {
-                        throw new Error('A workflow with the specified name wasn\'t found.');
+                        throw new Error("A workflow with the name " + options.workflowName + " wasn't found.  The workflows available are [" + _.map(workflows, 'name').toString() + "].");
                     }
                     /** Create an extended set of options to pass any overrides to apDataService */
                     options.templateId = targetWorklow.templateId;
@@ -2105,8 +2105,7 @@ var ap;
 var __extends = (this && this.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
-    __.prototype = b.prototype;
-    d.prototype = new __();
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 };
 var ap;
 (function (ap) {
@@ -2552,7 +2551,7 @@ var ap;
             this.registerQuery({
                 name: '__sample',
                 operation: 'GetListItems',
-                CAMLRowLimit: 1
+                rowLimit: 1
             });
         }
         /**
@@ -2873,7 +2872,7 @@ var ap;
                 var defaults = {
                     name: queryKey,
                     operation: 'GetListItems',
-                    CAMLRowLimit: 1,
+                    rowLimit: 1,
                     CAMLQuery: '' +
                         '<Query>' +
                         ' <Where>' +
@@ -3347,7 +3346,7 @@ var ap;
      * // Query to retrieve the most recent 25 modifications
      * model.registerQuery({
      *    name: 'recentChanges',
-     *    CAMLRowLimit: 25,
+     *    rowLimit: 25,
      *    query: '' +
      *        '<Query>' +
      *        '   <OrderBy>' +
@@ -3806,106 +3805,10 @@ var ap;
 /// <reference path="../../typings/tsd.d.ts" />
 
 /// <reference path="../app.module.ts" />
-var ap;
-(function (ap) {
-    'use strict';
-    /** Local references to cached promises */
-    var _getGroupCollection, _getUserProfile;
-    var UserModel = (function () {
-        function UserModel($q, apDataService) {
-            this.$q = $q;
-            this.apDataService = apDataService;
-        }
-        /**
-         * @ngdoc function
-         * @name angularPoint.apUserModel:checkIfMember
-         * @methodOf angularPoint.apUserModel
-         * @description
-         * Checks to see if current user is a member of the specified group.
-         * @param {string} groupName Name of the group.
-         * @param {boolean} [force=false] Ignore any cached value.
-         * @returns {object} Returns the group definition if the user is a member. {ID:string, Name:string, Description:string, OwnerId:string, OwnerIsUser:string}
-         * @example
-         * <pre>{ID: "190", Name: "Blog Contributors", Description: "We are bloggers...", OwnerID: "126", OwnerIsUser: "False"}</pre>
-         */
-        UserModel.prototype.checkIfMember = function (groupName, force) {
-            if (force === void 0) { force = false; }
-            //Allow function to be called before group collection is ready
-            var deferred = this.$q.defer();
-            //Initially ensure groups are ready, any future calls will receive the return
-            this.getGroupCollection(force).then(function (groupCollection) {
-                var groupDefinition = _.find(groupCollection, { Name: groupName });
-                deferred.resolve(groupDefinition);
-            });
-            return deferred.promise;
-        };
-        /**
-         * @ngdoc function
-         * @name angularPoint.apUserModel:getGroupCollection
-         * @methodOf angularPoint.apUserModel
-         * @description
-         * Returns the group definitions for the current user and caches results.
-         * @param {boolean} [force=false] Ignore any cached value.
-         * @returns {IGroupDefinition[]} Promise which resolves with the array of groups the user belongs to.
-         */
-        UserModel.prototype.getGroupCollection = function (force) {
-            var _this = this;
-            if (force === void 0) { force = false; }
-            if (!_getGroupCollection || force) {
-                /** Create a new deferred object if not already defined */
-                var deferred = this.$q.defer();
-                this.getUserProfile(force).then(function (userProfile) {
-                    _this.apDataService.getGroupCollectionFromUser(userProfile.userLoginName)
-                        .then(function (groupCollection) {
-                        deferred.resolve(groupCollection);
-                    });
-                });
-                _getGroupCollection = deferred.promise;
-            }
-            return _getGroupCollection;
-        };
-        /**
-         * @ngdoc function
-         * @name angularPoint.apUserModel:getUserProfile
-         * @methodOf angularPoint.apUserModel
-         * @description
-         * Returns the user profile for the current user and caches results.
-         * Pull user profile info and parse into a profile object
-         * http://spservices.codeplex.com/wikipage?title=GetUserProfileByName
-         * @param {boolean} [force=false] Ignore any cached value.
-         * @returns {object} Promise which resolves with the requested user profile.
-         */
-        UserModel.prototype.getUserProfile = function (force) {
-            if (force === void 0) { force = false; }
-            if (!_getUserProfile || force) {
-                /** Create a new deferred object if not already defined */
-                _getUserProfile = this.apDataService.getUserProfileByName();
-            }
-            return _getUserProfile;
-        };
-        UserModel.$inject = ['$q', 'apDataService'];
-        return UserModel;
-    })();
-    ap.UserModel = UserModel;
-    /**
-     * @ngdoc service
-     * @name angularPoint.apUserModel
-     * @description
-     * Simple service that allows us to request and cache both the current user and their group memberships.
-     *
-     * @requires apDataService
-     *
-     */
-    angular.module('angularPoint')
-        .service('apUserModel', UserModel);
-})(ap || (ap = {}));
-
-/// <reference path="../app.module.ts" />
 var __extends = (this && this.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
-    __.prototype = b.prototype;
-    d.prototype = new __();
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 };
 var ap;
 (function (ap) {
@@ -6798,7 +6701,7 @@ var ap;
         Logger.prototype.debug = function (message, optionsOverride) {
             var opts = _.assign({
                 message: message,
-                type: 'debug',
+                type: 'debug'
             }, optionsOverride);
             return this.notify(opts);
         };
@@ -6813,7 +6716,7 @@ var ap;
         Logger.prototype.error = function (message, optionsOverride) {
             var opts = _.assign({
                 message: message,
-                type: 'error',
+                type: 'error'
             }, optionsOverride);
             return this.notify(opts);
         };
@@ -6829,16 +6732,16 @@ var ap;
         Logger.prototype.exception = function (exception, cause, optionsOverride) {
             try {
                 // generate a stack trace
-                /* global printStackTrace:true */
-                var stackTrace = window.printStackTrace({ e: exception });
+                /* global ErrorStackParser:true */
+                var stackTrace = ErrorStackParser.parse(exception);
                 this.error(exception.message, _.assign({}, {
                     event: 'exception',
                     stackTrace: stackTrace,
-                    cause: (cause || "")
+                    cause: (cause || '')
                 }, optionsOverride));
             }
             catch (loggingError) {
-                this.$log.warn("Error server-side logging failed");
+                this.$log.warn('Error server-side logging failed');
                 this.$log.log(loggingError);
             }
         };
@@ -6852,7 +6755,7 @@ var ap;
         Logger.prototype.info = function (message, optionsOverride) {
             var opts = _.assign({
                 message: message,
-                type: 'info',
+                type: 'info'
             }, optionsOverride);
             return this.notify(opts);
         };
@@ -6867,7 +6770,7 @@ var ap;
         Logger.prototype.log = function (message, optionsOverride) {
             var opts = _.assign({
                 message: message,
-                type: 'log',
+                type: 'log'
             }, optionsOverride);
             return this.notify(opts);
         };
@@ -6890,29 +6793,29 @@ var ap;
             deferred.resolve(callback);
         };
         /**
-        * @ngdoc function
-        * @name angularPoint.apLogger.warn
-        * @methodOf angularPoint.apLogger
-        * @param {string} message Message to log.
-        * @param {ILogger} [optionsOverride] Override any log options.
-        */
+         * @ngdoc function
+         * @name angularPoint.apLogger.warn
+         * @methodOf angularPoint.apLogger
+         * @param {string} message Message to log.
+         * @param {ILogger} [optionsOverride] Override any log options.
+         */
         Logger.prototype.warn = function (message, optionsOverride) {
             var opts = _.assign({
                 message: message,
-                type: 'warn',
+                type: 'warn'
             }, optionsOverride);
             return this.notify(opts);
         };
         ;
         Logger.prototype.notify = function (options) {
             var _this = this;
-            //URL before navigation
+            // url before navigation
             var url = '1: ' + this.$window.location.href + '\n';
             return this.$timeout(function () {
                 /** Allow navigation to settle before capturing 2nd url */
                 url += '2: ' + _this.$window.location.href;
                 return _this.registerEvent(_.assign({}, { url: url }, options));
-            }, 0);
+            }, 100);
         };
         Logger.$inject = ['$q', '$window', '$log', '$timeout'];
         return Logger;
@@ -6944,14 +6847,16 @@ var ap;
      *     url: string;
      *     constructor(obj){
      *         _.assign(this, obj);
-     *         // Create a formatted representation of the stacktrace to display in email notification
-     *         if(this.stackTrace && !this.formattedStackTrace) {
-     *             this.formattedStackTrace = '';
-     *             _.each(this.stackTrace, (traceEntry) => {
-     *                 this.formattedStackTrace += `${traceEntry}
-     *             `;
-     *             });
+     *     }
+     *     //override the default save and cleanup before actually saving
+     *     saveChanges() {
+     *          // stringify stacktrace prior to saving so we can display in email notifications
+     *          if(this.stackTrace && !this.formattedStackTrace) {
+     *          this.formattedStackTrace = this.stackTrace.map(function(sf) {
+     *               return sf.toString();
+     *           }).join('\n');
      *         }
+     *         return super.saveChanges();
      *     }
      * }
      * var logCounter = 0;
@@ -8581,6 +8486,101 @@ var ap;
      */
     angular.module('angularPoint')
         .service('apXMLToJSONService', XMLToJSONService);
+})(ap || (ap = {}));
+
+/// <reference path="../app.module.ts" />
+var ap;
+(function (ap) {
+    'use strict';
+    /** Local references to cached promises */
+    var _getGroupCollection, _getUserProfile;
+    var UserModel = (function () {
+        function UserModel($q, apDataService) {
+            this.$q = $q;
+            this.apDataService = apDataService;
+        }
+        /**
+         * @ngdoc function
+         * @name angularPoint.apUserModel:checkIfMember
+         * @methodOf angularPoint.apUserModel
+         * @description
+         * Checks to see if current user is a member of the specified group.
+         * @param {string} groupName Name of the group.
+         * @param {boolean} [force=false] Ignore any cached value.
+         * @returns {object} Returns the group definition if the user is a member. {ID:string, Name:string, Description:string, OwnerId:string, OwnerIsUser:string}
+         * @example
+         * <pre>{ID: "190", Name: "Blog Contributors", Description: "We are bloggers...", OwnerID: "126", OwnerIsUser: "False"}</pre>
+         */
+        UserModel.prototype.checkIfMember = function (groupName, force) {
+            if (force === void 0) { force = false; }
+            //Allow function to be called before group collection is ready
+            var deferred = this.$q.defer();
+            //Initially ensure groups are ready, any future calls will receive the return
+            this.getGroupCollection(force).then(function (groupCollection) {
+                var groupDefinition = _.find(groupCollection, { Name: groupName });
+                deferred.resolve(groupDefinition);
+            });
+            return deferred.promise;
+        };
+        /**
+         * @ngdoc function
+         * @name angularPoint.apUserModel:getGroupCollection
+         * @methodOf angularPoint.apUserModel
+         * @description
+         * Returns the group definitions for the current user and caches results.
+         * @param {boolean} [force=false] Ignore any cached value.
+         * @returns {IGroupDefinition[]} Promise which resolves with the array of groups the user belongs to.
+         */
+        UserModel.prototype.getGroupCollection = function (force) {
+            var _this = this;
+            if (force === void 0) { force = false; }
+            if (!_getGroupCollection || force) {
+                /** Create a new deferred object if not already defined */
+                var deferred = this.$q.defer();
+                this.getUserProfile(force).then(function (userProfile) {
+                    _this.apDataService.getGroupCollectionFromUser(userProfile.userLoginName)
+                        .then(function (groupCollection) {
+                        deferred.resolve(groupCollection);
+                    });
+                });
+                _getGroupCollection = deferred.promise;
+            }
+            return _getGroupCollection;
+        };
+        /**
+         * @ngdoc function
+         * @name angularPoint.apUserModel:getUserProfile
+         * @methodOf angularPoint.apUserModel
+         * @description
+         * Returns the user profile for the current user and caches results.
+         * Pull user profile info and parse into a profile object
+         * http://spservices.codeplex.com/wikipage?title=GetUserProfileByName
+         * @param {boolean} [force=false] Ignore any cached value.
+         * @returns {object} Promise which resolves with the requested user profile.
+         */
+        UserModel.prototype.getUserProfile = function (force) {
+            if (force === void 0) { force = false; }
+            if (!_getUserProfile || force) {
+                /** Create a new deferred object if not already defined */
+                _getUserProfile = this.apDataService.getUserProfileByName();
+            }
+            return _getUserProfile;
+        };
+        UserModel.$inject = ['$q', 'apDataService'];
+        return UserModel;
+    })();
+    ap.UserModel = UserModel;
+    /**
+     * @ngdoc service
+     * @name angularPoint.apUserModel
+     * @description
+     * Simple service that allows us to request and cache both the current user and their group memberships.
+     *
+     * @requires apDataService
+     *
+     */
+    angular.module('angularPoint')
+        .service('apUserModel', UserModel);
 })(ap || (ap = {}));
 
 //# sourceMappingURL=angular-point.js.map

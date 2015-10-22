@@ -13,6 +13,7 @@ module ap {
         localStorage?: boolean;
         localStorageExpiration?: number;
         name?: string;
+        /** GetListItemChangesSinceToken || GetListItems */
         operation?: string;
         query?: string;
         queryOptions?: string;

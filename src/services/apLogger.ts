@@ -13,7 +13,7 @@ module ap {
         message?: string;
         stackTrace?: string[];
         type?: string;
-        //Initial URL and URL after and routing has settled
+        // initial URL and URL after and routing has settled
         url?: string;
     }
 
@@ -47,8 +47,9 @@ module ap {
         debug(message: string, optionsOverride?: ILogEvent): ng.IPromise<ListItem<any>> {
             let opts = _.assign({
                 message: message,
-                type: 'debug',
-            }, optionsOverride)
+                type: 'debug'
+            }, optionsOverride);
+
             return this.notify(opts);
         };
 
@@ -62,8 +63,9 @@ module ap {
         error(message: string, optionsOverride?: ILogEvent): ng.IPromise<ListItem<any>> {
             let opts = _.assign({
                 message: message,
-                type: 'error',
-            }, optionsOverride)
+                type: 'error'
+            }, optionsOverride);
+
             return this.notify(opts);
         };
 
@@ -78,17 +80,17 @@ module ap {
         exception(exception: Error, cause?, optionsOverride?: ILogEvent): void {
             try {
                 // generate a stack trace
-                /* global printStackTrace:true */
-                var stackTrace = window.printStackTrace({ e: exception });
+                /* global ErrorStackParser:true */
+                var stackTrace = ErrorStackParser.parse(exception);
 
                 this.error(exception.message, _.assign({}, {
                     event: 'exception',
                     stackTrace: stackTrace,
-                    cause: (cause || "")
+                    cause: (cause || '')
                 }, optionsOverride));
 
             } catch (loggingError) {
-                this.$log.warn("Error server-side logging failed");
+                this.$log.warn('Error server-side logging failed');
                 this.$log.log(loggingError);
             }
 
@@ -104,8 +106,9 @@ module ap {
         info(message: string, optionsOverride?: ILogEvent): ng.IPromise<ListItem<any>> {
             let opts = _.assign({
                 message: message,
-                type: 'info',
-            }, optionsOverride)
+                type: 'info'
+            }, optionsOverride);
+
             return this.notify(opts);
         };
 
@@ -119,8 +122,9 @@ module ap {
         log(message: string, optionsOverride?: ILogEvent): ng.IPromise<ListItem<any>> {
             let opts = _.assign({
                 message: message,
-                type: 'log',
-            }, optionsOverride)
+                type: 'log'
+            }, optionsOverride);
+
             return this.notify(opts);
         };
 
@@ -144,28 +148,29 @@ module ap {
         }
 
         /**
-        * @ngdoc function
-        * @name angularPoint.apLogger.warn
-        * @methodOf angularPoint.apLogger
-        * @param {string} message Message to log.
-        * @param {ILogger} [optionsOverride] Override any log options.
-        */
+         * @ngdoc function
+         * @name angularPoint.apLogger.warn
+         * @methodOf angularPoint.apLogger
+         * @param {string} message Message to log.
+         * @param {ILogger} [optionsOverride] Override any log options.
+         */
         warn(message: string, optionsOverride?: ILogEvent): ng.IPromise<ListItem<any>> {
             let opts = _.assign({
                 message: message,
-                type: 'warn',
-            }, optionsOverride)
+                type: 'warn'
+            }, optionsOverride);
+
             return this.notify(opts);
         };
 
         private notify(options: ILogEvent) {
-            //URL before navigation
+            // url before navigation
             let url = '1: ' + this.$window.location.href + '\n';
             return this.$timeout(() => {
                 /** Allow navigation to settle before capturing 2nd url */
                 url += '2: ' + this.$window.location.href;
-                return this.registerEvent(_.assign({}, { url }, options));
-            }, 0);
+                return this.registerEvent(_.assign({}, {url}, options));
+            }, 100);
         }
 
     }
@@ -197,14 +202,16 @@ module ap {
      *     url: string;
      *     constructor(obj){
      *         _.assign(this, obj);
-     *         // Create a formatted representation of the stacktrace to display in email notification
-     *         if(this.stackTrace && !this.formattedStackTrace) {
-     *             this.formattedStackTrace = '';
-     *             _.each(this.stackTrace, (traceEntry) => {
-     *                 this.formattedStackTrace += `${traceEntry}
-     *             `;
-     *             });
+     *     }
+     *     //override the default save and cleanup before actually saving
+     *     saveChanges() {
+     *          // stringify stacktrace prior to saving so we can display in email notifications
+     *          if(this.stackTrace && !this.formattedStackTrace) {
+     *          this.formattedStackTrace = this.stackTrace.map(function(sf) {
+     *               return sf.toString();
+     *           }).join('\n');
      *         }
+     *         return super.saveChanges();
      *     }
      * }
      * var logCounter = 0;
