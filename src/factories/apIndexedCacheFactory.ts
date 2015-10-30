@@ -20,6 +20,9 @@ module ap {
     export class IndexedCache<T extends ListItem<any>>{
         //Object with keys equaling ID and values being the individual list item
         [key: number]: T;
+        get length(): number {
+            return this.count();
+        }
         constructor(object?: IUninstantiatedIndexCache<T>) {
             if (object) {
                 _.assign(this, object);
