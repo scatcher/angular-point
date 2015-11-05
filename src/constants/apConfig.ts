@@ -59,7 +59,6 @@ module ap {
         offline: boolean;
         queryDebounceTime?: number;
         userLoginNamePrefix?: string;
-        version: string;
     }
 
     export var APConfig: IAPConfig = {
@@ -77,7 +76,6 @@ module ap {
         window.location.href.indexOf('http://10.') > -1 ||
         window.location.href.indexOf('http://127.') > -1 ||
         window.location.href.indexOf('http://192.') > -1,
-        offlineXML: 'dev/',
         //Any identical query within this amount of time return the same promise
         queryDebounceTime: 100
     };

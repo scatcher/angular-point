@@ -3,7 +3,7 @@
 module ap {
     'use strict';
 
-    var $q: ng.IQService, toastr, apCacheService: CacheService, apDataService: DataService, apDecodeService: DecodeService,
+    let $q: ng.IQService, toastr, apCacheService: CacheService, apDataService: DataService, apDecodeService: DecodeService,
         apEncodeService: EncodeService, apUtilityService: UtilityService, apConfig: IAPConfig,
         apListItemVersionFactory: ListItemVersionFactory;
 
@@ -85,14 +85,14 @@ module ap {
          */
         changes(): FieldChangeSummary<T> {
             //Instantiate a copy of the original list item for comparrison
-            let pristineListItem = _.cloneDeep(this.getPristine());
+            let pristineListItem = _.cloneDeep<{ id: number }>(this.getPristine());
             if (!pristineListItem) {
                 throw new Error('Could not retrieve a pristine version of this list item.');
             }
             //Remove id so when we instantiate we don't register in cache
             pristineListItem.id = undefined;
             //Need to instantiate using the same factory as the current list item
-            let factory = this.constructor;           
+            let factory: IModelFactory = this.constructor;           
             let instantiatedPristineListItem = new factory(pristineListItem);
             
             return new apListItemVersionFactory.FieldChangeSummary(this, instantiatedPristineListItem);
@@ -108,7 +108,7 @@ module ap {
          * @example
          * <pre>
          * $scope.deleteAttachment = function (attachment) {
-         *     var confirmation = window.confirm("Are you sure you want to delete this file?");
+         *     let confirmation = window.confirm("Are you sure you want to delete this file?");
          *     if (confirmation) {
          *         scope.listItem.deleteAttachment(attachment).then(function () {
          *             alert("Attachment successfully deleted");
@@ -118,7 +118,7 @@ module ap {
          * </pre>
          */
         deleteAttachment(url: string): ng.IPromise<any> {
-            var listItem = this;
+            let listItem = this;
             return apDataService.deleteAttachment({
                 listItemID: listItem.id,
                 url: url,
@@ -149,9 +149,9 @@ module ap {
          * the view is updated to no longer show the task.
          */
         deleteItem(options?: IListItemCrudOptions<T>): ng.IPromise<any> {
-            var listItem = this;
-            var model = listItem.getModel();
-            var deferred = $q.defer();
+            let listItem = this;
+            let model = listItem.getModel();
+            let deferred = $q.defer();
 
             if (_.isFunction(listItem.preDeleteAction) && !listItem.preDeleteAction()) {
                 //preDeleteAction exists but returned false so we don't delete
@@ -179,7 +179,7 @@ module ap {
          * @example
          * <pre>
          * //Pull down all attachments for the current list item
-         * var fetchAttachments = function (listItem) {
+         * let fetchAttachments = function (listItem) {
          *     listItem.getAttachmentCollection()
          *         .then(function (attachments) {
          *             scope.attachments = attachments;
@@ -188,7 +188,7 @@ module ap {
          * </pre>
          */
         getAttachmentCollection(): ng.IPromise<string[]> {
-            var listItem = this;
+            let listItem = this;
             return apDataService.getCollection({
                 operation: 'GetAttachmentCollection',
                 listName: listItem.getListId(),
@@ -207,7 +207,7 @@ module ap {
          * @returns {promise} Array of objects defining each of the available workflows.
          */
         getAvailableWorkflows(): ng.IPromise<IWorkflowDefinition[]> {
-            var listItem = this;
+            let listItem = this;
             return apDataService.getAvailableWorkflows(listItem.fileRef.lookupValue);
         }
 
@@ -221,7 +221,7 @@ module ap {
          * @returns {promise} Promise which resolves with the updated list item.
          */
         getChanges(): ng.IPromise<T> {
-            var model = this.getModel();
+            let model = this.getModel();
             return model.getListItemById(this.id);
         }
 
@@ -264,8 +264,8 @@ module ap {
          * @returns {string[]} An array of choices for a Choice or MultiChoice type field.
          */
         getFieldChoices(fieldName: string): string[] {
-            var listItem = this;
-            var fieldDefinition = listItem.getFieldDefinition(fieldName);
+            let listItem = this;
+            let fieldDefinition = listItem.getFieldDefinition(fieldName);
             return fieldDefinition.choices || fieldDefinition.Choices || [];
         }
 
@@ -277,7 +277,7 @@ module ap {
          * Returns the field definition from the definitions defined in the custom fields array within a model.
          * @example
          * <pre>
-         * var project = {
+         * let project = {
          *    title: 'Project 1',
          *    location: {
          *        lookupId: 5,
@@ -286,13 +286,13 @@ module ap {
          * };
          *
          * //To get field metadata
-         * var locationDefinition = project.getFieldDefinition('location');
+         * let locationDefinition = project.getFieldDefinition('location');
          * </pre>
          * @param {string} fieldName Internal field name.
          * @returns {object} Field definition.
          */
         getFieldDefinition(fieldName: string): IFieldDefinition {
-            var listItem = this;
+            let listItem = this;
             return listItem.getModel().getFieldDefinition(fieldName);
         }
 
@@ -309,8 +309,8 @@ module ap {
          * @returns {string} The description for a given field object.
          */
         getFieldDescription(fieldName: string): string {
-            var listItem = this;
-            var fieldDefinition = listItem.getFieldDefinition(fieldName);
+            let listItem = this;
+            let fieldDefinition = listItem.getFieldDefinition(fieldName);
             return fieldDefinition.description || fieldDefinition.Description || '';
         }
 
@@ -328,8 +328,8 @@ module ap {
          * @returns {string} The label for a given field object.
          */
         getFieldLabel(fieldName: string): string {
-            var listItem = this;
-            var fieldDefinition = listItem.getFieldDefinition(fieldName);
+            let listItem = this;
+            let fieldDefinition = listItem.getFieldDefinition(fieldName);
             return fieldDefinition.label || fieldDefinition.DisplayName || fieldDefinition.displayName;
         }
 
@@ -346,8 +346,8 @@ module ap {
          * @returns {string} Formatted string representing the field value.
          */
         getFormattedValue(fieldName: string, options?: Object): string {
-            var listItem = this;
-            var fieldDefinition = listItem.getFieldDefinition(fieldName);
+            let listItem = this;
+            let fieldDefinition = listItem.getFieldDefinition(fieldName);
             if (!fieldDefinition) {
                 throw new Error(`A field definition for a field named ${fieldName} wasn't found.`);
             }
@@ -363,7 +363,7 @@ module ap {
          * @returns {object} List for the list item.
          */
         getList(): List {
-            var model: Model = this.getModel();
+            let model: Model = this.getModel();
             return model.getList();
         }
 
@@ -377,7 +377,7 @@ module ap {
          * @returns {string} List ID.
          */
         getListId(): string {
-            var model = this.getModel();
+            let model = this.getModel();
             return model.getListId();
         }
 
@@ -392,7 +392,7 @@ module ap {
          * on a multi-select by iterating over each of the lookups.
          * @example
          * <pre>
-         * var project = {
+         * let project = {
          *    title: 'Project 1',
          *    location: {
          *        lookupId: 5,
@@ -401,24 +401,24 @@ module ap {
          * };
          *
          * //To get the location listItem
-         * var listItem = project.getLookupReference('location');
+         * let listItem = project.getLookupReference('location');
          * </pre>
          * @returns {object} The listItem the lookup is referencing or undefined if not in the cache.
          */
         getLookupReference<T2 extends ListItem<any>>(fieldName: string, lookupId?: number): T2 {
-            var listItem = this;
-            var lookupReference;
+            let listItem = this;
+            let lookupReference;
             if (_.isUndefined(fieldName)) {
                 throw new Error('A field name is required.');
             } else if (_.isEmpty(listItem[fieldName])) {
                 lookupReference = '';
             } else {
-                var model = listItem.getModel();
-                var fieldDefinition = model.getFieldDefinition(fieldName);
+                let model = listItem.getModel();
+                let fieldDefinition = model.getFieldDefinition(fieldName);
                 /** Ensure the field definition has the List attribute which contains the GUID of the list
                  *  that a lookup is referencing. */
                 if (fieldDefinition && fieldDefinition.List) {
-                    var targetId = lookupId || listItem[fieldName].lookupId;
+                    let targetId = lookupId || listItem[fieldName].lookupId;
                     lookupReference = apCacheService.getCachedEntity(fieldDefinition.List, targetId);
                 } else {
                     throw new Error(`This isn't a valid Lookup field or the field definitions need to be extended
@@ -456,13 +456,13 @@ module ap {
          * </pre>
          */
         getVersionHistory(fieldNames?: string[]| string): ng.IPromise<VersionHistoryCollection<T>> {
-            var listItem = this;
-            var model = listItem.getModel();
-            var promiseArray = [];
+            let listItem = this;
+            let model = listItem.getModel();
+            let promiseArray = [];
 
             if (!fieldNames) {
                 /** If fields aren't provided, pull the version history for all NON-readonly fields */
-                var targetFields = _.where(model.list.fields, { readOnly: false });
+                let targetFields = _.where(model.list.fields, { readOnly: false });
                 fieldNames = [];
                 _.each(targetFields, (field) => {
                     fieldNames.push(field.mappedName);
@@ -474,7 +474,7 @@ module ap {
 
             /** Generate promises for each field */
             _.each(fieldNames, (fieldName) => {
-                var promise = createPromise(fieldName);
+                let promise = createPromise(fieldName);
                 promiseArray.push(promise);
             });
 
@@ -488,9 +488,9 @@ module ap {
             /** Constructor that creates a promise for each field */
             function createPromise(fieldName: string) {
 
-                var fieldDefinition = listItem.getFieldDefinition(fieldName);
+                let fieldDefinition = listItem.getFieldDefinition(fieldName);
 
-                var payload = {
+                let payload = {
                     operation: 'GetVersionCollection',
                     strlistID: model.getListId(),
                     strlistItemID: listItem.id,
@@ -648,8 +648,8 @@ module ap {
          * @example
          * Lets assume we're checking to see if a user has edit rights for a given task list item.
          * <pre>
-         * var canUserEdit = function(task) {
-         *      var userPermissions = task.resolvePermissions();
+         * let canUserEdit = function(task) {
+         *      let userPermissions = task.resolvePermissions();
          *      return userPermissions.EditListItems;
          * };
          * </pre>
@@ -725,9 +725,9 @@ module ap {
          * </pre>
          */
         saveChanges(options?: IListItemCrudOptions<T>): ng.IPromise<T> {
-            var listItem = this;
-            var model = listItem.getModel();
-            var deferred = $q.defer();
+            let listItem = this;
+            let model = listItem.getModel();
+            let deferred = $q.defer();
 
             if (_.isFunction(listItem.preSaveAction) && !listItem.preSaveAction()) {
                 //preSaveAction exists but returned false so we don't save
@@ -791,26 +791,31 @@ module ap {
          */
         saveFields(fieldArray: string[], options?: IListItemCrudOptions<T>): ng.IPromise<T> {
 
-            var listItem = this;
-            var model = listItem.getModel();
-            var definitions = [];
+            let listItem = this;
+            let model = listItem.getModel();
+            let definitions = [];
+            let fieldName: string[];
+            
+            if (_.isString(fieldArray)) {
+                console.warn('Field names should be an array of strings instead of a single string.  This will be deperecated.');
+            }
             /** Allow a string to be passed in to save a single field */
-            var fieldNames = _.isString(fieldArray) ? [fieldArray] : fieldArray;
+            let fieldNames = _.isString(fieldArray) ? [fieldArray] : fieldArray;
             /** Find the field definition for each of the requested fields */
-            _.each(fieldNames, (field) => {
-                var match = _.find(model.list.customFields, { mappedName: field });
+            for (let fieldName of fieldNames) {
+                let match = _.find(model.list.customFields, { mappedName: fieldName });
                 if (match) {
                     definitions.push(match);
                 }
-            });
+            }
 
             /** Generate value pairs for specified fields */
-            var valuePairs = apEncodeService.generateValuePairs(definitions, listItem);
+            let valuePairs = apEncodeService.generateValuePairs(definitions, listItem);
 
-            var defaults = { buildValuePairs: false, valuePairs: valuePairs };
+            let defaults = { buildValuePairs: false, valuePairs: valuePairs };
 
             /** Extend defaults with any provided options */
-            var opts = _.assign({}, defaults, options);
+            let opts = _.assign({}, defaults, options);
 
             return apDataService.updateListItem<T>(model, listItem, opts)
                 .then((updatedListItem) => {
@@ -835,7 +840,7 @@ module ap {
             if (!this.id || !_.isFunction(this.getPristine)) {
                 throw new Error('Unable to find the pristine state for this list item.');
             }
-            var pristineState = this.getPristine();
+            let pristineState = this.getPristine();
 
             if (listItem) {
                 listItem.constructor(pristineState);
@@ -856,7 +861,7 @@ module ap {
          * @returns {promise} Resolves with server response.
          */
         startWorkflow(options: IStartWorkflowParams): ng.IPromise<any> {
-            var listItem = this,
+            let listItem = this,
                 deferred = $q.defer();
 
             /** Set the relative file reference */
@@ -871,7 +876,7 @@ module ap {
                 /** We first need to get the template GUID for the workflow */
                 listItem.getAvailableWorkflows()
                     .then((workflows) => {
-                        var targetWorklow = _.findWhere(workflows, { name: options.workflowName });
+                        let targetWorklow = _.findWhere(workflows, { name: options.workflowName });
                         if (!targetWorklow) {
                             throw new Error(`A workflow with the name ${options.workflowName} wasn't found.  The workflows available are [${_.map(workflows, 'name').toString()}].`);
                         }
@@ -902,7 +907,7 @@ module ap {
          * @returns {boolean} Evaluation of validity.
          */
         validateEntity(options?: Object): boolean {
-            var listItem = this,
+            let listItem = this,
                 model = listItem.getModel();
             return model.validateEntity(listItem, options);
         }

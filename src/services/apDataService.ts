@@ -652,7 +652,7 @@ module ap {
                 if (changeType === 'Delete') {
                     var listItemId = parseInt($(node).text(), 10);
                     /** Remove from local data array */
-                    indexedCache.removeEntity(listItemId);
+                    indexedCache.removeEntityById(listItemId);
                 }
             });
         }

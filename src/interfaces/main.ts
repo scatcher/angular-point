@@ -156,3 +156,10 @@ declare module ngTable {
     }
 }
 
+// extend lodash with functionality in apUtilityService
+declare module _ {
+    interface LoDashStatic {
+        isDefined(val): boolean;
+        isGuid(val): boolean;
+    }
+}

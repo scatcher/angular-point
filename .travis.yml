@@ -1,16 +1,14 @@
 language: node_js
 # sudo: false
 node_js:
-    - "0.12"
+    - "stable"
 before_install:
     # - export DISPLAY=:99.0
     - npm install -qg bower gulp
     - npm install -q
 before_script:
-    - echo 'Canada/Pacific' | sudo tee /etc/timezone
-    - sudo dpkg-reconfigure --frontend noninteractive tzdata
-script:
     - gulp cacheXML
+script:
     - gulp gen-ts-refs
     - gulp test
 cache:

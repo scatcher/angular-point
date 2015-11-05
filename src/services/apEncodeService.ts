@@ -17,16 +17,19 @@ module ap {
          * @param {string[]} arr
          * @returns {string}
          */
-        choiceMultiToString(arr: string[]): string {
+        choiceMultiToString(choices: string[]): string {
             var str = '';
             var delim = ';#';
 
-            if (arr.length > 0) {
+            if (choices.length > 0) {
                 /** String is required to begin with deliminator */
                 str += delim;
-
+                
                 /** Append each item in the supplied array followed by deliminator */
-                _.each(arr, (choice) => str += choice + delim);
+                for (let choice of choices) {
+                    str += choice + delim;
+                }
+
             }
             return str;
         }
@@ -148,7 +151,7 @@ module ap {
             if (!_.isDate(date) && _.isString(date) && date.split('-').length === 3) {
                 /** Date string formatted YYYY-MM-DD */
                 var dateComponents = date.split('-');
-                jsDate = new Date(dateComponents[0], dateComponents[1] - 1, dateComponents[2], 0, 0, 0);
+                jsDate = new Date(parseInt(dateComponents[0]), parseInt(dateComponents[1]) - 1, parseInt(dateComponents[2]), 0, 0, 0);
             } else if (!_.isDate(date)) {
                 throw new Error('Invalid Date Provided: ' + date.toString());
             } else {
@@ -193,7 +196,7 @@ module ap {
          * @param {string} [valueProperty='lookupValue'] Property name where we'll find the value for this object.
          * @returns {string} Need to format string of id's in following format [ID0];#;#[ID1];#;#[ID1]
          */
-        stringifySharePointMultiSelect(multiSelectValue: ILookup[], idProperty = 'lookupId', valueProperty = 'lookupValue'): string {
+        stringifySharePointMultiSelect(multiSelectValue: ILookup<any>[], idProperty = 'lookupId', valueProperty = 'lookupValue'): string {
             var stringifiedValues = '';
             var idProp = idProperty || 'lookupId';
             var valProp = valueProperty || 'lookupValue';

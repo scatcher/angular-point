@@ -3,10 +3,10 @@
 module ap {
     'use strict';
 
-    interface IUninstantiatedIndexCache<T extends ListItem<any>>{
+    interface IUninstantiatedIndexCache<T> {
         [key: number]: T;
-    }
-
+    }    
+    
     /**
      * @ngdoc object
      * @name IndexedCache
@@ -17,12 +17,21 @@ module ap {
      * @requires angularPoint.apIndexedCacheFactory
      * @constructor
      */
-    export class IndexedCache<T extends ListItem<any>>{
+    export class IndexedCache<T extends ListItem<any>> {
         //Object with keys equaling ID and values being the individual list item
         [key: number]: T;
-        get length(): number {
-            return this.count();
-        }
+        
+        /**
+         * @ngdoc property
+         * @name IndexedCache.length
+         * @methodOf IndexedCache
+         * @description
+         * Uses IndexedCache.count() and allows an IndexedCache to be used with functionality
+         * which requires array like objects.
+         */
+        // get length(): number {
+        //     return this.count();
+        // }
         constructor(object?: IUninstantiatedIndexCache<T>) {
             if (object) {
                 _.assign(this, object);
@@ -53,10 +62,10 @@ module ap {
          * @name IndexedCache.clear
          * @methodOf IndexedCache
          * @description
-         * Clears all cached elements from the containing cache object.
+         * Clears all cached (enumerable) elements from the containing cache object.
          */
         clear(): void {
-            _.each(this, (listItem, key) => delete this[key]);
+            _.each(this.keys(), (key) => delete this[key]);
         }
 
         /**
@@ -77,7 +86,7 @@ module ap {
          * @methodOf IndexedCache
          * @description
          * Returns the first listItem in the index (smallest ID).
-         * @returns {object} First listItem in cache.
+         * @returns {object} First listItem in cache or undefined if empty.
          */
         first(): T {
             return this.nthEntity(0);
@@ -85,14 +94,37 @@ module ap {
 
         /**
          * @ngdoc function
+         * @name IndexedCache.get
+         * @methodOf IndexedCache
+         * @returns {T} Returns the value associated to the key, or undefined if there is none.
+         */        
+        get(id: number): T {
+            return this[id];
+        }
+ 
+        /**
+         * @ngdoc function
+         * @name IndexedCache.has
+         * @methodOf IndexedCache
+         * @description
+         * Determines if an entity exists in the cache.
+         * @param {number} id The id of the requested list item.
+         * @returns {boolean} Returns a Boolean asserting whether a value has been associated to the key cache.
+         */        
+        has(id: number): boolean {
+            return !!this[id];
+        }
+
+        /**
+         * @ngdoc function
          * @name IndexedCache.keys
          * @methodOf IndexedCache
          * @description
-         * Returns the array of keys (listItem ID's) for the cache.
+         * Returns the array of enumerable keys (listItem ID's) for the cache.
          * @returns {string[]} Array of listItem id's as strings.
          */
         keys(): string[] {
-            return _.keys(this);
+            return Object.keys(this);
         }
 
         /**
@@ -128,14 +160,25 @@ module ap {
          * @methodOf IndexedCache
          * @description
          * Removes a listItem from the cache.
-         * @param {object|number} listItem Entity to remove or ID of listItem to be removed.
+         * @param {object} listItem Entity to remove from cache.
          */
-        removeEntity(listItem: T | number): void {
-            if (_.isObject(listItem) && listItem.id && this[listItem.id]) {
+        removeEntity(listItem: T): void {
+            if (listItem.id && this[listItem.id]) {
                 delete this[listItem.id];
-            } else if (_.isNumber(listItem)) {
-                /** Allow listItem ID to be used instead of then listItem */
-                delete this[listItem];
+            }
+        }
+        
+        /**
+         * @ngdoc function
+         * @name IndexedCache.removeEntityById
+         * @methodOf IndexedCache
+         * @description
+         * Removes a listItem from the cache.
+         * @param {number} id ID of listItem to be removed.
+         */
+        removeEntityById(id: number): void {
+            if (id && this[id]) {
+                delete this[id];
             }
         }
 
@@ -148,7 +191,7 @@ module ap {
          * @returns {object[]} Returns the array of entities currently in the cache.
          */
         toArray(): T[] {
-            return _.toArray(this);
+            return _.toArray<IndexedCache<T>, T>(this);
         }
 
     }
@@ -159,7 +202,6 @@ module ap {
      * @name angularPoint.apIndexedCacheFactory
      * @description
      * Exposes the EntityFactory prototype and a constructor to instantiate a new Entity Factory in apCacheService.
-     *
      */
     export class IndexedCacheFactory {
         /**

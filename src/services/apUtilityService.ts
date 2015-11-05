@@ -4,12 +4,6 @@
 module ap {
     'use strict';
 
-    interface _ {
-        isDefined(val): boolean;
-        isGuid(val): boolean;
-    }
-
-
     // Split values like 1;#value into id and value
     class SplitIndex {
         id: number;

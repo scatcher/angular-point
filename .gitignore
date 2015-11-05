@@ -11,3 +11,5 @@ coverage/
 .DS_Store
 .vscode
 docs/
+test/spec/**/*.js
+test/spec/**/*.map
