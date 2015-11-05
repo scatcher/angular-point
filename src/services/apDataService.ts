@@ -461,7 +461,7 @@ module ap {
          * @param {object} fieldDefinition Field definition object from the model.
          * @returns {object[]} Promise which resolves with an array of list item changes for the specified field.
          */
-        getFieldVersionHistory<T extends ListItem<any>>(options: IGetFieldVersionHistoryOptions, fieldDefinition: FieldDefinition): ng.IPromise<FieldVersionCollection> {
+        getFieldVersionHistory<T extends ListItem<any>>(options: IGetFieldVersionHistoryOptions, fieldDefinition: IFieldDefinition): ng.IPromise<FieldVersionCollection> {
             var defaults = {
                 operation: 'GetVersionCollection'
             };
@@ -970,10 +970,12 @@ module ap {
 
     interface IGetCollectionOptions {
         filterNode: string;
+        ID?: number;
         groupName?: string;
         listName?: string;
         operation: string;
         userLoginName?: string;
+        webURL?: string;
     }
 
     interface IServiceWrapperOptions {

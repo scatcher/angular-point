@@ -10,7 +10,7 @@
   "license": "MIT",
   "main": "./dist/angular-point.js",
   "dependencies": {
-    "angular": "^1.4.7",
+    "angular": "^1.5.0-beta.1",
     "angular-toastr": "^1.5.0",
     "jquery": "^2.1.4",
     "lodash": "^3.10.1",
@@ -18,7 +18,7 @@
     "error-stack-parser": "^1.2.3"
   },
   "devDependencies": {
-    "angular-mocks": "^1.4.7",
+    "angular-mocks": "^1.5.0-beta.1",
     "chance": "^0.8.0"
   },
   "ignore": [
@@ -27,7 +27,7 @@
     "bower_components"
   ],
   "resolutions": {
-    "angular": "^1.4.7"
+    "angular": "^1.5.0-beta.1"
   },
   "typescript": {
     "definition": "./typings/ap.d.ts"

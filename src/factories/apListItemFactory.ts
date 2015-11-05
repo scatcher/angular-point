@@ -440,7 +440,7 @@ module ap {
          * field independently and then build the history by combining the server responses for each requests into a
          * snapshot of the object.  Each version has the standard modified date but also includes a version property with
          * the version number.
-         * @param {string[]} [fieldNames] An array of field names or single field name of properties on the list item
+         * @param {string[]} [properties] An array of property names on the list item
          * that we're interested in.
          * @returns {ng.IPromise<VersionHistoryCollection<T>>} Promise which resolves with an object with keys=version
          * and values = ListItemVersion.
@@ -455,26 +455,22 @@ module ap {
          *      };
          * </pre>
          */
-        getVersionHistory(fieldNames?: string[]| string): ng.IPromise<VersionHistoryCollection<T>> {
+        getVersionHistory(properties?: string[]): ng.IPromise<VersionHistoryCollection<T>> {
             let listItem = this;
             let model = listItem.getModel();
             let promiseArray = [];
+            
+            if (properties && !_.isArray(properties)) throw new Error('Properties are required to be formatted as an array of strings.');
 
-            if (!fieldNames) {
+            if (!properties) {
                 /** If fields aren't provided, pull the version history for all NON-readonly fields */
                 let targetFields = _.where(model.list.fields, { readOnly: false });
-                fieldNames = [];
-                _.each(targetFields, (field) => {
-                    fieldNames.push(field.mappedName);
-                });
-            } else if (_.isString(fieldNames)) {
-                /** If a single field name is provided, add it to an array so we can process it more easily */
-                fieldNames = [fieldNames];
+                properties = _.map<FieldDefinition, string>(targetFields, 'mappedName');
             }
 
             /** Generate promises for each field */
-            _.each(fieldNames, (fieldName) => {
-                let promise = createPromise(fieldName);
+            _.each(properties, (prop) => {
+                let promise = createPromise(prop);
                 promiseArray.push(promise);
             });
 
@@ -486,14 +482,14 @@ module ap {
                 });
 
             /** Constructor that creates a promise for each field */
-            function createPromise(fieldName: string) {
+            function createPromise(prop: string) {
 
-                let fieldDefinition = listItem.getFieldDefinition(fieldName);
+                let fieldDefinition = listItem.getFieldDefinition(prop);
 
                 let payload = {
                     operation: 'GetVersionCollection',
-                    strlistID: model.getListId(),
-                    strlistItemID: listItem.id,
+                    strListID: model.getListId(),
+                    strListItemID: listItem.id,
                     strFieldName: fieldDefinition.staticName,
                     webURL: undefined
                 };
@@ -503,7 +499,7 @@ module ap {
                     payload.webURL = apConfig.defaultUrl;
                 }
 
-                return apDataService.getFieldVersionHistory(payload, fieldDefinition);
+                return apDataService.getFieldVersionHistory<T>(payload, fieldDefinition);
             }
         }
 
@@ -959,7 +955,7 @@ module ap {
          * @description
          * Instantiates and returns a new ListItem.
          */
-        create<T extends ListItem<any>>(): T {
+        create<T extends ListItem<any>>(): ListItem<T> {
             return new ListItem<T>();
         }
 
