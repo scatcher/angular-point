@@ -72,7 +72,7 @@ module ap.test {
 
         describe('Method: getChanges', function() {
             it('returns a promise which resolves with a ChangeSummary object', () => {
-                mockListItem.getChangeSummary('integer')
+                mockListItem.getChangeSummary(['integer'])
                     .then(function(response) {
                         expect(response.constructor.name).toEqual('ChangeSummary');
                     });
@@ -164,7 +164,7 @@ module ap.test {
 
             it('returns a stringified json date with params', function() {
                 expect(mockListItem.getFormattedValue('date', { dateFormat: 'json' }))
-                    .toEqual('2014-08-19T' + timeZoneOffset());
+                    .toEqual(JSON.stringify(mockListItem.date).replace(/['"]+/g, ''));//Compare against JSON version without quotes
             });
         });
 
@@ -377,7 +377,7 @@ module ap.test {
 
         describe('Method: getVersionHistory', function() {
             it('parses the version history for a field and returns all 4 versions', () => {
-                mockListItem.getVersionHistory('integer')
+                mockListItem.getVersionHistory(['integer'])
                     .then(function(response) {
                         expect(response.count()).toEqual(4);
                     });
