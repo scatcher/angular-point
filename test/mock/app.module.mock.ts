@@ -4,7 +4,7 @@
 /// <reference path="models/lookupModel.mock.ts" />
 /// <reference path="apMockUtils.mock.ts" />
 
-module ap {
+module ap.test {
     'use strict';
 
 //TODO: Remove dependency on toastr

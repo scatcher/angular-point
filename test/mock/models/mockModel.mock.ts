@@ -1,6 +1,6 @@
 /// <reference path="../app.module.mock.ts" />
 
-module ap {
+module ap.test {
     'use strict';
 
     export class MockListItem extends ap.ListItem<MockListItem>{

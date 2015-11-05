@@ -1,5 +1,5 @@
 /// <reference path="../../mock/app.module.mock.ts" />
-module ap {
+module ap.test {
     'use strict';
 
     describe("Factory: apListItemFactory", function() {
@@ -164,8 +164,7 @@ module ap {
 
             it('returns a stringified json date with params', function() {
                 expect(mockListItem.getFormattedValue('date', { dateFormat: 'json' }))
-                    .toEqual('2014-08-19T07:00:00.000Z');
-                //.toEqual('2014-08-19T' + utils.getTimezoneOffsetString() + ':00.000Z');
+                    .toEqual('2014-08-19T' + timeZoneOffset());
             });
         });
 
@@ -535,4 +534,12 @@ module ap {
 
 
     });
+    
+            //returns timezone offset for current browser (ex: -0700)
+         function timeZoneOffset {
+            // gets -0700
+            let offset = new Date().toString().match(/([-\+][0-9]+)\s/)[1];
+            // but we need 07:00:00.000Z
+            return offset.substring(1, 3) + ':00:00.000Z';
+        }
 }

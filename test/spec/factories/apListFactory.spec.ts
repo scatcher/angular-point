@@ -1,5 +1,5 @@
 /// <reference path="../../mock/app.module.mock.ts" />
-module ap {
+module ap.test {
     'use strict';
 
     describe("Factory: apListFactory", function() {

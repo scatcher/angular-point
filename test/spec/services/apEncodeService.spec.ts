@@ -1,6 +1,6 @@
 /// <reference path="../../mock/app.module.mock.ts" />
 
-module ap {
+module ap.test {
     'use strict';
 
     describe("Factory: apEncodeService", function() {
@@ -124,9 +124,10 @@ module ap {
         function mockDefinition(type) {
             return _.find(mockModel.list.customFields, { staticName: type });
         }
+        
 
         //returns timezone offset for current browser (ex: -0700)
-        function timeZone() {
+         function timeZone {
             // gets -0700
             let offset = new Date().toString().match(/([-\+][0-9]+)\s/)[1];
             // but we need -07:00

@@ -1,7 +1,7 @@
 /// <reference path="../../typings/ap.d.ts" />
 /// <reference path="../../typings/tsd.d.ts" />
 
-module ap {
+module ap.test {
     'use strict';
 
     export class MockUtils {
