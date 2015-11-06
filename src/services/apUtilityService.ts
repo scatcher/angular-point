@@ -211,7 +211,7 @@ module ap {
         doubleDigit(val: number | string): string {
             if (typeof val === 'number') {
                 return val > 9 ? val.toString() : '0' + val;
-            } else {
+            } else if(typeof val === 'string') {
                 return service.doubleDigit(parseInt(val));
             }
         }

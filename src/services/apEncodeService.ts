@@ -8,7 +8,7 @@ module ap {
         savedTimeZone;
         static $inject = ['apUtilityService', 'SPServices'];
 
-        constructor(private apUtilityService, private SPServices) {
+        constructor(private apUtilityService: UtilityService, private SPServices) {
 
         }
 
@@ -158,31 +158,30 @@ module ap {
                 jsDate = date;
             }
             
-            return moment(jsDate).format('YYYY-MM-DDTHH:mm:ss[Z]Z')
+            // return moment(jsDate).format('YYYY-MM-DDTHH:mm:ss[Z]Z')
 
-            // var dateString = moment(jsDate).format()            
-            // var dateString = '';
-            // dateString += jsDate.getFullYear();
-            // dateString += '-';
-            // dateString += this.apUtilityService.doubleDigit(jsDate.getMonth() + 1);
-            // dateString += '-';
-            // dateString += this.apUtilityService.doubleDigit(jsDate.getDate());
-            // dateString += 'T';
-            // dateString += this.apUtilityService.doubleDigit(jsDate.getHours());
-            // dateString += ':';
-            // dateString += this.apUtilityService.doubleDigit(jsDate.getMinutes());
-            // dateString += ':';
-            // dateString += this.apUtilityService.doubleDigit(jsDate.getSeconds());
-            // dateString += 'Z-';
+            var dateString = '';
+            dateString += jsDate.getFullYear();
+            dateString += '-';
+            dateString += this.apUtilityService.doubleDigit(jsDate.getMonth() + 1);
+            dateString += '-';
+            dateString += this.apUtilityService.doubleDigit(jsDate.getDate());
+            dateString += 'T';
+            dateString += this.apUtilityService.doubleDigit(jsDate.getHours());
+            dateString += ':';
+            dateString += this.apUtilityService.doubleDigit(jsDate.getMinutes());
+            dateString += ':';
+            dateString += this.apUtilityService.doubleDigit(jsDate.getSeconds());
+            dateString += 'Z-';
 
-            // if (!this.savedTimeZone) {
-            //     //Get difference between UTC time and local time in minutes and convert to hours
-            //     //Store so we only need to do this once
-            //     this.savedTimeZone = new Date().getTimezoneOffset() / 60;
-            // }
-            // dateString += this.apUtilityService.doubleDigit(this.savedTimeZone);
-            // dateString += ':00';
-            // return dateString;
+            if (!this.savedTimeZone) {
+                //Get difference between UTC time and local time in minutes and convert to hours
+                //Store so we only need to do this once
+                this.savedTimeZone = new Date().getTimezoneOffset() / 60;
+            }
+            dateString += this.apUtilityService.doubleDigit(this.savedTimeZone);
+            dateString += ':00';
+            return dateString;
         }
 
         /**
