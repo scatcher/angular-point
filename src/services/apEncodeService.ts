@@ -147,7 +147,7 @@ module ap {
          * @returns {string} ISO8601 date string.
          */
         stringifySharePointDate(date: Date | string): string {
-            var jsDate;
+            var jsDate: Date;
             if (!_.isDate(date) && _.isString(date) && date.split('-').length === 3) {
                 /** Date string formatted YYYY-MM-DD */
                 var dateComponents = date.split('-');
@@ -157,29 +157,32 @@ module ap {
             } else {
                 jsDate = date;
             }
+            
+            return moment(jsDate).format('YYYY-MM-DDTHH:mm:ss[Z]Z')
 
-            var dateString = '';
-            dateString += jsDate.getFullYear();
-            dateString += '-';
-            dateString += this.apUtilityService.doubleDigit(jsDate.getMonth() + 1);
-            dateString += '-';
-            dateString += this.apUtilityService.doubleDigit(jsDate.getDate());
-            dateString += 'T';
-            dateString += this.apUtilityService.doubleDigit(jsDate.getHours());
-            dateString += ':';
-            dateString += this.apUtilityService.doubleDigit(jsDate.getMinutes());
-            dateString += ':';
-            dateString += this.apUtilityService.doubleDigit(jsDate.getSeconds());
-            dateString += 'Z-';
+            // var dateString = moment(jsDate).format()            
+            // var dateString = '';
+            // dateString += jsDate.getFullYear();
+            // dateString += '-';
+            // dateString += this.apUtilityService.doubleDigit(jsDate.getMonth() + 1);
+            // dateString += '-';
+            // dateString += this.apUtilityService.doubleDigit(jsDate.getDate());
+            // dateString += 'T';
+            // dateString += this.apUtilityService.doubleDigit(jsDate.getHours());
+            // dateString += ':';
+            // dateString += this.apUtilityService.doubleDigit(jsDate.getMinutes());
+            // dateString += ':';
+            // dateString += this.apUtilityService.doubleDigit(jsDate.getSeconds());
+            // dateString += 'Z-';
 
-            if (!this.savedTimeZone) {
-                //Get difference between UTC time and local time in minutes and convert to hours
-                //Store so we only need to do this once
-                this.savedTimeZone = new Date().getTimezoneOffset() / 60;
-            }
-            dateString += this.apUtilityService.doubleDigit(this.savedTimeZone);
-            dateString += ':00';
-            return dateString;
+            // if (!this.savedTimeZone) {
+            //     //Get difference between UTC time and local time in minutes and convert to hours
+            //     //Store so we only need to do this once
+            //     this.savedTimeZone = new Date().getTimezoneOffset() / 60;
+            // }
+            // dateString += this.apUtilityService.doubleDigit(this.savedTimeZone);
+            // dateString += ':00';
+            // return dateString;
         }
 
         /**
