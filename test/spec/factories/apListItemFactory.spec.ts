@@ -536,7 +536,7 @@ module ap.test {
     });
     
             //returns timezone offset for current browser (ex: -0700)
-         function timeZoneOffset {
+         function timeZoneOffset (){
             // gets -0700
             let offset = new Date().toString().match(/([-\+][0-9]+)\s/)[1];
             // but we need 07:00:00.000Z
