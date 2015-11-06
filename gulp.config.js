@@ -11,6 +11,7 @@ module.exports = function (projectDir) {
         devjs: [
             bower + "chance/chance.js",
             bower + "angular-mocks/angular-mocks.js",
+            bower + "moment/moment.js",
             "./test/mock/app.module.mock.js"
         ],
         offlineXMLSrc: [projectDir + 'xml-cache/'],

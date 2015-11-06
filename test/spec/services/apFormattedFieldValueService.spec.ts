@@ -51,11 +51,12 @@ module ap.test {
         });
 
         describe('Method: stringifyDate', function () {
-            it('converts a date to a string', function () {
-                expect(service.stringifyDate(new Date(2009, 7, 25, 14, 24, 48)), '')
-                    .toEqual('Aug 25, 2009');
-                expect(service.stringifyDate(new Date(2009, 7, 25, 14, 24, 48), 'json'))
-                    .toEqual('2009-08-25T21:24:48.000Z');
+            it('converts a date to a string', function() {
+                let validDate = moment('2014-04-25T01:32:21.196+0600').toDate();
+                expect(service.stringifyDate(validDate, ''))
+                    .toEqual('Apr 24, 2014');
+                expect(service.stringifyDate(validDate, 'json'))
+                    .toEqual('2014-04-24T19:32:21.196Z');
             });
         });
 

@@ -524,7 +524,7 @@ module ap.test {
                 mockListItem.saveChanges()
                     .then(function(response) {
                         //Saved correctly
-                        expect(this.currency).toEqual(999);
+                        expect(response.currency).toEqual(999);
                     });
                 $httpBackend.flush();
 

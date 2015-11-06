@@ -7,3 +7,5 @@
 /// <reference path="karma-jasmine/karma-jasmine.d.ts" />
 /// <reference path="chance/chance.d.ts" />
 /// <reference path="node/node.d.ts" />
+/// <reference path="moment/moment-node.d.ts" />
+/// <reference path="moment/moment.d.ts" />
