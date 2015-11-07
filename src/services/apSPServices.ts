@@ -43,7 +43,7 @@ module ap {
         /** Method Cmd for UpdateListItems */
         batchCmd?: string;
         /** Fieldname / Fieldvalue pairs for UpdateListItems */
-        valuepairs?: Array<any>;
+        valuePairs?: [string, string][];
 
         // As of v0.7.1, removed all options which were assigned an empty string ("")
 
@@ -371,9 +371,9 @@ module ap {
                         addToPayload(opt, ["updates"]);
                     } else {
                         soapEnvelope.payload += `<updates><Batch OnError="Continue"><Method ID="1" Cmd="${opt.batchCmd}">`;
-                        for (i = 0; i < opt.valuePairs.length; i++) {
-                            soapEnvelope.payload += `<Field Name="${opt.valuePairs[i][0]}">${escapeColumnValue(opt.valuePairs[i][1]) }</Field>`;
-                        }
+                        _.each(opt.valuePairs, (valuePair: [string, string]) => {
+                            soapEnvelope.payload += `<Field Name="${ valuePair[0] }">${ escapeColumnValue(valuePair[1]) }</Field>`;
+                        })
                         if (opt.batchCmd !== "New") {
                             soapEnvelope.payload += `<Field Name="ID">${opt.ID}</Field>`;
                         }

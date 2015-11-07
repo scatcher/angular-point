@@ -12,7 +12,9 @@ module ap.test {
             mockListItem: MockListItem,
             apCachedXML: ICachedXML,
             $httpBackend: ng.IHttpBackendService,
-            utils: MockUtils;
+            utils: MockUtils,
+            primaryQueryCache: IndexedCache<MockListItem>,
+            secondaryQueryCache: IndexedCache<MockListItem>;            
 
         beforeEach(inject(function(_apListItemFactory_, _mockModel_, _mockLookupModel_, _$httpBackend_, _apCachedXML_
             , apMockUtils) {
@@ -22,6 +24,8 @@ module ap.test {
             $httpBackend = _$httpBackend_;
             apCachedXML = _apCachedXML_;
             mockModel.importMocks();
+            primaryQueryCache = mockModel.getCache<MockListItem>('primary');
+            secondaryQueryCache = mockModel.getCache<MockListItem>('secondary');            
             mockListItem = mockModel.getCache<MockListItem>('primary').first();
             if (!mockListItem) throw new Error("List item not found");
             utils = apMockUtils;
@@ -48,10 +52,11 @@ module ap.test {
         });
 
         describe('Method: deleteItem', function() {
-            it('removes entity with ID of 1 from the cache', function() {
+            it('removes entity from all cache objects', function() {
                 mockListItem.deleteItem()
                     .then(function() {
                         expect(mockModel.getCache('primary')[1]).toBeUndefined();
+                        expect(mockModel.getCache('secondary')[1]).toBeUndefined();
                     });
                 $httpBackend.flush();
             });
@@ -248,6 +253,29 @@ module ap.test {
         });
 
         describe('Method: saveChanges', function() {
+            it('updates the list item and the cached value', function() {
+                mockListItem.integer = 44;
+                mockListItem.saveChanges()
+                    .then(function(response) {
+                        expect(mockListItem.integer).toEqual(44);
+                        expect(response.integer).toEqual(44);
+                        expect(response).toEqual(mockListItem);
+                    });
+                $httpBackend.flush();
+            });
+            it('updates all cache\'s because they are be referencing the same object', function() {
+
+                mockListItem.lookup = { lookupId: 1234, lookupValue: 'foo' };
+                mockListItem.saveChanges()
+                    .then(function(response) {
+                        expect(primaryQueryCache.get(1)).toEqual(secondaryQueryCache.get(1));
+                        expect(secondaryQueryCache.get(1).integer).toEqual(response.integer);
+                        expect(response.lookup.lookupId).toEqual(1234);
+                    });
+                $httpBackend.flush();
+            });
+            
+            
             describe('successful calls', function() {
                 beforeEach(function() {
                     expect(mockListItem.integer).toEqual(12);
@@ -372,7 +400,7 @@ module ap.test {
                         expect(response).toBeDefined();
                     });
                 $httpBackend.flush();
-            });
+            });      
         });
 
         describe('Method: getVersionHistory', function() {
@@ -535,11 +563,11 @@ module ap.test {
 
     });
     
-            //returns timezone offset for current browser (ex: -0700)
-         function timeZoneOffset (){
-            // gets -0700
-            let offset = new Date().toString().match(/([-\+][0-9]+)\s/)[1];
-            // but we need 07:00:00.000Z
-            return offset.substring(1, 3) + ':00:00.000Z';
-        }
+    //returns timezone offset for current browser (ex: -0700)
+    function timeZoneOffset() {
+        // gets -0700
+        let offset = new Date().toString().match(/([-\+][0-9]+)\s/)[1];
+        // but we need 07:00:00.000Z
+        return offset.substring(1, 3) + ':00:00.000Z';
+    }
 }

@@ -3,7 +3,7 @@
 module ap {
     'use strict';
 
-    var $q: ng.IQService, apUtilityService: UtilityService;
+    let $q: ng.IQService, apUtilityService: UtilityService;
 
     /** Lookup referencing a ListItem of the specified type.  The "lookupId""
      * will be the same as the referenced <T>.id.  The "lookupValue"" by default
@@ -32,11 +32,10 @@ module ap {
         lookupId: number;
         lookupValue: string;
 
-        constructor(s, options) {
-            var lookup = this;
-            var thisLookup = new apUtilityService.SplitIndex(s);
-            lookup.lookupId = thisLookup.id;
-            lookup.lookupValue = thisLookup.value || '';
+        constructor(str: string, options) {
+            let thisLookup = new apUtilityService.SplitIndex(str);
+            this.lookupId = thisLookup.id;
+            this.lookupValue = thisLookup.value || '';
         }
     }
 
@@ -57,8 +56,8 @@ module ap {
          * @description
          * Instantiates and returns a new Lookup field.
          */
-        create<T>(s, options) {
-            return new Lookup<T>(s, options);
+        create<T>(str: string, options) {
+            return new Lookup<T>(str, options);
         }
     }
 
@@ -67,7 +66,6 @@ module ap {
      * @name angularPoint.apLookupFactory
      * @description
      * Tools to assist with the creation of CAML queries.
-     *
      */
     angular.module('angularPoint')
         .service('apLookupFactory', LookupFactory);

@@ -24,6 +24,14 @@ module ap {
         viewFields?: string;
         webURL?: string;
     }
+    
+    export interface IExecuteQueryOptions {
+        factory?: Function;
+        filter?: string;
+        mapping?: IListFieldMapping;
+        target?: IndexedCache<any>;
+        [key: string]: any;
+    }
 
     export interface IQuery<T extends ListItem<any>> {
         cacheXML?: boolean;
@@ -184,7 +192,7 @@ module ap {
         runOnce = false;
         sessionStorage = false;
         viewFields: string;
-        webURL: string;
+        webURL: string = apConfig.defaultUrl;
 
         /** Has this query been executed at least once. */
         get hasExecuted(): boolean {
@@ -200,11 +208,6 @@ module ap {
             //Use the default viewFields from the model
             this.viewFields = list.viewFields;
             this.listName = model.getListId();
-
-            /** Set the default url if the config param is defined, otherwise let SPServices handle it */
-            if (apConfig.defaultUrl) {
-                this.webURL = apConfig.defaultUrl;
-            }
 
             //Allow all values on query to be overwritten by queryOptions object
             _.assign(this, queryOptions);
@@ -223,10 +226,9 @@ module ap {
          * Query SharePoint, pull down all initial records on first call along with list definition if using
          * "GetListItemChangesSinceToken".  Note: this is  substantially larger than "GetListItems" on first call.
          * Subsequent calls pulls down changes (Assuming operation: "GetListItemChangesSinceToken").
-         * @param {object} [options] Any options that should be passed to dataService.executeQuery.
-         * @returns {object[]} Array of list item objects.
+         * @returns {ng.IPromise<IndexedCache<T>>} Promise that resolves with the cache for this query.
          */
-        execute(options): ng.IPromise<IndexedCache<T>> {
+        execute(): ng.IPromise<IndexedCache<T>> {
             var query = this;
             var model = query.getModel();
             var deferred = $q.defer();
@@ -244,24 +246,13 @@ module ap {
                 if (this.usesBrowserStorage) {
                     localStorageData = this.getLocalStorage();
                 }
-                //Check to see if we have a version in localStorage
-
-                let defaultCache = query.getCache();
 
                 /** Clear out existing cached list items if GetListItems is the selected operation because otherwise
                  * we could potentially have stale data if a list item no longer meets the query parameters but already
                  * exists in the cache from a previous request. Don't clear the cache in the case where runOnce is set.*/
                 if(this.operation === 'GetListItems' && !this.runOnce) {
-                    defaultCache.clear();
+                    query.getCache().clear();
                 }
-
-                let defaults = {
-                    /** Designate the central cache for this query if not already set */
-                    target: defaultCache
-                };
-
-                /** Extend defaults with any options */
-                let queryOptions: IExecuteQueryOptions = _.assign(defaults, options);
 
                 /** Flag used to determine if we need to make a request to the server */
                 let makeRequest = true;
@@ -290,11 +281,14 @@ module ap {
 
                 /** Only make server request if necessary. */
                 if (makeRequest) {
-                    apDataService.executeQuery<T>(model, query, queryOptions).then((results) => {
-                        this.processResults(results, deferred, queryOptions);
-                    });
+                    this.makeRequest()
+                        .then((results) => {
+                            this.postExecutionCleanup(results);
+                            deferred.resolve(results);
+                        });
                 } else {
-                    this.processResults(this.getCache(), deferred, queryOptions);
+                    this.postExecutionCleanup(this.getCache());
+                    deferred.resolve(this.getCache());
                 }
 
                 /** Save reference on the query **/
@@ -404,21 +398,22 @@ module ap {
 
         /**
          * @ngdoc function
-         * @name Query.processResults
+         * @name Query.postExecutionCleanup
          * @methodOf Query
          * @description
          * Internal method exposed to allow for testing.  Handle cleanup after query execution is complete.
          */
-        processResults(results: ap.IndexedCache<T>, deferred: ng.IDeferred<any>, queryOptions: IExecuteQueryOptions) {
+        postExecutionCleanup(results: ap.IndexedCache<T>) {
             let query = this;
             let model = query.getModel();
+            let cache = this.getCache();
 
             /** Set flag if this if the first time this query has been run */
             var firstRunQuery = _.isNull(query.lastRun);
 
             if (firstRunQuery) {
                 /** Promise resolved the first time query is completed */
-                query.initialized.resolve(queryOptions.target);
+                query.initialized.resolve(results);
             }
 
             /** Set list permissions if not already set */
@@ -433,8 +428,6 @@ module ap {
 
             /** Store query completion date/time on model to allow us to identify age of data */
             model.lastServerUpdate = new Date();
-
-            deferred.resolve(queryOptions.target);
 
             /** Overwrite local storage value with updated state so we can potentially restore in
              * future sessions. */
@@ -496,6 +489,29 @@ module ap {
         private getLocalStorageKey() {
             var model = this.getModel();
             return model.getListId() + '.query.' + this.name;
+        }
+        
+        makeRequest(): ng.IPromise<IndexedCache<T>> {
+            let query = this;
+            let model = this.getModel();
+            let cache = this.getCache();
+            
+            return apDataService.serviceWrapper(query)
+                .then((responseXML) => {
+                    if (query.operation === 'GetListItemChangesSinceToken') {
+                        apDataService.processChangeTokenXML<T>(model, query, responseXML, cache);
+                    }
+
+                    /** Convert the XML into JS objects */
+                    var entities = apDecodeService.processListItems<T>(model, query, responseXML, {target: cache});
+
+                    /** Set date time to allow for time based updates */
+                    query.lastRun = new Date();
+
+                    return entities;
+                });
+
+            
         }
     }
 

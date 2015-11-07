@@ -45,7 +45,7 @@ module ap {
          */
         parse(xmlNodeSet: JQuery, options?: IParseOptions): Object[]{
             //Need to use injector because apDecode service also relies on this service so we'd otherwise have a circular dependency.
-            var apDecodeService: DecodeService = this.$injector.get('apDecodeService');
+            var apDecodeService = this.$injector.get<DecodeService>('apDecodeService');
             var defaults = {
                 includeAllAttrs: false, // If true, return all attributes, regardless whether they are in the mapping
                 mapping: {}, // columnName: mappedName: "mappedName", objectType: "objectType"

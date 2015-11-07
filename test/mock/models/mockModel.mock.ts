@@ -109,20 +109,26 @@ module ap.test {
             return _.find(this.list.fields, { mappedName: name });
         }
 
-        importMocks () {
-                var primaryCache = this.getCache('primary');
-                var secondaryCache = this.getCache('secondary');
-                primaryCache.clear();
-                secondaryCache.clear();
+        importMocks() {
+            var primaryCache = this.getCache('primary');
+            var secondaryCache = this.getCache('secondary');
+            primaryCache.clear();
+            secondaryCache.clear();
 
-                /** Clear out model cache */
-                _.each(this.apCacheService.entityCache, (val, key) => {
-                    delete this.apCacheService.entityCache[key];
-                });
-                this.executeQuery('primary');
-                this.executeQuery('secondary');
-                this.$httpBackend.flush();
-            }
+            /** Clear out model cache */
+            _.each(this.apCacheService.entityCache, (val, key) => {
+                delete this.apCacheService.entityCache[key];
+            });
+            this.executeQuery('primary')
+                .then((data) => {
+                    //placeholder
+                })
+            this.executeQuery('secondary')
+                .then((data) => {
+                    //placeholder
+                })
+            this.$httpBackend.flush();
+        }
     }
 
 

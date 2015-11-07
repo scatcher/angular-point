@@ -34,9 +34,9 @@ module ap {
          * @returns {string} Returns an error string if present.
          */
         checkResponseForErrors(responseXML: XMLDocument): string {
-            var error;
+            let error;
             /** Look for <errorstring></errorstring> or <ErrorText></ErrorText> for details on any errors */
-            var errorElements = ['ErrorText', 'errorstring'];
+            let errorElements = ['ErrorText', 'errorstring'];
             _.each(errorElements, (element) => {
                 $(responseXML).find(element).each(function() {
                     error = $(this).text();
@@ -51,10 +51,10 @@ module ap {
          * Taken from: http://stackoverflow.com/questions/6525538/convert-utc-date-time-to-local-date-time-using-javascript
          * */
         convertUTCDateToLocalDate(date: Date): Date {
-            var newDate = new Date(date.getTime() + date.getTimezoneOffset() * 60 * 1000);
+            let newDate = new Date(date.getTime() + date.getTimezoneOffset() * 60 * 1000);
 
-            var offset = date.getTimezoneOffset() / 60;
-            var hours = date.getHours();
+            let offset = date.getTimezoneOffset() / 60;
+            let hours = date.getHours();
 
             newDate.setHours(hours - offset);
 
@@ -77,7 +77,7 @@ module ap {
          */
         createListItemProvider<T extends ListItem<any>>(model: Model, query: IQuery<T>, indexedCache: IndexedCache<T>): (rawObject: Object) => T {
             return (rawObject: { [key: string]: any, getCache(): IndexedCache<T>, getQuery(): IQuery<T>, id: number }) => {
-                var listItem: T;
+                let listItem: T;
 
                 if (indexedCache[rawObject.id]) {
                     //Object already exists in cache so we just need to update properties
@@ -102,7 +102,7 @@ module ap {
                 }
 
                 //Store the value instead of just a reference to the original object
-                var pristineValue = _.cloneDeep(rawObject);
+                let pristineValue = _.cloneDeep(rawObject);
 
                 /**
                 * @ngdoc function
@@ -110,7 +110,7 @@ module ap {
                 * @description
                 * Allow us to reference the uninstantiated version of this list item.  Reference set
                 * via angularPoint.apDecodeService:createListItemProvider. 
-                */                
+                */
                 listItem.getPristine = () => pristineValue;
 
                 return indexedCache[rawObject.id];
@@ -129,7 +129,7 @@ module ap {
          * @param {object} responseXML XML response from the server.
          */
         extendFieldDefinitionsFromXML(fieldDefinitions: IFieldDefinition[], responseXML: XMLDocument): IFieldDefinition[] {
-            var fieldMap = {};
+            let fieldMap = {};
 
             /** Map all custom fields with keys of the staticName and values = field definition */
             _.each(fieldDefinitions, (field) => {
@@ -139,11 +139,11 @@ module ap {
             });
 
             /** Iterate over each of the field nodes */
-            var filteredNodes = this.apXMLToJSONService.filterNodes(responseXML, 'Field');
+            let filteredNodes = this.apXMLToJSONService.filterNodes(responseXML, 'Field');
 
-            _.each(filteredNodes, (xmlField: JQuery) => {
-                var staticName = $(xmlField).attr('StaticName');
-                var fieldDefinition = fieldMap[staticName];
+            _.each(filteredNodes, (xmlField: Element) => {
+                let staticName = $(xmlField).attr('StaticName');
+                let fieldDefinition = fieldMap[staticName];
 
                 /** If we've defined this field then we should extend it */
                 if (fieldDefinition) {
@@ -154,7 +154,7 @@ module ap {
                     if (fieldDefinition.objectType === 'Choice' || fieldDefinition.objectType === 'MultiChoice') {
                         fieldDefinition.Choices = [];
                         /** Convert XML Choices object to an array of choices */
-                        var xmlChoices = $(xmlField).find('CHOICE');
+                        let xmlChoices = $(xmlField).find('CHOICE');
                         _.each(xmlChoices, (xmlChoice) => {
                             fieldDefinition.Choices.push($(xmlChoice).text());
                         });
@@ -179,7 +179,7 @@ module ap {
          * @returns {object} Extended list object.
          */
         extendListDefinitionFromXML(list: List, responseXML: XMLDocument): List {
-            var service = this;
+            let service = this;
             $(responseXML).find("List").each(function() {
                 service.extendObjectWithXMLAttributes(this, list, service.apXMLListAttributeTypes);
             });
@@ -216,13 +216,13 @@ module ap {
          * type of field.
          * @returns {object} JS Object
          */
-        extendObjectWithXMLAttributes(xmlObject: JQuery, jsObject?: Object, attributeTypes?: Object): Object {
-            var objectToExtend = jsObject || {};
-            var attributeMap = attributeTypes || {};
-            var xmlAttributes = xmlObject.attributes;
+        extendObjectWithXMLAttributes(xmlObject: Element, jsObject?: Object, attributeTypes?: Object): Object {
+            let objectToExtend = jsObject || {};
+            let attributeMap = attributeTypes || {};
+            let xmlAttributes = xmlObject.attributes;
 
             _.each(xmlAttributes, (attr, attrNum) => {
-                var attrName = xmlAttributes[attrNum].name;
+                let attrName = xmlAttributes[attrNum].name;
                 objectToExtend[attrName] = $(xmlObject).attr(attrName);
                 if (attributeMap[attrName]) {
                     objectToExtend[attrName] = this.parseStringValue(objectToExtend[attrName], attributeMap[attrName]);
@@ -232,7 +232,7 @@ module ap {
         }
 
 
-        jsAttachments(str): string[]|number|string {
+        jsAttachments(str): string[] | number | string {
             /* Depending on CAMLQueryOptions Config an attachment can be formatted in 1 of the below 3 ways:
              1. {number} The number of attachments for a given list item.
              CAMLQueryOptions
@@ -267,7 +267,7 @@ module ap {
              */
             if (!isNaN(str)) {
                 /** Value is a number current stored as a string */
-                var int = parseInt(str);
+                let int = parseInt(str);
                 if (int > 0) {
                     return int;
                 } else {
@@ -288,7 +288,7 @@ module ap {
             if (str.length === 0) {
                 return null;
             } else {
-                var thisCalc = str.split(';#');
+                let thisCalc = str.split(';#');
                 // The first value will be the calculated column value type, the second will be the value
                 return this.parseStringValue(thisCalc[1], thisCalc[0]);
             }
@@ -298,9 +298,9 @@ module ap {
             if (str.length === 0) {
                 return [];
             } else {
-                var thisChoiceMultiObject = [];
-                var thisChoiceMulti = str.split(';#');
-                for (var i = 0; i < thisChoiceMulti.length; i++) {
+                let thisChoiceMultiObject = [];
+                let thisChoiceMulti = str.split(';#');
+                for (let i = 0; i < thisChoiceMulti.length; i++) {
                     if (thisChoiceMulti[i].length !== 0) {
                         thisChoiceMultiObject.push(thisChoiceMulti[i]);
                     }
@@ -314,10 +314,10 @@ module ap {
                 return null;
             } else {
                 /** Replace dashes with slashes and the "T" deliminator with a space if found */
-                var dt = str.split("T")[0] !== str ? str.split("T") : str.split(" ");
-                var d = dt[0].split("-");
-                var t = dt[1].split(":");
-                var t3 = t[2].split("Z");
+                let dt = str.split("T")[0] !== str ? str.split("T") : str.split(" ");
+                let d = dt[0].split("-");
+                let t = dt[1].split(":");
+                let t3 = t[2].split("Z");
                 return new Date(d[0], (d[1] - 1), d[2], t[0], t[1], t3[0]);
             }
         }
@@ -351,12 +351,12 @@ module ap {
             if (str.length === 0) {
                 return [];
             } else {
-                var thisLookupMultiObject = [];
-                var thisLookupMulti = str.split(';#');
-                for (var i = 0; i < thisLookupMulti.length; i = i + 2) {
+                let thisLookupMultiObject = [];
+                let thisLookupMulti = str.split(';#');
+                for (let i = 0; i < thisLookupMulti.length; i = i + 2) {
                     /** Ensure a lookup id is present before attempting to push a new lookup */
                     if (thisLookupMulti[i]) {
-                        var thisLookup = this.jsLookup(thisLookupMulti[i] + ';#' + thisLookupMulti[i + 1], options);
+                        let thisLookup = this.jsLookup(thisLookupMulti[i] + ';#' + thisLookupMulti[i + 1], options);
                         thisLookupMultiObject.push(thisLookup);
                     }
                 }
@@ -369,7 +369,7 @@ module ap {
                 return str;
             } else {
                 /** Ensure JSON is valid and if not throw error with additional detail */
-                var json = null;
+                let json = null;
                 try {
                     json = JSON.parse(str);
                 }
@@ -396,10 +396,10 @@ module ap {
             if (str.length === 0) {
                 return [];
             } else {
-                var thisUserMultiObject = [];
-                var thisUserMulti = str.split(';#');
-                for (var i = 0; i < thisUserMulti.length; i = i + 2) {
-                    var thisUser = this.jsUser(thisUserMulti[i] + ';#' + thisUserMulti[i + 1]);
+                let thisUserMultiObject = [];
+                let thisUserMulti = str.split(';#');
+                for (let i = 0; i < thisUserMulti.length; i = i + 2) {
+                    let thisUser = this.jsUser(thisUserMulti[i] + ';#' + thisUserMulti[i + 1]);
                     thisUserMultiObject.push(thisUser);
                 }
                 return thisUserMultiObject;
@@ -419,11 +419,11 @@ module ap {
          * @returns {FieldVersionCollection} FieldVersionCollection object with all versions included.
          */
         parseFieldVersions(responseXML: XMLDocument, fieldDefinition: IFieldDefinition): FieldVersionCollection {
-            // var versions = {};
-            var xmlVersions = $(responseXML).find('Version');
-            var versionCount = xmlVersions.length;
+            // let versions = {};
+            let xmlVersions = $(responseXML).find('Version');
+            let versionCount = xmlVersions.length;
 
-            var fieldVersionCollection = new ap.FieldVersionCollection(fieldDefinition);
+            let fieldVersionCollection = new ap.FieldVersionCollection(fieldDefinition);
 
             _.each(xmlVersions, (xmlVersion, index) => {
 
@@ -466,9 +466,9 @@ module ap {
          */
         parseStringValue(str: string, objectType?: string, options?: { entity: Object; propertyName: string; }): any {
 
-            var unescapedValue = _.unescape(str);
+            let unescapedValue = _.unescape(str);
 
-            var colValue;
+            let colValue;
 
             switch (objectType) {
                 case 'Attachments':
@@ -534,26 +534,25 @@ module ap {
          * @param {object} options Configuration options.
          * @param {string} options.mapping Mapping of fields we'd like to extend on our JS object.
          * @param {boolean} [options.includeAllAttrs=false] If true, return all attributes, regardless whether
-         * @param {boolean} [options.listItemProvider] List item constructor.
-         * @param {boolean} [options.removeOws=true] Specifically for GetListItems, if true, the leading ows_ will
+         * @param {boolean} [options.removeOws=true] Specifically for GetListItems, if true, the leading ows_ will be removed.
          * @returns {object} New entity using the factory on the model.
          */
-        parseXMLEntity<T extends ListItem<any>>(xmlEntity: JQuery, options: { mapping: IFieldDefinition[]; includeAllAttrs?: boolean; listItemProvider?: Function; removeOws?: boolean; target?: IndexedCache<T> }): Object {
-            var entity = {};
-            var rowAttrs = xmlEntity.attributes;
+        parseXmlEntity<T extends ListItem<any>>(xmlEntity: Element, { mapping, includeAllAttrs = false, removeOws = true }: IParseXmlEntityOptions) {
+            let entity = {};
+            let rowAttrs = xmlEntity.attributes;
 
             /** Bring back all mapped columns, even those with no value */
-            _.each(options.mapping, (fieldDefinition) => {
+            _.each(mapping, (fieldDefinition) => {
                 entity[fieldDefinition.mappedName] = this.apFieldService.getDefaultValueForType(fieldDefinition.objectType);
             });
 
             /** Parse through the element's attributes */
             _.each(rowAttrs, (attr) => {
-                var thisAttrName = attr.name;
-                var thisMapping = options.mapping[thisAttrName];
-                var thisObjectName = typeof thisMapping !== 'undefined' ? thisMapping.mappedName : options.removeOws ? thisAttrName.split('ows_')[1] : thisAttrName;
-                var thisObjectType = typeof thisMapping !== 'undefined' ? thisMapping.objectType : undefined;
-                if (options.includeAllAttrs || thisMapping !== undefined) {
+                let thisAttrName = attr.name;
+                let thisMapping = mapping[thisAttrName];
+                let thisObjectName = typeof thisMapping !== 'undefined' ? thisMapping.mappedName : removeOws ? thisAttrName.split('ows_')[1] : thisAttrName;
+                let thisObjectType = typeof thisMapping !== 'undefined' ? thisMapping.objectType : undefined;
+                if (includeAllAttrs || thisMapping !== undefined) {
                     entity[thisObjectName] = this.parseStringValue(attr.value, thisObjectType, {
                         entity: entity,
                         propertyName: thisObjectName
@@ -576,34 +575,35 @@ module ap {
          * @param {object} query Reference to the query responsible for requesting entities.
          * @param {xml} responseXML Resolved promise from SPServices web service call.
          * @param {object} [options] Optional configuration object.
-         * @param {function} [options.factory=model.factory] Constructor function typically stored on the model.
+         * @param {boolean} [options.includeAllAttrs=false] If true, return all attributes, regardless whether
+         * they are mapped.
          * @param {string} [options.filter='z:row'] XML filter string used to find the elements to iterate over.
          * @param {Array} [options.mapping=model.list.mapping] Field definitions, typically stored on the model.
          * @param {Array} [options.target=model.getCache()] Optionally pass in array to update after processing.
          * @returns {Object} Inedexed Cache.
          */
-        processListItems<T extends ListItem<any>>(model: Model, query: IQuery<T>, responseXML: XMLDocument, options?: IExecuteQueryOptions): IndexedCache<T> {
-            var defaults = {
-                factory: model.factory,
-                filter: 'z:row',
-                mapping: model.list.mapping,
-                target: model.getCache()
-            };
-
-            var opts: IExecuteQueryOptions = _.assign({}, defaults, options);
+        processListItems<T extends ListItem<any>>(model: Model, query: IQuery<T>, responseXML: XMLDocument, {
+            includeAllAttrs = false,
+            filter = 'z:row',
+            mapping = model.list.mapping,
+            target = model.getCache()
+        } = {}): IndexedCache<T> {
 
             /** Map returned XML to JS objects based on mapping from model */
-            var filteredNodes = this.apXMLToJSONService.filterNodes(responseXML, opts.filter);
+            let filteredNodes = this.apXMLToJSONService.filterNodes(responseXML, filter);
 
             /** Prepare constructor for XML entities with references to the query and cached container */
-            var listItemProvider = this.createListItemProvider(model, query, opts.target);
+            let listItemProvider = this.createListItemProvider(model, query, target);
 
-            /** Convert XML entities into JS objects and register in cache with listItemProvider, this returns an
-             * array of entities but at this point we're not using them because the indexed cache should be more
-             * performant. */
-            this.xmlToJson(filteredNodes, listItemProvider, opts);
+            /** Convert XML entities into JS objects */
+            let parsedEntities = this.xmlToJson(filteredNodes, { mapping, includeAllAttrs });
+            
+            /** Instantiate each list list item with factory on model and add to cache */
+            _.each(parsedEntities, (rawListItemObject) => {
+                listItemProvider(rawListItemObject);
+            })
 
-            return opts.target;
+            return target;
         }
 
         /**
@@ -614,37 +614,24 @@ module ap {
          * Converts an XML node set to Javascript object array. This is a modified version of the SPServices
          * "SPXmlToJson" function.
          * @param {array} xmlEntities ["z:rows"] XML rows that need to be parsed.
-         * @param {function} listItemProvider Constructor function used to build the list item with references to
-         * the query, cached container, and registers each list item in the apCacheService.
          * @param {object} options Options object.
-         * @param {object[]} options.mapping [columnName: "mappedName", objectType: "objectType"]
+         * @param {IListFieldMapping} options.mapping [columnName: "mappedName", objectType: "objectType"]
          * @param {boolean} [options.includeAllAttrs=false] If true, return all attributes, regardless whether
-         * @param {boolean} [options.listItemProvider] List item constructor.
+         * they are mapped.
          * @param {boolean} [options.removeOws=true] Specifically for GetListItems, if true, the leading ows_ will
          * be stripped off the field name.
-         * @param {array} [options.target] Optional location to push parsed entities.
          * @returns {object[]} An array of JavaScript objects.
          */
-        xmlToJson<T extends ListItem<any>>(xmlEntities: JQuery, listItemProvider: (Object) => T, options: IXMLToJsonOptions<T>): T[] {
-
-            var defaults = {
-                mapping: {},
-                includeAllAttrs: false,
-                removeOws: true
-            };
-
-            var opts: IXMLToJsonOptions<T> = _.assign({}, defaults, options);
-            var parsedEntities = [];
-
-            _.each(xmlEntities, (xmlEntity) => {
-                var parsedEntity = this.parseXMLEntity(xmlEntity, opts);
-                var instantiatedListItem = listItemProvider(parsedEntity);
-                parsedEntities.push(instantiatedListItem);
-            });
-
-            return parsedEntities;
+        xmlToJson<T extends ListItem<any>>(xmlEntities: JQuery, {
+            mapping,
+            includeAllAttrs = false,
+            removeOws = true
+        }: IXMLToJsonOptions<T>): Object[] {
+            let parseOptions = { mapping, includeAllAttrs, removeOws }
+            return _.map(xmlEntities, (xmlEntity) => {
+                return this.parseXmlEntity(xmlEntity, parseOptions);
+            });            
         }
-
 
     }
 
@@ -656,11 +643,23 @@ module ap {
     interface IXMLToJsonOptions<T extends ListItem<any>> extends IExecuteQueryOptions {
         includeAllAttrs?: boolean;
         listItemProvider?: Function;
-        mapping: IFieldDefinition[];
+        mapping: IListFieldMapping;
         removeOws?: boolean;
         target?: IndexedCache<T>;
     }
 
+    interface IParseXmlEntityOptions{
+        mapping: IListFieldMapping;
+        includeAllAttrs?: boolean;
+        removeOws?: boolean;
+    }    
+    
+    interface IProcessListItemsOptions<T extends ListItem<any>>{
+        includeAllAttrs?: boolean;
+        filter?: string;
+        mapping: IListFieldMapping;
+        target?: IndexedCache<T>
+    }
 
 
     angular.module('angularPoint')

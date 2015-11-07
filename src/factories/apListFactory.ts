@@ -14,6 +14,13 @@ module ap {
         webURL?: string;
     }
 
+    export interface IListFieldMapping {
+        [key: string]: {
+            mappedName: string;
+            objectType: string;
+        }
+    }
+
     /**
      * XML List Object gets converted into JSON object with the following properties.
      */
@@ -90,7 +97,7 @@ module ap {
         guid: string;
         identifyWebURL(): string;
         isReady: boolean;
-        mapping?: Object;
+        mapping?: IListFieldMapping;
         permissions?: IUserPermissionsObject;
         title: string;
         viewFields?: string;
@@ -155,15 +162,15 @@ module ap {
      * @constructor
      */
     export class List implements IList {
-        customFields = [];
+        customFields: IFieldDefinition[] = [];
         environments: { [key: string]: string };
-        fields = [];
-        guid: string = '';
+        fields: IFieldDefinition[] = [];
+        guid: string;
         isReady = false;
-        mapping = {};
+        mapping: IListFieldMapping = {};
         permissions: IUserPermissionsObject;
-        title = '';
-        viewFields = '';
+        title: string;
+        viewFields: string;
         WebFullUrl; //Only appears if extended from list definition
         webURL: string;
         constructor(config: IUninstantiatedList) {
@@ -182,12 +189,15 @@ module ap {
          * @param {object} list Reference to the list within a model.
          */
         extendFieldDefinitions() {
+            //Clear out
+            this.viewFields = ''
+            
             /**
-             * Constructs the field
-             * - adds to viewField
-             * - create ows_ mapping
-             * @param fieldDefinition
-             */
+            * Constructs the field
+            * - adds to viewField
+            * - create ows_ mapping
+            * @param fieldDefinition
+            */
             var buildField = (fieldDefinition) => {
                 var field = new apFieldFactory.FieldDefinition(fieldDefinition);
                 this.fields.push(field);

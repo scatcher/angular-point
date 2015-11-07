@@ -51,7 +51,8 @@ module ap.test {
         describe('Method: execute', function() {
             var firstPromise, secondPromise, thirdPromise;
             beforeEach(function() {
-                spyOn(apDataService, 'executeQuery').and.callFake(mockExecuteQuery);
+                spyOn(factory.Query.prototype, 'makeRequest').and.callFake(mockExecuteQuery);
+
                 firstPromise = mockModel.executeQuery('primary');
                 secondPromise = mockModel.executeQuery('primary');
                 thirdPromise = mockModel.executeQuery('secondary');

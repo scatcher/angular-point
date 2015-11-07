@@ -29,7 +29,7 @@ module ap {
          * @param {string} fieldType Type of field.
          * @returns {*} Default value based on field type.
          */
-        getDefaultValueForType(fieldType) {
+        getDefaultValueForType(fieldType: string): any {
             var fieldDefinition = service.getDefinition(fieldType),
                 defaultValue;
 

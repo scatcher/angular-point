@@ -6,7 +6,9 @@ module ap.test {
 
         beforeEach(module("angularPoint"));
 
-        var factory: ModelFactory, mockModel: MockModel, mockEntityCache, mockXMLService, $rootScope: ng.IRootScopeService, $q:ng.IQService, apDataService: DataService, $httpBackend;
+        var factory: ModelFactory, mockModel: MockModel, mockEntityCache, mockXMLService, $rootScope: ng.IRootScopeService,
+            $q: ng.IQService, apDataService: DataService, $httpBackend,
+            secondaryQueryCache: IndexedCache<MockListItem>;
 
         beforeEach(inject(function(_mockModel_, _apModelFactory_, _mockXMLService_, _$rootScope_, _$q_, _apDataService_, _$httpBackend_) {
             mockModel = _mockModel_;
@@ -16,19 +18,34 @@ module ap.test {
             $httpBackend = _$httpBackend_;
             $rootScope = _$rootScope_;
             $q = _$q_;
+            secondaryQueryCache = mockModel.getCache<MockListItem>('secondary');
             mockModel.importMocks();
             mockEntityCache = mockModel.getCache('primary');
         }));
 
         describe('addNewItem', function() {
             it('adds the new entity to the cacheService', function() {
-                mockModel.addNewItem({ title: 'I am a Mock' })
+                mockModel.addNewItem<MockListItem>({ title: 'I am a Mock' })
                     .then(function(response) {
                         expect(mockModel.getCachedEntity(response.id)).toBeDefined();
                         expect(response.title).toEqual('I am a Mock');
                     });
                 $httpBackend.flush();
             });
+            it('creates a new list item', function() {
+                mockModel.addNewItem<MockListItem>({ integer: 11 })
+                    .then(function(response) {
+                        expect(response.integer).toEqual(11);
+                    });
+                $httpBackend.flush();
+            });
+            it('doesn\'t add it to existing caches', function() {
+                mockModel.addNewItem<MockListItem>({ integer: 11 })
+                    .then(function(response) {
+                        expect(secondaryQueryCache[response.id]).toBeUndefined();
+                    });
+                $httpBackend.flush();
+            });            
         });
 
 
@@ -47,80 +64,6 @@ module ap.test {
             });
         });
 
-        //DEPRECATED
-        //describe('searchLocalCache', function () {
-        //
-        //    it('returns the correct object when using an attribute directly on the object', function () {
-        //        var searchResults = mockModel.searchLocalCache(1);
-        //        expect(searchResults).toEqual(mockEntityCache[1]);
-        //    });
-        //
-        //    it('should return the correct object when a nested property path is used', function () {
-        //        var searchResults = mockModel.searchLocalCache(2, {
-        //            propertyPath: 'lookup.lookupId'
-        //        });
-        //        expect(searchResults).toEqual(mockEntityCache[2]);
-        //    });
-        //
-        //    it('should return undefined if no match is found', function () {
-        //        var searchResults = mockModel.searchLocalCache('fake id', {
-        //            propertyPath: 'lookup.lookupId'
-        //        });
-        //        expect(searchResults).toBeUndefined();
-        //    });
-        //
-        //    describe('count the number of times the cache is rebuilt', function () {
-        //
-        //        it('doesn\'t use the cache when searching by id', function () {
-        //            mockModel.searchLocalCache(1);
-        //            mockModel.searchLocalCache(2);
-        //
-        //            expect(mockModel._cachedIndexes).toBeUndefined();
-        //        });
-        //
-        //        it('uses the cached results instead of building a new cache', function () {
-        //            mockModel.searchLocalCache(1, {
-        //                propertyPath: 'lookup.lookupId'
-        //            });
-        //            var initialBuildCount = getBuildCount();
-        //            mockModel.searchLocalCache(1, {
-        //                propertyPath: 'lookup.lookupId'
-        //            });
-        //            expect(initialBuildCount).toEqual(getBuildCount());
-        //        });
-        //
-        //        it('rebuilds the cache when a change is made', function () {
-        //            mockModel.searchLocalCache(1, {
-        //                propertyPath: 'lookup.lookupId'
-        //            });
-        //
-        //            var initialBuildCount = getBuildCount();
-        //
-        //            /** Add another entity to the cache */
-        //            mockModel.getCache()[3] = new mockModel.factory({
-        //                lookup: {lookupId: 3},
-        //                id: 3
-        //            });
-        //
-        //            mockModel.searchLocalCache(2, {
-        //                propertyPath: 'lookup.lookupId'
-        //            });
-        //
-        //            expect(initialBuildCount).not.toEqual(getBuildCount());
-        //        });
-        //    });
-        //
-        //    it('returns an array of items if an array is specified', function () {
-        //
-        //        expect(mockModel.searchLocalCache([1, 2]).length).toEqual(2);
-        //    });
-        //
-        //    function getBuildCount() {
-        //        return mockModel._cachedIndexes.main.lookup.lookupId.buildCount;
-        //    }
-        //
-        //
-        //});
 
         describe('Method: getListItemById', function() {
             it('returns a single list item', function() {
@@ -263,11 +206,5 @@ module ap.test {
             return deferred.promise;
         }
 
-
-        //describe('Method: getLocalEntity', function () {
-        //    it('finds the correct entity using the list item id', function () {
-        //        expect(mockModel.getLocalEntity(2)).toEqual(mockEntityCache[2]);
-        //    });
-        //});
     });
 }

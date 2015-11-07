@@ -9,7 +9,6 @@ module ap.test {
 
         var service: DataService,
             primaryQueryCache: IndexedCache<MockListItem>,
-            secondaryQueryCache: IndexedCache<MockListItem>,
             mockModel: MockModel,
             mockToUpdate: MockListItem,
             mockXML,
@@ -23,9 +22,8 @@ module ap.test {
             mockXMLService = _mockXMLService_;
             mockXML = mockXMLService.GetListItemChangesSinceToken;
             mockModel.importMocks();
-            primaryQueryCache = mockModel.getCache('primary');
-            secondaryQueryCache = mockModel.getCache('secondary');
-            mockToUpdate = mockModel.getCache('primary')[1];
+            primaryQueryCache = mockModel.getCache<MockListItem>('primary');
+            mockToUpdate = mockModel.getCache<MockListItem>('primary').get(1);
 
             // Set up the mock http service responses
             $httpBackend = $injector.get('$httpBackend');
@@ -41,65 +39,6 @@ module ap.test {
                     });
                 $httpBackend.flush();
             });
-        });
-
-        describe('Function: updateListItem', function() {
-            it('updates the list item', function() {
-                mockToUpdate.integer = 44;
-                service.updateListItem(mockModel, mockToUpdate)
-                    .then(function(response) {
-                        expect(mockToUpdate.integer).toEqual(44);
-                        expect(response.integer).toEqual(44);
-                    });
-                $httpBackend.flush();
-            });
-            it('updates all cache\'s because they are be referencing the same object', function() {
-                service.updateListItem(mockModel, primaryQueryCache[1])
-                    .then(function(response) {
-                        expect(primaryQueryCache[1]).toEqual(secondaryQueryCache[1]);
-                        expect(secondaryQueryCache[1].integer).toEqual(response.integer);
-                    });
-                $httpBackend.flush();
-            });
-        });
-
-        describe('Function: createListItem', function() {
-            it('creates a new list item', function() {
-                service.createListItem(mockModel, { integer: 11 })
-                    .then(function(response) {
-                        expect(response.integer).toEqual(11);
-                    });
-                $httpBackend.flush();
-            });
-            it('doesn\'t add it to existing caches', function() {
-                service.createListItem(mockModel, { integer: 11 })
-                    .then(function(response) {
-                        expect(secondaryQueryCache[response.id]).toBeUndefined();
-                    });
-                $httpBackend.flush();
-            });
-        });
-
-        describe('Function: deleteListItem', function() {
-            it('removes entity with ID of 1 from all cache objects', function() {
-                service.deleteListItem(mockModel, primaryQueryCache[1], { updateAllCaches: true })
-                    .then(function() {
-                        expect(primaryQueryCache[1]).toBeUndefined();
-                        expect(secondaryQueryCache[1]).toBeUndefined();
-                    });
-                $httpBackend.flush();
-            });
-        });
-
-
-        describe('Function: deleteAttachment', function() {
-            it('resolves the deleteAttachment request', function() {
-                service.deleteAttachment({})
-                    .then(function(response) {
-                        /** If an error isn't returned, the operation was successful */
-                        expect(response).toBeDefined();
-                    });
-            })
         });
 
         describe('Function: retrieveChangeToken', function() {
@@ -285,20 +224,6 @@ module ap.test {
                 service.getFieldVersionHistory({}, fieldDefinition)
                     .then(function(response) {
                         expect(response.count()).toEqual(4);
-                    });
-                $httpBackend.flush();
-            });
-        });
-
-        describe('Function: executeQuery', function() {
-            it('can complete a query form a known model', function() {
-                primaryQueryCache.clear();
-                ////Ensure there's nothing left in the cache and we remove any existing change token
-                expect(primaryQueryCache.count()).toEqual(0);
-                mockModel.getQuery().changeToken = undefined;
-                service.executeQuery(mockModel, mockModel.getQuery())
-                    .then(function(response) {
-                        expect(response.count()).toEqual(2);
                     });
                 $httpBackend.flush();
             });

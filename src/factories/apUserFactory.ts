@@ -3,7 +3,7 @@
 module ap {
     'use strict';
 
-    var apUtilityService: UtilityService;
+    let apUtilityService: UtilityService;
 
     /**
      * Represents a reference to a site collection user.  This is
@@ -57,22 +57,21 @@ module ap {
         title: string;
 
         constructor(str: string) {
-            var self = this;
-            var thisUser = new apUtilityService.SplitIndex(str);
+            let thisUser = new apUtilityService.SplitIndex(str);
 
-            var thisUserExpanded = thisUser.value.split(',#');
+            let thisUserExpanded = thisUser.value.split(',#');
             if (thisUserExpanded.length === 1) {
                 //Standard user columns only return a id,#value pair
-                self.lookupId = thisUser.id;
-                self.lookupValue = thisUser.value;
+                this.lookupId = thisUser.id;
+                this.lookupValue = thisUser.value;
             } else {
                 //Allow for case where user adds additional properties when setting up field
-                self.lookupId = thisUser.id;
-                self.lookupValue = thisUserExpanded[0].replace(/(,,)/g, ',');
-                self.loginName = thisUserExpanded[1].replace(/(,,)/g, ',');
-                self.email = thisUserExpanded[2].replace(/(,,)/g, ',');
-                self.sipAddress = thisUserExpanded[3].replace(/(,,)/g, ',');
-                self.title = thisUserExpanded[4].replace(/(,,)/g, ',');
+                this.lookupId = thisUser.id;
+                this.lookupValue = thisUserExpanded[0].replace(/(,,)/g, ',');
+                this.loginName = thisUserExpanded[1].replace(/(,,)/g, ',');
+                this.email = thisUserExpanded[2].replace(/(,,)/g, ',');
+                this.sipAddress = thisUserExpanded[3].replace(/(,,)/g, ',');
+                this.title = thisUserExpanded[4].replace(/(,,)/g, ',');
             }
         }
     }

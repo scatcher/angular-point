@@ -5,7 +5,7 @@ module ap {
 
     let $q: ng.IQService, toastr, apCacheService: CacheService, apDataService: DataService, apDecodeService: DecodeService,
         apEncodeService: EncodeService, apUtilityService: UtilityService, apConfig: IAPConfig,
-        apListItemVersionFactory: ListItemVersionFactory;
+        apListItemVersionFactory: ListItemVersionFactory, apChangeService: ChangeService;
 
     // interface IListItem<T extends ListItem<any>> {
     //     author?: IUser;
@@ -92,9 +92,9 @@ module ap {
             //Remove id so when we instantiate we don't register in cache
             pristineListItem.id = undefined;
             //Need to instantiate using the same factory as the current list item
-            let factory: IModelFactory = this.constructor;           
+            let factory: IModelFactory = this.constructor;
             let instantiatedPristineListItem = new factory(pristineListItem);
-            
+
             return new apListItemVersionFactory.FieldChangeSummary(this, instantiatedPristineListItem);
         }
 
@@ -118,11 +118,13 @@ module ap {
          * </pre>
          */
         deleteAttachment(url: string): ng.IPromise<any> {
-            let listItem = this;
-            return apDataService.deleteAttachment({
-                listItemID: listItem.id,
-                url: url,
-                listName: listItem.getListId()
+
+            return apDataService.serviceWrapper({
+                operation: 'DeleteAttachment',
+                filterNode: 'Field',
+                listItemID: this.id,
+                url,
+                listName: this.getListId()
             });
         }
 
@@ -132,10 +134,6 @@ module ap {
          * @name ListItem.deleteItem
          * @description
          * Deletes record directly from the object and removes record from user cache.
-         * @param {object} [options] Optionally pass params to the dataService.
-         * @param {boolean} [options.updateAllCaches=false] Iterate over each of the query cache's and ensure the listItem is
-         * removed everywhere.  This is more process intensive so by default we only remove the cached listItem in the
-         * cache where this listItem is currently stored.
          * @returns {object} Promise which really only lets us know the request is complete.
          * @example
          * ```
@@ -148,22 +146,58 @@ module ap {
          * List of tasks.  When the delete link is clicked, the list item item is removed from the local cache and
          * the view is updated to no longer show the task.
          */
-        deleteItem(options?: IListItemCrudOptions<T>): ng.IPromise<any> {
+        deleteItem(): ng.IPromise<any> {
             let listItem = this;
             let model = listItem.getModel();
             let deferred = $q.defer();
+
+            let config = {
+                operation: 'UpdateListItems',
+                listName: model.getListId(),
+                batchCmd: 'Delete',
+                ID: listItem.id,
+                valuePairs: undefined,
+                webURL: model.list.identifyWebURL()
+            };
 
             if (_.isFunction(listItem.preDeleteAction) && !listItem.preDeleteAction()) {
                 //preDeleteAction exists but returned false so we don't delete
                 deferred.reject('Pre-Delete Action Returned False');
             } else {
 
-                apDataService.deleteListItem(model, listItem, options)
+                /** Check to see if list item or document because documents need the FileRef as well as id to delete */
+                if (listItem.fileRef && listItem.fileRef.lookupValue) {
+                    let fileExtension = listItem.fileRef.lookupValue.split('.').pop();
+                    if (_.isNaN(fileExtension)) {
+                        /** File extension instead of numeric extension so it's a document
+                         * @Example
+                         * Document: "Site/library/file.csv"
+                         * List Item: "Site/List/5_.000"
+                         * */
+                        config.valuePairs = [['FileRef', listItem.fileRef.lookupValue]];
+
+                    }
+                }
+
+                apDataService.serviceWrapper(config)
                     .then((response) => {
-                        deferred.resolve(response);
                         /** Optionally broadcast change event */
                         apUtilityService.registerChange(model, 'delete', listItem.id);
+                        
+                        /** Success */
+                        apCacheService.deleteEntity(config.listName, listItem.id);
+
+                        deferred.resolve(response);
+                    })
+                    .catch((err) => {
+                        //In the event of an error, display toast
+                        let msg = 'There was an error deleting list item ' + listItem.id + ' from ' + model.list.title +
+                            ' due to the following Error: ' + err;
+                        toastr.error(msg);
+                        throw new Error(msg)
+                        deferred.reject(err);
                     });
+
             }
 
             return deferred.promise;
@@ -246,7 +280,7 @@ module ap {
          *      };
          * </pre>
          */
-        getChangeSummary(fieldNames?: string[]| string): ng.IPromise<ChangeSummary<T>> {
+        getChangeSummary(fieldNames?: string[] | string): ng.IPromise<ChangeSummary<T>> {
             return this.getVersionHistory(fieldNames)
                 .then((versionHistoryCollection: VersionHistoryCollection<T>) => versionHistoryCollection.generateChangeSummary());
         }
@@ -452,14 +486,17 @@ module ap {
          *     .then(function(versionHistory) {
          *            // We now have an array of every version of these fields
          *            vm.versionHistory = versionHistory;
-         *      };
+         *      })
+         *      .catch(function(err) {
+         *          // Do something with the error
+         *      });
          * </pre>
          */
         getVersionHistory(properties?: string[]): ng.IPromise<VersionHistoryCollection<T>> {
             let listItem = this;
             let model = listItem.getModel();
             let promiseArray = [];
-            
+
             if (properties && !_.isArray(properties)) throw new Error('Properties are required to be formatted as an array of strings.');
 
             if (!properties) {
@@ -720,10 +757,22 @@ module ap {
          * }
          * </pre>
          */
-        saveChanges(options?: IListItemCrudOptions<T>): ng.IPromise<T> {
+        saveChanges({ target = this.getCache ? this.getCache() : new IndexedCache<T>(), valuePairs, buildValuePairs = true } = {}): ng.IPromise<T> {
             let listItem = this;
             let model = listItem.getModel();
             let deferred = $q.defer();
+            
+
+            let config = {
+                batchCmd: 'Update',
+                buildValuePairs,
+                ID: listItem.id,
+                listName: model.getListId(),
+                operation: 'UpdateListItems',
+                target,
+                valuePairs,
+                webURL: model.list.identifyWebURL()
+            }
 
             if (_.isFunction(listItem.preSaveAction) && !listItem.preSaveAction()) {
                 //preSaveAction exists but returned false so we don't save
@@ -735,12 +784,21 @@ module ap {
                  * an empty item that is instantiated from the model and then attempt to save instead of using
                  * model.addNewItem */
                 if (!listItem.id) {
-                    return model.addNewItem(listItem, options);
+                    return model.addNewItem(listItem, { target, valuePairs, buildValuePairs });
                 }
 
-                apDataService.updateListItem<T>(model, listItem, options)
-                    .then((updatedListItem) => {
-                        deferred.resolve(updatedListItem);
+                if (buildValuePairs === true) {
+                    let editableFields = _.filter(model.list.fields, { readOnly: false });
+                    config.valuePairs = apEncodeService.generateValuePairs(editableFields, listItem);
+                }
+
+                let request = apDataService.serviceWrapper(config)
+                    .then((response) => {
+                        var indexedCache = apDecodeService.processListItems<T>(model, listItem.getQuery(), response, config);
+                        
+                        //Identify updated list item
+                        let updatedListItem = indexedCache[listItem.id];   
+
                         /** Optionally broadcast change event */
                         apUtilityService.registerChange(model, 'update', updatedListItem.id);
 
@@ -748,7 +806,15 @@ module ap {
                         if (_.isFunction(listItem.postSaveAction)) {
                             listItem.postSaveAction();
                         };
+                        
+                        //Resolve with the updated list item
+                        deferred.resolve(updatedListItem);
                     });
+
+                    /** Notify change service to expect a request, only useful at this point when working offline */
+                    apChangeService.registerListItemUpdate<T>(listItem, config, request);
+                                               
+                
             }
 
             return deferred.promise;
@@ -760,12 +826,8 @@ module ap {
          * @name ListItem.saveFields
          * @description
          * Saves a named subset of fields back to SharePoint.  This is an alternative to saving all fields.
-         * @param {array|string} fieldArray Array of internal field names that should be saved to SharePoint or a single
-         * string to save an individual field.
+         * @param {string[]} fieldArray Array of internal field names that should be saved to SharePoint.
          * @param {object} [options] Optionally pass params to the data service.
-         * @param {boolean} [options.updateAllCaches=false] Search through the cache for each query to ensure listItem is
-         * updated everywhere.  This is more process intensive so by default we only update the cached listItem in the
-         * cache where this listItem is currently stored.
          * @returns {object} Promise which resolves with the updated list item from the server.
          * @example
          * <pre>
@@ -774,29 +836,32 @@ module ap {
          * // Similar to saveChanges but instead we only save
          * // specified fields instead of pushing everything.
          * $scope.updateStatus = function(task) {
-         *      task.saveFields(['status', 'notes']).then(function() {
-         *          // Successfully updated the status and
-         *          // notes fields for the given task
+         *      task.saveFields(['status', 'notes'])
+         *          .then(function(updatedListItem) {
+         *              // Successfully updated the status and
+         *              // notes fields for the given task
          *
-         *          }, function() {
-         *          // Failure to update the field
+         *          })
+         *          .catch(function(err) {
+         *              // Failure to update the field
          *
          *          });
          * }
          * </pre>
          */
-        saveFields(fieldArray: string[], options?: IListItemCrudOptions<T>): ng.IPromise<T> {
+        saveFields(fieldArray: string[], { target = this.getCache ? this.getCache() : new IndexedCache<T>() } = {}): ng.IPromise<T> {
 
             let listItem = this;
             let model = listItem.getModel();
-            let definitions = [];
+            let definitions:IFieldDefinition[] = [];
             let fieldName: string[];
-            
+
             if (_.isString(fieldArray)) {
                 console.warn('Field names should be an array of strings instead of a single string.  This will be deperecated.');
             }
             /** Allow a string to be passed in to save a single field */
             let fieldNames = _.isString(fieldArray) ? [fieldArray] : fieldArray;
+            
             /** Find the field definition for each of the requested fields */
             for (let fieldName of fieldNames) {
                 let match = _.find(model.list.customFields, { mappedName: fieldName });
@@ -808,17 +873,11 @@ module ap {
             /** Generate value pairs for specified fields */
             let valuePairs = apEncodeService.generateValuePairs(definitions, listItem);
 
-            let defaults = { buildValuePairs: false, valuePairs: valuePairs };
-
-            /** Extend defaults with any provided options */
-            let opts = _.assign({}, defaults, options);
-
-            return apDataService.updateListItem<T>(model, listItem, opts)
-                .then((updatedListItem) => {
-                    /** Optionally broadcast change event */
-                    apUtilityService.registerChange(model, 'update', updatedListItem.id);
-                    return updatedListItem;
-                });
+            return this.saveChanges({
+                buildValuePairs: false,
+                target,
+                valuePairs
+            });
         }
 
 
@@ -874,7 +933,7 @@ module ap {
                     .then((workflows) => {
                         let targetWorklow = _.findWhere(workflows, { name: options.workflowName });
                         if (!targetWorklow) {
-                            throw new Error(`A workflow with the name ${options.workflowName} wasn't found.  The workflows available are [${_.map(workflows, 'name').toString()}].`);
+                            throw new Error(`A workflow with the name ${options.workflowName} wasn't found.  The workflows available are [${_.map(workflows, 'name').toString() }].`);
                         }
                         /** Create an extended set of options to pass any overrides to apDataService */
                         options.templateId = targetWorklow.templateId;
@@ -934,11 +993,12 @@ module ap {
 
     export class ListItemFactory {
         ListItem = ListItem;
-        static $inject = ['$q', 'apCacheService', 'apConfig', 'apDataService', 'apDecodeService', 'apEncodeService', 'apUtilityService', 'toastr', 'apListItemVersionFactory'];
+        static $inject = ['$q', 'apCacheService', 'apChangeService', 'apConfig', 'apDataService', 'apDecodeService', 'apEncodeService', 'apUtilityService', 'toastr', 'apListItemVersionFactory'];
 
-        constructor(_$q_, _apCacheService_, _apConfig_, _apDataService_, _apDecodeService_, _apEncodeService_, _apUtilityService_, _toastr_, _apListItemVersionFactory_) {
+        constructor(_$q_, _apCacheService_, _apChangeService_, _apConfig_, _apDataService_, _apDecodeService_, _apEncodeService_, _apUtilityService_, _toastr_, _apListItemVersionFactory_) {
             $q = _$q_;
             apCacheService = _apCacheService_;
+            apChangeService = _apChangeService_;
             apConfig = _apConfig_;
             apDataService = _apDataService_;
             apDecodeService = _apDecodeService_;

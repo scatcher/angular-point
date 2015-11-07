@@ -202,16 +202,16 @@ module ap {
 
         addFieldCollection(fieldVersionCollection: FieldVersionCollection, factory: IModelFactory): void {
             /** Iterate through each version of this field */
-            _.each(fieldVersionCollection.versions, (fieldVersion: IFieldVersion, versionNumber) => {
+            _.each(fieldVersionCollection.versions, (fieldVersion: IFieldVersion, versionNumberAsString: string) => {
                 /** Create a new version object if it doesn't already exist */
-                this[versionNumber] = this[versionNumber] || new factory<T>({
+                this[versionNumberAsString] = this[versionNumberAsString] || new factory<T>({
                     editor: fieldVersion.editor,
                     modified: fieldVersion.modified,
                     /** Iterating over object properties which converts everything to string so convert back */
-                    version: parseInt(versionNumber)
+                    version: parseInt(versionNumberAsString)
                 });
                 /** Add field to the version history for this version with computed property name */
-                this[versionNumber][fieldVersionCollection.mappedName] = fieldVersion.value
+                this[versionNumberAsString][fieldVersionCollection.mappedName] = fieldVersion.value
             });
         }
 

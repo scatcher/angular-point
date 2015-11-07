@@ -3,10 +3,10 @@
 module ap {
     'use strict';
 
-    var apCacheService: CacheService, apDataService: DataService, apListFactory: ListFactory,
+    let apCacheService: CacheService, apDataService: DataService, apListFactory: ListFactory,
         apQueryFactory: QueryFactory, apUtilityService: UtilityService,
         apFieldService: FieldService, apConfig: IAPConfig, apIndexedCacheFactory: IndexedCacheFactory,
-        apDecodeService: DecodeService, $q: ng.IQService, toastr: toastr;
+        apDecodeService: DecodeService, apEncodeService: EncodeService, $q: ng.IQService, toastr: toastr;
 
     // export interface IModel {
     //     addNewItem<T extends ListItem<any>>(entity: Object, options?: Object): ng.IPromise<T>;
@@ -36,7 +36,7 @@ module ap {
     // }
 
     export interface IUninitializedModel {
-        factory: Function;
+        factory: IModelFactory;
         list: IUninstantiatedList;
         [key: string]: any;
     }
@@ -50,7 +50,17 @@ module ap {
         new <T extends ListItem<any>>(rawObject: Object): T;
     }
 
+    interface IMockDataOptions {
+        permissionLevel?: string;
+        quantity?: number;
+    }
 
+    interface ICreateListItemOptions<T extends ListItem<any>> {
+        buildValuePairs?: boolean;
+        indexedCache?: IndexedCache<T>;
+        getCache?: () => IndexedCache<T>;
+        valuePairs?: [string, any][];
+    }
     /**
      * @ngdoc function
      * @name Model
@@ -213,7 +223,11 @@ module ap {
          * @param {object} entity An object that will be converted into key/value pairs based on the field definitions
          * defined in the model.
          * @param {object} [options] - Pass additional options to the data service.
-         * @returns {object} A promise which when resolved will returned the newly created list item from there server.
+         * @param {boolean} [options.buildValuePairs=true] Automatically generate pairs based on fields defined in model.
+         * @param {object} [options.indexedCache=apIndexedCacheFactory.create({})] Optionally place new item in a specified cache.
+         * @param {Array[]} [options.valuePairs] Precomputed value pairs to use instead of generating them for each
+         * field identified in the model.
+         * @returns {ng.IPromise<T>} A promise which when resolved will returned the newly created list item from there server.
          * This allows us to update the view with a valid new object that contains a unique list item id.
          *
          * @example
@@ -230,15 +244,54 @@ module ap {
          * </file>
          * </pre>
          */
-        addNewItem<T extends ListItem<any>>(entity: Object, options?: Object): ng.IPromise<T> {
-            var model = this;
+        addNewItem<T extends ListItem<any>>(entity: Object, {
+            buildValuePairs = true,
+            indexedCache = apIndexedCacheFactory.create({}),
+            valuePairs = []
+        }: ICreateListItemOptions<T> = {}): ng.IPromise<T> {
 
-            return apDataService.createListItem<T>(model, entity, options)
-                .then((listItem) => {
+            var config = {
+                batchCmd: 'New',
+                buildValuePairs,
+                listName: this.getListId(),
+                //Method gets added onto new list item and allows access to parent cache
+                getCache: () => indexedCache,
+                indexedCache,
+                operation: 'UpdateListItems',
+                target: indexedCache,
+                valuePairs,
+                webURL: this.list.identifyWebURL()
+            };
+            
+            if (entity.id) {
+                throw new Error('Cannot add a new list item that already has an ID. ' + JSON.stringify(entity, null, 2));
+            }
+
+            if (config.buildValuePairs === true) {
+                let editableFields: IFieldDefinition[] = _.filter(this.list.fields, { readOnly: false });
+                config.valuePairs = apEncodeService.generateValuePairs(editableFields, entity);
+            }
+
+            /** Overload the function then pass anything past the first parameter to the supporting methods */
+            return apDataService.serviceWrapper(config)
+                .then((response) => {
+                    /** Online this should return an XML object */
+                    let indexedCache = apDecodeService.processListItems(this, config, response, config);
+                    
+                    /** Last listItem in cache is new because it has the highest id */
+                    let newListItem = indexedCache.last();
+                    
                     /** Optionally broadcast change event */
-                    apUtilityService.registerChange(model, 'create', listItem.id);
-                    return listItem;
-                });
+                    apUtilityService.registerChange(this, 'create', newListItem.id);
+                    
+                    /** Return reference to last listItem in cache because it will have the new highest id */
+                    return newListItem;
+                })
+                .catch((err) => {
+                    throw new Error('Unable to create new list item.  Err:' + err);
+                    return err;
+                })         
+                
         }
 
 
@@ -409,8 +462,7 @@ module ap {
          */
         getAllListItems<T extends ListItem<any>>(): ng.IPromise<IndexedCache<T>> {
             var model = this;
-            var query = this.getQuery<T>('__getAllListItems');
-            return apDataService.executeQuery<T>(model, query, { target: query.indexedCache });
+            return model.executeQuery('__getAllListItems');
         }
 
         /**
@@ -946,14 +998,15 @@ module ap {
 
     export class ModelFactory {
         Model = Model;
-        static $inject = ['$q', 'apCacheService', 'apConfig', 'apDataService', 'apDecodeService', 'apFieldService', 'apIndexedCacheFactory', 'apListFactory', 'apQueryFactory', 'apUtilityService', 'toastr'];
-        constructor(_$q_, _apCacheService_, _apConfig_, _apDataService_, _apDecodeService_, _apFieldService_, _apIndexedCacheFactory_, _apListFactory_, _apQueryFactory_, _apUtilityService_, _toastr_) {
+        static $inject = ['$q', 'apCacheService', 'apConfig', 'apDataService', 'apDecodeService', 'apEncodeService', 'apFieldService', 'apIndexedCacheFactory', 'apListFactory', 'apQueryFactory', 'apUtilityService', 'toastr'];
+        constructor(_$q_, _apCacheService_, _apConfig_, _apDataService_, _apDecodeService_, _apEncodeService_, _apFieldService_, _apIndexedCacheFactory_, _apListFactory_, _apQueryFactory_, _apUtilityService_, _toastr_) {
 
             $q = _$q_;
             apCacheService = _apCacheService_;
             apConfig = _apConfig_;
             apDataService = _apDataService_;
             apDecodeService = _apDecodeService_;
+            apEncodeService = _apEncodeService_;
             apFieldService = _apFieldService_;
             apIndexedCacheFactory = _apIndexedCacheFactory_;
             apListFactory = _apListFactory_;
@@ -968,10 +1021,7 @@ module ap {
 
     }
 
-    interface IMockDataOptions {
-        permissionLevel?: string;
-        quantity?: number;
-    }
+
 
     angular
         .module('angularPoint')
