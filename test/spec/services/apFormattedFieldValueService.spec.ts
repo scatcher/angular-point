@@ -23,7 +23,7 @@ module ap.test {
                     { lookupId: 19, lookupValue: 'Beth' }
                 ];
                 expect(service.getFormattedFieldValue(projectMembers, 'UserMulti'))
-                    .toEqual('Joe, Beth');
+                    .toEqual('Joe; Beth');
                 expect(service.getFormattedFieldValue(projectMembers, 'UserMulti', { delim: ' | ' }))
                     .toEqual('Joe | Beth');
             });

@@ -7,45 +7,24 @@ module ap {
         apEncodeService: EncodeService, apUtilityService: UtilityService, apConfig: IAPConfig,
         apListItemVersionFactory: ListItemVersionFactory, apChangeService: ChangeService;
 
-    // interface IListItem<T extends ListItem<any>> {
-    //     author?: IUser;
-    //     created?: Date;
-    //     editor?: IUser;
-    //     fileRef?: ILookup;
-    //     id?: number;
-    //     modified?: Date;
-    //     permMask?: string;
-    //     uniqueId?: string;
+    // raw list item before passed into constructor function
+    export interface IUninstantiatedListItem {
+        author: IUser;
+        created: Date;
+        editor: IUser;
+        fileRef: ILookup<any>;
+        id: number;
+        modified: Date;
+        permMask: string;
+        uniqueId: string;
+        [key: string]: any;
+    }
 
-    //     deleteAttachment(url: string): ng.IPromise<any>;
-    //     deleteItem(options?: IListItemCrudOptions<T>): ng.IPromise<any>;
-    //     getAttachmentCollection: () => ng.IPromise<string[]>;
-    //     getAvailableWorkflows: () => ng.IPromise<IWorkflowDefinition[]>;
-    //     getCache?: () => IndexedCache<T>;
-    //     getChanges: () => ng.IPromise<T>;
-    //     getChangeSummary: (fieldNames: string[]| string) => ng.IPromise<ChangeSummary<T>>;
-    //     getFieldChoices: (fieldName: string) => string[];
-    //     getFieldDefinition(fieldName: string): IFieldDefinition;
-    //     getFieldDescription: (fieldName: string) => string;
-    //     getFieldLabel: (fieldName: string) => string;
-    //     getFormattedValue: (fieldName: string, options?: Object) => string;
-    //     getList: () => List;
-    //     getListId: () => string;
-    //     getLookupReference: <T2 extends ListItem<any>>(fieldName: string, lookupId?: number) => T2;
-    //     getVersionHistory: (fieldNames: string[]| string) => ng.IPromise<VersionHistoryCollection<T>>;
-    //     resolvePermissions: () => IUserPermissionsObject;
-    //     saveChanges: (options?: IListItemCrudOptions<T>) => ng.IPromise<T>;
-    //     saveFields: (fieldArray: string[], options?: IListItemCrudOptions<T>) => ng.IPromise<T>;
-    //     setPristine: () => void;
-    //     startWorkflow: (options: IStartWorkflowParams) => ng.IPromise<any>;
-    //     validateEntity: (options?: Object) => boolean;
-
-    //     // Added by Model Instantiation
-    //     getModel?: () => Model;
-    //     getPristine?: () => Object;
-    //     getQuery?: () => IQuery<T>;
-
-    // }
+    // standard uninstantiated list item with helper methods required to instantiate with model factory
+    export interface IUninstantiatedExtendedListItem<T extends ListItem<any>> extends IUninstantiatedListItem {
+        getCache: () => IndexedCache<T>;
+        getQuery: () => IQuery<T>;
+    }
 
 
     /**
@@ -56,14 +35,14 @@ module ap {
      * functionality can be called directly from a given list item.
      * @constructor
      */
-    export class ListItem<T extends ListItem<any>> {
+    export class ListItem<T extends ListItem<any>> implements IUninstantiatedExtendedListItem<T> {
         author: IUser;
         created: Date;
         editor: IUser;
         fileRef: ILookup<T>;
         getCache: () => IndexedCache<T>;
         getModel: <M extends Model>() => M;
-        getPristine: () => Object;
+        getPristine: () => IUninstantiatedListItem;
         getQuery: () => IQuery<T>;
         id: number;
         modified: Date;
@@ -263,7 +242,7 @@ module ap {
          * @description
          * Uses ListItem.getVersionHistory and determines what information changed between each list item
          * version.
-         * @param {string[] | string} [fieldNames] An array/single string of field names on the list item to fetch a version
+         * @param {string[]} [fieldNames] An array/single string of field names on the list item to fetch a version
          * history for.
          * @returns {ng.IPromise<ChangeSummary<T>>} Promise which resolves with an array of list item versions.
          * @example
@@ -277,7 +256,7 @@ module ap {
          *      };
          * </pre>
          */
-        getChangeSummary(fieldNames?: string[] | string): ng.IPromise<ChangeSummary<T>> {
+        getChangeSummary(fieldNames?: string[]): ng.IPromise<ChangeSummary<T>> {
             return this.getVersionHistory(fieldNames)
                 .then((versionHistoryCollection: VersionHistoryCollection<T>) => versionHistoryCollection.generateChangeSummary());
         }
@@ -499,7 +478,7 @@ module ap {
             if (!properties) {
                 /** If fields aren't provided, pull the version history for all NON-readonly fields */
                 let targetFields = _.where(model.list.fields, { readOnly: false });
-                properties = _.map<FieldDefinition, string>(targetFields, 'mappedName');
+                properties = _.map<IFieldDefinition, string>(targetFields, 'mappedName');
             }
 
             /** Generate promises for each field */
@@ -790,11 +769,11 @@ module ap {
                 }
 
                 let request = apDataService.serviceWrapper(config)
-                    .then((response) => {
+                    .then((response: XMLDocument) => {
                         var indexedCache = apDecodeService.processListItems<T>(model, listItem.getQuery(), response, config);
 
                         //Identify updated list item
-                        let updatedListItem = indexedCache[listItem.id];
+                        let updatedListItem = indexedCache.get(listItem.id);
 
                         /** Optionally broadcast change event */
                         apUtilityService.registerChange(model, 'update', updatedListItem.id);
@@ -809,7 +788,7 @@ module ap {
                     });
 
                     /** Notify change service to expect a request, only useful at this point when working offline */
-                    apChangeService.registerListItemUpdate<T>(listItem, config, request);
+                    apChangeService.registerListItemUpdate<T>(listItem, config, deferred.promise);
 
 
             }

@@ -20,8 +20,8 @@ module ap {
         getCurrentSite(): ng.IPromise<string>;
         getFieldVersionHistory<T extends ListItem<any>>(options: IGetFieldVersionHistoryOptions, fieldDefinition: IFieldDefinition): ng.IPromise<FieldVersionCollection>
         getGroupCollectionFromUser(login?: string): ng.IPromise<IXMLGroup[]>;
-        getList(options: { listName: string }): ng.IPromise<Object>;
-        getListFields(options: { listName: string; }): ng.IPromise<IXMLFieldDefinition[]>;
+        getList(options: { listName: string; webURL?: string }): ng.IPromise<Object>;
+        getListFields(options: { listName: string; webURL?: string }): ng.IPromise<IXMLFieldDefinition[]>;
         getUserProfileByName(login?: string): ng.IPromise<IXMLUserProfile>;
         processChangeTokenXML<T extends ListItem<any>>(model: Model, query: IQuery<T>, responseXML: XMLDocument, opts): void;
         processDeletionsSinceToken(responseXML: XMLDocument, indexedCache: IndexedCache<any>): void;
@@ -332,14 +332,15 @@ module ap {
          * Returns all list details including field and list config.
          * @param {object} options Configuration parameters.
          * @param {string} options.listName GUID of the list.
+         * @param {string} [options.webURL] URL to the site containing the list if differnt from primary data site in apConfig.
          * @returns {object} Promise which resolves with an object defining field and list config.
          */
-        getList(options: { listName: string }): ng.IPromise<Object> {
+        getList(options: { listName: string, webURL?: string }): ng.IPromise<Object> {
             let defaults = {
                 operation: 'GetList'
             };
 
-            let opts = _.assign({}, defaults, options);
+            let opts: { operation: string; listName: string; webURL?: string} = _.assign({}, defaults, options);
             return this.serviceWrapper(opts);
         }
 
@@ -350,9 +351,10 @@ module ap {
          * Returns field definitions for a specified list.
          * @param {object} options Configuration parameters.
          * @param {string} options.listName GUID of the list.
+         * @param {string} [options.webURL] URL to the site containing the list if differnt from primary data site in apConfig.
          * @returns {Promise} Promise which resolves with an array of field definitions for the list.
          */
-        getListFields(options: { listName: string; }): ng.IPromise<IXMLFieldDefinition[]> {
+        getListFields(options: { listName: string; webURL?: string }): ng.IPromise<IXMLFieldDefinition[]> {
             return this.getList(options)
                 .then((responseXML) => {
                     let filteredNodes = apXMLToJSONService.filterNodes(responseXML, 'Field');
@@ -467,7 +469,7 @@ module ap {
                 if (changeType === 'Delete') {
                     let listItemId = parseInt($(node).text(), 10);
                     /** Remove from local data array */
-                    cache.removeEntityById(listItemId);
+                    cache.delete(listItemId);
                 }
             });
         }

@@ -8,33 +8,6 @@ module ap {
         apFieldService: FieldService, apConfig: IAPConfig, apIndexedCacheFactory: IndexedCacheFactory,
         apDecodeService: DecodeService, apEncodeService: EncodeService, $q: ng.IQService;
 
-    // export interface IModel {
-    //     addNewItem<T extends ListItem<any>>(entity: Object, options?: Object): ng.IPromise<T>;
-    //     createEmptyItem<T extends ListItem<any>>(overrides?: Object): T;
-    //     deferredListDefinition: ng.IPromise<Object>;
-    //     executeQuery<T extends ListItem<any>>(queryName?: string, options?: Object): ng.IPromise<IndexedCache<T>>;
-    //     extendListMetadata(options?: Object): ng.IPromise<any>;
-    //     factory: IModelFactory;
-    //     generateMockData<T extends ListItem<any>>(options?: Object): T[];
-    //     getAllListItems<T extends ListItem<any>>(): ng.IPromise<IndexedCache<T>>;
-    //     getCache<T extends ListItem<any>>(queryName?: string): IndexedCache<T>;
-    //     getCachedEntities<T extends ListItem<any>>(): IndexedCache<T>;
-    //     getCachedEntity<T extends ListItem<any>>(listItemId: number): T;
-    //     getFieldDefinition(fieldName: string): IFieldDefinition;
-    //     getList(): List;
-    //     getListId(): string;
-    //     getListItemById<T extends ListItem<any>>(listItemId: number, options?: Object): ng.IPromise<T>;
-    //     getModel(): Model;
-    //     getQuery<T extends ListItem<any>>(queryName: string): IQuery<T>;
-    //     isInitialised(): boolean;
-    //     lastServerUpdate: Date;
-    //     list: List;
-    //     queries: IQueriesContainer;
-    //     registerQuery<T extends ListItem<any>>(queryOptions: IQueryOptions): IQuery<T>;
-    //     resolvePermissions(): IUserPermissionsObject;
-    //     validateEntity<T extends ListItem<any>>(listItem: T, options?: Object): boolean;
-    // }
-
     export interface IUninitializedModel {
         factory: IModelFactory;
         list: IUninstantiatedList;
@@ -43,7 +16,7 @@ module ap {
 
     export interface IQueriesContainer {
         getAllListItems?: IQuery<any>;
-        [key: string]: IQuery<any>
+        [key: string]: IQuery<any>;
     }
 
     export interface IModelFactory {
@@ -244,7 +217,7 @@ module ap {
          * </file>
          * </pre>
          */
-        addNewItem<T extends ListItem<any>>(entity: Object, {
+        addNewItem<T extends ListItem<any>>(entity: ListItem<T>, {
             buildValuePairs = true,
             indexedCache = apIndexedCacheFactory.create({}),
             valuePairs = []
@@ -361,21 +334,21 @@ module ap {
          * @description
          * Extends the List and Fields with list information returned from the server.  Only runs once and after that
          * returns the existing promise.
-         * @param {object} [options] Pass-through options to apDataService.getList
          * @returns {ng.IPromise<Model>} Promise that is resolved with the extended model.
          */
-        extendListMetadata(options?: Object): ng.IPromise<Model> {
+        extendListMetadata(): ng.IPromise<Model> {
             var model = this,
-                deferred = $q.defer(),
-                defaults = { listName: model.getListId() };
+                deferred = $q.defer()
 
             /** Only request information if the list hasn't already been extended and is not currently being requested */
             if (!model.deferredListDefinition) {
                 /** All Future Requests get this */
                 model.deferredListDefinition = deferred.promise;
 
-                var opts = _.assign({}, defaults, options);
-                let getListAction = apDataService.getList(opts)
+                let getListAction = apDataService.getList({
+                    listName: model.getListId(),
+                    webURL: model.getList().webURL
+                });
 
                 /** We can potentially have 2 seperate requests for data so store them in array so we can wait until
                  * all are resolved. */
@@ -475,7 +448,7 @@ module ap {
          * has already been resolved and there's no need to check SharePoint for changes.
          *
          * @param {string} [queryName=apConfig.defaultQueryName] A unique key to identify this query.
-         * @returns {Array} Returns the contents of the current cache for a named query.
+         * @returns {IndexedCache<T>} Returns the contents of the current cache for a named query.
          *
          * @example
          * <pre>
@@ -576,7 +549,7 @@ module ap {
          * @returns {string} List ID.
          */
         getListId(): string {
-            return this.list.getListId();
+            return this.getList().getListId();
         }
 
 
@@ -983,8 +956,8 @@ module ap {
     }
 
     export class ModelFactory {
-        Model = Model;
         static $inject = ['$q', 'apCacheService', 'apConfig', 'apDataService', 'apDecodeService', 'apEncodeService', 'apFieldService', 'apIndexedCacheFactory', 'apListFactory', 'apQueryFactory', 'apUtilityService'];
+        Model = Model;
         constructor(_$q_, _apCacheService_, _apConfig_, _apDataService_, _apDecodeService_, _apEncodeService_, _apFieldService_, _apIndexedCacheFactory_, _apListFactory_, _apQueryFactory_, _apUtilityService_) {
 
             $q = _$q_;
@@ -1000,7 +973,7 @@ module ap {
             apUtilityService = _apUtilityService_;
         }
 
-        create(config) {
+        create(config: IUninitializedModel) {
             return new Model(config);
         }
 

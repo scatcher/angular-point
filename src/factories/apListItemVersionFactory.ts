@@ -6,7 +6,7 @@ module ap {
     export interface IListItemVersions<T extends ListItem<any>> extends ListItem<T> {
         [key: number]: IListItemVersion<T>;
     }
-    
+
     export interface IListItemVersion<T extends ListItem<any>> extends ListItem<T> {
         modified: Date;
         version: number;
@@ -131,7 +131,7 @@ module ap {
      * @param {IListItemVersion<T>} newerVersion Updated version of list item.
      * @param {IListItemVersion<T>} [previousVersion={}] Previous version of list item.
      * @description
-     * Used specifically to determine difference between 2 distinct versions of a list item using the 
+     * Used specifically to determine difference between 2 distinct versions of a list item using the
      * version history.  Extends FieldChangeSummary.
      */
     export class VersionSummary<T extends ListItem<any>> extends FieldChangeSummary<T> {
@@ -185,8 +185,8 @@ module ap {
         count(): number {
             return _.keys(this.versionSummaryCollection).length;
         }
-        toArray() {
-            return _.toArray<VersionSummary<T>>(this.versionSummaryCollection);
+        toArray(): VersionSummary<T>[] {
+            return _.toArray<any>(this.versionSummaryCollection);
         }
     }
 
@@ -235,7 +235,7 @@ module ap {
         VersionHistoryCollection = VersionHistoryCollection;
         VersionSummary = VersionSummary;
     }
-    
+
     /**
     * @ngdoc function
     * @name apListItemVersionFactory
