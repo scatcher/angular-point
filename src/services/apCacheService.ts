@@ -166,7 +166,7 @@ module ap {
             _.each(model.queries, (query: IQuery<any>) => {
                 let cache = query.getCache();
                 if (cache.has(entityId)) {
-                    cache.removeEntityById(entityId);
+                    cache.delete(entityId);
                 }
             });
         }
@@ -186,7 +186,7 @@ module ap {
 
             _.each(modelCache, (entityContainer: EntityContainer) => {
                 if (entityContainer.entity && entityContainer.entity.id) {
-                    allEntities.addEntity(entityContainer.entity);
+                    allEntities.set(entityContainer.entity.id, entityContainer.entity);
                 }
             });
             return allEntities;
