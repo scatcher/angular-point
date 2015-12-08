@@ -3,49 +3,28 @@
 module ap {
     'use strict';
 
-    let $q: ng.IQService, toastr, apCacheService: CacheService, apDataService: DataService, apDecodeService: DecodeService,
+    let $q: ng.IQService, apCacheService: CacheService, apDataService: DataService, apDecodeService: DecodeService,
         apEncodeService: EncodeService, apUtilityService: UtilityService, apConfig: IAPConfig,
         apListItemVersionFactory: ListItemVersionFactory, apChangeService: ChangeService;
 
-    // interface IListItem<T extends ListItem<any>> {
-    //     author?: IUser;
-    //     created?: Date;
-    //     editor?: IUser;
-    //     fileRef?: ILookup;
-    //     id?: number;
-    //     modified?: Date;
-    //     permMask?: string;
-    //     uniqueId?: string;
+    // raw list item before passed into constructor function
+    export interface IUninstantiatedListItem {
+        author: IUser;
+        created: Date;
+        editor: IUser;
+        fileRef: ILookup<any>;
+        id: number;
+        modified: Date;
+        permMask: string;
+        uniqueId: string;
+        [key: string]: any;
+    }
 
-    //     deleteAttachment(url: string): ng.IPromise<any>;
-    //     deleteItem(options?: IListItemCrudOptions<T>): ng.IPromise<any>;
-    //     getAttachmentCollection: () => ng.IPromise<string[]>;
-    //     getAvailableWorkflows: () => ng.IPromise<IWorkflowDefinition[]>;
-    //     getCache?: () => IndexedCache<T>;
-    //     getChanges: () => ng.IPromise<T>;
-    //     getChangeSummary: (fieldNames: string[]| string) => ng.IPromise<ChangeSummary<T>>;
-    //     getFieldChoices: (fieldName: string) => string[];
-    //     getFieldDefinition(fieldName: string): IFieldDefinition;
-    //     getFieldDescription: (fieldName: string) => string;
-    //     getFieldLabel: (fieldName: string) => string;
-    //     getFormattedValue: (fieldName: string, options?: Object) => string;
-    //     getList: () => List;
-    //     getListId: () => string;
-    //     getLookupReference: <T2 extends ListItem<any>>(fieldName: string, lookupId?: number) => T2;
-    //     getVersionHistory: (fieldNames: string[]| string) => ng.IPromise<VersionHistoryCollection<T>>;
-    //     resolvePermissions: () => IUserPermissionsObject;
-    //     saveChanges: (options?: IListItemCrudOptions<T>) => ng.IPromise<T>;
-    //     saveFields: (fieldArray: string[], options?: IListItemCrudOptions<T>) => ng.IPromise<T>;
-    //     setPristine: () => void;
-    //     startWorkflow: (options: IStartWorkflowParams) => ng.IPromise<any>;
-    //     validateEntity: (options?: Object) => boolean;
-
-    //     // Added by Model Instantiation
-    //     getModel?: () => Model;
-    //     getPristine?: () => Object;
-    //     getQuery?: () => IQuery<T>;
-
-    // }
+    // standard uninstantiated list item with helper methods required to instantiate with model factory
+    export interface IUninstantiatedExtendedListItem<T extends ListItem<any>> extends IUninstantiatedListItem {
+        getCache: () => IndexedCache<T>;
+        getQuery: () => IQuery<T>;
+    }
 
 
     /**
@@ -56,14 +35,14 @@ module ap {
      * functionality can be called directly from a given list item.
      * @constructor
      */
-    export class ListItem<T extends ListItem<any>> {
+    export class ListItem<T extends ListItem<any>> implements IUninstantiatedExtendedListItem<T> {
         author: IUser;
         created: Date;
         editor: IUser;
         fileRef: ILookup<T>;
         getCache: () => IndexedCache<T>;
         getModel: <M extends Model>() => M;
-        getPristine: () => Object;
+        getPristine: () => IUninstantiatedListItem;
         getQuery: () => IQuery<T>;
         id: number;
         modified: Date;
@@ -183,7 +162,7 @@ module ap {
                     .then((response) => {
                         /** Optionally broadcast change event */
                         apUtilityService.registerChange(model, 'delete', listItem.id);
-                        
+
                         /** Success */
                         apCacheService.deleteEntity(config.listName, listItem.id);
 
@@ -193,11 +172,8 @@ module ap {
                         //In the event of an error, display toast
                         let msg = 'There was an error deleting list item ' + listItem.id + ' from ' + model.list.title +
                             ' due to the following Error: ' + err;
-                        toastr.error(msg);
-                        throw new Error(msg)
-                        deferred.reject(err);
+                        deferred.reject(msg);
                     });
-
             }
 
             return deferred.promise;
@@ -266,7 +242,7 @@ module ap {
          * @description
          * Uses ListItem.getVersionHistory and determines what information changed between each list item
          * version.
-         * @param {string[] | string} [fieldNames] An array/single string of field names on the list item to fetch a version
+         * @param {string[]} [fieldNames] An array/single string of field names on the list item to fetch a version
          * history for.
          * @returns {ng.IPromise<ChangeSummary<T>>} Promise which resolves with an array of list item versions.
          * @example
@@ -280,7 +256,7 @@ module ap {
          *      };
          * </pre>
          */
-        getChangeSummary(fieldNames?: string[] | string): ng.IPromise<ChangeSummary<T>> {
+        getChangeSummary(fieldNames?: string[]): ng.IPromise<ChangeSummary<T>> {
             return this.getVersionHistory(fieldNames)
                 .then((versionHistoryCollection: VersionHistoryCollection<T>) => versionHistoryCollection.generateChangeSummary());
         }
@@ -502,7 +478,7 @@ module ap {
             if (!properties) {
                 /** If fields aren't provided, pull the version history for all NON-readonly fields */
                 let targetFields = _.where(model.list.fields, { readOnly: false });
-                properties = _.map<FieldDefinition, string>(targetFields, 'mappedName');
+                properties = _.map<IFieldDefinition, string>(targetFields, 'mappedName');
             }
 
             /** Generate promises for each field */
@@ -761,7 +737,7 @@ module ap {
             let listItem = this;
             let model = listItem.getModel();
             let deferred = $q.defer();
-            
+
 
             let config = {
                 batchCmd: 'Update',
@@ -793,11 +769,11 @@ module ap {
                 }
 
                 let request = apDataService.serviceWrapper(config)
-                    .then((response) => {
+                    .then((response: XMLDocument) => {
                         var indexedCache = apDecodeService.processListItems<T>(model, listItem.getQuery(), response, config);
-                        
+
                         //Identify updated list item
-                        let updatedListItem = indexedCache[listItem.id];   
+                        let updatedListItem = indexedCache.get(listItem.id);
 
                         /** Optionally broadcast change event */
                         apUtilityService.registerChange(model, 'update', updatedListItem.id);
@@ -806,15 +782,15 @@ module ap {
                         if (_.isFunction(listItem.postSaveAction)) {
                             listItem.postSaveAction();
                         };
-                        
+
                         //Resolve with the updated list item
                         deferred.resolve(updatedListItem);
                     });
 
                     /** Notify change service to expect a request, only useful at this point when working offline */
-                    apChangeService.registerListItemUpdate<T>(listItem, config, request);
-                                               
-                
+                    apChangeService.registerListItemUpdate<T>(listItem, config, deferred.promise);
+
+
             }
 
             return deferred.promise;
@@ -861,7 +837,7 @@ module ap {
             }
             /** Allow a string to be passed in to save a single field */
             let fieldNames = _.isString(fieldArray) ? [fieldArray] : fieldArray;
-            
+
             /** Find the field definition for each of the requested fields */
             for (let fieldName of fieldNames) {
                 let match = _.find(model.list.customFields, { mappedName: fieldName });
@@ -957,14 +933,12 @@ module ap {
          * @name ListItem.validateEntity
          * @description
          * Helper function that passes the current item to Model.validateEntity
-         * @param {object} [options] Optionally pass params to the dataService.
-         * @param {boolean} [options.toast=true] Set to false to prevent toastr messages from being displayed.
          * @returns {boolean} Evaluation of validity.
          */
-        validateEntity(options?: Object): boolean {
+        validateEntity(): boolean {
             let listItem = this,
                 model = listItem.getModel();
-            return model.validateEntity(listItem, options);
+            return model.validateEntity(listItem);
         }
 
     }
@@ -993,9 +967,9 @@ module ap {
 
     export class ListItemFactory {
         ListItem = ListItem;
-        static $inject = ['$q', 'apCacheService', 'apChangeService', 'apConfig', 'apDataService', 'apDecodeService', 'apEncodeService', 'apUtilityService', 'toastr', 'apListItemVersionFactory'];
+        static $inject = ['$q', 'apCacheService', 'apChangeService', 'apConfig', 'apDataService', 'apDecodeService', 'apEncodeService', 'apUtilityService', 'apListItemVersionFactory'];
 
-        constructor(_$q_, _apCacheService_, _apChangeService_, _apConfig_, _apDataService_, _apDecodeService_, _apEncodeService_, _apUtilityService_, _toastr_, _apListItemVersionFactory_) {
+        constructor(_$q_, _apCacheService_, _apChangeService_, _apConfig_, _apDataService_, _apDecodeService_, _apEncodeService_, _apUtilityService_, _apListItemVersionFactory_) {
             $q = _$q_;
             apCacheService = _apCacheService_;
             apChangeService = _apChangeService_;
@@ -1004,7 +978,6 @@ module ap {
             apDecodeService = _apDecodeService_;
             apEncodeService = _apEncodeService_;
             apUtilityService = _apUtilityService_;
-            toastr = _toastr_;
             apListItemVersionFactory = _apListItemVersionFactory_;
         }
 

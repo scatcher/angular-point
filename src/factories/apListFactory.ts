@@ -190,8 +190,8 @@ module ap {
          */
         extendFieldDefinitions() {
             //Clear out
-            this.viewFields = ''
-            
+            this.viewFields = '';
+
             /**
             * Constructs the field
             * - adds to viewField
@@ -220,14 +220,14 @@ module ap {
             /** Close viewFields */
             this.viewFields += '</ViewFields>';
         }
-        
+
         /**
          * @ngdoc function
          * @name List:extendPermissionsFromListItem
          * @methodOf List
          * @param {ListItem} listItem List item to use as sample of user's permisssions for list.
          * @description
-         * If the user permissions haven't been resolved for the list, use the permissions from a 
+         * If the user permissions haven't been resolved for the list, use the permissions from a
          * sample list item and assume they're the same for the entire list
          * @returns {IUserPermissionsObject} Resolved permissions for the list item.
          */
@@ -315,15 +315,11 @@ module ap {
         create(config) {
             return new List(config);
         }
-
-
     }
 
 
     angular.module('angularPoint')
         .service('apListFactory', ListFactory);
 
-
-    /********************** PRIVATE *************************/
 
 }

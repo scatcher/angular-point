@@ -76,12 +76,12 @@ module ap {
          * and container in scope for future reference.
          */
         createListItemProvider<T extends ListItem<any>>(model: Model, query: IQuery<T>, indexedCache: IndexedCache<T>): (rawObject: Object) => T {
-            return (rawObject: { [key: string]: any, getCache(): IndexedCache<T>, getQuery(): IQuery<T>, id: number }) => {
+            return (rawObject: IUninstantiatedExtendedListItem<T>) => {
                 let listItem: T;
 
-                if (indexedCache[rawObject.id]) {
+                if (indexedCache.has(rawObject.id)) {
                     //Object already exists in cache so we just need to update properties
-                    listItem = indexedCache[rawObject.id];
+                    listItem = indexedCache.get(rawObject.id);
 
                     //Call constructor on original list item to perform any initialization logic again
                     listItem.constructor(rawObject);
@@ -109,11 +109,11 @@ module ap {
                 * @name ListItem.getPristine
                 * @description
                 * Allow us to reference the uninstantiated version of this list item.  Reference set
-                * via angularPoint.apDecodeService:createListItemProvider. 
+                * via angularPoint.apDecodeService:createListItemProvider.
                 */
                 listItem.getPristine = () => pristineValue;
 
-                return indexedCache[rawObject.id];
+                return indexedCache.get(rawObject.id);
             }
         }
 
@@ -334,11 +334,11 @@ module ap {
             if (!str) {
                 return str;
             } else {
-                return parseInt(str);
+                return parseInt(str, 10);
             }
         }
 
-        jsLookup(str: string, options?: Object): ILookup {
+        jsLookup(str: string, options?: Object): ILookup<any> {
             if (str.length === 0) {
                 return null;
             } else {
@@ -347,7 +347,7 @@ module ap {
             }
         }
 
-        jsLookupMulti(str: string, options?: Object): ILookup[] {
+        jsLookupMulti(str: string, options?: Object): ILookup<any>[] {
             if (str.length === 0) {
                 return [];
             } else {
@@ -579,29 +579,29 @@ module ap {
          * they are mapped.
          * @param {string} [options.filter='z:row'] XML filter string used to find the elements to iterate over.
          * @param {Array} [options.mapping=model.list.mapping] Field definitions, typically stored on the model.
-         * @param {Array} [options.target=model.getCache()] Optionally pass in array to update after processing.
+         * @param {Array} [options.target=model.getCache()] Optionally pass in an Indexed Cache instead of using the defaul cache.
          * @returns {Object} Inedexed Cache.
          */
         processListItems<T extends ListItem<any>>(model: Model, query: IQuery<T>, responseXML: XMLDocument, {
             includeAllAttrs = false,
             filter = 'z:row',
             mapping = model.list.mapping,
-            target = model.getCache()
+            target = model.getCache<T>()
         } = {}): IndexedCache<T> {
 
             /** Map returned XML to JS objects based on mapping from model */
             let filteredNodes = this.apXMLToJSONService.filterNodes(responseXML, filter);
 
             /** Prepare constructor for XML entities with references to the query and cached container */
-            let listItemProvider = this.createListItemProvider(model, query, target);
+            let listItemProvider = this.createListItemProvider<T>(model, query, target);
 
             /** Convert XML entities into JS objects */
             let parsedEntities = this.xmlToJson(filteredNodes, { mapping, includeAllAttrs });
-            
+
             /** Instantiate each list list item with factory on model and add to cache */
-            _.each(parsedEntities, (rawListItemObject) => {
+            _.each(parsedEntities, (rawListItemObject: IUninstantiatedListItem) => {
                 listItemProvider(rawListItemObject);
-            })
+            });
 
             return target;
         }
@@ -630,7 +630,7 @@ module ap {
             let parseOptions = { mapping, includeAllAttrs, removeOws }
             return _.map(xmlEntities, (xmlEntity) => {
                 return this.parseXmlEntity(xmlEntity, parseOptions);
-            });            
+            });
         }
 
     }
@@ -652,8 +652,8 @@ module ap {
         mapping: IListFieldMapping;
         includeAllAttrs?: boolean;
         removeOws?: boolean;
-    }    
-    
+    }
+
     interface IProcessListItemsOptions<T extends ListItem<any>>{
         includeAllAttrs?: boolean;
         filter?: string;

@@ -17,7 +17,7 @@ module ap {
             service = this;
             $filter = _$filter_;
         }
-        
+
         /**
          * @ngdoc function
          * @name angularPoint.apFormattedFieldValueService:getFormattedFieldValue
@@ -61,12 +61,7 @@ module ap {
          * </pre>
          * @returns {string} Stringified property on the object based on the field type.
          */
-        getFormattedFieldValue(prop: any, propertyType = 'String', options?: { delim?: string; dateFormat?: string }): string {
-            var defaults = {
-                delim: ', ',
-                dateFormat: 'short'
-            },
-                opts = _.assign({}, defaults, options);
+        getFormattedFieldValue(prop: any, propertyType: string = 'String', options: { delim?: string; dateFormat?: string } = {}): string {
 
             var str: string = '';
             /** Only process if prop is defined */
@@ -83,7 +78,7 @@ module ap {
                         str = service.stringifyLookup(prop);
                         break;
                     case 'DateTime':
-                        str = service.stringifyDate(prop, opts.dateFormat);
+                        str = service.stringifyDate(prop, options.dateFormat);
                         break;
                     case 'Integer':
                     case 'Number':
@@ -95,11 +90,11 @@ module ap {
                         str = service.stringifyCurrency(prop);
                         break;
                     case 'MultiChoice':
-                        str = service.stringifyMultiChoice(prop, opts.delim);
+                        str = service.stringifyMultiChoice(prop, options.delim);
                         break;
                     case 'UserMulti':
                     case 'LookupMulti':
-                        str = service.stringifyMultiLookup(prop, opts.delim);
+                        str = service.stringifyMultiLookup(prop, options.delim);
                         break;
                     default:
                         str = prop;
@@ -107,7 +102,7 @@ module ap {
             }
             return str;
         }
-        
+
         /**
          * @ngdoc function
          * @name angularPoint.apFormattedFieldValueService:stringifyBoolean
@@ -149,7 +144,7 @@ module ap {
         stringifyCurrency(prop: number): string {
             return $filter('currency')(prop, '$');
         }
-        
+
         /**
          * @ngdoc function
          * @name angularPoint.apFormattedFieldValueService:stringifyDate
@@ -161,14 +156,14 @@ module ap {
          * Returns JSON date.
          * @returns {string} JSON date.
          */
-        stringifyDate(prop: Date, dateFormat: string): string {
+        stringifyDate(prop: Date, dateFormat: string = 'short'): string {
             var str = '';
             if (_.isDate(prop)) {
                 str = dateFormat === 'json' ? prop.toJSON() : $filter('date')(prop, dateFormat);
             }
             return str;
         }
-        
+
         /**
          * @ngdoc function
          * @name angularPoint.apFormattedFieldValueService:stringifyLookup
@@ -178,7 +173,7 @@ module ap {
          * Returns the property.lookupValue if present.
          * @returns {string} Property.lookupValue.
          */
-        stringifyLookup(prop: ILookup): string {
+        stringifyLookup(prop: ILookup<any>): string {
             var str = '';
             if (prop && prop.lookupValue) {
                 str = prop.lookupValue;
@@ -219,7 +214,7 @@ module ap {
          * Converts an array of selected lookup values into a single concatenated string.
          * @returns {string} Concatenated string representation.
          */
-        stringifyMultiLookup(prop: ILookup[], delim = '; '): string {
+        stringifyMultiLookup(prop: ILookup<any>[], delim = '; '): string {
             var str = '';
             _.each(prop, function(val, valIndex) {
 

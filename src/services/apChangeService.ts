@@ -27,7 +27,7 @@ module ap {
      */
     export class ChangeService {
         callbackQueue: IChangeServiceCallback[] = [];
-        registerListItemUpdate<T extends ListItem<any>>(entity: T, options: IUpdateOptions<T>, promise: ng.IPromise<T>) {
+        registerListItemUpdate<T extends ListItem<any>>(entity: ListItem<T>, options: IUpdateOptions<T>, promise: ng.IPromise<ListItem<T>>) {
             _.each(this.callbackQueue, (callback) => {
                 callback(entity, options, promise);
             });

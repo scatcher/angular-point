@@ -4,24 +4,6 @@
 module ap {
     'use strict';
 
-//TODO: Remove dependency on toastr
-    /** Check to see if dependent modules exist */
-    try {
-        angular.module('toastr');
-    }
-    catch (e) {
-        /** Toastr wasn't found so redirect all toastr requests to $log */
-        angular.module('toastr', [])
-            .factory('toastr', function ($log) {
-                return {
-                    error: $log.error,
-                    info: $log.info,
-                    success: $log.info,
-                    warning: $log.warn
-                };
-            });
-    }
-
     /**
      * @ngdoc overview
      * @module
@@ -31,11 +13,9 @@ module ap {
      * functionality in your project.
      * @installModule
      */
-    angular.module('angularPoint', [
-        'toastr'
-    ])
+    angular.module('angularPoint')
     /** Bootstrap everything that needs to be immediately instantiated */
     .run((apListItemFactory: ListItemFactory, apModelFactory: ModelFactory) => {
-        
+
     })
 }

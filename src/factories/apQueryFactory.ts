@@ -24,7 +24,7 @@ module ap {
         viewFields?: string;
         webURL?: string;
     }
-    
+
     export interface IExecuteQueryOptions {
         factory?: Function;
         filter?: string;
@@ -270,7 +270,7 @@ module ap {
                         case 'GetListItems':
                             query.hydrateFromLocalStorage(localStorageData);
                             //Use cached data if we have data already available
-                            makeRequest = this.getCache().count() === 0;
+                            makeRequest = this.getCache().size === 0;
                     }
                 }
 
@@ -490,12 +490,12 @@ module ap {
             var model = this.getModel();
             return model.getListId() + '.query.' + this.name;
         }
-        
+
         makeRequest(): ng.IPromise<IndexedCache<T>> {
             let query = this;
             let model = this.getModel();
             let cache = this.getCache();
-            
+
             return apDataService.serviceWrapper(query)
                 .then((responseXML) => {
                     if (query.operation === 'GetListItemChangesSinceToken') {
@@ -511,7 +511,7 @@ module ap {
                     return entities;
                 });
 
-            
+
         }
     }
 

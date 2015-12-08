@@ -6,7 +6,7 @@
   ],
   "license": "MIT",
   "homepage": "https://github.com/scatcher/angular-point",
-  "version": "4.0.0",
+  "version": "4.1.0",
   "module": "angularPoint",
   "dependencies": {},
   "devDependencies": {
@@ -21,7 +21,7 @@
     "jasmine-core": "^2.3.4",
     "moment": "^2.10.6",
     "phantomjs": "^1.9.18",
-    "typescript": "^1.6.2"
+    "typescript": "next"
   },
   "engines": {
     "node": ">=4.1.2"

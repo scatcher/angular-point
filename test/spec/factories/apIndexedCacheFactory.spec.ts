@@ -2,7 +2,7 @@
 module ap.test {
     'use strict';
 
-    describe("Factory: apIndexedCacheFactory", function() {
+    describe("Factory: apIndexedCacheFactory", () => {
 
         beforeEach(module("angularPoint"));
 
@@ -13,84 +13,105 @@ module ap.test {
         beforeEach(inject(function(_apIndexedCacheFactory_) {
             factory = _apIndexedCacheFactory_;
             mockCache = factory.create();
-            mockCache.addEntity(entityOne);
-            mockCache.addEntity(entityTwo);
+            mockCache.set(entityOne.id, entityOne);
+            mockCache.set(entityTwo.id, entityTwo);
         }));
 
 
 
-        describe('IndexCache', function() {
-            it('the cache to have the correct constructor', function() {
+        describe('Factory: IndexCache', () => {
+            it('the cache to have the correct constructor', () => {
                 expect(mockCache instanceof factory.IndexedCache).toBe(true);
             });
         });
 
-        describe('addEntity', function() {
-            it('will add the new entity to the cache', function() {
-                expect(mockCache[1].title).toEqual('test');
-            });
-
-            it('throws an error if a valid entity isn\'t provided', function() {
-                expect(function() { mockCache.addEntity('Not an Entity') }).toThrow();
-            });
-        });
-
-        describe('clear', function() {
-            beforeEach(function() {
+        describe('Method: clear', () => {
+            it('empties all items in the cache', () => {
                 mockCache.clear();
-            });
-            it('empties all items in the cache', function() {
-                expect(mockCache.count()).toEqual(0);
+                expect(mockCache.size).toEqual(0);
             });
         });
 
-        describe('keys', function() {
-            it('will return the keys', function() {
-                expect(mockCache.keys()).toEqual(['1', '2']);
+        describe('Method: count', () => {
+            it('returns the number of entities in cache', () => {
+                expect(mockCache.size).toEqual(2);
+                mockCache.delete(2);
+                expect(mockCache.size).toEqual(1);
+                mockCache.delete(1);
+                expect(mockCache.size).toEqual(0);
             });
         });
 
-        describe('first', function() {
-            it('will return the first item in the cache based on id', function() {
+        describe('Method: delete', () => {
+            it('removes the an entity given an id', () => {
+                expect(mockCache.size).toEqual(2);
+                expect(mockCache[1]).toBeDefined();
+                mockCache.delete(1);
+                expect(mockCache.size).toEqual(1);
+                expect(mockCache[1]).toBeUndefined();
+            });
+
+            it('returns true if entity is found in cache', () => {
+                let deleted = mockCache.delete(1);
+                expect(deleted).toBeTruthy();
+            });
+            it('returns false if entity is not found in cache', () => {
+                let deleted = mockCache.delete(55);
+                expect(deleted).toBeFalsy();
+            });
+        });
+
+        describe('Method: first', () => {
+            it('will return the first item in the cache based on id', () => {
                 expect(mockCache.first()).toBe(entityOne);
             });
         });
 
-        describe('last', function() {
-            it('will return the last item in the cache based on id', function() {
+        describe('Method: has', () => {
+            it('returns true if entity exists in cache', () => {
+                expect(mockCache.has(1)).toBeTruthy();
+            });
+            it('returns false if entity does not exist in cache', () => {
+                expect(mockCache.has(99)).toBeFalsy();
+            });
+        });
+
+        describe('Method: keys', () => {
+            it('will return the keys', () => {
+                expect(mockCache.keys()).toEqual(['1', '2']);
+            });
+        });
+
+        describe('Method: last', () => {
+            it('will return the last item in the cache based on id', () => {
                 expect(mockCache.last()).toBe(entityTwo);
             });
         });
 
-        describe('removeEntity', function() {
-            it('removes an entity when an entity is provided', function() {
-                expect(mockCache.count()).toEqual(2);
-                expect(mockCache[1]).toBeDefined();
-                mockCache.removeEntity(mockCache[1]);
-                expect(mockCache.count()).toEqual(1);
-                expect(mockCache[1]).toBeUndefined();
+        describe('Method: set', () => {
+            it('will add the new entity to the cache', () => {
+                mockCache.set(3, { title: 'test3' });
+                expect(mockCache.get(3).title).toEqual('test3');
             });
-        });
-        describe('removeEntityById', function() {
-            it('removes the an entity given an id', function() {
-                expect(mockCache.count()).toEqual(2);
-                expect(mockCache[1]).toBeDefined();
-                mockCache.removeEntityById(1);
-                expect(mockCache.count()).toEqual(1);
-                expect(mockCache[1]).toBeUndefined();
+
+            it('throws an error if a valid entity isn\'t provided', () => {
+                expect(() => { mockCache.set(99, 'Not an Entity') }).toThrow();
             });
         });
 
-        describe('toArray', function() {
-            it('will convert the object into an array', function() {
-                expect(mockCache.toArray().length).toBe(2);
+        describe('Property: size', () => {
+            it('adds a non-enumerable getter to the base prototype which returns the number of key/values stored in cache.', () => {
+                expect(mockCache.size).toEqual(2);
+                mockCache.delete(1);
+                expect(mockCache.size).toEqual(1);
             });
         });
 
-        describe('length', function() {
-            it('will return the number of entities in the cache', function() {
-                expect(mockCache.count()).toBe(2);
+        describe('Method: values', () => {
+            it('will convert the object into an array of list item objects', () => {
+                expect(mockCache.values()).toEqual([entityOne, entityTwo]);
             });
         });
+
     });
 }
