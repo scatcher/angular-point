@@ -100,8 +100,8 @@ module ap {
                         val = fieldDefinition.stringify(entity[fieldDefinition.field]);
                     } else if (fieldComponents.length > 1) {
                         /** Allow user to specify dot separated property path */
-                        if (_.deepIn(entity, fieldDefinition.field)) {
-                            val = _.deepGet(entity, fieldDefinition.field).toString();
+                        if (_.has(entity, fieldDefinition.field)) {
+                            val = _.get(entity, fieldDefinition.field).toString();
                         }
                     } else {
                         /** Get the value based on field type defined in the model for the entity*/
