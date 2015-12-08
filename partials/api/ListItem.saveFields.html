@@ -8,13 +8,9 @@
 </div></div>
 <h2 id="usage">Usage</h2>
 <div class="usage"><pre class="prettyprint linenums">saveFields(fieldArray, [options]);</pre>
-<h4 id="usage_parameters">Parameters</h4><table class="variables-matrix table table-bordered table-striped"><thead><tr><th>Param</th><th>Type</th><th>Details</th></tr></thead><tbody><tr><td>fieldArray</td><td><a href="" class="label type-hint type-hint-array">array</a><a href="" class="label type-hint type-hint-string">string</a></td><td><div class="listitem-savefields-page"><p>Array of internal field names that should be saved to SharePoint or a single
-string to save an individual field.</p>
+<h4 id="usage_parameters">Parameters</h4><table class="variables-matrix table table-bordered table-striped"><thead><tr><th>Param</th><th>Type</th><th>Details</th></tr></thead><tbody><tr><td>fieldArray</td><td><a href="" class="label type-hint type-hint-string">string[]</a></td><td><div class="listitem-savefields-page"><p>Array of internal field names that should be saved to SharePoint.</p>
 </div></td></tr><tr><td>[options]</td><td><a href="" class="label type-hint type-hint-object">object</a></td><td><div class="listitem-savefields-page"><p>Optionally pass params to the data service.</p>
-</div></td></tr><tr><td>options.updateAllCaches</td><td><a href="" class="label type-hint type-hint-boolean">boolean</a></td><td><div class="listitem-savefields-page"><p>Search through the cache for each query to ensure listItem is
-updated everywhere.  This is more process intensive so by default we only update the cached listItem in the
-cache where this listItem is currently stored.</p>
-</div> <p><em>(default: false)</em></p></td></tr></tbody></table><h4 id="usage_returns">Returns</h4><table class="variables-matrix"><tr><td><a href="" class="label type-hint type-hint-object">object</a></td><td><div class="listitem-savefields-page"><p>Promise which resolves with the updated list item from the server.</p>
+</div></td></tr></tbody></table><h4 id="usage_returns">Returns</h4><table class="variables-matrix"><tr><td><a href="" class="label type-hint type-hint-object">object</a></td><td><div class="listitem-savefields-page"><p>Promise which resolves with the updated list item from the server.</p>
 </div></td></tr></table></div>
 <h2 id="example">Example</h2>
 <div class="example"><div class="listitem-savefields-page"><pre class="prettyprint linenums">
@@ -23,12 +19,14 @@ cache where this listItem is currently stored.</p>
 // Similar to saveChanges but instead we only save
 // specified fields instead of pushing everything.
 $scope.updateStatus = function(task) {
-     task.saveFields(['status', 'notes']).then(function() {
-         // Successfully updated the status and
-         // notes fields for the given task
+     task.saveFields(['status', 'notes'])
+         .then(function(updatedListItem) {
+             // Successfully updated the status and
+             // notes fields for the given task
 
-         }, function() {
-         // Failure to update the field
+         })
+         .catch(function(err) {
+             // Failure to update the field
 
          });
 }

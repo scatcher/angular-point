@@ -13,7 +13,7 @@
 <h2 id="example">Example</h2>
 <div class="example"><div class="listitem-getattachmentcollection-page"><pre class="prettyprint linenums">
 //Pull down all attachments for the current list item
-var fetchAttachments = function (listItem) {
+let fetchAttachments = function (listItem) {
     listItem.getAttachmentCollection()
         .then(function (attachments) {
             scope.attachments = attachments;

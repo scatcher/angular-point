@@ -12,8 +12,8 @@ snapshot of the object.  Each version has the standard modified date but also in
 the version number.</p>
 </div></div>
 <h2 id="usage">Usage</h2>
-<div class="usage"><pre class="prettyprint linenums">getVersionHistory([fieldNames]);</pre>
-<h4 id="usage_parameters">Parameters</h4><table class="variables-matrix table table-bordered table-striped"><thead><tr><th>Param</th><th>Type</th><th>Details</th></tr></thead><tbody><tr><td>[fieldNames]</td><td><a href="" class="label type-hint type-hint-string">string[]</a></td><td><div class="listitem-getversionhistory-page"><p>An array of field names or single field name of properties on the list item
+<div class="usage"><pre class="prettyprint linenums">getVersionHistory([properties]);</pre>
+<h4 id="usage_parameters">Parameters</h4><table class="variables-matrix table table-bordered table-striped"><thead><tr><th>Param</th><th>Type</th><th>Details</th></tr></thead><tbody><tr><td>[properties]</td><td><a href="" class="label type-hint type-hint-string">string[]</a></td><td><div class="listitem-getversionhistory-page"><p>An array of property names on the list item
 that we&#39;re interested in.</p>
 </div></td></tr></tbody></table><h4 id="usage_returns">Returns</h4><table class="variables-matrix"><tr><td><a href="" class="label type-hint type-hint-ng">ng.IPromise&lt;VersionHistoryCollection&lt;T&gt;&gt;</a></td><td><div class="listitem-getversionhistory-page"><p>Promise which resolves with an object with keys=version
 and values = ListItemVersion.</p>
@@ -26,7 +26,10 @@ myGenericListItem.getVersionHistory(['title', 'project'])
     .then(function(versionHistory) {
            // We now have an array of every version of these fields
            vm.versionHistory = versionHistory;
-     };
+     })
+     .catch(function(err) {
+         // Do something with the error
+     });
 </pre>
 </div></div>
 </div>

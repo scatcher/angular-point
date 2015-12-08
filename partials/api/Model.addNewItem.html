@@ -13,7 +13,11 @@ defined in the model.</p>
 </div></td></tr><tr><td>[options]</td><td><a href="" class="label type-hint type-hint-object">object</a></td><td><div class="model-addnewitem-page"><ul>
 <li>Pass additional options to the data service.</li>
 </ul>
-</div></td></tr></tbody></table><h4 id="usage_returns">Returns</h4><table class="variables-matrix"><tr><td><a href="" class="label type-hint type-hint-object">object</a></td><td><div class="model-addnewitem-page"><p>A promise which when resolved will returned the newly created list item from there server.
+</div></td></tr><tr><td>options.buildValuePairs</td><td><a href="" class="label type-hint type-hint-boolean">boolean</a></td><td><div class="model-addnewitem-page"><p>Automatically generate pairs based on fields defined in model.</p>
+</div> <p><em>(default: true)</em></p></td></tr><tr><td>options.indexedCache</td><td><a href="" class="label type-hint type-hint-object">object</a></td><td><div class="model-addnewitem-page"><p>Optionally place new item in a specified cache.</p>
+</div> <p><em>(default: apIndexedCacheFactory.create({}))</em></p></td></tr><tr><td>[options.valuePairs]</td><td><a href="" class="label type-hint type-hint-array">Array[]</a></td><td><div class="model-addnewitem-page"><p>Precomputed value pairs to use instead of generating them for each
+field identified in the model.</p>
+</div></td></tr></tbody></table><h4 id="usage_returns">Returns</h4><table class="variables-matrix"><tr><td><a href="" class="label type-hint type-hint-ng">ng.IPromise&lt;T&gt;</a></td><td><div class="model-addnewitem-page"><p>A promise which when resolved will returned the newly created list item from there server.
 This allows us to update the view with a valid new object that contains a unique list item id.</p>
 </div></td></tr></table></div>
 <h2 id="example">Example</h2>

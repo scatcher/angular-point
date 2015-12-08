@@ -65,14 +65,16 @@ export class Log extends ap.ListItem{
     url: string;
     constructor(obj){
         _.assign(this, obj);
-        // Create a formatted representation of the stacktrace to display in email notification
-        if(this.stackTrace && !this.formattedStackTrace) {
-            this.formattedStackTrace = '';
-            _.each(this.stackTrace, (traceEntry) =&gt; {
-                this.formattedStackTrace += `${traceEntry}
-            `;
-            });
+    }
+    //override the default save and cleanup before actually saving
+    saveChanges() {
+         // stringify stacktrace prior to saving so we can display in email notifications
+         if(this.stackTrace && !this.formattedStackTrace) {
+         this.formattedStackTrace = this.stackTrace.map(function(sf) {
+              return sf.toString();
+          }).join('\n');
         }
+        return super.saveChanges();
     }
 }
 var logCounter = 0;

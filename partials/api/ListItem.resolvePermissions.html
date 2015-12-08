@@ -13,8 +13,8 @@
 <h2 id="example">Example</h2>
 <div class="example"><div class="listitem-resolvepermissions-page"><p>Lets assume we&#39;re checking to see if a user has edit rights for a given task list item.
 <pre class="prettyprint linenums">
-var canUserEdit = function(task) {
-     var userPermissions = task.resolvePermissions();
+let canUserEdit = function(task) {
+     let userPermissions = task.resolvePermissions();
      return userPermissions.EditListItems;
 };
 </pre>
