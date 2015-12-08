@@ -6,7 +6,7 @@ module ap {
     let apCacheService: CacheService, apDataService: DataService, apListFactory: ListFactory,
         apQueryFactory: QueryFactory, apUtilityService: UtilityService,
         apFieldService: FieldService, apConfig: IAPConfig, apIndexedCacheFactory: IndexedCacheFactory,
-        apDecodeService: DecodeService, apEncodeService: EncodeService, $q: ng.IQService, toastr: toastr;
+        apDecodeService: DecodeService, apEncodeService: EncodeService, $q: ng.IQService;
 
     // export interface IModel {
     //     addNewItem<T extends ListItem<any>>(entity: Object, options?: Object): ng.IPromise<T>;
@@ -262,7 +262,7 @@ module ap {
                 valuePairs,
                 webURL: this.list.identifyWebURL()
             };
-            
+
             if (entity.id) {
                 throw new Error('Cannot add a new list item that already has an ID. ' + JSON.stringify(entity, null, 2));
             }
@@ -277,21 +277,21 @@ module ap {
                 .then((response) => {
                     /** Online this should return an XML object */
                     let indexedCache = apDecodeService.processListItems(this, config, response, config);
-                    
+
                     /** Last listItem in cache is new because it has the highest id */
                     let newListItem = indexedCache.last();
-                    
+
                     /** Optionally broadcast change event */
                     apUtilityService.registerChange(this, 'create', newListItem.id);
-                    
+
                     /** Return reference to last listItem in cache because it will have the new highest id */
                     return newListItem;
                 })
                 .catch((err) => {
                     throw new Error('Unable to create new list item.  Err:' + err);
                     return err;
-                })         
-                
+                })
+
         }
 
 
@@ -925,22 +925,12 @@ module ap {
          * @description
          * Uses the custom fields defined in an model to ensure each field (required = true) is evaluated
          * based on field type
-         *
          * @param {object} listItem SharePoint list item.
-         * @param {object} [options] Object containing optional parameters.
-         * @param {boolean} [options.toast=true] Should toasts be generated to alert the user of issues.
          * @returns {boolean} Evaluation of validity.
          */
-        validateEntity<T extends ListItem<any>>(listItem: T, options?: Object): boolean {
+        validateEntity<T extends ListItem<any>>(listItem: T): boolean {
             var valid = true,
                 model = this;
-
-            var defaults = {
-                toast: true
-            };
-
-            /** Extend defaults with any provided options */
-            var opts = _.assign({}, defaults, options);
 
             var checkObject = (fieldValue) => {
                 return _.isObject(fieldValue) && _.isNumber(fieldValue.lookupId);
@@ -983,10 +973,6 @@ module ap {
                             valid = !_.isEmpty(fieldValue);
 
                     }
-                    if (!valid && opts.toast) {
-                        var fieldName = fieldDefinition.label || fieldDefinition.staticName;
-                        toastr.error(fieldName + ' does not appear to be a valid ' + fieldDescriptor);
-                    }
                 }
                 if (!valid) {
                     return false;
@@ -998,8 +984,8 @@ module ap {
 
     export class ModelFactory {
         Model = Model;
-        static $inject = ['$q', 'apCacheService', 'apConfig', 'apDataService', 'apDecodeService', 'apEncodeService', 'apFieldService', 'apIndexedCacheFactory', 'apListFactory', 'apQueryFactory', 'apUtilityService', 'toastr'];
-        constructor(_$q_, _apCacheService_, _apConfig_, _apDataService_, _apDecodeService_, _apEncodeService_, _apFieldService_, _apIndexedCacheFactory_, _apListFactory_, _apQueryFactory_, _apUtilityService_, _toastr_) {
+        static $inject = ['$q', 'apCacheService', 'apConfig', 'apDataService', 'apDecodeService', 'apEncodeService', 'apFieldService', 'apIndexedCacheFactory', 'apListFactory', 'apQueryFactory', 'apUtilityService'];
+        constructor(_$q_, _apCacheService_, _apConfig_, _apDataService_, _apDecodeService_, _apEncodeService_, _apFieldService_, _apIndexedCacheFactory_, _apListFactory_, _apQueryFactory_, _apUtilityService_) {
 
             $q = _$q_;
             apCacheService = _apCacheService_;
@@ -1012,7 +998,6 @@ module ap {
             apListFactory = _apListFactory_;
             apQueryFactory = _apQueryFactory_;
             apUtilityService = _apUtilityService_;
-            toastr = _toastr_;
         }
 
         create(config) {

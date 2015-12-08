@@ -9,7 +9,7 @@ module ap {
     let service: DataService, $q: ng.IQService, $timeout: ng.ITimeoutService, $http: ng.IHttpService, apConfig: IAPConfig,
         apUtilityService: UtilityService, apCacheService: CacheService, apDecodeService: DecodeService,
         apEncodeService: EncodeService, apFieldService: FieldService, apIndexedCacheFactory: IndexedCacheFactory,
-        toastr, SPServices, apBasePermissionObject: BasePermissionObject,
+        SPServices, apBasePermissionObject: BasePermissionObject,
         apXMLToJSONService: XMLToJSONService, apChangeService: ChangeService, apLogger: Logger;
 
     export interface IDataService {
@@ -37,12 +37,12 @@ module ap {
         queryForCurrentSite: ng.IPromise<string>;
         static $inject = ['$http', '$q', '$timeout', 'apCacheService', 'apChangeService', 'apConfig', 'apDecodeService',
             'apDefaultListItemQueryOptions', 'apEncodeService', 'apFieldService', 'apIndexedCacheFactory',
-            'apUtilityService', 'apWebServiceOperationConstants', 'apXMLToJSONService', 'SPServices', 'toastr',
+            'apUtilityService', 'apWebServiceOperationConstants', 'apXMLToJSONService', 'SPServices',
             'apBasePermissionObject', 'apLogger'];
 
         constructor(_$http_, _$q_, _$timeout_, _apCacheService_, _apChangeService_, _apConfig_, _apDecodeService_,
             _apDefaultListItemQueryOptions_, _apEncodeService_, _apFieldService_, _apIndexedCacheFactory_,
-            _apUtilityService_, _apWebServiceOperationConstants_, _apXMLToJSONService_, _SPServices_, _toastr_,
+            _apUtilityService_, _apWebServiceOperationConstants_, _apXMLToJSONService_, _SPServices_,
             _apBasePermissionObject_, _apLogger_) {
             service = this;
 
@@ -61,7 +61,6 @@ module ap {
             apWebServiceOperationConstants = _apWebServiceOperationConstants_;
             apXMLToJSONService = _apXMLToJSONService_;
             SPServices = _SPServices_;
-            toastr = _toastr_;
             apBasePermissionObject = _apBasePermissionObject_;
             apLogger = _apLogger_;
         }
@@ -204,10 +203,10 @@ module ap {
                 this.serviceWrapper(opts)
                     .then((response) => {
                         deferred.resolve(response);
-                    });
+                    })
+                    .catch((err) => deferred.reject(err));
             } else {
-                toastr.error('Invalid payload: ', opts);
-                deferred.reject();
+                deferred.reject(`Invalid payload for ${opts.operation} request.`);
             }
 
             return deferred.promise;
@@ -293,8 +292,7 @@ module ap {
                 })
                 .catch((err) => {
                     /** Failure */
-                    toastr.error('Failed to fetch version history.');
-                    return err;
+                    return `Failed to fetch version history. Error: ${err}`;
                 });
         }
 
@@ -678,7 +676,7 @@ module ap {
             let verifyParams = (params) => {
                 _.each(params, (param) => {
                     if (!opts[param]) {
-                        toastr.error('options' + param + ' is required to complete this operation');
+                        console.warn('options' + param + ' is required to complete this operation');
                         validPayload = false;
                     }
                 });

@@ -111,14 +111,6 @@ interface IToast {
     iconClass: string;
 }
 
-interface toastr {
-    error(message: string, title?: string, optionsOverride?: Object): IToast;
-    info(message: string, title?: string, optionsOverride?: Object): IToast;
-    success(message: string, title?: string, optionsOverride?: Object): IToast;
-    warning(message: string, title?: string, optionsOverride?: Object): IToast;
-    clear(IToast?): void;
-}
-
 declare module ngTable {
     export interface INGTableParamsObject {
         count?: number;

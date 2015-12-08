@@ -3,7 +3,7 @@
 module ap {
     'use strict';
 
-    let $q: ng.IQService, toastr, apCacheService: CacheService, apDataService: DataService, apDecodeService: DecodeService,
+    let $q: ng.IQService, apCacheService: CacheService, apDataService: DataService, apDecodeService: DecodeService,
         apEncodeService: EncodeService, apUtilityService: UtilityService, apConfig: IAPConfig,
         apListItemVersionFactory: ListItemVersionFactory, apChangeService: ChangeService;
 
@@ -183,7 +183,7 @@ module ap {
                     .then((response) => {
                         /** Optionally broadcast change event */
                         apUtilityService.registerChange(model, 'delete', listItem.id);
-                        
+
                         /** Success */
                         apCacheService.deleteEntity(config.listName, listItem.id);
 
@@ -193,11 +193,8 @@ module ap {
                         //In the event of an error, display toast
                         let msg = 'There was an error deleting list item ' + listItem.id + ' from ' + model.list.title +
                             ' due to the following Error: ' + err;
-                        toastr.error(msg);
-                        throw new Error(msg)
-                        deferred.reject(err);
+                        deferred.reject(msg);
                     });
-
             }
 
             return deferred.promise;
@@ -761,7 +758,7 @@ module ap {
             let listItem = this;
             let model = listItem.getModel();
             let deferred = $q.defer();
-            
+
 
             let config = {
                 batchCmd: 'Update',
@@ -795,9 +792,9 @@ module ap {
                 let request = apDataService.serviceWrapper(config)
                     .then((response) => {
                         var indexedCache = apDecodeService.processListItems<T>(model, listItem.getQuery(), response, config);
-                        
+
                         //Identify updated list item
-                        let updatedListItem = indexedCache[listItem.id];   
+                        let updatedListItem = indexedCache[listItem.id];
 
                         /** Optionally broadcast change event */
                         apUtilityService.registerChange(model, 'update', updatedListItem.id);
@@ -806,15 +803,15 @@ module ap {
                         if (_.isFunction(listItem.postSaveAction)) {
                             listItem.postSaveAction();
                         };
-                        
+
                         //Resolve with the updated list item
                         deferred.resolve(updatedListItem);
                     });
 
                     /** Notify change service to expect a request, only useful at this point when working offline */
                     apChangeService.registerListItemUpdate<T>(listItem, config, request);
-                                               
-                
+
+
             }
 
             return deferred.promise;
@@ -861,7 +858,7 @@ module ap {
             }
             /** Allow a string to be passed in to save a single field */
             let fieldNames = _.isString(fieldArray) ? [fieldArray] : fieldArray;
-            
+
             /** Find the field definition for each of the requested fields */
             for (let fieldName of fieldNames) {
                 let match = _.find(model.list.customFields, { mappedName: fieldName });
@@ -957,14 +954,12 @@ module ap {
          * @name ListItem.validateEntity
          * @description
          * Helper function that passes the current item to Model.validateEntity
-         * @param {object} [options] Optionally pass params to the dataService.
-         * @param {boolean} [options.toast=true] Set to false to prevent toastr messages from being displayed.
          * @returns {boolean} Evaluation of validity.
          */
-        validateEntity(options?: Object): boolean {
+        validateEntity(): boolean {
             let listItem = this,
                 model = listItem.getModel();
-            return model.validateEntity(listItem, options);
+            return model.validateEntity(listItem);
         }
 
     }
@@ -993,9 +988,9 @@ module ap {
 
     export class ListItemFactory {
         ListItem = ListItem;
-        static $inject = ['$q', 'apCacheService', 'apChangeService', 'apConfig', 'apDataService', 'apDecodeService', 'apEncodeService', 'apUtilityService', 'toastr', 'apListItemVersionFactory'];
+        static $inject = ['$q', 'apCacheService', 'apChangeService', 'apConfig', 'apDataService', 'apDecodeService', 'apEncodeService', 'apUtilityService', 'apListItemVersionFactory'];
 
-        constructor(_$q_, _apCacheService_, _apChangeService_, _apConfig_, _apDataService_, _apDecodeService_, _apEncodeService_, _apUtilityService_, _toastr_, _apListItemVersionFactory_) {
+        constructor(_$q_, _apCacheService_, _apChangeService_, _apConfig_, _apDataService_, _apDecodeService_, _apEncodeService_, _apUtilityService_, _apListItemVersionFactory_) {
             $q = _$q_;
             apCacheService = _apCacheService_;
             apChangeService = _apChangeService_;
@@ -1004,7 +999,6 @@ module ap {
             apDecodeService = _apDecodeService_;
             apEncodeService = _apEncodeService_;
             apUtilityService = _apUtilityService_;
-            toastr = _toastr_;
             apListItemVersionFactory = _apListItemVersionFactory_;
         }
 
