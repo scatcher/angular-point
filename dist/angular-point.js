@@ -12,7 +12,7 @@ var ap;
      * functionality in your project.
      * @installModule
      */
-    angular.module('angularPoint')
+    angular.module('angularPoint', [])
         .run(function (apListItemFactory, apModelFactory) {
     });
 })(ap || (ap = {}));
@@ -2005,8 +2005,8 @@ var ap;
             /** Allow a string to be passed in to save a single field */
             var fieldNames = _.isString(fieldArray) ? [fieldArray] : fieldArray;
             /** Find the field definition for each of the requested fields */
-            for (var _i = 0, fieldNames_1 = fieldNames; _i < fieldNames_1.length; _i++) {
-                var fieldName_1 = fieldNames_1[_i];
+            for (var _i = 0; _i < fieldNames.length; _i++) {
+                var fieldName_1 = fieldNames[_i];
                 var match = _.find(model.list.customFields, { mappedName: fieldName_1 });
                 if (match) {
                     definitions.push(match);
@@ -2166,7 +2166,8 @@ var ap;
 var __extends = (this && this.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
-    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    __.prototype = b.prototype;
+    d.prototype = new __();
 };
 var ap;
 (function (ap) {
@@ -3889,6 +3890,9 @@ var ap;
 })(ap || (ap = {}));
 
 /// <reference path="../app.module.ts" />
+/// <reference path="../../typings/tsd.d.ts" />
+
+/// <reference path="../app.module.ts" />
 var ap;
 (function (ap) {
     'use strict';
@@ -3982,9 +3986,6 @@ var ap;
     angular.module('angularPoint')
         .service('apUserModel', UserModel);
 })(ap || (ap = {}));
-
-/// <reference path="../app.module.ts" />
-/// <reference path="../../typings/tsd.d.ts" />
 
 /// <reference path="../app.module.ts" />
 var ap;
@@ -5620,8 +5621,8 @@ var ap;
                 /** String is required to begin with deliminator */
                 str += delim;
                 /** Append each item in the supplied array followed by deliminator */
-                for (var _i = 0, choices_1 = choices; _i < choices_1.length; _i++) {
-                    var choice = choices_1[_i];
+                for (var _i = 0; _i < choices.length; _i++) {
+                    var choice = choices[_i];
                     str += choice + delim;
                 }
             }

@@ -13,7 +13,7 @@ module ap {
      * functionality in your project.
      * @installModule
      */
-    angular.module('angularPoint')
+    angular.module('angularPoint', [])
     /** Bootstrap everything that needs to be immediately instantiated */
     .run((apListItemFactory: ListItemFactory, apModelFactory: ModelFactory) => {
 
