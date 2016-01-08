@@ -1,0 +1,11 @@
+.tmp
+.vscode
+bower_components
+deprecated
+docs
+mock
+node_modules
+src
+test
+typings
+xml-cache

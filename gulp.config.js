@@ -1,7 +1,5 @@
 module.exports = function (projectDir) {
     var app = projectDir + 'src/';
-    //var test = projectDir + 'test/';
-    //var tmp = projectDir + '.tmp/';
     var bower = './bower_components/';
 
     var config = {

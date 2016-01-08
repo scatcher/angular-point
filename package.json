@@ -8,7 +8,17 @@
   "homepage": "https://github.com/scatcher/angular-point",
   "version": "4.1.1",
   "module": "angularPoint",
-  "dependencies": {},
+  "main": "dist/app.module.js",
+  "dependencies": {
+    "angular2": "^2.0.0-beta.0",
+    "es6-promise": "^3.0.2",
+    "es6-shim": "^0.33.3",
+    "lodash-es": "^3.10.1",
+    "reflect-metadata": "^0.1.2",
+    "rxjs": "^5.0.0-beta.0",
+    "systemjs": "^0.19.9",
+    "zone.js": "^0.5.10"
+  },
   "devDependencies": {
     "angular-point-tools": "^2.3.5",
     "gulp": "^3.9.0",
@@ -21,13 +31,10 @@
     "jasmine-core": "^2.3.4",
     "moment": "^2.10.6",
     "phantomjs": "^1.9.18",
-    "typescript": "next"
+    "typescript": "^1.7.5"
   },
   "engines": {
     "node": ">=4.1.2"
-  },
-  "typescript": {
-    "definition": "typings/ap.d.ts"
   },
   "repository": {
     "type": "git",
@@ -37,6 +44,9 @@
     "init": "npm install",
     "install": "bower install",
     "pretest": "gulp cacheXML",
-    "test": "gulp test"
+    "test": "gulp test",
+    "tsc": "tsc -p",
+    "watch": "tsc -p src -w",
+    "build": "rm -rf dist && tsc -p src"
   }
 }

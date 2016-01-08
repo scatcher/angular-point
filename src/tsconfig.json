@@ -1,9 +1,13 @@
 {
-	"compilerOptions": {
-		// "sourceMap": true,
-		"target": "ES5"
-	},
-    "files": [
-        "../typings/ap.d.ts"
-    ]
+    "compilerOptions": {
+        "declaration": true,
+        "emitDecoratorMetadata": true,
+        "experimentalDecorators": true,
+        "module": "system",
+        "moduleResolution": "node",
+        "noImplicitAny": false,
+        "outDir": "../dist",
+        "sourceMap": true,
+        "target": "es5"
+    }
 }

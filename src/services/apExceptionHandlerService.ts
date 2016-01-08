@@ -1,33 +1,28 @@
-/// <reference path="../app.module.ts" />
+import {LoggerService} from '../services';
 
-module ap {
+//TODO: Find out a way to implement in angular2 now that we don't have a $log service
+export function ExceptionLoggingService($log, $injector) {
+    function error(exception: Error, cause: string) {
+        // now try to log the error to the server side.
+        LoggerService.exception(exception, cause);
 
-    function exceptionLoggingService($log, $injector) {
-        function error(exception: Error, cause: string) {
-
-            /** Need to inject otherwise get circular dependency when using dependency injection */
-            var apLogger: ILogger = $injector.get('apLogger');
-            // now try to log the error to the server side.
-            apLogger.exception(exception, cause);
-
-            // preserve the default behaviour which will log the error
-            // to the console, and allow the application to continue running.
-            $log.error.apply($log, arguments);
-
-        }
-
-        return error;
+        // preserve the default behaviour which will log the error
+        // to the console, and allow the application to continue running.
+        $log.error.apply($log, arguments);
     }
 
-    /**
-     * @ngdoc service
-     * @name angularPoint.$exceptionHandler
-     * @description
-     * Replaces the default angular implementation and handles logging errors to the apLogger service.
-     * @requires angularPoint.apLogger
-     */    
-    angular
-        .module('angularPoint')
-		.factory('$exceptionHandler', exceptionLoggingService);
-
+    return error;
 }
+
+/**
+ * @ngdoc service
+ * @name angularPoint.$exceptionHandler
+ * @description
+ * Replaces the default angular implementation and handles logging errors to the apLogger service.
+ * @requires angularPoint.apLogger
+ */
+//angular
+//    .module('angularPoint')
+//.factory('$exceptionHandler', exceptionLoggingService);
+
+//}
