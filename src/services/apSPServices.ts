@@ -1,6 +1,6 @@
 import {SOAPEnvelope, SPServicesDefaults, WebServiceSchemas, WebServiceOperationConstants} from '../constants';
 import {EncodeService} from '../services';
-import _ from 'lodash';
+import  * as  _ from 'lodash';
 
 //Definition file taken from SPServices project on GitHub, look at way to use as depency and link to it
 export interface SPServicesOptions {
@@ -71,7 +71,7 @@ export interface SPServicesOptions {
     /** Allow the user to force async */
         async?: boolean;
     /** Function to call on completion */
-    completefunc?: (xData: Element, status: string) => void;
+    completefunc?: (xData: Document, status: string) => void;
 
     IDs?: number[]|string[];
     ID?: number;
@@ -134,7 +134,7 @@ function generateXMLComponents(options: SPServicesOptions) {
     let opt: SPServicesOptions = Object.assign({}, defaults, options);
 
     // Encode options which may contain special character, esp. ampersand
-    for (let optionName: string of encodeOptionList) {
+    for (let optionName of encodeOptionList) {
         if (_.isString(opt[optionName])) {
             opt[optionName] = EncodeService.encodeXml(opt[optionName]);
         }
@@ -307,7 +307,7 @@ function generateXMLComponents(options: SPServicesOptions) {
                 soapEnvelope.addToPayload(opt, ['updates']);
             } else {
                 soapEnvelope.payload += `<updates><Batch OnError="Continue"><Method ID="1" Cmd="${opt.batchCmd}">`;
-                for (let valuePair: [string, string] of opt.valuePairs) {
+                for (let valuePair of opt.valuePairs) {
                     soapEnvelope.payload += `<Field Name="${ valuePair[0] }">${ escapeColumnValue(valuePair[1]) }</Field>`;
                 }
                 if (opt.batchCmd !== 'New') {

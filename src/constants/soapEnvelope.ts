@@ -1,6 +1,6 @@
 import {SPServicesOptions} from '../services/apSPServices';
 import {EncodeService} from '../services';
-import _ from 'lodash';
+import * as _ from 'lodash';
 
 export interface ISOAPEnvelope {
     addToPayload(opt: SPServicesOptions, paramArray: {name: string, sendNull: boolean}[]): void;

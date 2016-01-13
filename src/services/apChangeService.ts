@@ -1,6 +1,6 @@
 import {IndexedCache, ListItem} from '../factories';
 import {Promise} from 'es6-promise';
-import _ from 'lodash';
+import  * as  _ from 'lodash';
 
 export interface IUpdateOptions<T extends ListItem<any>> {
     batchCmd: string;
@@ -28,9 +28,9 @@ export class ChangeServiceClass {
     callbackQueue: IChangeServiceCallback[] = [];
 
     registerListItemUpdate<T extends ListItem<any>>(entity: ListItem<T>, options: IUpdateOptions<T>, promise: Promise<ListItem<T>>) {
-        for (let callback: IChangeServiceCallback of this.callbackQueue) {
+        _.each(this.callbackQueue, (callback: IChangeServiceCallback) => {
             callback(entity, options, promise);
-        }
+        });
     }
 
     subscribeToUpdates(callback: IChangeServiceCallback) {

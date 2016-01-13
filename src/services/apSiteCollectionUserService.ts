@@ -1,15 +1,15 @@
 import {DataService} from '../services';
 import {Promise} from 'es6-promise';
 import {IXMLGroup, IXMLUserProfile} from '../interfaces/main';
-import _ from 'lodash';
+import  * as  _ from 'lodash';
 
 /** Local references to cached promises */
 var _getGroupCollection, _getUserProfile;
 
 export interface ISiteCollectionUserService {
-    checkIfMember(groupName: string, force?: boolean): Promise<IXMLGroup>;
-    getGroupCollection(force?: boolean): Promise<IXMLGroup[]>;
-    getUserProfile(force?: boolean): Promise<IXMLUserProfile>;
+    checkIfMember(groupName:string, force?:boolean): Promise<IXMLGroup>;
+    getGroupCollection(force?:boolean): Promise<IXMLGroup[]>;
+    getUserProfile(force?:boolean): Promise<IXMLUserProfile>;
 }
 
 /**
@@ -34,12 +34,12 @@ export class SiteCollectionUserServiceClass {
      * @example
      * <pre>{ID: "190", Name: "Blog Contributors", Description: "We are bloggers...", OwnerID: "126", OwnerIsUser: "False"}</pre>
      */
-    checkIfMember(groupName: string, force: boolean = false): Promise<IXMLGroup> {
+    checkIfMember(groupName:string, force:boolean = false):Promise<IXMLGroup> {
         let promise = new Promise((resolve, reject) => {
             //Initially ensure groups are ready, any future calls will receive the return
             this.getGroupCollection(force)
                 .then((groupCollection) => {
-                    var groupDefinition = _.find(groupCollection, {Name: groupName});
+                    var groupDefinition = groupCollection.find(group => group.Name === groupName);
                     resolve(groupDefinition);
                 })
                 .catch(err => reject(err));
@@ -57,7 +57,7 @@ export class SiteCollectionUserServiceClass {
      * @param {boolean} [force=false] Ignore any cached value.
      * @returns {IGroupDefinition[]} Promise which resolves with the array of groups the user belongs to.
      */
-    getGroupCollection(force: boolean = false): Promise<IXMLGroup[]> {
+    getGroupCollection(force:boolean = false):Promise<IXMLGroup[]> {
         if (!_getGroupCollection || force) {
             /** Create a new deferred object if not already defined */
             let promise = new Promise((resolve, reject) => {
@@ -85,7 +85,7 @@ export class SiteCollectionUserServiceClass {
      * @param {boolean} [force=false] Ignore any cached value.
      * @returns {object} Promise which resolves with the requested user profile.
      */
-    getUserProfile(force: boolean = false): Promise<IXMLUserProfile> {
+    getUserProfile(force:boolean = false):Promise<IXMLUserProfile> {
         if (!_getUserProfile || force) {
             /** Create a new deferred object if not already defined */
             _getUserProfile = DataService.getUserProfileByName();

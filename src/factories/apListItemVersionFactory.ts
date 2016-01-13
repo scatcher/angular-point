@@ -1,7 +1,7 @@
 import {ListItem, User, FieldDefinition} from '../factories';
 import {FieldConfigurationObject} from './apFieldFactory';
 import {IModelFactory} from './apModelFactory';
-import _ from 'lodash';
+import  * as  _ from 'lodash';
 
 export interface IListItemVersions<T extends ListItem<any>> extends ListItem<T> {
     [key: number]: IListItemVersion<T>;
@@ -201,7 +201,7 @@ export class VersionHistoryCollection<T extends ListItem<any>> {
     [key: number]: IListItemVersion<T>;
     constructor(fieldVersionCollections: FieldVersionCollection[], factory: IModelFactory) {
         /** Iterate through each of the field version collections */
-        for (let fieldVersionCollection: FieldVersionCollection of fieldVersionCollections) {
+        for (let fieldVersionCollection of fieldVersionCollections) {
             this.addFieldCollection(fieldVersionCollection, factory);
         }
     }

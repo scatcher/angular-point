@@ -1,6 +1,6 @@
 import {ListItem} from '../factories';
 import {Promise} from 'es6-promise';
-import _ from 'lodash';
+import * as  _ from 'lodash';
 
 export class LogEvent implements ILogEvent {
     message: string;
@@ -172,6 +172,12 @@ function error(message: string, optionsOverride?: ILogEvent): Promise<ListItem<a
     return logEvent.promise;
 }
 
+declare module ErrorStackParser {
+    export interface parse{
+        (any): string;
+    }
+}
+
 /**
  * @ngdoc function
  * @name angularPoint.apLogger.exception
@@ -264,8 +270,8 @@ function warn(message: string, optionsOverride?: ILogEvent): Promise<ListItem<an
 
 function processEventQueue() {
     // iterate over each subscriber and notify for each event in the queue
-    for (let callback: Function of subscribers) {
-        for (let event: ILogEvent of eventQueue) {
+    for (let callback of subscribers) {
+        for (let event of eventQueue) {
             callback(event);
         }
     }

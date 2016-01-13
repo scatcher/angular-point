@@ -1,5 +1,5 @@
 import {IUserPermissionsObject} from '../constants';
-import _ from 'lodash';
+import * as _ from 'lodash';
 
 /**
  * @ngdoc service

@@ -1,5 +1,5 @@
 import {ListItem} from '../factories';
-import _ from 'lodash';
+import  * as  _ from 'lodash';
 
 export interface IUninstantiatedIndexCache<T> {
     [key: string]: T;
@@ -41,7 +41,7 @@ export class IndexedCache<T extends ListItem<any>> {
      * Clears all cached (enumerable) elements from the containing cache object.
      */
     clear(): void {
-        for (let key: string of this.keys()) {
+        for (let key of this.keys()) {
             this.delete(key);
         }
     }

@@ -1,6 +1,6 @@
 import {UtilityService} from '../services';
 import {Lookup, IFieldDefinition, ListItem} from '../factories';
-import _ from 'lodash';
+import  * as  _ from 'lodash';
 
 /* Taken from http://dracoblue.net/dev/encodedecode-special-xml-characters-in-javascript/155/ */
 let xml_special_to_escaped_one_map = {
@@ -230,7 +230,7 @@ export class EncodeServiceClass {
      * @description Wrap an XML node (node) around a value (val)
      * @returns {string}
      */
-    wrapNode(node: string, val: string): string {
+    wrapNode(node: string, val: string|number): string {
         var thisValue = typeof val !== 'undefined' ? val : '';
         return '<' + node + '>' + thisValue + '</' + node + '>';
     }

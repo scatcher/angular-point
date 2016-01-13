@@ -5,7 +5,7 @@ import {IUninstantiatedList} from './apListFactory';
 import {IQueryOptions} from './apQueryFactory';
 import {IFieldDefinition} from './apFieldFactory';
 import {Promise} from 'es6-promise';
-import _ from 'lodash';
+import  * as  _ from 'lodash';
 
 export interface IUninitializedModel {
     factory: IModelFactory;
@@ -242,7 +242,7 @@ export class Model {
         }
 
         if (config.buildValuePairs === true) {
-            let editableFields: IFieldDefinition[] = _.filter(this.list.fields, {readOnly: false});
+            let editableFields: IFieldDefinition[] = this.list.fields.filter((fieldDefinition) => fieldDefinition.readOnly === false);
             config.valuePairs = EncodeService.generateValuePairs(editableFields, entity);
         }
 
@@ -284,7 +284,7 @@ export class Model {
     createEmptyItem<T extends ListItem<any>>(overrides?: Object): T {
         var model = this;
         var newItem = {};
-        for (let fieldDefinition: IFieldDefinition of model.list.customFields) {
+        for (let fieldDefinition of model.list.customFields) {
             /** Create attributes for each non-readonly field definition */
             if (!fieldDefinition.readOnly) {
                 /** Create an attribute with the expected empty value based on field definition type */
@@ -410,7 +410,7 @@ export class Model {
                 id: count + 1
             };
             /** Create an attribute with mock data for each field */
-            for (let field: IFieldDefinition of model.list.fields) {
+            for (let field of model.list.fields) {
                 mock[field.mappedName] = field.getMockData(opts);
             }
             /** Use the factory on the model to extend the object */
@@ -527,7 +527,7 @@ export class Model {
      */
     getFieldDefinition(fieldName: string): IFieldDefinition {
         var model = this;
-        return _.find(model.list.fields, {mappedName: fieldName});
+        return model.list.fields.find((fieldDefinition) => fieldDefinition.mappedName === fieldName);
     }
 
 
@@ -913,7 +913,7 @@ export class Model {
             return _.isObject(fieldValue) && _.isNumber(fieldValue.lookupId);
         };
 
-        for (let fieldDefinition: IFieldDefinition of model.list.customFields) {
+        for (let fieldDefinition of model.list.customFields) {
             var fieldValue = listItem[fieldDefinition.mappedName];
             /** Only evaluate required fields */
             if ((fieldDefinition.required || fieldDefinition.Required) && valid) {
@@ -934,7 +934,7 @@ export class Model {
                         valid = _.isArray(fieldValue) && fieldValue.length > 0;
                         if (valid) {
                             /** Additionally check that each lookup/person contains a lookupId */
-                            for (let fieldObject: User of fieldValue) {
+                            for (let fieldObject of fieldValue) {
                                 if (valid) {
                                     valid = checkObject(fieldObject);
                                 } else {

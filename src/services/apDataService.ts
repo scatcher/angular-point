@@ -5,8 +5,10 @@ import {Http, RequestOptions, Request, RequestMethod, Headers} from 'angular2/ht
 import {XMLFieldDefinition} from '../factories/apFieldFactory';
 import {Promise} from 'es6-promise';
 import {IWorkflowDefinition, IXMLGroup, IXMLUserProfile} from '../interfaces/main';
-import _ from 'lodash';
+import  * as  _ from 'lodash';
+import {Injectable} from "angular2/core";
 
+@Injectable()
 export interface IDataService {
     createItemUrlFromFileRef(fileRefString: string): string;
     generateWebServiceUrl(service: string, webURL?: string): Promise<string>;
@@ -18,11 +20,11 @@ export interface IDataService {
     getList(options: { listName: string; webURL?: string }): Promise<Object>;
     getListFields(options: { listName: string; webURL?: string }): Promise<FieldDefinition[]>;
     getUserProfileByName(login?: string): Promise<IXMLUserProfile>;
-    processChangeTokenXML<T extends ListItem<any>>(model: Model, query: Query<T>, responseXML: Element, opts): void;
-    processDeletionsSinceToken(responseXML: Element, indexedCache: IndexedCache<any>): void;
-    requestData(opts): Promise<Element>;
-    retrieveChangeToken(responseXML: Element): string;
-    retrieveListPermissions(responseXML: Element): IUserPermissionsObject;
+    processChangeTokenXML<T extends ListItem<any>>(model: Model, query: Query<T>, responseXML: Document, opts): void;
+    processDeletionsSinceToken(responseXML: Document, indexedCache: IndexedCache<any>): void;
+    requestData(opts): Promise<Document>;
+    retrieveChangeToken(responseXML: Document): string;
+    retrieveListPermissions(responseXML: Document): IUserPermissionsObject;
     serviceWrapper(options): Promise<any>;
     startWorkflow(options: { item: string; templateId: string; workflowParameters?: string; fileRef?: string; }): Promise<any>;
     validateCollectionPayload(opts): boolean;
@@ -34,6 +36,7 @@ interface IWorkflowInitiationConfiguration extends IServiceWrapperOptions {
 }
 export class DataServiceClass implements IDataService {
     queryForCurrentSite: Promise<string>;
+    constructor(private http: Http){}
 
     createItemUrlFromFileRef(fileRefString: string): string {
         return window.location.protocol + '//' + window.location.hostname + '/' + fileRefString;
@@ -95,10 +98,10 @@ export class DataServiceClass implements IDataService {
                 operation: 'GetTemplatesForItem',
                 item: itemUrl
             })
-            .then(function (responseXML: Element) {
+            .then(function (responseXML: Document) {
                 let workflowTemplates = [];
                 let xmlTemplates = responseXML.getElementsByTagName('WorkflowTemplate');
-                for (let el: Element of xmlTemplates) {
+                _.each(xmlTemplates, (el: Element) => {
                     let workflowTemplateId = el.getElementsByTagName('WorkflowTemplateIdSet')[0].getAttribute('TemplateId');
                     let template = {
                         name: el.getAttribute('Name'),
@@ -106,7 +109,7 @@ export class DataServiceClass implements IDataService {
                         templateId: '{' + workflowTemplateId + '}'
                     };
                     workflowTemplates.push(template);
-                }
+                });
                 return workflowTemplates;
             });
     }
@@ -155,15 +158,15 @@ export class DataServiceClass implements IDataService {
         let filterNode = opts.filterNode || opts.operation.split('Get')[1].split('Collection')[0];
 
         /** Convert the xml returned from the server into an array of js objects */
-        function processXML(responseXML: Element) {
+        function processXML(responseXML: Document) {
             let convertedItems: Object[] = [];
             let filteredNodes = responseXML.getElementsByTagName(filterNode);
             /** Get attachments only returns the links associated with a list item */
             if (opts.operation === 'GetAttachmentCollection') {
                 /** Unlike other call, get attachments only returns strings instead of an object with attributes */
-                for (let node: Element of filteredNodes) {
+                _.each(filteredNodes, (node: Element) => {
                     convertedItems.push(node.textContent);
-                }
+                });
             } else {
                 convertedItems = XMLToJSONService.parse(filteredNodes, {includeAllAttrs: true, removeOws: false});
             }
@@ -220,20 +223,20 @@ export class DataServiceClass implements IDataService {
 
                 let request = new Request(options);
 
-                Http.post('/_vti_bin/Webs.asmx', soapData, {
-                        responseType: 'document',
-                        headers: {
-                            'Content-Type': `text/xml;charset='utf-8'`
-                        }
-                    })
-                    .then(({data}: {data: Element}) => { //Use destructure response because we only care about data
+                this.http.request(request)
+                    .toPromise()
+                    .then((data) => {
+
+                        let parser = new DOMParser();
+                        let responseXML = parser.parseFromString(data.text(), 'application/xml');
+
                         /** Success */
-                        let errorMsg = DecodeService.checkResponseForErrors(data);
+                        let errorMsg = DecodeService.checkResponseForErrors(responseXML);
                         if (errorMsg) {
                             errorHandler('Failed to get current site.  ' + errorMsg, reject, soapData);
                         }
 
-                        let defaultUrl = data.getElementsByTagName('WebUrlFromPageUrlResult');
+                        let defaultUrl = responseXML.getElementsByTagName('WebUrlFromPageUrlResult');
                         if (!defaultUrl[0]) {
                             throw new Error('Invalid XML returned, missing "WebUrlFromPageUrlResult" element.');
                         }
@@ -244,6 +247,30 @@ export class DataServiceClass implements IDataService {
                         /** Error */
                         errorHandler('Failed to get current site.  ' + err, reject, soapData);
                     });
+                //Http.request('/_vti_bin/Webs.asmx', soapData, {
+                //        responseType: 'document',
+                //        headers: {
+                //            'Content-Type': `text/xml;charset='utf-8'`
+                //        }
+                //    })
+                //    .then(({data}: {data: Element}) => { //Use destructure response because we only care about data
+                //        /** Success */
+                //        let errorMsg = DecodeService.checkResponseForErrors(data);
+                //        if (errorMsg) {
+                //            errorHandler('Failed to get current site.  ' + errorMsg, reject, soapData);
+                //        }
+                //
+                //        let defaultUrl = data.getElementsByTagName('WebUrlFromPageUrlResult');
+                //        if (!defaultUrl[0]) {
+                //            throw new Error('Invalid XML returned, missing "WebUrlFromPageUrlResult" element.');
+                //        }
+                //        APConfig.defaultUrl = defaultUrl[0].textContent;
+                //        resolve(APConfig.defaultUrl);
+                //    })
+                //    .catch((err) => {
+                //        /** Error */
+                //        errorHandler('Failed to get current site.  ' + err, reject, soapData);
+                //    });
             });
         }
         return this.queryForCurrentSite;
@@ -351,7 +378,7 @@ export class DataServiceClass implements IDataService {
      */
     getListFields({ listName, webURL = undefined }): Promise<XMLFieldDefinition[]> {
         return this.getList({listName, webURL})
-            .then((responseXML: Element) => {
+            .then((responseXML: Document) => {
                 let filteredNodes = responseXML.getElementsByTagName('Field');
                 let fields = XMLToJSONService.parse(filteredNodes, {includeAllAttrs: true, removeOws: false});
                 return fields;
@@ -378,7 +405,7 @@ export class DataServiceClass implements IDataService {
         }
 
         return this.serviceWrapper(payload)
-            .then((responseXML: Element) => {
+            .then((responseXML: Document) => {
                 let userProfile = {
                     AccountName: undefined,
                     userLoginName: undefined
@@ -386,13 +413,13 @@ export class DataServiceClass implements IDataService {
                 // not formatted like a normal SP response so need to manually parse
                 let filteredNodes = responseXML.getElementsByTagName('PropertyData');
 
-                for (let node: Element of filteredNodes) {
+                _.each(filteredNodes, (node: Element) => {
                     let nodeName = responseXML.getElementsByTagName('Name');
                     let nodeValue = responseXML.getElementsByTagName('Value');
                     if (nodeName.length > 0 && nodeValue.length > 0) {
                         userProfile[nodeName[0].textContent.trim()] = nodeValue[0].textContent.trim();
                     }
-                }
+                });
 
                 /** Optionally specify a necessary prefix that should appear before the user login */
                 userProfile.userLoginName = APConfig.userLoginNamePrefix ?
@@ -410,10 +437,10 @@ export class DataServiceClass implements IDataService {
      * the change token and make any changes to the user's permissions for the list.
      * @param {Model} model List model.
      * @param {Query} query Valid query object.
-     * @param {Element} responseXML XML response from the server.
+     * @param {Document} responseXML XML response from the server.
      * @param {IndexedCache<T>} cache Cache to process in order to handle deletions.
      */
-    processChangeTokenXML<T extends ListItem<any>>(model: Model, query: Query<T>, responseXML: Element, cache: IndexedCache<T>): void {
+    processChangeTokenXML<T extends ListItem<any>>(model: Model, query: Query<T>, responseXML: Document, cache: IndexedCache<T>): void {
         if (!model.deferredListDefinition) {
             // extend our local list definition and field definitions with XML
             DecodeService.extendListMetadata(model, responseXML);
@@ -453,13 +480,13 @@ export class DataServiceClass implements IDataService {
      * @description
      * GetListItemChangesSinceToken returns items that have been added as well as deleted so we need
      * to remove the deleted items from the local cache.
-     * @param {Element} responseXML XML response from the server.
+     * @param {Document} responseXML XML response from the server.
      * @param {Object} cache Cached object of key value pairs.
      */
-    processDeletionsSinceToken(responseXML: Element, cache: IndexedCache<any>): void {
+    processDeletionsSinceToken(responseXML: Document, cache: IndexedCache<any>): void {
         /** Remove any locally cached entities that were deleted from the server */
         let filteredNodes = responseXML.getElementsByTagName('Id');
-        for (let node: Element of filteredNodes) {
+        _.each(filteredNodes, (node: Element) => {
             /** Check for the type of change */
             let changeType = node.getAttribute('ChangeType');
 
@@ -468,7 +495,7 @@ export class DataServiceClass implements IDataService {
                 /** Remove from local data array */
                 cache.delete(listItemId);
             }
-        }
+        });
     }
 
     /**
@@ -480,7 +507,7 @@ export class DataServiceClass implements IDataService {
      * @param {object} opts Payload object containing the details of the request.
      * @returns {promise} Promise that resolves with the server response.
      */
-    requestData(opts): Promise<Element> {
+    requestData(opts): Promise<Document> {
         let soapData = SPServices.generateXMLComponents(opts);
         let service = WebServiceOperationConstants[opts.operation][0];
 
@@ -488,30 +515,49 @@ export class DataServiceClass implements IDataService {
 
             this.generateWebServiceUrl(service, opts.webURL)
                 .then((url) => {
-                    Http.post(url, soapData.msg, {
-                            responseType: 'document',
-                            headers: {
-                                'Content-Type': `text/xml;charset='utf-8'`,
-                                SOAPAction: () => soapData.SOAPAction ? soapData.SOAPAction : null
-                            },
-                            transformResponse: (data) => {
-                                if (_.isString(data)) {
-                                    let parser = new DOMParser();
-                                    data = parser.parseFromString(data, 'text/xml');
-                                }
-                                return data;
-                            }
-                        })
-                        .then(({data}) => { //Returns object and all we care about is the data property
+                    let headers = new Headers({
+                        'Content-Type': `text/xml;charset='utf-8'`,
+                        SOAPAction: () => soapData.SOAPAction ? soapData.SOAPAction : null
+                    });
+
+                    let options = new RequestOptions({
+                        method: RequestMethod.Post,
+                        url,
+                        body: soapData.msg,
+                        headers
+                    });
+
+                    let request = new Request(options);
+
+                    //Http.post(url, soapData.msg, {
+                    //        responseType: 'document',
+                    //        headers: {
+                    //            'Content-Type': `text/xml;charset='utf-8'`,
+                    //            SOAPAction: () => soapData.SOAPAction ? soapData.SOAPAction : null
+                    //        },
+                    //        transformResponse: (data) => {
+                    //            if (_.isString(data)) {
+                    //                let parser = new DOMParser();
+                    //                data = parser.parseFromString(data, 'text/xml');
+                    //            }
+                    //            return data;
+                    //        }
+                    //    })
+                    this.http.request(request)
+                        .toPromise()
+                        .then((data) => { //Returns object and all we care about is the data property
+                            let parser = new DOMParser();
+                            let responseXML = parser.parseFromString(data.text(), 'application/xml');
+
                             // Success Code
                             // Errors can still be resolved without throwing an error so check the XML
-                            let errorMsg = DecodeService.checkResponseForErrors(data);
+                            let errorMsg = DecodeService.checkResponseForErrors(responseXML);
                             if (errorMsg) {
                                 // Actual error but returned with success status....thank you SharePoint
-                                errorHandler(errorMsg, reject, soapData, data);
+                                errorHandler(errorMsg, reject, soapData, responseXML);
                             } else {
                                 /** Real success */
-                                resolve(data);
+                                resolve(responseXML);
                             }
                         })
                         .catch((err) => {
@@ -530,13 +576,13 @@ export class DataServiceClass implements IDataService {
      * @description
      * Returns the change token from the xml response of a GetListItemChangesSinceToken query
      * Note: this attribute is only found when using 'GetListItemChangesSinceToken'
-     * @param {Element} responseXML XML response from the server.
+     * @param {Document} responseXML XML response from the server.
      */
-    retrieveChangeToken(responseXML: Element): string {
+    retrieveChangeToken(responseXML: Document): string {
         let changeToken: string;
-        let changeTokenElement = responseXML.getElementsByTagName('LastChangeToken');
+        let changeTokenElement = responseXML.getElementsByTagName('Changes');
         if (changeTokenElement[0]) {
-            changeToken = changeTokenElement[0].textContent;
+            changeToken = changeTokenElement[0].getAttribute('LastChangeToken');
         }
         return changeToken;
     }
@@ -547,19 +593,19 @@ export class DataServiceClass implements IDataService {
      * @description
      * Returns the text representation of the users permission mask
      * Note: this attribute is only found when using 'GetListItemChangesSinceToken'
-     * @param {Element} responseXML XML response from the server.
+     * @param {Document} responseXML XML response from the server.
      */
-    retrieveListPermissions(responseXML: Element): IUserPermissionsObject {
+    retrieveListPermissions(responseXML: Document): IUserPermissionsObject {
         //Permissions will be a string of Permission names delimited by commas
         //Example: "ViewListItems, AddListItems, EditListItems, DeleteListItems, ...."
         let listItemsContainer = responseXML.getElementsByTagName('listitems');
-        let listPermissions = listItemsContainer[0] ? listItemsContainer[0].textContent : undefined;
+        let listPermissions = listItemsContainer[0] ? listItemsContainer[0].getAttribute('EffectivePermMask') : undefined;
         let permissionObject;
         if (_.isString(listPermissions)) {
             let permissionNameArray = listPermissions.split(',');
             permissionObject = new BasePermissionObject();
             //Set each of the identified permission levels to true
-            for (let permission: string of permissionNameArray) {
+            _.each(permissionNameArray, (permission: string) => {
                 //Remove extra spaces
                 let permissionName = permission.trim();
                 //Find the permission level on the permission object that is currently set to false
@@ -572,7 +618,7 @@ export class DataServiceClass implements IDataService {
                         permissionObject[propertyName] = true;
                     });
                 }
-            }
+            });
         }
 
         return permissionObject;
@@ -607,7 +653,7 @@ export class DataServiceClass implements IDataService {
         let opts: IServiceWrapperOptions = Object.assign({}, defaults, options);
 
         /** Convert the xml returned from the server into an array of js objects */
-        function processXML(responseXML: Element) {
+        function processXML(responseXML: Document) {
             if (opts.filterNode) {
                 let filteredNodes = responseXML.getElementsByTagName(opts.filterNode);
                 return XMLToJSONService.parse(filteredNodes, {includeAllAttrs: true, removeOws: false});
@@ -682,12 +728,12 @@ export class DataServiceClass implements IDataService {
     validateCollectionPayload(opts): boolean {
         let validPayload = true;
         let verifyParams = (params: string[]) => {
-            for (let param: string of params) {
+            _.each(params, (param: string) => {
                 if (!opts[param]) {
                     console.warn('options' + param + ' is required to complete this operation');
                     validPayload = false;
                 }
-            }
+            });
         };
 
         //Verify all required params are included

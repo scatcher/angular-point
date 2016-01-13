@@ -1,5 +1,5 @@
 import {IFieldDefinition} from '../factories';
-import _ from 'lodash';
+import  * as  _ from 'lodash';
 
 
 /**
@@ -43,7 +43,7 @@ export class CamlFactory {
         var selectStatements = [];
 
         /** Create a select statement for each field */
-        for (let fieldDefinition: IFieldDefinition of fieldDefinitionsArray) {
+        for (let fieldDefinition of fieldDefinitionsArray) {
             selectStatements.push(this.createCamlContainsSelector(fieldDefinition, searchString));
         }
         return this.chainCamlSelects(selectStatements, 'And');

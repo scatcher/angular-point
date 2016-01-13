@@ -1,21 +1,21 @@
 import {CacheService, FieldService, XMLToJSONService} from '../services';
-import _ from 'lodash';
+import * as  _ from 'lodash';
 
 import {
-    FieldVersionCollection,
-    FieldDefinition,
-    IExecuteQueryOptions,
-    IFieldDefinition,
-    IListFieldMapping,
-    IndexedCache,
-    IUninstantiatedExtendedListItem,
-    IUninstantiatedListItem,
-    List,
-    ListItem,
-    Lookup,
-    Model,
-    Query,
-    User
+FieldVersionCollection,
+FieldDefinition,
+IExecuteQueryOptions,
+IFieldDefinition,
+IListFieldMapping,
+IndexedCache,
+IUninstantiatedExtendedListItem,
+IUninstantiatedListItem,
+List,
+ListItem,
+Lookup,
+Model,
+Query,
+User
 } from '../factories';
 
 import {XMLListAttributeTypes, XMLFieldAttributeTypes} from '../constants';
@@ -56,10 +56,10 @@ export class DecodeServiceClass {
      * @param {object} responseXML XHR response from the server.
      * @returns {string} Returns an error string if present.
      */
-    checkResponseForErrors(responseXML: Element): string {
+    checkResponseForErrors(responseXML: Document): string {
         let error;
         /** Look for <errorstring></errorstring> or <ErrorText></ErrorText> for details on any errors */
-        for ( let element: string of ['ErrorText', 'errorstring']) {
+        for (let element of ['ErrorText', 'errorstring']) {
             let matchingElements = responseXML.getElementsByTagName(element);
             if (matchingElements[0]) {
                 error = matchingElements[0].textContent;
@@ -98,7 +98,7 @@ export class DecodeServiceClass {
      * @returns {Function} Returns a function that takes the new list item while keeping model, query,
      * and container in scope for future reference.
      */
-    createListItemProvider<T extends ListItem<any>>(model: Model, query: Query<T>, indexedCache: IndexedCache<T>): (rawObject: IUninstantiatedExtendedListItem<T>) => ListItem<T> {
+    createListItemProvider<T extends ListItem<any>>(model: Model, query: Query<T>, indexedCache: IndexedCache<T> = new IndexedCache<T>()): (rawObject: IUninstantiatedExtendedListItem<T>) => ListItem<T> {
         return (rawObject: IUninstantiatedExtendedListItem<T>) => {
             let listItem: T;
 
@@ -151,11 +151,11 @@ export class DecodeServiceClass {
      * @param {object[]} fieldDefinitions Field definitions from the model.
      * @param {object} responseXML XML response from the server.
      */
-    extendFieldDefinitionsFromXML(fieldDefinitions: IFieldDefinition[], responseXML: Element): IFieldDefinition[] {
+    extendFieldDefinitionsFromXML(fieldDefinitions: IFieldDefinition[], responseXML: Document): IFieldDefinition[] {
         let fieldMap = {};
 
         /** Map all custom fields with keys of the staticName and values = field definition */
-        for (let field: IFieldDefinition of fieldDefinitions) {
+        for (let field of fieldDefinitions) {
             if (field.staticName) {
                 fieldMap[field.staticName] = field;
             }
@@ -164,7 +164,7 @@ export class DecodeServiceClass {
         /** Iterate over each of the field nodes */
         let filteredNodes = responseXML.getElementsByTagName('Field');
 
-        for (let xmlField: Element of filteredNodes) {
+        _.each(filteredNodes, xmlField => {
             let staticName = xmlField.getAttribute('StaticName');
             let fieldDefinition = fieldMap[staticName];
 
@@ -178,14 +178,14 @@ export class DecodeServiceClass {
                     fieldDefinition.Choices = [];
                     /** Convert XML Choices object to an array of choices */
                     let xmlChoices = xmlField.getElementsByTagName('CHOICE');
-                    for (let xmlChoice: Element of xmlChoices) {
+                    _.each(xmlChoices, (xmlChoice: Element) => {
                         fieldDefinition.Choices.push(xmlChoice.textContent);
-                    }
+                    });
                     let defaultVal = xmlField.getElementsByTagName('Default');
                     fieldDefinition.Default = defaultVal[0] ? defaultVal[0].textContent : undefined;
                 }
             }
-        }
+        });
 
         return fieldDefinitions;
     }
@@ -202,12 +202,12 @@ export class DecodeServiceClass {
      * @param {object} responseXML XML response from the server.
      * @returns {object} Extended list object.
      */
-    extendListDefinitionFromXML(list: List, responseXML: Element): List {
+    extendListDefinitionFromXML(list: List, responseXML: Document): List {
         let service = this;
         let listElements = responseXML.getElementsByTagName('List');
-        for (let element: Element of listElements) {
+        _.each(listElements, (element: Element) => {
             service.extendObjectWithXMLAttributes(element, list, XMLListAttributeTypes);
-        }
+        });
         return list;
     }
 
@@ -221,7 +221,7 @@ export class DecodeServiceClass {
      * @param {object} model Model for a given list.
      * @param {object} responseXML XML response from the server.
      */
-    extendListMetadata(model: Model, responseXML: Element): void {
+    extendListMetadata(model: Model, responseXML: Document): void {
         this.extendListDefinitionFromXML(model.list, responseXML);
         this.extendFieldDefinitionsFromXML(model.list.fields, responseXML);
     }
@@ -442,7 +442,7 @@ export class DecodeServiceClass {
      *
      * @returns {FieldVersionCollection} FieldVersionCollection object with all versions included.
      */
-    parseFieldVersions(responseXML: Element, fieldDefinition: FieldDefinition): FieldVersionCollection {
+    parseFieldVersions(responseXML: Document, fieldDefinition: FieldDefinition): FieldVersionCollection {
         // let versions = {};
         let xmlVersions = responseXML.getElementsByTagName('Version');
         let versionCount = xmlVersions.length;
@@ -602,22 +602,26 @@ export class DecodeServiceClass {
      */
     processListItems<T extends ListItem<any>>(model: Model, query: Query<T>, responseXML: Element, {
         includeAllAttrs = false,
-        filter = 'z:row',
         mapping = model.list.mapping,
-        target = model.getCache<T>()
-        } = {}): IndexedCache<T> {
+        target = model.getCache<T>() || new IndexedCache<T>()
+    } = {}): IndexedCache<T> {
+
+        /** Looking for "<z:row" elements, which is under the xmlns:z namespace and element would then be "row"
+         * We can't find using normal getElementsByTagName method so we need to include the namespace*/
+        const rowNS = '#RowsetSchema';
+        const rowElement = 'row';
 
         /** Map returned XML to JS objects based on mapping from model */
-        let filteredNodes = responseXML.getElementsByTagName(filter);
+        let filteredNodes = responseXML.getElementsByTagNameNS(rowNS, rowElement);
 
         /** Prepare constructor for XML entities with references to the query and cached container */
         let listItemProvider = this.createListItemProvider<T>(model, query, target);
 
         /** Convert XML entities into JS objects */
-        let parsedEntities = this.xmlToJson(filteredNodes, {mapping, includeAllAttrs});
+        let parsedEntities = this.xmlToJson(filteredNodes, { mapping, includeAllAttrs });
 
         /** Instantiate each list item with factory on model and add to cache */
-        for (let rawListItemObject: IUninstantiatedListItem of parsedEntities) {
+        for (let rawListItemObject of parsedEntities) {
             listItemProvider(rawListItemObject);
         }
 
@@ -640,15 +644,13 @@ export class DecodeServiceClass {
      * be stripped off the field name.
      * @returns {object[]} An array of JavaScript objects.
      */
-    xmlToJson<T extends ListItem<any>>(xmlEntities: Element, {
+    xmlToJson<T extends ListItem<any>>(xmlEntities: NodeListOf<Element>, {
         mapping,
         includeAllAttrs = false,
         removeOws = true
-        }: IXMLToJsonOptions<T>): Object[] {
-        let parseOptions = {mapping, includeAllAttrs, removeOws};
-        return _.map(xmlEntities, (xmlEntity) => {
-            return this.parseXmlEntity(xmlEntity, parseOptions);
-        });
+    }: IXMLToJsonOptions<T>): Object[] {
+        let parseOptions = { mapping, includeAllAttrs, removeOws };
+        return _.map(xmlEntities, xmlEntity => this.parseXmlEntity(xmlEntity, parseOptions));
     }
 
 }

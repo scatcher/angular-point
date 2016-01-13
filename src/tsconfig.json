@@ -3,7 +3,7 @@
         "declaration": true,
         "emitDecoratorMetadata": true,
         "experimentalDecorators": true,
-        "module": "system",
+        "module": "commonjs",
         "moduleResolution": "node",
         "noImplicitAny": false,
         "outDir": "../dist",

@@ -1,7 +1,7 @@
 import {APConfig, DefaultFields, IUserPermissionsObject} from '../constants';
 import {FieldDefinition, ListItem} from '../factories';
 import {IFieldDefinition, FieldConfigurationObject} from './apFieldFactory';
-import _ from 'lodash';
+import  * as  _ from 'lodash';
 
 export interface IUninstantiatedList {
     customFields: FieldConfigurationObject[];
@@ -211,12 +211,12 @@ export class List implements IList {
         this.viewFields += '<ViewFields>';
 
         /** Add the default fields */
-        for (let field: FieldConfigurationObject of DefaultFields) {
+        for (let field of DefaultFields) {
             buildField(field);
         }
 
         /** Add each of the fields defined in the model */
-        for (let field: FieldConfigurationObject of this.customFields) {
+        for (let field of this.customFields) {
             buildField(field);
         }
 

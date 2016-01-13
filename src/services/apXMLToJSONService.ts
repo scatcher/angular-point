@@ -1,5 +1,5 @@
 import {DecodeService} from '../services';
-import _ from 'lodash';
+import  * as  _ from 'lodash';
 
 export interface IParseOptions {
     // If true, return all attributes, regardless whether they are in the mapping
@@ -25,7 +25,7 @@ export let XMLToJSONService = {
     parse(xmlNodeSet: NodeListOf<Element>, {includeAllAttrs = true, mapping = {}, removeOws = true, sparse = false}: IParseOptions = {}): Object[] {
         let parsedObjects = [];
 
-        for ( let node: Element of xmlNodeSet) {
+        _.each(xmlNodeSet, (node: Element) => {
             let row = {};
             let rowAttrs = node.attributes;
 
@@ -46,7 +46,7 @@ export let XMLToJSONService = {
 
             // Push this item into the JSON Object
             parsedObjects.push(row);
-        }
+        });
 
         // Return the JSON object
         return parsedObjects;

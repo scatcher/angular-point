@@ -14,7 +14,7 @@ import {IFieldDefinition} from './apFieldFactory';
 import {FieldVersionCollection} from './apListItemVersionFactory';
 import {Promise} from 'es6-promise';
 import {IWorkflowDefinition, IStartWorkflowParams} from '../interfaces/main';
-import _ from 'lodash';
+import  * as  _ from 'lodash';
 
 
 // raw list item before passed into constructor function
@@ -47,21 +47,21 @@ export interface IUninstantiatedExtendedListItem<T extends ListItem<any>> extend
  * @constructor
  */
 export class ListItem<T> implements IUninstantiatedExtendedListItem<T> {
-    author: User;
-    created: Date;
-    editor: User;
-    fileRef: Lookup<T>;
-    getCache: () => IndexedCache<T>;
-    getModel: <M extends Model>() => M;
-    getPristine: () => IUninstantiatedListItem;
-    getQuery: () => Query<T>;
-    id: number;
-    modified: Date;
-    permMask: string;
-    uniqueId: string;
-    private preDeleteAction: () => boolean;
-    private preSaveAction: () => boolean;
-    private postSaveAction: () => void;
+    author:User;
+    created:Date;
+    editor:User;
+    fileRef:Lookup<T>;
+    getCache:() => IndexedCache<T>;
+    getModel:<M extends Model>() => M;
+    getPristine:() => IUninstantiatedListItem;
+    getQuery:() => Query<T>;
+    id:number;
+    modified:Date;
+    permMask:string;
+    uniqueId:string;
+    private preDeleteAction:() => boolean;
+    private preSaveAction:() => boolean;
+    private postSaveAction:() => void;
 
 
     /**
@@ -73,7 +73,7 @@ export class ListItem<T> implements IUninstantiatedExtendedListItem<T> {
      * @returns {FieldChangeSummary<T>} Change summary of all fields that have been modified
      * since last save.
      */
-    changes(): FieldChangeSummary<T> {
+    changes():FieldChangeSummary<T> {
         //Instantiate a copy of the original list item for comparrison
         let pristineListItem = _.cloneDeep<{ id: number }>(this.getPristine());
         if (!pristineListItem) {
@@ -82,7 +82,7 @@ export class ListItem<T> implements IUninstantiatedExtendedListItem<T> {
         //Remove id so when we instantiate we don't register in cache
         pristineListItem.id = undefined;
         //Need to instantiate using the same factory as the current list item
-        let factory: Function = this.constructor;
+        let factory:Function = this.constructor;
         let instantiatedPristineListItem = new factory(pristineListItem);
 
         return new FieldChangeSummary(this, instantiatedPristineListItem);
@@ -107,7 +107,7 @@ export class ListItem<T> implements IUninstantiatedExtendedListItem<T> {
      * };
      * </pre>
      */
-    deleteAttachment(url: string): Promise<any> {
+    deleteAttachment(url:string):Promise<any> {
 
         return DataService.serviceWrapper({
             operation: 'DeleteAttachment',
@@ -136,7 +136,7 @@ export class ListItem<T> implements IUninstantiatedExtendedListItem<T> {
      * List of tasks.  When the delete link is clicked, the list item item is removed from the local cache and
      * the view is updated to no longer show the task.
      */
-    deleteItem(): Promise<any> {
+    deleteItem():Promise<any> {
         let listItem = this;
         let model = listItem.getModel();
 
@@ -210,7 +210,7 @@ export class ListItem<T> implements IUninstantiatedExtendedListItem<T> {
      * };
      * </pre>
      */
-    getAttachmentCollection(): Promise<string[]> {
+    getAttachmentCollection():Promise<string[]> {
         let listItem = this;
         return DataService.getCollection({
             operation: 'GetAttachmentCollection',
@@ -229,7 +229,7 @@ export class ListItem<T> implements IUninstantiatedExtendedListItem<T> {
      * Wrapper for DataService.getAvailableWorkflows.  Simply passes the current item in.
      * @returns {promise} Array of objects defining each of the available workflows.
      */
-    getAvailableWorkflows(): Promise<IWorkflowDefinition[]> {
+    getAvailableWorkflows():Promise<IWorkflowDefinition[]> {
         let listItem = this;
         return DataService.getAvailableWorkflows(listItem.fileRef.lookupValue);
     }
@@ -243,7 +243,7 @@ export class ListItem<T> implements IUninstantiatedExtendedListItem<T> {
      * list item with those changes.
      * @returns {promise} Promise which resolves with the updated list item.
      */
-    getChanges(): Promise<T> {
+    getChanges():Promise<T> {
         let model = this.getModel();
         return model.getListItemById(this.id);
     }
@@ -269,9 +269,9 @@ export class ListItem<T> implements IUninstantiatedExtendedListItem<T> {
      *      };
      * </pre>
      */
-    getChangeSummary(fieldNames?: string[]): Promise<ChangeSummary<T>> {
+    getChangeSummary(fieldNames?:string[]):Promise<ChangeSummary<T>> {
         return this.getVersionHistory(fieldNames)
-            .then((versionHistoryCollection: VersionHistoryCollection<T>) => versionHistoryCollection.generateChangeSummary());
+            .then((versionHistoryCollection:VersionHistoryCollection<T>) => versionHistoryCollection.generateChangeSummary());
     }
 
     /**
@@ -286,7 +286,7 @@ export class ListItem<T> implements IUninstantiatedExtendedListItem<T> {
      * we return an empty array.
      * @returns {string[]} An array of choices for a Choice or MultiChoice type field.
      */
-    getFieldChoices(fieldName: string): string[] {
+    getFieldChoices(fieldName:string):string[] {
         let listItem = this;
         let fieldDefinition = listItem.getFieldDefinition(fieldName);
         return fieldDefinition.choices || fieldDefinition.Choices || [];
@@ -314,7 +314,7 @@ export class ListItem<T> implements IUninstantiatedExtendedListItem<T> {
      * @param {string} fieldName Internal field name.
      * @returns {object} Field definition.
      */
-    getFieldDefinition(fieldName: string): IFieldDefinition {
+    getFieldDefinition(fieldName:string):IFieldDefinition {
         let listItem = this;
         return listItem.getModel().getFieldDefinition(fieldName);
     }
@@ -331,7 +331,7 @@ export class ListItem<T> implements IUninstantiatedExtendedListItem<T> {
      * fieldDefinition.description.  Finally if that have anything it returns an empty string.
      * @returns {string} The description for a given field object.
      */
-    getFieldDescription(fieldName: string): string {
+    getFieldDescription(fieldName:string):string {
         let listItem = this;
         let fieldDefinition = listItem.getFieldDefinition(fieldName);
         return fieldDefinition.description || fieldDefinition.Description || '';
@@ -350,7 +350,7 @@ export class ListItem<T> implements IUninstantiatedExtendedListItem<T> {
      * caml case version of the mapped name using UtilityService.fromCamelCase.
      * @returns {string} The label for a given field object.
      */
-    getFieldLabel(fieldName: string): string {
+    getFieldLabel(fieldName:string):string {
         let listItem = this;
         let fieldDefinition = listItem.getFieldDefinition(fieldName);
         return fieldDefinition.label || fieldDefinition.DisplayName || fieldDefinition.displayName;
@@ -368,7 +368,7 @@ export class ListItem<T> implements IUninstantiatedExtendedListItem<T> {
      * custom method specified on the field definition.
      * @returns {string} Formatted string representing the field value.
      */
-    getFormattedValue(fieldName: string, options?: Object): string {
+    getFormattedValue(fieldName:string, options?:Object):string {
         let listItem = this;
         let fieldDefinition = listItem.getFieldDefinition(fieldName);
         if (!fieldDefinition) {
@@ -385,8 +385,8 @@ export class ListItem<T> implements IUninstantiatedExtendedListItem<T> {
      * Abstraction to allow logic in model to be used instead of defining the list location in more than one place.
      * @returns {object} List for the list item.
      */
-    getList(): List {
-        let model: Model = this.getModel();
+    getList():List {
+        let model:Model = this.getModel();
         return model.getList();
     }
 
@@ -399,7 +399,7 @@ export class ListItem<T> implements IUninstantiatedExtendedListItem<T> {
      * model.factory prototype in apModelFactory.
      * @returns {string} List ID.
      */
-    getListId(): string {
+    getListId():string {
         let model = this.getModel();
         return model.getListId();
     }
@@ -428,7 +428,7 @@ export class ListItem<T> implements IUninstantiatedExtendedListItem<T> {
      * </pre>
      * @returns {object} The listItem the lookup is referencing or undefined if not in the cache.
      */
-    getLookupReference<T2 extends ListItem<any>>(fieldName: string, lookupId?: number): T2 {
+    getLookupReference<T2 extends ListItem<any>>(fieldName:string, lookupId?:number):T2 {
         let listItem = this;
         let lookupReference;
         if (_.isUndefined(fieldName)) {
@@ -482,7 +482,7 @@ export class ListItem<T> implements IUninstantiatedExtendedListItem<T> {
      *      });
      * </pre>
      */
-    getVersionHistory(properties?: string[]): Promise<VersionHistoryCollection<T>> {
+    getVersionHistory(properties?:string[]):Promise<VersionHistoryCollection<T>> {
         let listItem = this;
         let model = listItem.getModel();
         let promiseArray = [];
@@ -492,25 +492,25 @@ export class ListItem<T> implements IUninstantiatedExtendedListItem<T> {
         }
         if (!properties) {
             /** If fields aren't provided, pull the version history for all NON-readonly fields */
-            let targetFields = _.where(model.list.fields, {readOnly: false});
-            properties = _.map<IFieldDefinition, string>(targetFields, 'mappedName');
+            let targetFields = model.list.fields.filter(fieldDefinition => fieldDefinition.readOnly === false);
+            properties = targetFields.map(fieldDefinition => fieldDefinition.mappedName);
         }
 
         /** Generate promises for each field */
-        for (let p: string of properties) {
+        for (let p:string of properties) {
             let promise = createPromise(p);
             promiseArray.push(promise);
         }
 
         /** Pause until all requests are resolved */
         return Promise.all(promiseArray)
-            .then((fieldVersionCollections: FieldVersionCollection[]) => {
+            .then((fieldVersionCollections:FieldVersionCollection[]) => {
                 let versionHistoryCollection = new VersionHistoryCollection<T>(fieldVersionCollections, model.factory);
                 return versionHistoryCollection;
             });
 
         /** Constructor that creates a promise for each field */
-        function createPromise(prop: string) {
+        function createPromise(prop:string) {
 
             let fieldDefinition = listItem.getFieldDefinition(prop);
 
@@ -577,7 +577,7 @@ export class ListItem<T> implements IUninstantiatedExtendedListItem<T> {
      *
      * </pre>
      */
-    registerPreDeleteAction(action: () => boolean): () => void {
+    registerPreDeleteAction(action:() => boolean):() => void {
         this.preDeleteAction = action;
         //Return function to unregister
         return () => this.preDeleteAction = undefined;
@@ -617,7 +617,7 @@ export class ListItem<T> implements IUninstantiatedExtendedListItem<T> {
      *
      * </pre>
      */
-    registerPreSaveAction(action: () => boolean): () => void {
+    registerPreSaveAction(action:() => boolean):() => void {
         this.preSaveAction = action;
         //Return function to unregister
         return () => this.preSaveAction = undefined;
@@ -656,7 +656,7 @@ export class ListItem<T> implements IUninstantiatedExtendedListItem<T> {
      *
      * </pre>
      */
-    registerPostSaveAction(action: () => void): () => void {
+    registerPostSaveAction(action:() => void):() => void {
         this.postSaveAction = action;
         //Return function to unregister
         return () => delete this.postSaveAction;
@@ -717,7 +717,7 @@ export class ListItem<T> implements IUninstantiatedExtendedListItem<T> {
      * }
      * </pre>
      */
-    resolvePermissions(): IUserPermissionsObject {
+    resolvePermissions():IUserPermissionsObject {
         return UtilityService.resolvePermissions(this.permMask);
     }
 
@@ -748,7 +748,7 @@ export class ListItem<T> implements IUninstantiatedExtendedListItem<T> {
      * }
      * </pre>
      */
-    saveChanges({ target = this.getCache ? this.getCache() : new IndexedCache<T>(), valuePairs = undefined, buildValuePairs = true } = {}): Promise<T> {
+    saveChanges({ target = this.getCache ? this.getCache() : new IndexedCache<T>(), valuePairs = undefined, buildValuePairs = true } = {}):Promise<T> {
         let listItem = this;
         let model = listItem.getModel();
 
@@ -779,12 +779,12 @@ export class ListItem<T> implements IUninstantiatedExtendedListItem<T> {
                 }
 
                 if (buildValuePairs === true) {
-                    let editableFields = _.filter(model.list.fields, {readOnly: false});
+                    let editableFields = model.list.fields.filter((fieldDefinition) => fieldDefinition.readOnly === false);
                     config.valuePairs = EncodeService.generateValuePairs(editableFields, listItem);
                 }
 
                 DataService.serviceWrapper(config)
-                    .then((response: Element) => {
+                    .then((response:Document) => {
                         var indexedCache = DecodeService.processListItems<T>(model, listItem.getQuery<T>(), response, config);
 
                         //Identify updated list item
@@ -842,11 +842,11 @@ export class ListItem<T> implements IUninstantiatedExtendedListItem<T> {
      * }
      * </pre>
      */
-    saveFields(fieldArray: string[], { target = this.getCache ? this.getCache() : new IndexedCache<T>() } = {}): Promise<T> {
+    saveFields(fieldArray:string[], { target = this.getCache ? this.getCache() : new IndexedCache<T>() } = {}):Promise<T> {
 
         let listItem = this;
         let model = listItem.getModel();
-        let definitions: IFieldDefinition[] = [];
+        let definitions:IFieldDefinition[] = [];
 
         if (_.isString(fieldArray)) {
             console.warn('Field names should be an array of strings instead of a single string.  This will be deperecated.');
@@ -856,7 +856,7 @@ export class ListItem<T> implements IUninstantiatedExtendedListItem<T> {
 
         /** Find the field definition for each of the requested fields */
         for (let fieldName of fieldNames) {
-            let match = _.find(model.list.customFields, {mappedName: fieldName});
+            let match = model.list.customFields.find((fieldDefinition) => fieldDefinition.mappedName === fieldName);
             if (match) {
                 definitions.push(match);
             }
@@ -883,7 +883,7 @@ export class ListItem<T> implements IUninstantiatedExtendedListItem<T> {
      * Resets all list item properties back to a pristine state but doesn't update any properties added
      * manually to the list item.
      */
-    setPristine(listItem?: ListItem<any>): void {
+    setPristine(listItem?:ListItem<any>):void {
         if (!this.id || !_.isFunction(this.getPristine)) {
             throw new Error('Unable to find the pristine state for this list item.');
         }
@@ -907,7 +907,7 @@ export class ListItem<T> implements IUninstantiatedExtendedListItem<T> {
      * @param {string} [options.workflowName] Use this value to lookup the templateId and then start the workflow.
      * @returns {promise} Resolves with server response.
      */
-    startWorkflow(options: IStartWorkflowParams): Promise<any> {
+    startWorkflow(options:IStartWorkflowParams):Promise<any> {
         let listItem = this;
 
         /** Set the relative file reference */
@@ -923,9 +923,9 @@ export class ListItem<T> implements IUninstantiatedExtendedListItem<T> {
                 /** We first need to get the template GUID for the workflow */
                 listItem.getAvailableWorkflows()
                     .then((workflows) => {
-                        let targetWorklow = _.findWhere(workflows, {name: options.workflowName});
+                        let targetWorklow = workflows.find((workflow) => workflow.name === options.workflowName);
                         if (!targetWorklow) {
-                            throw new Error(`A workflow with the name ${options.workflowName} wasn't found.  The workflows available are [${_.map(workflows, 'name').toString() }].`);
+                            throw new Error(`A workflow with the name ${options.workflowName} wasn't found.  The workflows available are [${workflows.map(workflow => workflow.name).toString() }].`);
                         }
                         /** Create an extended set of options to pass any overrides to DataService */
                         options.templateId = targetWorklow.templateId;
@@ -957,7 +957,7 @@ export class ListItem<T> implements IUninstantiatedExtendedListItem<T> {
      * Helper function that passes the current item to Model.validateEntity
      * @returns {boolean} Evaluation of validity.
      */
-    validateEntity(): boolean {
+    validateEntity():boolean {
         let listItem = this,
             model = listItem.getModel();
         return model.validateEntity(listItem);
@@ -970,7 +970,7 @@ export class ListItem<T> implements IUninstantiatedExtendedListItem<T> {
  * standard constructor to allow it to inherit from ListItem
  */
 export class StandardListItem {
-    constructor(obj?: Object) {
+    constructor(obj?:Object) {
         Object.assign(this, obj);
     }
 }
