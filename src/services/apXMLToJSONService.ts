@@ -1,5 +1,5 @@
 import {DecodeService} from '../services';
-import  * as  _ from 'lodash';
+import  _ from 'lodash';
 
 export interface IParseOptions {
     // If true, return all attributes, regardless whether they are in the mapping
@@ -53,5 +53,3 @@ export let XMLToJSONService = {
 
     }
 };
-
-

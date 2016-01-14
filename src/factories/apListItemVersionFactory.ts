@@ -1,7 +1,7 @@
 import {ListItem, User, FieldDefinition} from '../factories';
 import {FieldConfigurationObject} from './apFieldFactory';
 import {IModelFactory} from './apModelFactory';
-import  * as  _ from 'lodash';
+import  _ from 'lodash';
 
 export interface IListItemVersions<T extends ListItem<any>> extends ListItem<T> {
     [key: number]: IListItemVersion<T>;

@@ -3,7 +3,7 @@ import {APConfig, DefaultListItemQueryOptions} from '../constants';
 import {DecodeService, LoggerService, DataService} from '../services';
 import {IListFieldMapping} from './apListFactory';
 import {Promise} from 'es6-promise';
-import  * as  _ from 'lodash';
+import  _ from 'lodash';
 
 export interface IQueryOptions {
     force?: boolean;

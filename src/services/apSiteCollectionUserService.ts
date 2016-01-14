@@ -1,7 +1,7 @@
 import {DataService} from '../services';
 import {Promise} from 'es6-promise';
 import {IXMLGroup, IXMLUserProfile} from '../interfaces/main';
-import  * as  _ from 'lodash';
+import  _ from 'lodash';
 
 /** Local references to cached promises */
 var _getGroupCollection, _getUserProfile;

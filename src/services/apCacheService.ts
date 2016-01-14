@@ -1,6 +1,6 @@
 import {EntityContainer, IndexedCache, Model, ListItem, Query} from '../factories';
 import {Promise} from 'es6-promise';
-import  * as  _ from 'lodash';
+import  _ from 'lodash';
 
 export interface ICacheService {
     deleteEntity(listId: string, entityId: number): void;

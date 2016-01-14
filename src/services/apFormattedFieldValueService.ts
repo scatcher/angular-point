@@ -1,5 +1,5 @@
 import {Lookup} from '../factories';
-import  * as  _ from 'lodash';
+import  _ from 'lodash';
 
 var service: FormattedFieldValueServiceClass;
 

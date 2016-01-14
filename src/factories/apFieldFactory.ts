@@ -1,6 +1,6 @@
 import {FieldService, UtilityService, FormattedFieldValueService} from '../services';
 import {ListItem} from '../factories';
-import  * as  _ from 'lodash';
+import  _ from 'lodash';
 
 export interface XMLFieldDefinition {
     ID?: string;

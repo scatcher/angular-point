@@ -5,7 +5,7 @@ import {IUninstantiatedList} from './apListFactory';
 import {IQueryOptions} from './apQueryFactory';
 import {IFieldDefinition} from './apFieldFactory';
 import {Promise} from 'es6-promise';
-import  * as  _ from 'lodash';
+import  _ from 'lodash';
 
 export interface IUninitializedModel {
     factory: IModelFactory;

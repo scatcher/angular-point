@@ -1,5 +1,5 @@
 import {ListItem} from '../factories';
-import  * as  _ from 'lodash';
+import  _ from 'lodash';
 
 export interface IUninstantiatedIndexCache<T> {
     [key: string]: T;

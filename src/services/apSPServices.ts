@@ -1,6 +1,6 @@
 import {SOAPEnvelope, SPServicesDefaults, WebServiceSchemas, WebServiceOperationConstants} from '../constants';
 import {EncodeService} from '../services';
-import  * as  _ from 'lodash';
+import  _ from 'lodash';
 
 //Definition file taken from SPServices project on GitHub, look at way to use as depency and link to it
 export interface SPServicesOptions {

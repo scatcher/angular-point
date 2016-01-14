@@ -5,7 +5,7 @@ import {Http, RequestOptions, Request, RequestMethod, Headers} from 'angular2/ht
 import {XMLFieldDefinition} from '../factories/apFieldFactory';
 import {Promise} from 'es6-promise';
 import {IWorkflowDefinition, IXMLGroup, IXMLUserProfile} from '../interfaces/main';
-import  * as  _ from 'lodash';
+import  _ from 'lodash';
 import {Injectable} from "angular2/core";
 
 @Injectable()

@@ -1,6 +1,6 @@
 import {UtilityService} from '../services';
 import {Lookup, IFieldDefinition, ListItem} from '../factories';
-import  * as  _ from 'lodash';
+import  _ from 'lodash';
 
 /* Taken from http://dracoblue.net/dev/encodedecode-special-xml-characters-in-javascript/155/ */
 let xml_special_to_escaped_one_map = {

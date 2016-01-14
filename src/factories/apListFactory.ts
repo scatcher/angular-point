@@ -1,7 +1,7 @@
 import {APConfig, DefaultFields, IUserPermissionsObject} from '../constants';
 import {FieldDefinition, ListItem} from '../factories';
 import {IFieldDefinition, FieldConfigurationObject} from './apFieldFactory';
-import  * as  _ from 'lodash';
+import  _ from 'lodash';
 
 export interface IUninstantiatedList {
     customFields: FieldConfigurationObject[];

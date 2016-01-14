@@ -1,6 +1,6 @@
 import {IndexedCache, ListItem} from '../factories';
 import {Promise} from 'es6-promise';
-import  * as  _ from 'lodash';
+import  _ from 'lodash';
 
 export interface IUpdateOptions<T extends ListItem<any>> {
     batchCmd: string;

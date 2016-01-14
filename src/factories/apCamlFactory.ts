@@ -1,5 +1,5 @@
 import {IFieldDefinition} from '../factories';
-import  * as  _ from 'lodash';
+import  _ from 'lodash';
 
 
 /**

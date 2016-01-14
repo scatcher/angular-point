@@ -14,7 +14,7 @@ import {IFieldDefinition} from './apFieldFactory';
 import {FieldVersionCollection} from './apListItemVersionFactory';
 import {Promise} from 'es6-promise';
 import {IWorkflowDefinition, IStartWorkflowParams} from '../interfaces/main';
-import  * as  _ from 'lodash';
+import  _ from 'lodash';
 
 
 // raw list item before passed into constructor function
