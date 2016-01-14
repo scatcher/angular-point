@@ -1,9 +1,17 @@
 {
-	"compilerOptions": {
-		// "sourceMap": true,
-		"target": "ES5"
-	},
-    "files": [
-        "../typings/ap.d.ts"
-    ]
+  "compilerOptions": {
+    "target": "es5",
+    "module": "commonjs",
+    "removeComments": true,
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
+    "noEmitHelpers": false,
+    "sourceMap": true,
+    "moduleResolution": "node"
+//    "sourceMap": true,
+//    "target": "ES5"
+  },
+  "files": [
+    "../typings/ap.d.ts"
+  ]
 }

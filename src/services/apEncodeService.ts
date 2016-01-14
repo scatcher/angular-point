@@ -157,8 +157,6 @@ module ap {
             } else {
                 jsDate = date;
             }
-            
-            // return moment(jsDate).format('YYYY-MM-DDTHH:mm:ss[Z]Z')
 
             var dateString = '';
             dateString += jsDate.getFullYear();

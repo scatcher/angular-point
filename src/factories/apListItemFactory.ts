@@ -477,7 +477,7 @@ module ap {
 
             if (!properties) {
                 /** If fields aren't provided, pull the version history for all NON-readonly fields */
-                let targetFields = _.where(model.list.fields, { readOnly: false });
+                let targetFields = model.list.fields.filter(field => field.readOnly === false);
                 properties = _.map<IFieldDefinition, string>(targetFields, 'mappedName');
             }
 

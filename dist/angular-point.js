@@ -1,5 +1,5 @@
 /// <reference path="../typings/ap.d.ts" />
-/// <reference path="../typings/tsd.d.ts" />
+/// <reference path="../typings/main.d.ts" />
 var ap;
 (function (ap) {
     'use strict';
@@ -183,7 +183,7 @@ var ap;
             this.ViewVersions = false;
         }
         return BasePermissionObject;
-    })();
+    }());
     ap.BasePermissionObject = BasePermissionObject;
     angular
         .module('angularPoint')
@@ -524,6 +524,9 @@ var ap;
 })(ap || (ap = {}));
 
 /// <reference path="../app.module.ts" />
+/// <reference path="../../typings/tsd.d.ts" />
+
+/// <reference path="../app.module.ts" />
 var ap;
 (function (ap) {
     'use strict';
@@ -631,7 +634,7 @@ var ap;
             return camlSelector;
         };
         return CamlFactory;
-    })();
+    }());
     ap.CamlFactory = CamlFactory;
     /**
      * @ngdoc function
@@ -793,7 +796,7 @@ var ap;
             return apFieldService.getMockData(this.objectType, options);
         };
         return FieldDefinition;
-    })();
+    }());
     ap.FieldDefinition = FieldDefinition;
     /**
      * @ngdoc service
@@ -815,7 +818,7 @@ var ap;
         }
         FieldFactory.$inject = ['apFieldService', 'apUtilityService', 'apFormattedFieldValueService'];
         return FieldFactory;
-    })();
+    }());
     ap.FieldFactory = FieldFactory;
     angular
         .module('angularPoint')
@@ -1028,7 +1031,7 @@ var ap;
             this.delete(id);
         };
         return IndexedCache;
-    })();
+    }());
     ap.IndexedCache = IndexedCache;
     /** Adds a getter to base prototype wich returns  the number of key/values stored in cache. */
     Object.defineProperty(IndexedCache.prototype, "size", {
@@ -1059,7 +1062,7 @@ var ap;
             return new IndexedCache(overrides);
         };
         return IndexedCacheFactory;
-    })();
+    }());
     ap.IndexedCacheFactory = IndexedCacheFactory;
     angular.module('angularPoint')
         .service('apIndexedCacheFactory', IndexedCacheFactory);
@@ -1229,7 +1232,7 @@ var ap;
             return this.WebFullUrl ? this.WebFullUrl : this.webURL;
         };
         return List;
-    })();
+    }());
     ap.List = List;
     /**
      * @ngdoc service
@@ -1263,7 +1266,7 @@ var ap;
         };
         ListFactory.$inject = ['apConfig', 'apDefaultFields', 'apFieldFactory'];
         return ListFactory;
-    })();
+    }());
     ap.ListFactory = ListFactory;
     angular.module('angularPoint')
         .service('apListFactory', ListFactory);
@@ -1672,7 +1675,7 @@ var ap;
                 throw new Error('Properties are required to be formatted as an array of strings.');
             if (!properties) {
                 /** If fields aren't provided, pull the version history for all NON-readonly fields */
-                var targetFields = _.where(model.list.fields, { readOnly: false });
+                var targetFields = model.list.fields.filter(function (field) { return field.readOnly === false; });
                 properties = _.map(targetFields, 'mappedName');
             }
             /** Generate promises for each field */
@@ -2005,8 +2008,8 @@ var ap;
             /** Allow a string to be passed in to save a single field */
             var fieldNames = _.isString(fieldArray) ? [fieldArray] : fieldArray;
             /** Find the field definition for each of the requested fields */
-            for (var _i = 0; _i < fieldNames.length; _i++) {
-                var fieldName_1 = fieldNames[_i];
+            for (var _i = 0, fieldNames_1 = fieldNames; _i < fieldNames_1.length; _i++) {
+                var fieldName_1 = fieldNames_1[_i];
                 var match = _.find(model.list.customFields, { mappedName: fieldName_1 });
                 if (match) {
                     definitions.push(match);
@@ -2096,7 +2099,7 @@ var ap;
             return model.validateEntity(listItem);
         };
         return ListItem;
-    })();
+    }());
     ap.ListItem = ListItem;
     /** In the event that a factory isn't specified, just use a
      * standard constructor to allow it to inherit from ListItem */
@@ -2105,7 +2108,7 @@ var ap;
             _.assign(this, obj);
         }
         return StandardListItem;
-    })();
+    }());
     ap.StandardListItem = StandardListItem;
     /**
      * @ngdoc object
@@ -2155,7 +2158,7 @@ var ap;
         };
         ListItemFactory.$inject = ['$q', 'apCacheService', 'apChangeService', 'apConfig', 'apDataService', 'apDecodeService', 'apEncodeService', 'apUtilityService', 'apListItemVersionFactory'];
         return ListItemFactory;
-    })();
+    }());
     ap.ListItemFactory = ListItemFactory;
     angular
         .module('angularPoint')
@@ -2166,8 +2169,7 @@ var ap;
 var __extends = (this && this.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
-    __.prototype = b.prototype;
-    d.prototype = new __();
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 };
 var ap;
 (function (ap) {
@@ -2218,7 +2220,7 @@ var ap;
             configurable: true
         });
         return FieldVersionCollection;
-    })();
+    }());
     ap.FieldVersionCollection = FieldVersionCollection;
     var FieldChange = (function () {
         function FieldChange(propertyName, fieldDefinition, newerVersion, previousVersion) {
@@ -2239,7 +2241,7 @@ var ap;
             return propertyValue;
         };
         return FieldChange;
-    })();
+    }());
     /**
      * @ngdoc object
      * @name apListItemVersionFactory.FieldChangeSummary
@@ -2276,7 +2278,7 @@ var ap;
             configurable: true
         });
         return FieldChangeSummary;
-    })();
+    }());
     ap.FieldChangeSummary = FieldChangeSummary;
     /**
      * @ngdoc object
@@ -2310,7 +2312,7 @@ var ap;
             configurable: true
         });
         return VersionSummary;
-    })(FieldChangeSummary);
+    }(FieldChangeSummary));
     ap.VersionSummary = VersionSummary;
     /**
      * @ngdoc object
@@ -2352,7 +2354,7 @@ var ap;
             return _.toArray(this.versionSummaryCollection);
         };
         return ChangeSummary;
-    })();
+    }());
     ap.ChangeSummary = ChangeSummary;
     var VersionHistoryCollection = (function () {
         // getFactory: () => IModelFactory;
@@ -2388,7 +2390,7 @@ var ap;
             return _.toArray(this);
         };
         return VersionHistoryCollection;
-    })();
+    }());
     ap.VersionHistoryCollection = VersionHistoryCollection;
     var ListItemVersionFactory = (function () {
         function ListItemVersionFactory() {
@@ -2399,7 +2401,7 @@ var ap;
             this.VersionSummary = VersionSummary;
         }
         return ListItemVersionFactory;
-    })();
+    }());
     ap.ListItemVersionFactory = ListItemVersionFactory;
     /**
     * @ngdoc function
@@ -2436,7 +2438,7 @@ var ap;
             this.lookupValue = thisLookup.value || '';
         }
         return Lookup;
-    })();
+    }());
     ap.Lookup = Lookup;
     var LookupFactory = (function () {
         function LookupFactory(_$q_, _apUtilityService_) {
@@ -2456,7 +2458,7 @@ var ap;
         };
         LookupFactory.$inject = ['$q', 'apUtilityService'];
         return LookupFactory;
-    })();
+    }());
     ap.LookupFactory = LookupFactory;
     /**
      * @ngdoc function
@@ -3322,7 +3324,7 @@ var ap;
             return valid;
         };
         return Model;
-    })();
+    }());
     ap.Model = Model;
     var ModelFactory = (function () {
         function ModelFactory(_$q_, _apCacheService_, _apConfig_, _apDataService_, _apDecodeService_, _apEncodeService_, _apFieldService_, _apIndexedCacheFactory_, _apListFactory_, _apQueryFactory_, _apUtilityService_) {
@@ -3344,7 +3346,7 @@ var ap;
         };
         ModelFactory.$inject = ['$q', 'apCacheService', 'apConfig', 'apDataService', 'apDecodeService', 'apEncodeService', 'apFieldService', 'apIndexedCacheFactory', 'apListFactory', 'apQueryFactory', 'apUtilityService'];
         return ModelFactory;
-    })();
+    }());
     ap.ModelFactory = ModelFactory;
     angular
         .module('angularPoint')
@@ -3383,7 +3385,7 @@ var ap;
             localStorage.removeItem(this.key);
         };
         return LocalStorageQuery;
-    })();
+    }());
     ap.LocalStorageQuery = LocalStorageQuery;
     /**
      * @ngdoc function
@@ -3765,7 +3767,7 @@ var ap;
             });
         };
         return Query;
-    })();
+    }());
     ap.Query = Query;
     var QueryFactory = (function () {
         function QueryFactory(_$q_, _apConfig_, _apDataService_, _apDefaultListItemQueryOptions_, _apIndexedCacheFactory_, _apDecodeService_, _apLogger_) {
@@ -3792,7 +3794,7 @@ var ap;
         };
         QueryFactory.$inject = ['$q', 'apConfig', 'apDataService', 'apDefaultListItemQueryOptions', 'apIndexedCacheFactory', 'apDecodeService', 'apLogger'];
         return QueryFactory;
-    })();
+    }());
     ap.QueryFactory = QueryFactory;
     /**
      * @ngdoc object
@@ -3858,7 +3860,7 @@ var ap;
             }
         }
         return User;
-    })();
+    }());
     var UserFactory = (function () {
         function UserFactory(_apUtilityService_) {
             this.User = User;
@@ -3876,7 +3878,7 @@ var ap;
         };
         UserFactory.$inject = ['apUtilityService'];
         return UserFactory;
-    })();
+    }());
     ap.UserFactory = UserFactory;
     /**
      * @ngdoc function
@@ -3888,9 +3890,6 @@ var ap;
     angular.module('angularPoint')
         .service('apUserFactory', UserFactory);
 })(ap || (ap = {}));
-
-/// <reference path="../app.module.ts" />
-/// <reference path="../../typings/tsd.d.ts" />
 
 /// <reference path="../app.module.ts" />
 var ap;
@@ -3972,7 +3971,7 @@ var ap;
         };
         UserModel.$inject = ['$q', 'apDataService'];
         return UserModel;
-    })();
+    }());
     ap.UserModel = UserModel;
     /**
      * @ngdoc service
@@ -4092,7 +4091,7 @@ var ap;
             service.removeEntityById(this.listId, this.entityId);
         };
         return EntityContainer;
-    })();
+    }());
     /**
      * @name ModelCache
      * @description
@@ -4103,7 +4102,7 @@ var ap;
         function ModelCache() {
         }
         return ModelCache;
-    })();
+    }());
     var CacheService = (function () {
         function CacheService(_$q_, _$log_, _apIndexedCacheFactory_) {
             this.entityCache = entityCache;
@@ -4320,7 +4319,7 @@ var ap;
         };
         CacheService.$inject = ['$q', '$log', 'apIndexedCacheFactory'];
         return CacheService;
-    })();
+    }());
     ap.CacheService = CacheService;
     /**
      * @ngdoc service
@@ -4357,7 +4356,7 @@ var ap;
             this.callbackQueue.push(callback);
         };
         return ChangeService;
-    })();
+    }());
     ap.ChangeService = ChangeService;
     angular
         .module('angularPoint')
@@ -5004,7 +5003,7 @@ var ap;
             'apUtilityService', 'apWebServiceOperationConstants', 'apXMLToJSONService', 'SPServices',
             'apBasePermissionObject', 'apLogger'];
         return DataService;
-    })();
+    }());
     ap.DataService = DataService;
     angular
         .module('angularPoint')
@@ -5594,7 +5593,7 @@ var ap;
         DecodeService.$inject = ['apCacheService', 'apLookupFactory', 'apUserFactory', 'apFieldService',
             'apXMLListAttributeTypes', 'apXMLFieldAttributeTypes', 'apXMLToJSONService'];
         return DecodeService;
-    })();
+    }());
     ap.DecodeService = DecodeService;
     angular.module('angularPoint')
         .service('apDecodeService', DecodeService);
@@ -5621,8 +5620,8 @@ var ap;
                 /** String is required to begin with deliminator */
                 str += delim;
                 /** Append each item in the supplied array followed by deliminator */
-                for (var _i = 0; _i < choices.length; _i++) {
-                    var choice = choices[_i];
+                for (var _i = 0, choices_1 = choices; _i < choices_1.length; _i++) {
+                    var choice = choices_1[_i];
                     str += choice + delim;
                 }
             }
@@ -5751,7 +5750,6 @@ var ap;
             else {
                 jsDate = date;
             }
-            // return moment(jsDate).format('YYYY-MM-DDTHH:mm:ss[Z]Z')
             var dateString = '';
             dateString += jsDate.getFullYear();
             dateString += '-';
@@ -5806,7 +5804,7 @@ var ap;
         };
         EncodeService.$inject = ['apUtilityService', 'SPServices'];
         return EncodeService;
-    })();
+    }());
     ap.EncodeService = EncodeService;
     /**
      * @ngdoc service
@@ -6098,7 +6096,7 @@ var ap;
         };
         ExportService.$inject = ['apUtilityService', 'apFormattedFieldValueService'];
         return ExportService;
-    })();
+    }());
     ap.ExportService = ExportService;
     /**
      * @ngdoc service
@@ -6234,7 +6232,7 @@ var ap;
             return permissionValue;
         };
         return FieldService;
-    })();
+    }());
     ap.FieldService = FieldService;
     function getFieldTypes() {
         return {
@@ -6637,7 +6635,7 @@ var ap;
         };
         FormattedFieldValueService.$inject = ['$filter'];
         return FormattedFieldValueService;
-    })();
+    }());
     ap.FormattedFieldValueService = FormattedFieldValueService;
     angular
         .module('angularPoint')
@@ -6786,7 +6784,7 @@ var ap;
         };
         Logger.$inject = ['$q', '$window', '$log', '$timeout'];
         return Logger;
-    })();
+    }());
     ap.Logger = Logger;
     /**
      * @ngdoc service
@@ -6889,7 +6887,7 @@ var ap;
             this.payload = "";
         }
         return SOAPEnvelope;
-    })();
+    }());
     //TODO Cleanup and convert to TS
     function Service(apWebServiceOperationConstants, apWebServiceService) {
         /*
@@ -7872,7 +7870,7 @@ var ap;
             this.value = spl[1];
         }
         return SplitIndex;
-    })();
+    }());
     var service, $q, apConfig, $timeout;
     var UtilityService = (function () {
         function UtilityService(_$q_, _$timeout_, _apConfig_) {
@@ -8236,7 +8234,7 @@ var ap;
         };
         UtilityService.$inject = ['$q', '$timeout', 'apConfig'];
         return UtilityService;
-    })();
+    }());
     ap.UtilityService = UtilityService;
     /** Extend underscore with a simple helper function */
     _.mixin({
@@ -8355,7 +8353,7 @@ var ap;
             return serviceDefinitions[service] ? serviceDefinitions[service].xmlns : SCHEMASharePoint + '/soap/';
         };
         return WebServiceService;
-    })();
+    }());
     ap.WebServiceService = WebServiceService;
     //  apWebServiceOperationConstants.OpName = [WebService, needs_SOAPAction];
     //      OpName              The name of the Web Service operation -> These names are unique
@@ -8440,7 +8438,7 @@ var ap;
         };
         XMLToJSONService.$inject = ['$injector'];
         return XMLToJSONService;
-    })();
+    }());
     ap.XMLToJSONService = XMLToJSONService;
     /**
      * @ngdoc service

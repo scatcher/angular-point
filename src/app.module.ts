@@ -1,5 +1,5 @@
 /// <reference path="../typings/ap.d.ts" />
-/// <reference path="../typings/tsd.d.ts" />
+/// <reference path="../typings/main.d.ts" />
 
 module ap {
     'use strict';

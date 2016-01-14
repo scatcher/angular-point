@@ -4,7 +4,7 @@ node_js:
     - "stable"
 before_install:
     # - export DISPLAY=:99.0
-    - npm install -qg bower gulp
+    - npm install -qg gulp
     - npm install -q
 before_script:
     - gulp cacheXML
@@ -14,4 +14,3 @@ script:
 cache:
     directories:
         - node_modules
-        - bower_components
