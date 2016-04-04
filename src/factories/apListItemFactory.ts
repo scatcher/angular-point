@@ -501,8 +501,8 @@ module ap {
 
                 let payload = {
                     operation: 'GetVersionCollection',
-                    strListID: model.getListId(),
-                    strListItemID: listItem.id,
+                    strlistID: model.getListId(), // correct case
+                    strlistItemID: listItem.id, // correct case
                     strFieldName: fieldDefinition.staticName,
                     webURL: undefined
                 };

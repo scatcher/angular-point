@@ -743,8 +743,8 @@ module ap {
     interface IGetFieldVersionHistoryOptions {
         operation?: string;
         strFieldName?: string;
-        strListID: string;
-        strListItemID: number;
+        strlistID: string;  // correct case
+        strlistItemID: number; // correct case
         webURL?: string;
     }
 

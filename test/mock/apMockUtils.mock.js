@@ -18,7 +18,7 @@ var ap;
                 return offsetString;
             };
             return MockUtils;
-        })();
+        }());
         test.MockUtils = MockUtils;
         angular.module('angularPoint')
             .service('apMockUtils', MockUtils);

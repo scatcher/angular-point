@@ -16,7 +16,7 @@ var ap;
                 _.assign(this, obj);
             }
             return MockListItem;
-        })(ap.ListItem);
+        }(ap.ListItem));
         test.MockListItem = MockListItem;
         var MockModel = (function (_super) {
             __extends(MockModel, _super);
@@ -112,7 +112,7 @@ var ap;
                 this.$httpBackend.flush();
             };
             return MockModel;
-        })(ap.Model);
+        }(ap.Model));
         test.MockModel = MockModel;
         angular.module('angularPoint')
             .service('mockModel', MockModel);

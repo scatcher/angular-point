@@ -348,7 +348,7 @@ module ap {
                         ]);
                     break;
                 case "GetVersionCollection":
-                    addToPayload(opt, ["strlistID", "strlistItemID", "strFieldName"]);
+                    addToPayload(opt, ["strlistID", "strlistItemID", "strFieldName"]); // correct case
                     break;
                 case "UndoCheckOut":
                     addToPayload(opt, ["pageUrl"]);

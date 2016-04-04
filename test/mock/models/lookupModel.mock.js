@@ -16,7 +16,7 @@ var ap;
                 _.assign(this, obj);
             }
             return MockLookup;
-        })(ap.ListItem);
+        }(ap.ListItem));
         test.MockLookup = MockLookup;
         var MockLookupModel = (function (_super) {
             __extends(MockLookupModel, _super);
@@ -63,7 +63,7 @@ var ap;
                 return primaryCache;
             };
             return MockLookupModel;
-        })(ap.Model);
+        }(ap.Model));
         test.MockLookupModel = MockLookupModel;
         angular.module('angularPoint')
             .service('mockLookupModel', MockLookupModel);
