@@ -524,9 +524,6 @@ var ap;
 })(ap || (ap = {}));
 
 /// <reference path="../app.module.ts" />
-/// <reference path="../../typings/tsd.d.ts" />
-
-/// <reference path="../app.module.ts" />
 var ap;
 (function (ap) {
     'use strict';
@@ -1694,8 +1691,8 @@ var ap;
                 var fieldDefinition = listItem.getFieldDefinition(prop);
                 var payload = {
                     operation: 'GetVersionCollection',
-                    strListID: model.getListId(),
-                    strListItemID: listItem.id,
+                    strlistID: model.getListId(),
+                    strlistItemID: listItem.id,
                     strFieldName: fieldDefinition.staticName,
                     webURL: undefined
                 };
@@ -3519,7 +3516,7 @@ var ap;
             else {
                 /** Set flag to prevent another call while this query is active */
                 query.negotiatingWithServer = true;
-                var localStorageData;
+                var localStorageData = void 0;
                 if (this.usesBrowserStorage) {
                     localStorageData = this.getLocalStorage();
                 }
@@ -3622,7 +3619,7 @@ var ap;
                 localStorageQuery.removeItem();
             }
             else {
-                var listItemProvider = apDecodeService.createListItemProvider(this.getModel(), this, this.getCache());
+                var listItemProvider_1 = apDecodeService.createListItemProvider(this.getModel(), this, this.getCache());
                 var fieldDefinitions = this.getList().fields;
                 //Identify all DateTime JSON fields so we can cast as Date objects
                 var dateTimeProperties = _.chain(fieldDefinitions)
@@ -3636,7 +3633,7 @@ var ap;
                 //Hydrate each raw list item and add to cache
                 _.each(localStorageQuery.indexedCache, function (jsonObject) {
                     var hydratedObject = _this.hydrateJSONDates(jsonObject, dateTimeProperties);
-                    listItemProvider(hydratedObject);
+                    listItemProvider_1(hydratedObject);
                 });
                 //Set the last run date
                 this.lastRun = localStorageQuery.lastRun;
@@ -3890,6 +3887,9 @@ var ap;
     angular.module('angularPoint')
         .service('apUserFactory', UserFactory);
 })(ap || (ap = {}));
+
+/// <reference path="../app.module.ts" />
+/// <reference path="../../typings/tsd.d.ts" />
 
 /// <reference path="../app.module.ts" />
 var ap;
@@ -4544,7 +4544,7 @@ var ap;
             if (!this.queryForCurrentSite) {
                 /** We only want to run this once so cache the promise the first time and just reference it in the future */
                 this.queryForCurrentSite = deferred.promise;
-                var soapData = SPServices.SOAPEnvelope.header +
+                var soapData_1 = SPServices.SOAPEnvelope.header +
                     "<WebUrlFromPageUrl xmlns='" + SPServices.SCHEMASharePoint + "/soap/' ><pageUrl>" +
                     ((location.href.indexOf("?") > 0) ? location.href.substr(0, location.href.indexOf("?")) : location.href) +
                     "</pageUrl></WebUrlFromPageUrl>" +
@@ -4552,7 +4552,7 @@ var ap;
                 $http({
                     method: 'POST',
                     url: '/_vti_bin/Webs.asmx',
-                    data: soapData,
+                    data: soapData_1,
                     responseType: "document",
                     headers: {
                         "Content-Type": "text/xml;charset='utf-8'"
@@ -4562,14 +4562,14 @@ var ap;
                     /** Success */
                     var errorMsg = apDecodeService.checkResponseForErrors(response.data);
                     if (errorMsg) {
-                        _this.errorHandler('Failed to get current site.  ' + errorMsg, deferred, soapData);
+                        _this.errorHandler('Failed to get current site.  ' + errorMsg, deferred, soapData_1);
                     }
                     apConfig.defaultUrl = $(response.data).find("WebUrlFromPageUrlResult").text();
                     deferred.resolve(apConfig.defaultUrl);
                 })
                     .catch(function (err) {
                     /** Error */
-                    _this.errorHandler('Failed to get current site.  ' + err, deferred, soapData);
+                    _this.errorHandler('Failed to get current site.  ' + err, deferred, soapData_1);
                 });
             }
             return this.queryForCurrentSite;
@@ -7119,7 +7119,7 @@ var ap;
                     ]);
                     break;
                 case "GetVersionCollection":
-                    addToPayload(opt, ["strlistID", "strlistItemID", "strFieldName"]);
+                    addToPayload(opt, ["strlistID", "strlistItemID", "strFieldName"]); // correct case
                     break;
                 case "UndoCheckOut":
                     addToPayload(opt, ["pageUrl"]);
