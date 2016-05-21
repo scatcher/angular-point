@@ -1,17 +1,23 @@
 {
+  "compileOnSave": false,
   "compilerOptions": {
-    "target": "es5",
-    "module": "commonjs",
-    "removeComments": true,
+    "declaration": true,
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
-    "noEmitHelpers": false,
+//    "mapRoot": "",
+    "module": "commonjs",
+    "moduleResolution": "node",
+    "noEmitOnError": true,
+    "noImplicitAny": false,
+    "outDir": "../dist/",
+//    "rootDir": ".",
     "sourceMap": true,
-    "moduleResolution": "node"
-//    "sourceMap": true,
-//    "target": "ES5"
+    "target": "es5",
+    "inlineSources": true
   },
+
   "files": [
-    "../typings/ap.d.ts"
+    "index.ts",
+    "typings.d.ts"
   ]
 }
