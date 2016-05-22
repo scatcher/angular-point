@@ -1,0 +1,15 @@
+export const UpdateListItems_Delete = `<?xml version="1.0" encoding="utf-8"?>
+<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/"
+               xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+    <soap:Body>
+        <UpdateListItemsResponse xmlns="http://schemas.microsoft.com/sharepoint/soap/">
+            <UpdateListItemsResult>
+                <Results>
+                    <Result ID="1,Delete">
+                        <ErrorCode>0x00000000</ErrorCode>
+                    </Result>
+                </Results>
+            </UpdateListItemsResult>
+        </UpdateListItemsResponse>
+    </soap:Body>
+</soap:Envelope>`;

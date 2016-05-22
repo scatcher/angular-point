@@ -1,0 +1,21 @@
+{
+  "compileOnSave": false,
+  "compilerOptions": {
+    "declaration": true,
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
+    "module": "commonjs",
+    "moduleResolution": "node",
+    "noEmitOnError": true,
+    "noImplicitAny": false,
+    "outDir": "dist",
+    "sourceMap": true,
+    "target": "es5",
+    "inlineSources": true
+  },
+
+  "files": [
+    "src/typings.d.ts",
+    "src/index.ts"
+  ]
+}

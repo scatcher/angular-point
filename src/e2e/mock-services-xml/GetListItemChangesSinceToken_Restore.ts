@@ -1,0 +1,40 @@
+export const GetListItemChangesSinceToken_Restore = `<?xml version="1.0" encoding="utf-8"?>
+<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/"
+               xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+    <soap:Body>
+        <GetListItemChangesSinceTokenResponse xmlns="http://schemas.microsoft.com/sharepoint/soap/">
+            <GetListItemChangesSinceTokenResult>
+                <listitems MinTimeBetweenSyncs='0' RecommendedTimeBetweenSyncs='180' MaxBulkDocumentSyncSize='500'
+                           AlternateUrls='http://sharepoint.company-server.com/,https://sharepoint.company-server.com/'
+                           EffectivePermMask='FullMask' xmlns:s='uuid:BDC6E3F0-6DA3-11d1-A2A3-00AA00C14882'
+                           xmlns:dt='uuid:C2F41010-65B3-11d1-A29F-00AA00C14882'
+                           xmlns:rs='urn:schemas-microsoft-com:rowset'
+                           xmlns:z='#RowsetSchema'>
+                    <Changes LastChangeToken="1;3;f5345fe7-2f7c-49f7-87d0-dbfebdd0ce61;635453535999330000;387813">
+                        <Id ChangeType="Restore" UniqueId="{DA3FA45D-D874-4C73-AAE5-61556D3E3A79}">1</Id>
+                    </Changes>
+                    <rs:data ItemCount="1">
+                        <z:row ows_ID='1' ows_Modified='2014-09-03 11:00:56' ows_Created='2014-08-19 15:41:21'
+                               ows_Author='338;#John Smith' ows_Editor='338;#John Smith'
+                               ows_PermMask='0x7fffffffffffffff'
+                               ows_UniqueId='1;#{DA3FA45D-D874-4C73-AAE5-61556D3E3A79}' ows_Title='Mock 1'
+                               ows_Boolean='1' ows_Calculated='string;#Mock 1' ows_Choice='Option 1'
+                               ows_MultiChoice=';#Defined Choice 3;#Custom 1;#' ows_Currency='20.0000000000000'
+                               ows_Date='2014-08-19 00:00:00' ows_DateTime='2014-08-13 06:30:00'
+                               ows_Integer='12.0000000000000' ows_Float='3.54200000000000'
+                               ows_HTML='&lt;div class=&quot;ExternalClass723CF92A3A664E70AC6DDBFE2C54F658&quot;&gt;&lt;p&gt;​&amp;lt;div&amp;gt;Here&#39;s a div...and here&#39;s some more content.&amp;lt;/div&amp;gt;&lt;/p&gt;&lt;/div&gt;'
+                               ows_JSON='[{&quot;test&quot;:&quot;widget&quot;,&quot;test2&quot;:&quot;sprocket&quot;}]'
+                               ows_Lookup='1;#Lookup 1' ows_LookupMulti='2;#Lookup 2;#3;#Lookup 3'
+                               ows_Note='&lt;div&gt;3 is &amp;gt; 2&lt;/div&gt;' ows_User='338;#John Smith'
+                               ows_UserMulti='205;#Chad Johnson;#338;#John Smith'
+                               ows_Hyperlink='http://www.google.com, This is Google'
+                               ows_Picture='https://www.google.com/images/srpr/logo11w.png, Google Logo'
+                               ows_Attachments=';#http://sharepoint.company-server.com/OneAppData/Lists/MockList/Attachments/1/Preloader.gif;#'
+                               ows__ModerationStatus='0' ows__Level='1' ows_FSObjType='1;#0' ows_owshiddenversion='9'
+                               ows_FileRef='1;#OneAppData/Lists/MockList/1_.000'/>
+                    </rs:data>
+                </listitems>
+            </GetListItemChangesSinceTokenResult>
+        </GetListItemChangesSinceTokenResponse>
+    </soap:Body>
+</soap:Envelope>`;

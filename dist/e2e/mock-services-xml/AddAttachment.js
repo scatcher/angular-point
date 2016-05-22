@@ -1,0 +1,3 @@
+"use strict";
+exports.AddAttachment = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n<soap:Envelope xmlns:soap=\"http://schemas.xmlsoap.org/soap/envelope/\"\n               xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\">\n    <soap:Body>\n        <AddAttachmentResponse xmlns=\"http://schemas.microsoft.com/sharepoint/soap/\">\n            <AddAttachmentResult>Lists/MyList/Attachments/MyDoc.docx</AddAttachmentResult>\n        </AddAttachmentResponse>\n    </soap:Body>\n</soap:Envelope>";
+//# sourceMappingURL=AddAttachment.js.map
