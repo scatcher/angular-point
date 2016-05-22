@@ -4,20 +4,18 @@
     "declaration": true,
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
-//    "mapRoot": "../",
     "module": "commonjs",
     "moduleResolution": "node",
     "noEmitOnError": true,
     "noImplicitAny": false,
-    "outDir": "../dist/",
-    "rootDir": ".",
+    "outDir": "dist",
     "sourceMap": true,
     "target": "es5",
     "inlineSources": true
   },
 
   "files": [
-    "index.ts",
-    "typings.d.ts"
+    "src/typings.d.ts",
+    "src/index.ts"
   ]
 }
