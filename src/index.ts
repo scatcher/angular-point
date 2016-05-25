@@ -9,9 +9,9 @@ import 'rxjs/add/operator/map';
 import 'rxjs/add/operator/mergeMap';
 import 'rxjs/add/operator/retry';
 
-export * from './constants/index';
-export * from './services/index';
-export * from './providers/index';
-export * from './factories/index';
-export * from './e2e/index';
+export * from './constants';
+export * from './services';
+export * from './providers';
+export * from './factories';
+export * from './e2e';
 
