@@ -1,4 +1,3 @@
-export * from './apConfig';
 export * from './apDefaultFields';
 export * from './apDefaultListItemQueryOptions';
 export * from './apPermissionObject';

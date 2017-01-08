@@ -1,6 +1,5 @@
 import * as angular from 'angular';
 import {DefaultFields} from './constants/apDefaultFields';
-import {APConfig} from './constants/apConfig';
 import {DefaultListItemQueryOptions} from './constants/apDefaultListItemQueryOptions';
 import {BasePermissionObject} from './constants/apPermissionObject';
 import {WebServiceOperationConstants} from './constants/apWebServiceOperationConstants';
@@ -33,6 +32,14 @@ import {XMLToJSONService} from './services/apXMLToJSONService';
 import auto = angular.auto;
 
 export let $AP_INJECTOR: auto.IInjectorService;
+
+export * from './constants';
+export * from './factories';
+export * from './models';
+export * from './interfaces';
+export * from './services';
+export * from './app.module';
+
 /**
  * @ngdoc overview
  * @module
@@ -46,7 +53,7 @@ export const AngularPointModule = angular.module('angularPoint', [])
 
 // Constants
     .constant('apDefaultFields', DefaultFields)
-    .constant('apConfig', APConfig)
+    // .constant('apConfig', APConfig)
     .constant('apDefaultListItemQueryOptions', DefaultListItemQueryOptions)
     .constant('apBasePermissionObject', BasePermissionObject)
     .constant('apWebServiceOperationConstants', WebServiceOperationConstants)
