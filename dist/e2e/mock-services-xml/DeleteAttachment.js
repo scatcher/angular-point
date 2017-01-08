@@ -1,3 +1,0 @@
-"use strict";
-exports.DeleteAttachment = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n<soap:Envelope xmlns:soap=\"http://schemas.xmlsoap.org/soap/envelope/\"\n               xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\">\n    <soap:Body>\n        <DeleteAttachmentResponse xmlns=\"http://schemas.microsoft.com/sharepoint/soap/\"/>\n    </soap:Body>\n</soap:Envelope>";
-//# sourceMappingURL=DeleteAttachment.js.map

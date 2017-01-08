@@ -1,21 +1,29 @@
 {
-  "compileOnSave": false,
   "compilerOptions": {
-    "declaration": true,
-    "emitDecoratorMetadata": true,
-    "experimentalDecorators": true,
-    "module": "commonjs",
-    "moduleResolution": "node",
-    "noEmitOnError": true,
-    "noImplicitAny": false,
-    "outDir": "dist",
-    "sourceMap": true,
     "target": "es5",
-    "inlineSources": true
+    "noImplicitAny": false,
+    "noEmitHelpers": true,
+    "moduleResolution": "node",
+    "removeComments": true,
+    "sourceMap": true,
+    "module": "commonjs",
+    "allowSyntheticDefaultImports": true,
+    "experimentalDecorators": true,
+    "outDir": "out"
   },
-
-  "files": [
-    "src/typings.d.ts",
-    "src/index.ts"
-  ]
+  "lib": [
+    "es2015",
+    "dom"
+  ],
+  "typeRoots": [
+    "./node_modules/@types"
+  ],
+  "exclude": [
+    "out",
+    "node_modules",
+    "dist",
+    "dev",
+    "reports"
+  ],
+  "version": "2.0.6"
 }
