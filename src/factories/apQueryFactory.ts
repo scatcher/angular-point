@@ -7,7 +7,7 @@ import {IListFieldMapping, List} from './apListFactory';
 import {ListItem} from './apListItemFactory';
 import {Model} from './apModelFactory';
 import {DefaultListItemQueryOptions} from '../constants/apDefaultListItemQueryOptions';
-import {environment} from '../../../environments/environment';
+import {ENV} from '../app.module';
 
 var $q: ng.IQService, apIndexedCacheFactory: IndexedCacheFactory, apDefaultListItemQueryOptions,
     apDataService: DataService, apDecodeService: DecodeService, apLogger: Logger;
@@ -81,7 +81,7 @@ export class LocalStorageQuery {
         this.lastRun = new Date(parsedQuery.lastRun);
     }
 
-    hasExpired(localStorageExpiration: number = environment.localStorageExpiration): boolean {
+    hasExpired(localStorageExpiration: number = ENV.localStorageExpiration): boolean {
         let hasExpired = true;
         if (_.isNaN(localStorage)) {
             throw new Error('Local storage expiration is required to be a numeric value and instead is ' + localStorageExpiration);
@@ -179,7 +179,7 @@ export class Query<T extends ListItem<any>> implements IQuery<T> {
     /** Should we store data from this query in local storage to speed up requests in the future */
     localStorage = false;
     /** Set expiration in milliseconds - Defaults to a day and if set to 0 doesn't expire */
-    localStorageExpiration = environment.localStorageExpiration;
+    localStorageExpiration = ENV.localStorageExpiration;
     name: string;
     /** Flag to prevent us from makeing concurrent requests */
     negotiatingWithServer = false;
@@ -199,7 +199,7 @@ export class Query<T extends ListItem<any>> implements IQuery<T> {
     runOnce = false;
     sessionStorage = false;
     viewFields: string;
-    webURL: string = environment.site;
+    webURL: string = ENV.site;
 
     /** Has this query been executed at least once. */
     get hasExecuted(): boolean {
@@ -242,7 +242,7 @@ export class Query<T extends ListItem<any>> implements IQuery<T> {
 
         /** Return existing promise if request is already underway or has been previously executed in the past
          * 1/10th of a second */
-        if (query.negotiatingWithServer || (_.isDate(query.lastRun) && query.lastRun.getTime() + environment.queryDebounceTime > new Date().getTime())) {
+        if (query.negotiatingWithServer || (_.isDate(query.lastRun) && query.lastRun.getTime() + ENV.queryDebounceTime > new Date().getTime())) {
             return query.promise;
         } else {
             /** Set flag to prevent another call while this query is active */
@@ -449,7 +449,7 @@ export class Query<T extends ListItem<any>> implements IQuery<T> {
      */
     saveToLocalStorage(): void {
         //Don't use storage when running offline
-        if (!environment.production) return;
+        if (!ENV.production) return;
 
         let model = this.getModel();
         let store = {

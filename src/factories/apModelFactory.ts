@@ -11,7 +11,7 @@ import {EncodeService} from '../services/apEncodeService';
 import {ListItem} from './apListItemFactory';
 import {IFieldDefinition} from './apFieldFactory';
 import {IUserPermissionsObject, BasePermissionObject} from '../constants/apPermissionObject';
-import {environment} from '../../../environments/environment';
+import {ENV} from '../app.module';
 
 
 let apCacheService: CacheService, apDataService: DataService, apListFactory: ListFactory,
@@ -657,9 +657,9 @@ export class Model {
         if (_.isObject(model.queries[queryName])) {
             /** The named query exists */
             query = model.queries[queryName];
-        } else if (_.isObject(model.queries[environment.defaultQueryName]) && !queryName) {
+        } else if (_.isObject(model.queries[ENV.defaultQueryName]) && !queryName) {
             /** A named query wasn't specified and the catchall query exists */
-            query = model.queries[environment.defaultQueryName];
+            query = model.queries[ENV.defaultQueryName];
         } else {
             /** Requested query not found */
             query = undefined;
@@ -820,7 +820,7 @@ export class Model {
 
         var defaults = {
             /** If name isn't set, assume this is the only model and designate as primary */
-            name: environment.defaultQueryName
+            name: ENV.defaultQueryName
         };
 
         queryOptions = _.assign({}, defaults, queryOptions);

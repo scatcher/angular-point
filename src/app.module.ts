@@ -1,4 +1,5 @@
 import * as angular from 'angular';
+
 import {DefaultFields} from './constants/apDefaultFields';
 import {DefaultListItemQueryOptions} from './constants/apDefaultListItemQueryOptions';
 import {BasePermissionObject} from './constants/apPermissionObject';
@@ -29,16 +30,14 @@ import {Logger} from './services/apLogger';
 import {UtilityService} from './services/apUtilityService';
 import {WebServiceService} from './services/apWebServiceService';
 import {XMLToJSONService} from './services/apXMLToJSONService';
-import auto = angular.auto;
-
-export let $AP_INJECTOR: auto.IInjectorService;
 
 export * from './constants';
 export * from './factories';
 export * from './models';
 export * from './interfaces';
 export * from './services';
-export * from './app.module';
+
+export let $AP_INJECTOR: ng.auto.IInjectorService;
 
 /**
  * @ngdoc overview
@@ -92,7 +91,14 @@ export const AngularPointModule = angular.module('angularPoint', [])
     .service('apXMLToJSONService', XMLToJSONService)
 
     /** Bootstrap everything that needs to be immediately instantiated */
-    .run(['$injector', 'apListItemFactory', 'apModelFactory', ($injector: auto.IInjectorService, apListItemFactory: ListItemFactory, apModelFactory: ModelFactory) => {
+    .run(['$injector', 'apListItemFactory', 'apModelFactory', ($injector: ng.auto.IInjectorService, apListItemFactory: ListItemFactory, apModelFactory: ModelFactory) => {
         // Expose angular $injector for use by the entire application
         $AP_INJECTOR = $injector;
     }]);
+
+export let ENV;
+
+export function registerEnvironment(env) {
+    ENV = env;
+}
+

@@ -43,7 +43,7 @@ export class DecodeService {
      * @param {object} responseXML XHR response from the server.
      * @returns {string} Returns an error string if present.
      */
-    checkResponseForErrors(responseXML: Element): string {
+    checkResponseForErrors(responseXML: Element | Document): string {
         let error;
         /** Look for <errorstring></errorstring> or <ErrorText></ErrorText> for details on any errors */
         let errorElements = ['ErrorText', 'errorstring'];
@@ -632,13 +632,13 @@ export class DecodeService {
      * be stripped off the field name.
      * @returns {object[]} An array of JavaScript objects.
      */
-    xmlToJson<T extends ListItem<any>>(xmlEntities: Element, {
+    xmlToJson<T extends ListItem<any>>(xmlEntities: Element | NodeList | any, {
         mapping,
         includeAllAttrs = false,
         removeOws = true
     }: IXMLToJsonOptions<T>): Object[] {
         let parseOptions = {mapping, includeAllAttrs, removeOws}
-        return _.map(xmlEntities, (xmlEntity) => {
+        return _.map(xmlEntities, (xmlEntity: Element) => {
             return this.parseXmlEntity(xmlEntity, parseOptions);
         });
     }
@@ -649,7 +649,7 @@ export class DecodeService {
 /**********************PRIVATE*********************/
 
 
-interface IXMLToJsonOptions<T extends ListItem<any>> extends IExecuteQueryOptions {
+export interface IXMLToJsonOptions<T extends ListItem<any>> extends IExecuteQueryOptions {
     includeAllAttrs?: boolean;
     listItemProvider?: Function;
     mapping: IListFieldMapping;
@@ -657,7 +657,7 @@ interface IXMLToJsonOptions<T extends ListItem<any>> extends IExecuteQueryOption
     target?: IndexedCache<T>;
 }
 
-interface IParseXmlEntityOptions {
+export interface IParseXmlEntityOptions {
     mapping: IListFieldMapping;
     includeAllAttrs?: boolean;
     removeOws?: boolean;

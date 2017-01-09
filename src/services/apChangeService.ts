@@ -2,7 +2,7 @@ import * as _ from 'lodash';
 import {ListItem} from '../factories/apListItemFactory';
 import {IndexedCache} from '../factories/apIndexedCacheFactory';
 
-interface IUpdateOptions<T extends ListItem<any>> {
+export interface IUpdateOptions<T extends ListItem<any>> {
     batchCmd: string;
     buildValuePairs: boolean;
     ID: number;

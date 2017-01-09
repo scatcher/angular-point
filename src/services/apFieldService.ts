@@ -2,11 +2,11 @@ let service: FieldService;
 let uniqueCount = 0;
 
 
-interface IFieldType {
-    defaultValue: string;
-    dynamicMock: Function;
-    staticMock: any;
-}
+// interface IFieldType {
+//     defaultValue: string;
+//     dynamicMock: Function;
+//     staticMock: any;
+// }
 
 /**
  * @ngdoc service

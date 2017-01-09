@@ -17,7 +17,7 @@ import {FieldVersionCollection} from '../factories/apListItemVersionFactory';
 import {Model} from '../factories/apModelFactory';
 import {IQuery} from '../factories/apQueryFactory';
 import {IWorkflowDefinition, IXMLGroup, IXMLUserProfile} from '../interfaces/index';
-import {environment} from '../../../environments/environment';
+import {ENV} from '../app.module';
 
 
 let service: DataService, $q: ng.IQService, $timeout: ng.ITimeoutService, $http: ng.IHttpService,
@@ -199,12 +199,12 @@ export class DataService implements IDataService {
 
         /** Convert the xml returned from the server into an array of js objects */
         function processXML(responseXML: Element) {
-            let convertedItems: Object[] = [];
+            let convertedItems = [];
             let filteredNodes = apXMLToJSONService.filterNodes(responseXML, filterNode);
             /** Get attachments only returns the links associated with a list item */
             if (opts.operation === 'GetAttachmentCollection') {
                 /** Unlike other call, get attachments only returns strings instead of an object with attributes */
-                _.each(filteredNodes, (node: Node) => convertedItems.push($(node).text()));
+                _.each(filteredNodes, (node: Element) => convertedItems.push($(node).text()));
             } else {
                 convertedItems = apXMLToJSONService.parse(filteredNodes, {includeAllAttrs: true, removeOws: false});
             }
@@ -262,7 +262,7 @@ export class DataService implements IDataService {
                         this.errorHandler('Failed to get current site.  ' + errorMsg, deferred, soapData);
                     }
                     // environment.site = $(response.data).find("WebUrlFromPageUrlResult").text();
-                    deferred.resolve(environment.site);
+                    deferred.resolve(ENV.site);
                 })
                 .catch((err) => {
                     /** Error */
@@ -369,7 +369,7 @@ export class DataService implements IDataService {
      */
     getListFields(options: {listName: string; webURL?: string}): ng.IPromise<IXMLFieldDefinition[]> {
         return this.getList(options)
-            .then((responseXML) => {
+            .then((responseXML: Element) => {
                 let filteredNodes = apXMLToJSONService.filterNodes(responseXML, 'Field');
                 let fields = apXMLToJSONService.parse(filteredNodes, {includeAllAttrs: true, removeOws: false});
                 return fields;
@@ -413,8 +413,8 @@ export class DataService implements IDataService {
                 });
 
                 /** Optionally specify a necessary prefix that should appear before the user login */
-                userProfile.userLoginName = environment.userLoginNamePrefix ?
-                    (environment.userLoginNamePrefix + userProfile.AccountName) : userProfile.AccountName;
+                userProfile.userLoginName = ENV.userLoginNamePrefix ?
+                    (ENV.userLoginNamePrefix + userProfile.AccountName) : userProfile.AccountName;
                 return userProfile;
             });
     }
@@ -617,12 +617,12 @@ export class DataService implements IDataService {
     serviceWrapper(options: IServiceWrapperOptions): ng.IPromise<any> {
         let defaults = {
             postProcess: processXML,
-            webURL: environment.site
+            webURL: ENV.site
         };
         let opts: IServiceWrapperOptions = _.assign({}, defaults, options);
 
         /** Convert the xml returned from the server into an array of js objects */
-        function processXML(responseXML: Object) {
+        function processXML(responseXML: Element) {
             if (opts.filterNode) {
                 let filteredNodes = apXMLToJSONService.filterNodes(responseXML, opts.filterNode);
                 return apXMLToJSONService.parse(filteredNodes, {includeAllAttrs: true, removeOws: false});
@@ -737,7 +737,7 @@ export class DataService implements IDataService {
 
 }
 
-interface IGetCollectionOptions {
+export interface IGetCollectionOptions {
     filterNode?: string;
     ID?: number;
     groupName?: string;
@@ -747,7 +747,7 @@ interface IGetCollectionOptions {
     webURL?: string;
 }
 
-interface IServiceWrapperOptions {
+export interface IServiceWrapperOptions {
     filterNode?: string;
     listItemID?: number;
     operation: string;
@@ -756,12 +756,12 @@ interface IServiceWrapperOptions {
     [key: string]: any;
 }
 
-interface IUpdateListitemOptions {
-    buildValuePairs?: boolean;
-    valuePairs?: [string, any][];
-}
+// interface IUpdateListitemOptions {
+//     buildValuePairs?: boolean;
+//     valuePairs?: [string, any][];
+// }
 
-interface IGetFieldVersionHistoryOptions {
+export interface IGetFieldVersionHistoryOptions {
     operation?: string;
     strFieldName?: string;
     strlistID: string;  // correct case

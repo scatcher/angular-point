@@ -1,7 +1,7 @@
 import * as _ from 'lodash';
 import {ListItem} from './apListItemFactory';
 
-interface IUninstantiatedIndexCache<T> {
+export interface IUninstantiatedIndexCache<T> {
     [key: string]: T;
 }
 

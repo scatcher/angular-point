@@ -4,8 +4,7 @@ import {FieldFactory, IFieldConfigurationObject, IFieldDefinition} from './apFie
 import {IUserPermissionsObject} from '../constants/apPermissionObject';
 import {DefaultFields} from '../constants/apDefaultFields';
 import {ListItem} from './apListItemFactory';
-import {environment} from '../../../environments/environment';
-import {$AP_INJECTOR} from '../app.module';
+import {$AP_INJECTOR, ENV} from '../app.module';
 
 // var apDefaultFields, apFieldFactory: FieldFactory;
 // var apConfig: IAPConfig, apDefaultFields, apFieldFactory: FieldFactory;
@@ -181,7 +180,7 @@ export class List implements IList {
     webURL: string;
 
     constructor(config: IUninstantiatedList) {
-        this.webURL = environment.site;
+        this.webURL = ENV.site;
         _.assign(this, config);
         this.environments = this.environments || {production: this.guid};
         this.extendFieldDefinitions();
@@ -260,7 +259,7 @@ export class List implements IList {
      * @returns {string} List ID.
      */
     getListId(): string {
-        return environment.LIST_IDS[this.title];
+        return ENV.LIST_IDS[this.title];
         // if (_.isString(this.environments[apConfig.environment])) {
         //     /**
         //      * For a multi-environment setup, we accept a list.environments object with a property for each named

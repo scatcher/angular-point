@@ -5,7 +5,7 @@ import {Model} from '../factories/apModelFactory';
 import {IQuery} from '../factories/apQueryFactory';
 import {isGuid} from './apUtilityService';
 
-interface ICacheService {
+export interface ICacheService {
     deleteEntity(listId: string, entityId: number): void;
     getCachedEntities<T extends ListItem<any>>(listId: string): IndexedCache<T>;
     getCachedEntity<T extends ListItem<any>>(listId: string, entityId: number): T;
@@ -95,7 +95,7 @@ let listNameToIdMap = {},
  * @param {string} listId GUID for list the list item belongs to.
  * @param {number} entityId The entity.id.
  */
-class EntityContainer {
+export class EntityContainer {
     associationQueue = [];
     entity;
     entityLocations = [];
@@ -134,7 +134,7 @@ class EntityContainer {
  * Cache of Entity Containers for each registered entity retrieved by the model.
  * @constructor
  */
-class ModelCache {
+export class ModelCache {
     [key: string]: EntityContainer
 }
 

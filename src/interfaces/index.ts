@@ -101,47 +101,47 @@ export interface IStartWorkflowParams {
 }
 
 
-declare module ngTable {
-    export interface INGTableParamsObject {
-        count?: number;
-        filter?: Object;
-        page?: number;
-        sorting?: Object;
-    }
-
-    interface INGTableParamsReference {
-        count(): number;
-        filter(): Object;
-        orderBy(): string[]
-        page(): number;
-        sorting(): Object;
-        total(): number;
-        total(number): void;
-    }
-
-    export interface INGTableSettings {
-        total?: number;
-        counts?: number[];
-        defaultSort?: string; //options: ['asc', 'desc']
-        groupBy?: string | Function;
-        filterDelay?: number;
-        /** Return eiter a data array or promise that resolves with a data array */
-        getData(params: INGTableParamsReference): void;
-    }
-
-    export interface INGTableParams {
-        new (parameters: INGTableParamsObject, settings: INGTableSettings): INGTable;
-    }
-
-    export interface INGTable {
-        reload(): void;
-    }
-}
-
-// extend lodash with functionality in apUtilityService
-declare module _ {
-    interface LoDashStatic {
-        isDefined(val): boolean;
-        isGuid(val): boolean;
-    }
-}
+// declare module ngTable {
+//     export interface INGTableParamsObject {
+//         count?: number;
+//         filter?: Object;
+//         page?: number;
+//         sorting?: Object;
+//     }
+//
+//     interface INGTableParamsReference {
+//         count(): number;
+//         filter(): Object;
+//         orderBy(): string[]
+//         page(): number;
+//         sorting(): Object;
+//         total(): number;
+//         total(number): void;
+//     }
+//
+//     export interface INGTableSettings {
+//         total?: number;
+//         counts?: number[];
+//         defaultSort?: string; //options: ['asc', 'desc']
+//         groupBy?: string | Function;
+//         filterDelay?: number;
+//         /** Return eiter a data array or promise that resolves with a data array */
+//         getData(params: INGTableParamsReference): void;
+//     }
+//
+//     export interface INGTableParams {
+//         new (parameters: INGTableParamsObject, settings: INGTableSettings): INGTable;
+//     }
+//
+//     export interface INGTable {
+//         reload(): void;
+//     }
+// }
+//
+// // extend lodash with functionality in apUtilityService
+// declare module _ {
+//     interface LoDashStatic {
+//         isDefined(val): boolean;
+//         isGuid(val): boolean;
+//     }
+// }

@@ -64,7 +64,7 @@ export class XMLToJSONService {
      * for performance details.
      * @returns {Object[]} Object with jQuery values.
      */
-    parse(xmlNodeSet: Element, options?: IParseOptions): Object[] {
+    parse(xmlNodeSet: NodeList, options?: IParseOptions): Object[] {
         //Need to use injector because apDecode service also relies on this service so we'd otherwise have a circular dependency.
         var apDecodeService = this.$injector.get<DecodeService>('apDecodeService');
         var defaults = {
@@ -108,7 +108,7 @@ export class XMLToJSONService {
     }
 }
 
-interface IParseOptions {
+export interface IParseOptions {
     includeAllAttrs?: boolean;
     mapping?: Object;
     removeOws?: boolean;

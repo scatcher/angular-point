@@ -21,7 +21,7 @@ import {IFieldDefinition} from './apFieldFactory';
 import {List} from './apListFactory';
 import {IUserPermissionsObject} from '../constants/apPermissionObject';
 import {IWorkflowDefinition, IStartWorkflowParams} from '../interfaces/index';
-import {environment} from '../../../environments/environment';
+import {ENV} from '../app.module';
 
 
 let $q: ng.IQService, apCacheService: CacheService, apDataService: DataService, apDecodeService: DecodeService,
@@ -530,7 +530,7 @@ export class ListItem<T extends ListItem<any>> implements IUninstantiatedExtende
 
             /** Manually set site url if defined, prevents SPServices from making a blocking call to fetch it. */
             // if (apConfig.defaultUrl) {
-            payload.webURL = environment.site;
+            payload.webURL = ENV.site;
             // }
 
             return apDataService.getFieldVersionHistory<T>(payload, fieldDefinition);
