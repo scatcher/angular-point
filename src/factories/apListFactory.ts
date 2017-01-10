@@ -4,7 +4,7 @@ import {FieldFactory, IFieldConfigurationObject, IFieldDefinition} from './apFie
 import {IUserPermissionsObject} from '../constants/apPermissionObject';
 import {DefaultFields} from '../constants/apDefaultFields';
 import {ListItem} from './apListItemFactory';
-import {$AP_INJECTOR, ENV} from '../app.module';
+import {$AP_INJECTOR, ENV} from '../angular-point';
 
 // var apDefaultFields, apFieldFactory: FieldFactory;
 // var apConfig: IAPConfig, apDefaultFields, apFieldFactory: FieldFactory;

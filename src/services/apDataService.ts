@@ -17,7 +17,7 @@ import {FieldVersionCollection} from '../factories/apListItemVersionFactory';
 import {Model} from '../factories/apModelFactory';
 import {IQuery} from '../factories/apQueryFactory';
 import {IWorkflowDefinition, IXMLGroup, IXMLUserProfile} from '../interfaces/index';
-import {ENV} from '../app.module';
+import {ENV} from '../angular-point';
 
 
 let service: DataService, $q: ng.IQService, $timeout: ng.ITimeoutService, $http: ng.IHttpService,

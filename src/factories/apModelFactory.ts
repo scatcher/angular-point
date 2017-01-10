@@ -11,7 +11,7 @@ import {EncodeService} from '../services/apEncodeService';
 import {ListItem} from './apListItemFactory';
 import {IFieldDefinition} from './apFieldFactory';
 import {IUserPermissionsObject, BasePermissionObject} from '../constants/apPermissionObject';
-import {ENV} from '../app.module';
+import {ENV} from '../angular-point';
 
 
 let apCacheService: CacheService, apDataService: DataService, apListFactory: ListFactory,

@@ -3,11 +3,11 @@ const nodeExternals = require('webpack-node-externals');
 const TsConfigPathsPlugin = require('awesome-typescript-loader').TsConfigPathsPlugin;
 const path = require('path');
 const ROOT = path.resolve(__dirname);
+const pkg = require('./package.json');
 
 /**
  * Webpack Plugins
  */
-const ProvidePlugin = require('webpack/lib/ProvidePlugin');
 const DefinePlugin = require('webpack/lib/DefinePlugin');
 const LoaderOptionsPlugin = require('webpack/lib/LoaderOptionsPlugin');
 
@@ -18,14 +18,14 @@ module.exports = {
         extensions: ['.ts', '.js']
     },
 
-    entry: root('src/app.module.ts'),
+    entry: root('src/angular-point.ts'),
 
     output: {
         path: root('dist'),
         publicPath: '/',
-        filename: 'angular-point.js',
+        filename: pkg.name + '.js',
         libraryTarget: 'umd',
-        library: 'angular-point'
+        library: pkg.name
     },
 
     externals: [nodeExternals()],
@@ -38,7 +38,7 @@ module.exports = {
             exclude: [root('node_modules')]
         }, {
             test: /\.ts$/,
-            loader: 'awesome-typescript-loader?declaration=false',
+            loader: 'awesome-typescript-loader',
             exclude: [/\.e2e\.ts$/]
         }]
     },
@@ -51,11 +51,7 @@ module.exports = {
                     failOnHint: false
                 }
             }
-        }),
-
-        new webpack.optimize.OccurrenceOrderPlugin(true),
-
-        new TsConfigPathsPlugin()
+        })
 
     ]
 };

@@ -1,28 +1,27 @@
 {
   "compilerOptions": {
-    "noImplicitAny": false,
     "module": "es2015",
     "target": "es5",
-    "emitDecoratorMetadata": true,
-    "experimentalDecorators": true,
-    "declaration": true,
+    "noImplicitAny": false,
+    "sourceMap": true,
     "moduleResolution": "node",
-    "types": [
-      "hammerjs",
-      "jasmine",
-      "node"
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
+    "declaration": false,
+    "outDir": "dist/",
+    "lib": [
+      "es2015",
+      "dom"
     ],
-    "lib": ["es2015", "dom"]
+    "types": [
+      "node"
+    ]
   },
   "typeRoots": [
     "./node_modules/@types"
   ],
   "exclude": [
-    "out",
     "node_modules",
-    "dist",
-    "dev",
-    "reports"
-  ],
-  "version": "2.0.6"
+    "dist"
+  ]
 }

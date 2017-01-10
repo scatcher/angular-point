@@ -21,7 +21,7 @@ import {IFieldDefinition} from './apFieldFactory';
 import {List} from './apListFactory';
 import {IUserPermissionsObject} from '../constants/apPermissionObject';
 import {IWorkflowDefinition, IStartWorkflowParams} from '../interfaces/index';
-import {ENV} from '../app.module';
+import {ENV} from '../angular-point';
 
 
 let $q: ng.IQService, apCacheService: CacheService, apDataService: DataService, apDecodeService: DecodeService,

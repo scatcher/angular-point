@@ -7,7 +7,7 @@ import {IListFieldMapping, List} from './apListFactory';
 import {ListItem} from './apListItemFactory';
 import {Model} from './apModelFactory';
 import {DefaultListItemQueryOptions} from '../constants/apDefaultListItemQueryOptions';
-import {ENV} from '../app.module';
+import {ENV} from '../angular-point';
 
 var $q: ng.IQService, apIndexedCacheFactory: IndexedCacheFactory, apDefaultListItemQueryOptions,
     apDataService: DataService, apDecodeService: DecodeService, apLogger: Logger;
