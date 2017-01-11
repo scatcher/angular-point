@@ -103,10 +103,10 @@ import { ListItem } from './../factories/apListItemFactory';
  * // Project tasks are now directly available from a given project
  *
  * //Returns an array containing all project tasks
- * var projectTasks = myProject.getProjectTasks();
+ * const projectTasks = myProject.getProjectTasks();
  *
  * //Returns an indexed cache object that hasn't been converted into an array, keys=id and val=list item
- * var projectTasks = myProject.getProjectTasks(true);
+ * const projectTasks = myProject.getProjectTasks(true);
  * </pre>
  */
 export class LookupCacheService {
@@ -127,8 +127,9 @@ export class LookupCacheService {
         if (listItem.id) {
             /** GUID of the list definition on the model */
             const listId = listItem.getListId();
+
             /** Only cache entities saved to server */
-            _.each(propertyArray, (propertyName) => {
+            propertyArray.forEach(propertyName => {
                 this.cacheSingleLookup(listItem, propertyName, listId);
                 this.backupLookupValue(listItem, propertyName, listId);
             });
@@ -185,18 +186,19 @@ export class LookupCacheService {
             }
             // Need to return true otherwise it means validation failed and save/delete event is prevented
             return true;
-        }
+        };
+
         listItemConstructor.prototype.registerPreDeleteAction(unSubscribeOnChange);
         listItemConstructor.prototype.registerPreSaveAction(unSubscribeOnChange);
     }
 
     removeEntityFromLookupCaches(listItem: ListItem<any>, propertyArray: string[]): void {
         if (listItem.id) {
-            var listId = listItem.getListId();
+            const listId = listItem.getListId();
+
             /** Only cache entities saved to server and we know because they'd have an id */
-            _.each(propertyArray, function (propertyName) {
-                this.removeEntityFromSingleLookupCache(listItem, propertyName, listId);
-            });
+            propertyArray.forEach(propertyName => this.removeEntityFromSingleLookupCache(listItem, propertyName, listId));
+
         }
     }
 
@@ -209,8 +211,13 @@ export class LookupCacheService {
      * instead.
      * @returns {object} Keys of entity id and value of entity.
      */
-    retrieveLookupCacheById<T extends ListItem<any>>(propertyName: string, listId: string, cacheId: number, asObject: boolean = false): IndexedCache<T> | T[] {
-        var cache = this.getPropertyCache(propertyName, listId);
+    retrieveLookupCacheById<T extends ListItem<any>>(
+        propertyName: string,
+        listId: string,
+        cacheId: number,
+        asObject = false
+    ): IndexedCache<T> | T[] {
+        const cache = this.getPropertyCache(propertyName, listId);
         if (asObject) {
             cache[cacheId] = cache[cacheId] || this.apIndexedCacheFactory.create();
             return <IndexedCache<T>>cache[cacheId];
@@ -238,7 +245,8 @@ export class LookupCacheService {
         if (listItem[propertyName]) {
             /** Handle single and multiple lookups by only dealing with an Lookup[] */
             const lookups = _.isArray(listItem[propertyName]) ? listItem[propertyName] : [listItem[propertyName]];
-            _.each(lookups, function (lookup: Lookup<any>) {
+
+            lookups.forEach((lookup: Lookup<any>) => {
                 if (lookup && lookup.lookupId) {
                     const propertyCache = this.getPropertyCache(propertyName, listId);
                     propertyCache[lookup.lookupId] = propertyCache[lookup.lookupId] || this.apIndexedCacheFactory.create();
@@ -248,6 +256,7 @@ export class LookupCacheService {
                     throw new Error('A valid lookup was not found.');
                 }
             });
+
         }
     }
 
@@ -262,7 +271,7 @@ export class LookupCacheService {
             const lookups = _.isArray(backedUpLookupValues[propertyName]) ?
                 backedUpLookupValues[propertyName] : [backedUpLookupValues[propertyName]];
 
-            _.each(lookups, function (lookup: Lookup<any>) {
+            lookups.forEach((lookup: Lookup<any>) => {
                 if (lookup && lookup.lookupId) {
                     const propertyCache = this.getPropertyCache(propertyName, listId);
                     if (propertyCache[lookup.lookupId]) {
@@ -273,6 +282,7 @@ export class LookupCacheService {
                     throw new Error('A valid lookup was not found.');
                 }
             });
+
         }
     }
 
