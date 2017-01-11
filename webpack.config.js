@@ -14,7 +14,9 @@ const LoaderOptionsPlugin = require('webpack/lib/LoaderOptionsPlugin');
 module.exports = {
     devtool: 'inline-source-map',
 
+
     resolve: {
+        // fallback: path.join(__dirname, 'node_modules'),
         extensions: ['.ts', '.js']
     },
 

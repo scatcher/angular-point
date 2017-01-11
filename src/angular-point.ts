@@ -114,6 +114,7 @@ export {
     LogEvent,
     Logger,
     Lookup,
+    LookupCacheService,
     Model,
     QueriesContainer,
     Query,
