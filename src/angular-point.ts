@@ -1,7 +1,3 @@
-import { XMLUser, XMLGroup } from './interfaces/index';
-
-
-import 'jquery';
 import * as angular from 'angular';
 
 import {DefaultFields} from './constants/apDefaultFields';
@@ -35,6 +31,8 @@ import {UtilityService} from './services/apUtilityService';
 import {WebServiceService} from './services/apWebServiceService';
 import {XMLToJSONService} from './services/apXMLToJSONService';
 import { List, ListFieldMapping } from './factories/apListFactory';
+import { LookupCacheService } from './services/apLookupCacheService';
+import { XMLUser, XMLGroup } from './interfaces/index';
 
 
 export let $AP_INJECTOR: ng.auto.IInjectorService;
@@ -52,7 +50,6 @@ export const AngularPointModule = angular.module('angularPoint', [])
 
 // Constants
     .constant('apDefaultFields', DefaultFields)
-    // .constant('apConfig', APConfig)
     .constant('apDefaultListItemQueryOptions', DefaultListItemQueryOptions)
     .constant('apBasePermissionObject', BasePermissionObject)
     .constant('apWebServiceOperationConstants', WebServiceOperationConstants)
@@ -85,6 +82,8 @@ export const AngularPointModule = angular.module('angularPoint', [])
     .service('apFieldService', FieldService)
     .service('apFormattedFieldValueService', FormattedFieldValueService)
     .service('apLogger', Logger)
+    .service('apLookupCacheService', LookupCacheService)
+
     .factory('SPServices', SPServicesCore)
     .service('apUtilityService', UtilityService)
     .service('apWebServiceService', WebServiceService)
