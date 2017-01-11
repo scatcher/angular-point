@@ -1,16 +1,12 @@
 import * as _ from 'lodash';
-import {FieldFactory, IFieldConfigurationObject, IFieldDefinition} from './apFieldFactory';
-// import {IAPConfig} from '../constants/apConfig';
+import {FieldFactory, FieldConfigurationObject, FieldDefinition} from './apFieldFactory';
 import {IUserPermissionsObject} from '../constants/apPermissionObject';
 import {DefaultFields} from '../constants/apDefaultFields';
 import {ListItem} from './apListItemFactory';
 import {$AP_INJECTOR, ENV} from '../angular-point';
 
-// var apDefaultFields, apFieldFactory: FieldFactory;
-// var apConfig: IAPConfig, apDefaultFields, apFieldFactory: FieldFactory;
-
-export interface IUninstantiatedList {
-    customFields: IFieldConfigurationObject[];
+export interface UninstantiatedList {
+    customFields: FieldConfigurationObject[];
     environments?: {[key: string]: string};
     guid?: string;
     title: string;
@@ -18,7 +14,7 @@ export interface IUninstantiatedList {
     webURL?: string;
 }
 
-export interface IListFieldMapping {
+export interface ListFieldMapping {
     [key: string]: {
         mappedName: string;
         objectType: string;
@@ -28,7 +24,7 @@ export interface IListFieldMapping {
 /**
  * XML List Object gets converted into JSON object with the following properties.
  */
-export interface IXMLList {
+export interface XMLList {
     AllowDeletion?: string;
     AllowMultiResponses?: string;
     AnonymousPermMask?: string;
@@ -93,20 +89,21 @@ export interface IXMLList {
     WriteSecurity?: string;
 }
 
-export interface IList extends IUninstantiatedList, IXMLList {
-    customFields: IFieldDefinition[];
-    environments: {[key: string]: string};
-    fields: IFieldDefinition[];
-    getListId(): string;
-    guid: string;
-    identifyWebURL(): string;
-    isReady: boolean;
-    mapping?: IListFieldMapping;
-    permissions?: IUserPermissionsObject;
-    title: string;
-    viewFields?: string;
-    webURL?: string;
-}
+// export interface List extends UninstantiatedList, XMLList {
+//     customFields: FieldDefinition[];
+//     environments: {[key: string]: string};
+//     fields: FieldDefinition[];
+//     getListId(): string;
+//     guid: string;
+//     identifyWebURL(): string;
+//     isReady: boolean;
+//     mapping?: ListFieldMapping;
+//     permissions?: IUserPermissionsObject;
+//     title: string;
+//     viewFields?: string;
+//     webURL?: string;
+// }
+
 /**
  * @ngdoc object
  * @name List
@@ -165,21 +162,21 @@ export interface IList extends IUninstantiatedList, IXMLList {
  * @requires angularPoint.apListFactory
  * @constructor
  */
-export class List implements IList {
+export class List implements UninstantiatedList, XMLList  {
     BaseType?: string; // Only added once a list has been extended with list definition from server
-    customFields: IFieldDefinition[] = [];
+    customFields: FieldDefinition[] = [];
     environments: {[key: string]: string};
-    fields: IFieldDefinition[] = [];
+    fields: FieldDefinition[] = [];
     guid: string;
     isReady = false;
-    mapping: IListFieldMapping = {};
+    mapping: ListFieldMapping = {};
     permissions: IUserPermissionsObject;
     title: string;
     viewFields: string;
     WebFullUrl; //Only appears if extended from list definition
     webURL: string;
 
-    constructor(config: IUninstantiatedList) {
+    constructor(config: UninstantiatedList) {
         this.webURL = ENV.site;
         _.assign(this, config);
         this.environments = this.environments || {production: this.guid};
@@ -260,17 +257,6 @@ export class List implements IList {
      */
     getListId(): string {
         return ENV.LIST_IDS[this.title];
-        // if (_.isString(this.environments[apConfig.environment])) {
-        //     /**
-        //      * For a multi-environment setup, we accept a list.environments object with a property for each named
-        //      * environment with a corresponding value of the list guid.  The active environment can be selected
-        //      * by setting apConfig.environment to the string name of the desired environment.
-        //      */
-        //     return this.environments[apConfig.environment];
-        // } else {
-        //     throw new Error('There isn\'t a valid environment definition for apConfig.environment=' + apConfig.environment + '  ' +
-        //         'Please confirm that the list "' + this.title + '" has the necessary environmental configuration.');
-        // }
     }
 
     /**
@@ -305,15 +291,6 @@ export class List implements IList {
  */
 export class ListFactory {
     List = List;
-    // static $inject = ['apDefaultFields', 'apFieldFactory'];
-    //
-    // constructor(_apDefaultFields_, _apFieldFactory_) {
-    //
-    //     // apConfig = _apConfig_;
-    //     apDefaultFields = _apDefaultFields_;
-    //     apFieldFactory = _apFieldFactory_;
-    //
-    // }
 
     /**
      * @ngdoc function

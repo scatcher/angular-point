@@ -1,5 +1,5 @@
 import * as _ from 'lodash';
-import {IFieldDefinition} from './apFieldFactory';
+import {FieldDefinition} from './apFieldFactory';
 
 /**
  * @ngdoc function
@@ -39,7 +39,7 @@ export class CamlFactory {
      * </Contains></Or></Or></Or>
      * </pre>
      */
-    camlContainsQuery(fieldDefinitionsArray: IFieldDefinition[], searchString: string): string {
+    camlContainsQuery(fieldDefinitionsArray: FieldDefinition[], searchString: string): string {
         const selectStatements = [];
 
         /** Create a select statement for each field */
@@ -94,7 +94,7 @@ export class CamlFactory {
      * </Contains>
      * </pre>
      */
-    createCamlContainsSelector(fieldDefinition: IFieldDefinition, searchString: string): string {
+    createCamlContainsSelector(fieldDefinition: FieldDefinition, searchString: string): string {
         let camlSelector;
         switch (fieldDefinition.objectType) {
             case 'HTML':

@@ -12,12 +12,12 @@ import {
     FieldVersionCollection
 } from './apListItemVersionFactory';
 import {ChangeService} from '../services/apChangeService';
-import {IUser} from './apUserFactory';
-import {ILookup} from './apLookupFactory';
+import {User} from './apUserFactory';
+import {Lookup} from './apLookupFactory';
 import {IndexedCache} from './apIndexedCacheFactory';
 import {IQuery} from './apQueryFactory';
 import {Model, IModelFactory} from './apModelFactory';
-import {IFieldDefinition} from './apFieldFactory';
+import {FieldDefinition} from './apFieldFactory';
 import {List} from './apListFactory';
 import {IUserPermissionsObject} from '../constants/apPermissionObject';
 import {IWorkflowDefinition, IStartWorkflowParams} from '../interfaces/index';
@@ -30,14 +30,16 @@ let $q: ng.IQService, apCacheService: CacheService, apDataService: DataService, 
 
 // raw list item before passed into constructor function
 export interface IUninstantiatedListItem {
-    author: IUser;
+    author: User;
     created: Date;
-    editor: IUser;
-    fileRef: ILookup<any>;
+    editor: User;
+    fileRef: Lookup<any>;
     id: number;
     modified: Date;
     permMask: string;
     uniqueId: string;
+
+    attachments?: string[];
     [key: string]: any;
 }
 
@@ -57,10 +59,10 @@ export interface IUninstantiatedExtendedListItem<T extends ListItem<any>> extend
  * @constructor
  */
 export class ListItem<T extends ListItem<any>> implements IUninstantiatedExtendedListItem<T> {
-    author: IUser;
+    author: User;
     created: Date;
-    editor: IUser;
-    fileRef: ILookup<T>;
+    editor: User;
+    fileRef: Lookup<T>;
     getCache: () => IndexedCache<T>;
     getModel: <M extends Model>() => M;
     getPristine: () => IUninstantiatedListItem;
@@ -69,6 +71,8 @@ export class ListItem<T extends ListItem<any>> implements IUninstantiatedExtende
     modified: Date;
     permMask: string;
     uniqueId: string;
+
+    attachments?: string[];
     private preDeleteAction: () => boolean;
     private preSaveAction: () => boolean;
     private postSaveAction: () => void;
@@ -322,7 +326,7 @@ export class ListItem<T extends ListItem<any>> implements IUninstantiatedExtende
      * @param {string} fieldName Internal field name.
      * @returns {object} Field definition.
      */
-    getFieldDefinition(fieldName: string): IFieldDefinition {
+    getFieldDefinition(fieldName: string): FieldDefinition {
         let listItem = this;
         return listItem.getModel().getFieldDefinition(fieldName);
     }
@@ -499,7 +503,7 @@ export class ListItem<T extends ListItem<any>> implements IUninstantiatedExtende
         if (!properties) {
             /** If fields aren't provided, pull the version history for all NON-readonly fields */
             let targetFields = model.list.fields.filter(field => field.readOnly === false);
-            properties = _.map<IFieldDefinition, string>(targetFields, 'mappedName');
+            properties = _.map<FieldDefinition, string>(targetFields, 'mappedName');
         }
 
         /** Generate promises for each field */
@@ -851,7 +855,7 @@ export class ListItem<T extends ListItem<any>> implements IUninstantiatedExtende
 
         let listItem = this;
         let model = listItem.getModel();
-        let definitions: IFieldDefinition[] = [];
+        let definitions: FieldDefinition[] = [];
         let fieldName: string[];
 
         if (_.isString(fieldArray)) {

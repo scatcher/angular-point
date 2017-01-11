@@ -12,11 +12,11 @@ import {XMLToJSONService} from './apXMLToJSONService';
 import {ChangeService} from './apChangeService';
 import {Logger} from './apLogger';
 import {ListItem} from '../factories/apListItemFactory';
-import {IFieldDefinition, IXMLFieldDefinition} from '../factories/apFieldFactory';
+import {FieldDefinition, XMLFieldDefinition} from '../factories/apFieldFactory';
 import {FieldVersionCollection} from '../factories/apListItemVersionFactory';
 import {Model} from '../factories/apModelFactory';
 import {IQuery} from '../factories/apQueryFactory';
-import {IWorkflowDefinition, IXMLGroup, IXMLUserProfile} from '../interfaces/index';
+import {IWorkflowDefinition, XMLGroup, XMLUserProfile} from '../interfaces/index';
 import {ENV} from '../angular-point';
 
 
@@ -32,11 +32,11 @@ export interface IDataService {
     getAvailableWorkflows(fileRefString: string): ng.IPromise<IWorkflowDefinition[]>;
     getCollection(options: {operation: string; userLoginName?: string; groupName?: string; listName?: string; filterNode: string;}): ng.IPromise<Object[]>;
     getCurrentSite(): ng.IPromise<string>;
-    getFieldVersionHistory<T extends ListItem<any>>(options: IGetFieldVersionHistoryOptions, fieldDefinition: IFieldDefinition): ng.IPromise<FieldVersionCollection>
-    getGroupCollectionFromUser(login?: string): ng.IPromise<IXMLGroup[]>;
+    getFieldVersionHistory<T extends ListItem<any>>(options: IGetFieldVersionHistoryOptions, fieldDefinition: FieldDefinition): ng.IPromise<FieldVersionCollection>
+    getGroupCollectionFromUser(login?: string): ng.IPromise<XMLGroup[]>;
     getList(options: {listName: string; webURL?: string}): ng.IPromise<Object>;
-    getListFields(options: {listName: string; webURL?: string}): ng.IPromise<IXMLFieldDefinition[]>;
-    getUserProfileByName(login?: string): ng.IPromise<IXMLUserProfile>;
+    getListFields(options: {listName: string; webURL?: string}): ng.IPromise<XMLFieldDefinition[]>;
+    getUserProfileByName(login?: string): ng.IPromise<XMLUserProfile>;
     processChangeTokenXML<T extends ListItem<any>>(model: Model, query: IQuery<T>, responseXML: Element, opts): void;
     processDeletionsSinceToken(responseXML: Element, indexedCache: IndexedCache<any>): void;
     requestData(opts): ng.IPromise<Element>;
@@ -290,7 +290,7 @@ export class DataService implements IDataService {
      * @param {object} fieldDefinition Field definition object from the model.
      * @returns {object[]} Promise which resolves with an array of list item changes for the specified field.
      */
-    getFieldVersionHistory<T extends ListItem<any>>(options: IGetFieldVersionHistoryOptions, fieldDefinition: IFieldDefinition): ng.IPromise<FieldVersionCollection> {
+    getFieldVersionHistory<T extends ListItem<any>>(options: IGetFieldVersionHistoryOptions, fieldDefinition: FieldDefinition): ng.IPromise<FieldVersionCollection> {
         let defaults = {
             operation: 'GetVersionCollection'
         };
@@ -317,7 +317,7 @@ export class DataService implements IDataService {
      * @param {string} [login=CurrentUser] Optional param of another user's login to return the profile for.
      * @returns {string[]} Promise which resolves with the array of groups the user belongs to.
      */
-    getGroupCollectionFromUser(login?: string): ng.IPromise<IXMLGroup[]> {
+    getGroupCollectionFromUser(login?: string): ng.IPromise<XMLGroup[]> {
         /** Create a new deferred object if not already defined */
         let deferred = $q.defer();
         let getGroupCollection = (userLoginName) => {
@@ -325,7 +325,7 @@ export class DataService implements IDataService {
                 operation: 'GetGroupCollectionFromUser',
                 userLoginName: userLoginName,
                 filterNode: 'Group'
-            }).then((groupCollection: IXMLGroup[]) => deferred.resolve(groupCollection));
+            }).then((groupCollection: XMLGroup[]) => deferred.resolve(groupCollection));
         };
 
         if (!login) {
@@ -367,7 +367,7 @@ export class DataService implements IDataService {
      * @param {string} [options.webURL] URL to the site containing the list if differnt from primary data site in apConfig.
      * @returns {Promise} Promise which resolves with an array of field definitions for the list.
      */
-    getListFields(options: {listName: string; webURL?: string}): ng.IPromise<IXMLFieldDefinition[]> {
+    getListFields(options: {listName: string; webURL?: string}): ng.IPromise<XMLFieldDefinition[]> {
         return this.getList(options)
             .then((responseXML: Element) => {
                 let filteredNodes = apXMLToJSONService.filterNodes(responseXML, 'Field');
@@ -386,7 +386,7 @@ export class DataService implements IDataService {
      * @param {string} [login=CurrentUser] Optional param of another user's login to return the profile for.
      * @returns {object} Promise which resolves with the requested user profile.
      */
-    getUserProfileByName(login?: string): ng.IPromise<IXMLUserProfile> {
+    getUserProfileByName(login?: string): ng.IPromise<XMLUserProfile> {
         let payload = {
             accountName: undefined,
             operation: 'GetUserProfileByName'

@@ -1,3 +1,7 @@
+import { XMLUser, XMLGroup } from './interfaces/index';
+
+
+import 'jquery';
 import * as angular from 'angular';
 
 import {DefaultFields} from './constants/apDefaultFields';
@@ -7,14 +11,14 @@ import {WebServiceOperationConstants} from './constants/apWebServiceOperationCon
 import {XMLFieldAttributeTypes} from './constants/apXMLFieldAttributeTypes';
 import {XMLListAttributeTypes} from './constants/apXMLListAttributeTypes';
 import {CamlFactory} from './factories/apCamlFactory';
-import {FieldFactory} from './factories/apFieldFactory';
-import {IndexedCacheFactory} from './factories/apIndexedCacheFactory';
-import {ListItemFactory} from './factories/apListItemFactory';
-import {ModelFactory} from './factories/apModelFactory';
-import {ListItemVersionFactory} from './factories/apListItemVersionFactory';
-import {LookupFactory} from './factories/apLookupFactory';
-import {QueryFactory} from './factories/apQueryFactory';
-import {UserFactory} from './factories/apUserFactory';
+import { FieldFactory, FieldConfigurationObject, FieldDefinition } from './factories/apFieldFactory';
+import {IndexedCacheFactory, IndexedCache} from './factories/apIndexedCacheFactory';
+import {ListItemFactory, ListItem} from './factories/apListItemFactory';
+import { ModelFactory, Model, QueriesContainer } from './factories/apModelFactory';
+import { ListItemVersionFactory, ChangeSummary, VersionSummary, ListItemVersion } from './factories/apListItemVersionFactory';
+import {LookupFactory, Lookup} from './factories/apLookupFactory';
+import {QueryFactory, Query} from './factories/apQueryFactory';
+import { UserFactory, User } from './factories/apUserFactory';
 import {UserModel} from './models/apUserModel';
 import {CacheService} from './services/apCacheService';
 import {ChangeService} from './services/apChangeService';
@@ -26,16 +30,12 @@ import {ExportService} from './services/apExportService';
 import {FieldService} from './services/apFieldService';
 import {FormattedFieldValueService} from './services/apFormattedFieldValueService';
 import {SPServicesCore} from './services/apSPServices';
-import {Logger} from './services/apLogger';
+import { Logger, LogEvent } from './services/apLogger';
 import {UtilityService} from './services/apUtilityService';
 import {WebServiceService} from './services/apWebServiceService';
 import {XMLToJSONService} from './services/apXMLToJSONService';
+import { List, ListFieldMapping } from './factories/apListFactory';
 
-export * from './constants';
-export * from './factories';
-export * from './models';
-export * from './interfaces';
-export * from './services';
 
 export let $AP_INJECTOR: ng.auto.IInjectorService;
 
@@ -102,3 +102,26 @@ export function registerEnvironment(env) {
     ENV = env;
 }
 
+export {
+    ChangeSummary,
+    DataService,
+    FieldConfigurationObject,
+    FieldDefinition,
+    IndexedCache,
+    IndexedCacheFactory,
+    List,
+    ListItem,
+    ListItemVersion,
+    LogEvent,
+    Logger,
+    Lookup,
+    Model,
+    QueriesContainer,
+    Query,
+    User,
+    UserModel,
+    UtilityService,
+    VersionSummary,
+    XMLGroup,
+    XMLUser,
+};

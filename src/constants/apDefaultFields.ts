@@ -1,4 +1,4 @@
-import {IFieldConfigurationObject} from '../factories/apFieldFactory';
+import {FieldConfigurationObject} from '../factories/apFieldFactory';
 
 /**
  * @ngdoc object
@@ -7,7 +7,7 @@ import {IFieldConfigurationObject} from '../factories/apFieldFactory';
  * Read only fields that should be included in all lists
  */
 
-export const DefaultFields: IFieldConfigurationObject[] = [
+export const DefaultFields: FieldConfigurationObject[] = [
     {staticName: 'ID', objectType: 'Counter', mappedName: 'id', readOnly: true},
     {staticName: 'Modified', objectType: 'DateTime', mappedName: 'modified', readOnly: true},
     {staticName: 'Created', objectType: 'DateTime', mappedName: 'created', readOnly: true},

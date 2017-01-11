@@ -3,7 +3,7 @@ import {IndexedCacheFactory, IndexedCache} from './apIndexedCacheFactory';
 import {DataService} from '../services/apDataService';
 import {DecodeService} from '../services/apDecodeService';
 import {Logger} from '../services/apLogger';
-import {IListFieldMapping, List} from './apListFactory';
+import {ListFieldMapping, List} from './apListFactory';
 import {ListItem} from './apListItemFactory';
 import {Model} from './apModelFactory';
 import {DefaultListItemQueryOptions} from '../constants/apDefaultListItemQueryOptions';
@@ -34,7 +34,7 @@ export interface IQueryOptions {
 export interface IExecuteQueryOptions {
     factory?: Function;
     filter?: string;
-    mapping?: IListFieldMapping;
+    mapping?: ListFieldMapping;
     target?: IndexedCache<any>;
     [key: string]: any;
 }

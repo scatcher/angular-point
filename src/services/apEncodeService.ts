@@ -1,8 +1,8 @@
 import * as _ from 'lodash';
 import {UtilityService} from './apUtilityService';
-import {IFieldDefinition} from '../factories/apFieldFactory';
+import {FieldDefinition} from '../factories/apFieldFactory';
 import {ListItem} from '../factories/apListItemFactory';
-import {ILookup} from '../factories/apLookupFactory';
+import {Lookup} from '../factories/apLookupFactory';
 
 /**
  * @ngdoc service
@@ -62,7 +62,7 @@ export class EncodeService {
      * @param {*} value Current field value.
      * @returns {Array} [fieldName, fieldValue]
      */
-    createValuePair(fieldDefinition: IFieldDefinition, value: any): [string, string] {
+    createValuePair(fieldDefinition: FieldDefinition, value: any): [string, string] {
         var encodedValue = this.encodeValue(fieldDefinition.objectType, value);
         return [fieldDefinition.staticName, encodedValue];
     }
@@ -131,7 +131,7 @@ export class EncodeService {
      * @example
      * [[fieldName1, fieldValue1], [fieldName2, fieldValue2], ...]
      */
-    generateValuePairs(fieldDefinitions: IFieldDefinition[], listItem: ListItem<any>): [string, string][] {
+    generateValuePairs(fieldDefinitions: FieldDefinition[], listItem: ListItem<any>): [string, string][] {
         var pairs = [];
         _.each(fieldDefinitions, (field) => {
             /** Check to see if item contains data for this field */
@@ -204,7 +204,7 @@ export class EncodeService {
      * @param {string} [valueProperty='lookupValue'] Property name where we'll find the value for this object.
      * @returns {string} Need to format string of id's in following format [ID0];#;#[ID1];#;#[ID1]
      */
-    stringifySharePointMultiSelect(multiSelectValue: ILookup<any>[], idProperty = 'lookupId', valueProperty = 'lookupValue'): string {
+    stringifySharePointMultiSelect(multiSelectValue: Lookup<any>[], idProperty = 'lookupId', valueProperty = 'lookupValue'): string {
         var stringifiedValues = '';
         var idProp = idProperty || 'lookupId';
         var valProp = valueProperty || 'lookupValue';

@@ -1,7 +1,7 @@
 import * as _ from 'lodash';
 import {CacheService} from './apCacheService';
-import {LookupFactory, ILookup} from '../factories/apLookupFactory';
-import {UserFactory, IUser} from '../factories/apUserFactory';
+import {LookupFactory, Lookup} from '../factories/apLookupFactory';
+import {UserFactory, User} from '../factories/apUserFactory';
 import {FieldService} from './apFieldService';
 import {IXMLListAttributeTypes} from '../constants/apXMLListAttributeTypes';
 import {IXMLFieldAttributeTypes} from '../constants/apXMLFieldAttributeTypes';
@@ -10,8 +10,8 @@ import {ListItem, IUninstantiatedExtendedListItem, IUninstantiatedListItem} from
 import {Model} from '../factories/apModelFactory';
 import {IQuery, IExecuteQueryOptions} from '../factories/apQueryFactory';
 import {IndexedCache} from '../factories/apIndexedCacheFactory';
-import {IFieldDefinition} from '../factories/apFieldFactory';
-import {List, IListFieldMapping} from '../factories/apListFactory';
+import {FieldDefinition} from '../factories/apFieldFactory';
+import {List, ListFieldMapping} from '../factories/apListFactory';
 import {FieldVersionCollection} from '../factories/apListItemVersionFactory';
 /**
  * @ngdoc service
@@ -138,7 +138,7 @@ export class DecodeService {
      * @param {object[]} fieldDefinitions Field definitions from the model.
      * @param {object} responseXML XML response from the server.
      */
-    extendFieldDefinitionsFromXML(fieldDefinitions: IFieldDefinition[], responseXML: Element): IFieldDefinition[] {
+    extendFieldDefinitionsFromXML(fieldDefinitions: FieldDefinition[], responseXML: Element): FieldDefinition[] {
         let fieldMap = {};
 
         /** Map all custom fields with keys of the staticName and values = field definition */
@@ -348,7 +348,7 @@ export class DecodeService {
         }
     }
 
-    jsLookup(str: string, options?: Object): ILookup<any> {
+    jsLookup(str: string, options?: Object): Lookup<any> {
         if (str.length === 0) {
             return null;
         } else {
@@ -357,7 +357,7 @@ export class DecodeService {
         }
     }
 
-    jsLookupMulti(str: string, options?: Object): ILookup<any>[] {
+    jsLookupMulti(str: string, options?: Object): Lookup<any>[] {
         if (str.length === 0) {
             return [];
         } else {
@@ -394,7 +394,7 @@ export class DecodeService {
         return str;
     }
 
-    jsUser(str: string): IUser {
+    jsUser(str: string): User {
         if (str.length === 0) {
             return null;
         }
@@ -402,7 +402,7 @@ export class DecodeService {
         return this.apUserFactory.create(str);
     }
 
-    jsUserMulti(str: string): IUser[] {
+    jsUserMulti(str: string): User[] {
         if (str.length === 0) {
             return [];
         } else {
@@ -428,7 +428,7 @@ export class DecodeService {
      *
      * @returns {FieldVersionCollection} FieldVersionCollection object with all versions included.
      */
-    parseFieldVersions(responseXML: Element, fieldDefinition: IFieldDefinition): FieldVersionCollection {
+    parseFieldVersions(responseXML: Element, fieldDefinition: FieldDefinition): FieldVersionCollection {
         // let versions = {};
         let xmlVersions = $(responseXML).find('Version');
         let versionCount = xmlVersions.length;
@@ -652,13 +652,13 @@ export class DecodeService {
 export interface IXMLToJsonOptions<T extends ListItem<any>> extends IExecuteQueryOptions {
     includeAllAttrs?: boolean;
     listItemProvider?: Function;
-    mapping: IListFieldMapping;
+    mapping: ListFieldMapping;
     removeOws?: boolean;
     target?: IndexedCache<T>;
 }
 
 export interface IParseXmlEntityOptions {
-    mapping: IListFieldMapping;
+    mapping: ListFieldMapping;
     includeAllAttrs?: boolean;
     removeOws?: boolean;
 }
@@ -666,7 +666,7 @@ export interface IParseXmlEntityOptions {
 interface IProcessListItemsOptions<T extends ListItem<any>> {
     includeAllAttrs?: boolean;
     filter?: string;
-    mapping: IListFieldMapping;
+    mapping: ListFieldMapping;
     target?: IndexedCache<T>
 }
 

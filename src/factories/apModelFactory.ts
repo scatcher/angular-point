@@ -1,7 +1,7 @@
 import * as _ from 'lodash';
 import {CacheService} from '../services/apCacheService';
 import {DataService} from '../services/apDataService';
-import {ListFactory, IUninstantiatedList, List} from './apListFactory';
+import {ListFactory, UninstantiatedList, List} from './apListFactory';
 import {QueryFactory, IQuery, IQueryOptions} from './apQueryFactory';
 import {UtilityService} from '../services/apUtilityService';
 import {FieldService} from '../services/apFieldService';
@@ -9,7 +9,7 @@ import {IndexedCacheFactory, IndexedCache} from './apIndexedCacheFactory';
 import {DecodeService} from '../services/apDecodeService';
 import {EncodeService} from '../services/apEncodeService';
 import {ListItem} from './apListItemFactory';
-import {IFieldDefinition} from './apFieldFactory';
+import {FieldDefinition} from './apFieldFactory';
 import {IUserPermissionsObject, BasePermissionObject} from '../constants/apPermissionObject';
 import {ENV} from '../angular-point';
 
@@ -21,11 +21,11 @@ let apCacheService: CacheService, apDataService: DataService, apListFactory: Lis
 
 export interface IUninitializedModel {
     factory: IModelFactory;
-    list: IUninstantiatedList;
+    list: UninstantiatedList;
     [key: string]: any;
 }
 
-export interface IQueriesContainer {
+export interface QueriesContainer {
     getAllListItems?: IQuery<any>;
     [key: string]: IQuery<any>;
 }
@@ -163,7 +163,7 @@ export class Model {
     factory: IModelFactory;
     fieldDefinitionsExtended: boolean = false;
     lastServerUpdate: Date;
-    queries: IQueriesContainer = {};
+    queries: QueriesContainer = {};
     requestForFieldDefinitions;
 
     constructor(config: IUninitializedModel) {
@@ -239,7 +239,7 @@ export class Model {
             batchCmd: 'New',
             buildValuePairs,
             listName: this.getListId(),
-            //Method gets added onto new list item and allows access to parent cache
+            // Method gets added onto new list item and allows access to parent cache
             getCache: () => indexedCache,
             indexedCache,
             operation: 'UpdateListItems',
@@ -253,7 +253,7 @@ export class Model {
         }
 
         if (config.buildValuePairs === true) {
-            let editableFields: IFieldDefinition[] = _.filter(this.list.fields, {readOnly: false});
+            let editableFields: FieldDefinition[] = _.filter(this.list.fields, {readOnly: false});
             config.valuePairs = apEncodeService.generateValuePairs(editableFields, entity);
         }
 
@@ -418,7 +418,7 @@ export class Model {
                 id: count + 1
             };
             /** Create an attribute with mock data for each field */
-            _.each(model.list.fields, (field: IFieldDefinition) => {
+            _.each(model.list.fields, (field: FieldDefinition) => {
                 mock[field.mappedName] = field.getMockData(opts);
             });
 
@@ -534,7 +534,7 @@ export class Model {
      * @param {string} fieldName Internal field name.
      * @returns {object} Field definition.
      */
-    getFieldDefinition(fieldName: string): IFieldDefinition {
+    getFieldDefinition(fieldName: string): FieldDefinition {
         var model = this;
         return _.find(model.list.fields, {mappedName: fieldName});
     }
@@ -920,7 +920,7 @@ export class Model {
             return _.isObject(fieldValue) && _.isNumber(fieldValue.lookupId);
         };
 
-        _.each(model.list.customFields, (fieldDefinition: IFieldDefinition) => {
+        _.each(model.list.customFields, (fieldDefinition: FieldDefinition) => {
             var fieldValue = listItem[fieldDefinition.mappedName];
             var fieldDescriptor = '"' + fieldDefinition.objectType + '" value.';
             /** Only evaluate required fields */

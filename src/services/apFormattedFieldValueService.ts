@@ -1,5 +1,5 @@
 import * as _ from 'lodash';
-import {ILookup} from '../factories/apLookupFactory';
+import {Lookup} from '../factories/apLookupFactory';
 let service: FormattedFieldValueService;
 let $filter: ng.IFilterService;
 
@@ -172,7 +172,7 @@ export class FormattedFieldValueService {
      * Returns the property.lookupValue if present.
      * @returns {string} Property.lookupValue.
      */
-    stringifyLookup(prop: ILookup<any>): string {
+    stringifyLookup(prop: Lookup<any>): string {
         let str = '';
         if (prop && prop.lookupValue) {
             str = prop.lookupValue;
@@ -213,7 +213,7 @@ export class FormattedFieldValueService {
      * Converts an array of selected lookup values into a single concatenated string.
      * @returns {string} Concatenated string representation.
      */
-    stringifyMultiLookup(prop: ILookup<any>[], delim = '; '): string {
+    stringifyMultLookup(prop: Lookup<any>[], delim = '; '): string {
         let str = '';
         _.each(prop, function (val, valIndex) {
 

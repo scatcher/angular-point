@@ -10,14 +10,14 @@ let apUtilityService: UtilityService;
  * accesses a site collection.  The downside is a user will have
  * different site collection ID's for each site collection.
  */
-export interface IUser {
-    email?: string;
-    loginName?: string;
-    lookupId: number;
-    lookupValue: string;
-    sipAddress?: string;
-    title?: string;
-}
+// export interface User {
+//     email?: string;
+//     loginName?: string;
+//     lookupId: number;
+//     lookupValue: string;
+//     sipAddress?: string;
+//     title?: string;
+// }
 
 /**
  * @ngdoc function
@@ -45,13 +45,13 @@ export interface IUser {
  * @param {string} s Delimited string used to create a User object.
  * @constructor
  */
-class User implements IUser {
+export class User {
     lookupValue: string;
     lookupId: number;
-    loginName: string;
-    email: string;
-    sipAddress: string;
-    title: string;
+    loginName?: string;
+    email?: string;
+    sipAddress?: string;
+    title?: string;
 
     constructor(str: string) {
         let thisUser = new apUtilityService.SplitIndex(str);
@@ -81,8 +81,8 @@ class User implements IUser {
  *
  */
 export class UserFactory {
-    User = User;
     static $inject = ['apUtilityService'];
+    User = User;
 
     constructor(_apUtilityService_) {
         apUtilityService = _apUtilityService_;

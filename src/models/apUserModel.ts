@@ -1,13 +1,13 @@
 import * as _ from 'lodash';
 import {DataService} from '../services/apDataService';
-import {IXMLGroup, IXMLUserProfile} from '../interfaces/index';
+import {XMLGroup, XMLUserProfile} from '../interfaces/index';
 /** Local references to cached promises */
 var _getGroupCollection, _getUserProfile;
 
 export interface IUserModel {
-    checkIfMember(groupName: string, force?: boolean): angular.IPromise<IXMLGroup>;
-    getGroupCollection(force?: boolean): angular.IPromise<IXMLGroup[]>;
-    getUserProfile(force?: boolean): ng.IPromise<IXMLUserProfile>;
+    checkIfMember(groupName: string, force?: boolean): angular.IPromise<XMLGroup>;
+    getGroupCollection(force?: boolean): angular.IPromise<XMLGroup[]>;
+    getUserProfile(force?: boolean): ng.IPromise<XMLUserProfile>;
 }
 
 /**
@@ -38,7 +38,7 @@ export class UserModel {
      * @example
      * <pre>{ID: "190", Name: "Blog Contributors", Description: "We are bloggers...", OwnerID: "126", OwnerIsUser: "False"}</pre>
      */
-    checkIfMember(groupName: string, force: boolean = false): angular.IPromise<IXMLGroup> {
+    checkIfMember(groupName: string, force: boolean = false): angular.IPromise<XMLGroup> {
         //Allow function to be called before group collection is ready
         var deferred = this.$q.defer();
 
@@ -60,7 +60,7 @@ export class UserModel {
      * @param {boolean} [force=false] Ignore any cached value.
      * @returns {IGroupDefinition[]} Promise which resolves with the array of groups the user belongs to.
      */
-    getGroupCollection(force: boolean = false): angular.IPromise<IXMLGroup[]> {
+    getGroupCollection(force: boolean = false): angular.IPromise<XMLGroup[]> {
         if (!_getGroupCollection || force) {
             /** Create a new deferred object if not already defined */
             var deferred = this.$q.defer();
@@ -86,7 +86,7 @@ export class UserModel {
      * @param {boolean} [force=false] Ignore any cached value.
      * @returns {object} Promise which resolves with the requested user profile.
      */
-    getUserProfile(force: boolean = false): ng.IPromise<IXMLUserProfile> {
+    getUserProfile(force: boolean = false): ng.IPromise<XMLUserProfile> {
         if (!_getUserProfile || force) {
             /** Create a new deferred object if not already defined */
             _getUserProfile = this.apDataService.getUserProfileByName();

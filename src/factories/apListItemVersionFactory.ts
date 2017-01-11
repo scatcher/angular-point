@@ -1,21 +1,21 @@
 import * as _ from 'lodash';
 import {ListItem} from './apListItemFactory';
-import {IUser} from './apUserFactory';
-import {IFieldDefinition, IFieldConfigurationObject} from './apFieldFactory';
+import {User} from './apUserFactory';
+import {FieldDefinition, FieldConfigurationObject} from './apFieldFactory';
 import {IModelFactory} from './apModelFactory';
 
-export interface IListItemVersions<T extends ListItem<any>> extends ListItem<T> {
-    [key: number]: IListItemVersion<T>;
+export interface ListItemVersions<T extends ListItem<any>> {
+    [key: number]: ListItemVersion<T>;
 }
 
-export interface IListItemVersion<T extends ListItem<any>> extends ListItem<T> {
+export interface ListItemVersion<T extends ListItem<any>> {
     modified: Date;
     version: number;
     [key: string]: any;
 }
 
-export interface IFieldVersion {
-    editor: IUser;
+export interface FieldVersion {
+    editor: User;
     modified: Date;
     value: any;
     version: number;
@@ -29,10 +29,10 @@ export interface IFieldVersion {
  * Object that contains the entire version history for a given list item field/property.
  */
 export class FieldVersionCollection {
-    fieldDefinition: IFieldDefinition;
-    versions: {[key: number]: IFieldVersion} = {};
+    fieldDefinition: FieldDefinition;
+    versions: {[key: number]: FieldVersion} = {};
 
-    constructor(fieldDefinition: IFieldDefinition) {
+    constructor(fieldDefinition: FieldDefinition) {
         this.fieldDefinition = fieldDefinition;
     }
 
@@ -40,14 +40,14 @@ export class FieldVersionCollection {
      * @ngdoc object
      * @name apListItemVersionFactory.FieldVersionCollection.addVersion
      * @methodOf apListItemVersionFactory.FieldVersionCollection
-     * @param {IUser} editor User who made the change.
+     * @param {User} editor User who made the change.
      * @param {Date} modified Date modified.
      * @param {any} value Value of the field at this version.
      * @param {number} version The version number.
      * @description
      * Used to add a single version to the collection.
      */
-    addVersion(editor: IUser, modified: Date, value: any, version: number): void {
+    addVersion(editor: User, modified: Date, value: any, version: number): void {
         this.versions[version] = {
             editor,
             modified,
@@ -65,15 +65,15 @@ export class FieldVersionCollection {
     }
 }
 
-class FieldChange {
+export class FieldChange {
     fieldName: string;
-    newerVersion: IListItemVersion<any>;
+    newerVersion: ListItemVersion<any>;
     newValue: string;
     oldValue: string;
-    previousVersion: IListItemVersion<any>;
+    previousVersion: ListItemVersion<any>;
     propertyName: string;
 
-    constructor(propertyName: string, fieldDefinition: IFieldConfigurationObject, newerVersion: IListItemVersion<any>, previousVersion: IListItemVersion<any> = <IListItemVersion<any>>{}) {
+    constructor(propertyName: string, fieldDefinition: FieldConfigurationObject, newerVersion: ListItemVersion<any>, previousVersion: ListItemVersion<any> = <ListItemVersion<any>>{}) {
 
         this.fieldName = fieldDefinition.displayName;
         this.newerVersion = newerVersion;
@@ -85,7 +85,7 @@ class FieldChange {
         this.previousVersion = previousVersion;
     }
 
-    getFormattedValue(version: IListItemVersion<any>): string {
+    getFormattedValue(version: ListItemVersion<any>): string {
         var propertyValue = '';
         if (version.getFormattedValue) {
             propertyValue = version.getFormattedValue(this.propertyName);
@@ -139,10 +139,10 @@ export class FieldChangeSummary<T extends ListItem<any>> {
  * version history.  Extends FieldChangeSummary.
  */
 export class VersionSummary<T extends ListItem<any>> extends FieldChangeSummary<T> {
-    listItemVersion: IListItemVersion<any>;
+    listItemVersion: ListItemVersion<any>;
     version: number;
 
-    constructor(newerVersion: IListItemVersion<T>, previousVersion: IListItemVersion<T> | Object = {}) {
+    constructor(newerVersion: ListItemVersion<T>, previousVersion: ListItemVersion<T> | Object = {}) {
         super(newerVersion, previousVersion);
         this.listItemVersion = newerVersion;
         this.version = newerVersion.version;
@@ -170,10 +170,10 @@ export class ChangeSummary<T extends ListItem<any>> {
     significantVersionCount = 0;
     private versionSummaryCollection: {[key: number]: VersionSummary<T>} = {};
 
-    constructor(versions: IListItemVersions<T>) {
+    constructor(versions: ListItemVersions<T>) {
         /** First version won't have a previous version */
         var previousVersion;
-        _.each(versions, (version: IListItemVersion<T>) => {
+        _.each(versions, (version: ListItemVersion<T>) => {
             var versionSummary = new VersionSummary<T>(version, previousVersion);
             if (versionSummary.hasMajorChanges) {
                 this.significantVersionCount++;
@@ -199,7 +199,7 @@ export class ChangeSummary<T extends ListItem<any>> {
 }
 
 export class VersionHistoryCollection<T extends ListItem<any>> {
-    [key: number]: IListItemVersion<T>;
+    [key: number]: ListItemVersion<T>;
     // getFactory: () => IModelFactory;
     constructor(fieldVersionCollections: FieldVersionCollection[], factory: IModelFactory) {
         /** Iterate through each of the field version collections */
@@ -210,7 +210,7 @@ export class VersionHistoryCollection<T extends ListItem<any>> {
 
     addFieldCollection(fieldVersionCollection: FieldVersionCollection, factory: IModelFactory): void {
         /** Iterate through each version of this field */
-        _.each(fieldVersionCollection.versions, (fieldVersion: IFieldVersion, versionNumberAsString: string) => {
+        _.each(fieldVersionCollection.versions, (fieldVersion: FieldVersion, versionNumberAsString: string) => {
             /** Create a new version object if it doesn't already exist */
             this[versionNumberAsString] = this[versionNumberAsString] || new factory<T>({
                     editor: fieldVersion.editor,
@@ -231,8 +231,8 @@ export class VersionHistoryCollection<T extends ListItem<any>> {
         return new ChangeSummary<T>(<any>this);
     }
 
-    toArray(): IListItemVersion<T>[] {
-        return _.toArray<IListItemVersion<T>>(this);
+    toArray(): ListItemVersion<T>[] {
+        return _.toArray<ListItemVersion<T>>(this);
     }
 }
 

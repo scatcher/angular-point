@@ -9,10 +9,10 @@ let apUtilityService: UtilityService;
  * in the SharePoint list settings for this list. Only the lookupValue is
  * required and will be sent to the server when saving.  The lookupValue is
  * ignored.  */
-export interface ILookup<T> {
-    lookupValue: string;
-    lookupId: number;
-}
+// export interface Lookup<T> {
+//     lookupValue: string;
+//     lookupId: number;
+// }
 
 /**
  * @ngdoc function
@@ -26,7 +26,7 @@ export interface ILookup<T> {
  * @param {object} options.propertyName Key on list item object.
  * @constructor
  */
-export class Lookup<T> implements ILookup<T> {
+export class Lookup<T> {
     lookupId: number;
     lookupValue: string;
 

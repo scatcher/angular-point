@@ -1,4 +1,4 @@
-import {ILogger} from './apLogger';
+import {Logger} from './apLogger';
 
 /**
  * @ngdoc service
@@ -12,7 +12,7 @@ export function exceptionLoggingService($log, $injector) {
     function error(exception: Error, cause: string) {
 
         /** Need to inject otherwise get circular dependency when using dependency injection */
-        const apLogger: ILogger = $injector.get('apLogger');
+        const apLogger: Logger = $injector.get('apLogger');
         // now try to log the error to the server side.
         apLogger.exception(exception, cause);
 

@@ -7,7 +7,7 @@ import {ListItem} from './apListItemFactory';
 
 var apFieldService: FieldService, apUtilityService: UtilityService, apFormattedFieldValueService: FormattedFieldValueService;
 
-export interface IXMLFieldDefinition {
+export interface XMLFieldDefinition {
     ID?: string;
     Type?: string;
     ReadOnly?: string;
@@ -35,13 +35,13 @@ export interface IXMLFieldDefinition {
     Format?: string;
 }
 
-export interface IFieldConfigurationObject {
+export interface FieldConfigurationObject {
     choices?: string[];
     description?: string;
     displayName?: string;
-    formatter?: (listItem: ListItem<any>, fieldDefinition: IFieldDefinition, options?: Object) => string;
+    formatter?: (listItem: ListItem<any>, fieldDefinition: FieldDefinition, options?: Object) => string;
     label?: string;
-    //JS property name that we use to store the value for this field.
+    // JS property name that we use to store the value for this field.
     mappedName: string;
     objectType: string;
     readOnly?: boolean;
@@ -50,11 +50,8 @@ export interface IFieldConfigurationObject {
     [key: string]: any;
 }
 
-//An extended field definition combines the user defined field definition with the XML returned by SharePoint
-export interface IFieldDefinition extends IXMLFieldDefinition, IFieldConfigurationObject {
-    getDefaultValueForType?(): any;
-    getFormattedValue?(listItem: ListItem<any>, options?: Object): string;
-    getMockData?(options): any;
+// An extended field definition combines the user defined field definition with the XML returned by SharePoint
+export interface FieldDefinition extends XMLFieldDefinition, FieldConfigurationObject {
     [key: string]: any;
 }
 
@@ -141,11 +138,10 @@ export interface IFieldDefinition extends IXMLFieldDefinition, IFieldConfigurati
  * @requires angularPoint.apFieldFactory
  * @constructor
  */
-export class FieldDefinition implements IFieldDefinition {
-    displayName: string;
-    formatter: (listItem: ListItem<any>, fieldDefinition: IFieldDefinition, options?: Object) => string;
-    internalName: string;
-    label: string;
+export class FieldDefinition implements FieldDefinition {
+    displayName?: string;
+    formatter?: (listItem: ListItem<any>, fieldDefinition: FieldDefinition, options?: Object) => string;
+    label?: string;
     mappedName: string;
     objectType = 'Text';
     readOnly = false;
@@ -155,8 +151,6 @@ export class FieldDefinition implements IFieldDefinition {
         _.assign(this, obj);
         this.displayName = this.displayName ? this.displayName : apUtilityService.fromCamelCase(this.mappedName);
 
-        /** Deprecated internal name and replace with staticName but maintain compatibility */
-        this.staticName = this.staticName || this.internalName;
     }
 
     /**

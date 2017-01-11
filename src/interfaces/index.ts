@@ -2,7 +2,7 @@ import {ListItem} from '../factories/apListItemFactory';
 import {IndexedCache} from '../factories/apIndexedCacheFactory';
 
 
-export interface IXMLGroup {
+export interface XMLGroup {
     Description: string;
     ID: string;
     Name: string;
@@ -10,7 +10,7 @@ export interface IXMLGroup {
     OwnerIsUser: string;
 }
 
-export interface IXMLUser {
+export interface XMLUser {
     Email: string;
     Flags: string;
     ID: string;
@@ -22,20 +22,20 @@ export interface IXMLUser {
     Sid: string;
 }
 
-export interface IXMLUserProfile {
+export interface XMLUserProfile {
     userLoginName: string; //Added to allow us to optionally add a prefix if necessary from apConfig
     UserProfile_GUID: string;
     AccountName: string;
     FirstName: string;
-    "SPS-PhoneticFirstName": string;
+    'SPS-PhoneticFirstName': string;
     LastName: string;
-    "SPS-PhoneticLastName": string;
+    'SPS-PhoneticLastName': string;
     PreferredName: string;
-    "SPS-PhoneticDisplayName": string;
+    'SPS-PhoneticDisplayName': string;
     WorkPhone: string;
     Department: string;
     Title: string;
-    "SPS-JobTitle": string;
+    'SPS-JobTitle': string;
     Manager: string;
     AboutMe: string;
     PersonalSpace: string;
@@ -44,42 +44,42 @@ export interface IXMLUserProfile {
     QuickLinks: string;
     WebSite: string;
     PublicSiteRedirect: string;
-    "SPS-Dotted-line": string;
-    "SPS-Peers": string;
-    "SPS-Responsibility": string;
-    "SPS-SipAddress": string;
-    "SPS-MySiteUpgrade": string;
-    "SPS-DontSuggestList": string;
-    "SPS-ProxyAddresses": string;
-    "SPS-HireDate": string;
-    "SPS-DisplayOrder": string;
-    "SPS-ClaimID": string;
-    "SPS-ClaimProviderID": string;
-    "SPS-ClaimProviderType": string;
-    "SPS-LastColleagueAdded": string;
-    "SPS-OWAUrl": string;
-    "SPS-SavedAccountName": string;
-    "SPS-ResourceAccountName": string;
-    "SPS-ObjectExists": string;
-    "SPS-MasterAccountName": string;
-    "SPS-DistinguishedName": string;
-    "SPS-SourceObjectDN": string;
-    "SPS-LastKeywordAdded": string;
+    'SPS-Dotted-line': string;
+    'SPS-Peers': string;
+    'SPS-Responsibility': string;
+    'SPS-SipAddress': string;
+    'SPS-MySiteUpgrade': string;
+    'SPS-DontSuggestList': string;
+    'SPS-ProxyAddresses': string;
+    'SPS-HireDate': string;
+    'SPS-DisplayOrder': string;
+    'SPS-ClaimID': string;
+    'SPS-ClaimProviderID': string;
+    'SPS-ClaimProviderType': string;
+    'SPS-LastColleagueAdded': string;
+    'SPS-OWAUrl': string;
+    'SPS-SavedAccountName': string;
+    'SPS-ResourceAccountName': string;
+    'SPS-ObjectExists': string;
+    'SPS-MasterAccountName': string;
+    'SPS-DistinguishedName': string;
+    'SPS-SourceObjectDN': string;
+    'SPS-LastKeywordAdded': string;
     WorkEmail: string;
     CellPhone: string;
     Fax: string;
     HomePhone: string;
     Office: string;
-    "SPS-Location": string;
-    "SPS-TimeZone": string;
+    'SPS-Location': string;
+    'SPS-TimeZone': string;
     Assistant: string;
-    "SPS-PastProjects": string;
-    "SPS-Skills": string;
-    "SPS-School": string;
-    "SPS-Birthday": string;
-    "SPS-StatusNotes": string;
-    "SPS-Interests": string;
-    "SPS-EmailOptin": string;
+    'SPS-PastProjects': string;
+    'SPS-Skills': string;
+    'SPS-School': string;
+    'SPS-Birthday': string;
+    'SPS-StatusNotes': string;
+    'SPS-Interests': string;
+    'SPS-EmailOptin': string;
 }
 
 export interface IListItemCrudOptions<T extends ListItem<any>> {
