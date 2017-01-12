@@ -10,7 +10,7 @@ export class SOAPEnvelope {
     payload = '';
 }
 
-//Definition file taken from SPServices project on GitHub, look at way to use as depency and link to it
+// Definition file taken from SPServices project on GitHub, look at way to use as depency and link to it
 export interface SPServicesOptions {
     /** If true, we'll cache the XML results with jQuery's .data() function */
     cacheXML?: boolean;

@@ -5,7 +5,7 @@ import {FormattedFieldValueService} from '../services/apFormattedFieldValueServi
 import {ListItem} from './apListItemFactory';
 
 
-var apFieldService: FieldService, apUtilityService: UtilityService, apFormattedFieldValueService: FormattedFieldValueService;
+let apFieldService: FieldService, apUtilityService: UtilityService, apFormattedFieldValueService: FormattedFieldValueService;
 
 export interface XMLFieldDefinition {
     ID?: string;
@@ -77,10 +77,10 @@ export interface FieldDefinition extends XMLFieldDefinition, FieldConfigurationO
  *     <dd>Simple text string but when processing the initial list definition, we
  *     look for a Choices XML element within the field definition and store each
  *     value.  We can then retrieve the valid Choices with one of the following:
- *     ```var fieldDefinition = LISTITEM.getFieldDefinition('CHOICE_FIELD_NAME');```
+ *     ```const fieldDefinition = LISTITEM.getFieldDefinition('CHOICE_FIELD_NAME');```
  *                                      or
- *     ```var fieldDefinition = MODELNAME.getFieldDefinition('CHOICE_FIELD_NAME');```
- *     ```var choices = fieldDefinition.Choices;```
+ *     ```const fieldDefinition = MODELNAME.getFieldDefinition('CHOICE_FIELD_NAME');```
+ *     ```const choices = fieldDefinition.Choices;```
  *     </dd>
  *     <dt>Counter</dt>
  *     <dd>Same as Integer. Generally used only for the internal ID field. Its integer
@@ -190,7 +190,7 @@ export class FieldDefinition implements FieldDefinition {
      * </pre>
      */
     getFormattedValue(listItem: ListItem<any>, options?: Object): string {
-        //Optionally provide a custom method to convert a field value into a formatted string
+        // Optionally provide a custom method to convert a field value into a formatted string
         return _.isFunction(this.formatter) ? this.formatter(listItem, this, options) :
             apFormattedFieldValueService
                 .getFormattedFieldValue(listItem[this.mappedName], this.objectType, options);

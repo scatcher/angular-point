@@ -1,4 +1,5 @@
 import * as _ from 'lodash';
+
 import {UtilityService} from './apUtilityService';
 import {FieldDefinition} from '../factories/apFieldFactory';
 import {ListItem} from '../factories/apListItemFactory';
@@ -13,8 +14,8 @@ import {Lookup} from '../factories/apLookupFactory';
  * @requires angularPoint.apUtilityService
  */
 export class EncodeService {
-    savedTimeZone;
     static $inject = ['apUtilityService', 'SPServices'];
+    savedTimeZone;
 
     constructor(private apUtilityService: UtilityService, private SPServices) {
 
@@ -26,8 +27,8 @@ export class EncodeService {
      * @returns {string}
      */
     choiceMultiToString(choices: string[]): string {
-        var str = '';
-        var delim = ';#';
+        const delim = ';#';
+        let str = '';
 
         if (choices.length > 0) {
             /** String is required to begin with deliminator */
@@ -63,7 +64,7 @@ export class EncodeService {
      * @returns {Array} [fieldName, fieldValue]
      */
     createValuePair(fieldDefinition: FieldDefinition, value: any): [string, string] {
-        var encodedValue = this.encodeValue(fieldDefinition.objectType, value);
+        const encodedValue = this.encodeValue(fieldDefinition.objectType, value);
         return [fieldDefinition.staticName, encodedValue];
     }
 
@@ -76,7 +77,7 @@ export class EncodeService {
      * @returns {string} Encoded value ready to be sent to the server.
      */
     encodeValue(fieldType: string, value: any): string {
-        var str: string = '';
+        let str: string = '';
         /** Only process if note empty, undefined, or null.  Allow false. */
         if (value !== '' && !_.isUndefined(value) && !_.isNull(value)) {
             switch (fieldType) {
@@ -95,10 +96,10 @@ export class EncodeService {
                     str = this.choiceMultiToString(value);
                     break;
                 case 'Boolean':
-                    str = value ? "1" : "0";
+                    str = value ? '1' : '0';
                     break;
                 case 'DateTime':
-                    //A string date in ISO8601 format, e.g., '2013-05-08T01:20:29Z-05:00'
+                    // A string date in ISO8601 format, e.g., '2013-05-08T01:20:29Z-05:00'
                     str = this.stringifySharePointDate(value);
                     break;
                 case 'JSON':
@@ -132,7 +133,7 @@ export class EncodeService {
      * [[fieldName1, fieldValue1], [fieldName2, fieldValue2], ...]
      */
     generateValuePairs(fieldDefinitions: FieldDefinition[], listItem: ListItem<any>): [string, string][] {
-        var pairs = [];
+        const pairs = [];
         _.each(fieldDefinitions, (field) => {
             /** Check to see if item contains data for this field */
             if (_.has(listItem, field.mappedName)) {
@@ -155,18 +156,18 @@ export class EncodeService {
      * @returns {string} ISO8601 date string.
      */
     stringifySharePointDate(date: Date | string): string {
-        var jsDate: Date;
+        let jsDate: Date;
         if (!_.isDate(date) && _.isString(date) && date.split('-').length === 3) {
             /** Date string formatted YYYY-MM-DD */
-            var dateComponents = date.split('-');
-            jsDate = new Date(parseInt(dateComponents[0]), parseInt(dateComponents[1]) - 1, parseInt(dateComponents[2]), 0, 0, 0);
+            const dateComponents = date.split('-');
+            jsDate = new Date(parseInt(dateComponents[0], 10), parseInt(dateComponents[1], 10) - 1, parseInt(dateComponents[2], 10), 0, 0, 0);
         } else if (!_.isDate(date)) {
             throw new Error('Invalid Date Provided: ' + date.toString());
         } else {
             jsDate = date;
         }
 
-        var dateString = '';
+        let dateString = '';
         dateString += jsDate.getFullYear();
         dateString += '-';
         dateString += this.apUtilityService.doubleDigit(jsDate.getMonth() + 1);
@@ -181,8 +182,8 @@ export class EncodeService {
         dateString += 'Z-';
 
         if (!this.savedTimeZone) {
-            //Get difference between UTC time and local time in minutes and convert to hours
-            //Store so we only need to do this once
+            // Get difference between UTC time and local time in minutes and convert to hours
+            // Store so we only need to do this once
             this.savedTimeZone = new Date().getTimezoneOffset() / 60;
         }
         dateString += this.apUtilityService.doubleDigit(this.savedTimeZone);
@@ -205,9 +206,9 @@ export class EncodeService {
      * @returns {string} Need to format string of id's in following format [ID0];#;#[ID1];#;#[ID1]
      */
     stringifySharePointMultiSelect(multiSelectValue: Lookup<any>[], idProperty = 'lookupId', valueProperty = 'lookupValue'): string {
-        var stringifiedValues = '';
-        var idProp = idProperty || 'lookupId';
-        var valProp = valueProperty || 'lookupValue';
+        let stringifiedValues = '';
+        const idProp = idProperty || 'lookupId';
+        const valProp = valueProperty || 'lookupValue';
         _.each(multiSelectValue, function (lookupObject, iteration) {
             /** Need to format string of id's in following format [ID0];#[VAL0];#[ID1];#[VAL1] */
             stringifiedValues += lookupObject[idProp] + ';#' + (lookupObject[valProp] || '');

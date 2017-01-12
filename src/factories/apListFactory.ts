@@ -18,7 +18,7 @@ export interface ListFieldMapping {
     [key: string]: {
         mappedName: string;
         objectType: string;
-    }
+    };
 }
 
 /**
@@ -89,21 +89,6 @@ export interface XMLList {
     WriteSecurity?: string;
 }
 
-// export interface List extends UninstantiatedList, XMLList {
-//     customFields: FieldDefinition[];
-//     environments: {[key: string]: string};
-//     fields: FieldDefinition[];
-//     getListId(): string;
-//     guid: string;
-//     identifyWebURL(): string;
-//     isReady: boolean;
-//     mapping?: ListFieldMapping;
-//     permissions?: IUserPermissionsObject;
-//     title: string;
-//     viewFields?: string;
-//     webURL?: string;
-// }
-
 /**
  * @ngdoc object
  * @name List
@@ -173,7 +158,7 @@ export class List implements UninstantiatedList, XMLList  {
     permissions: IUserPermissionsObject;
     title: string;
     viewFields: string;
-    WebFullUrl; //Only appears if extended from list definition
+    WebFullUrl; // Only appears if extended from list definition
     webURL: string;
 
     constructor(config: UninstantiatedList) {
@@ -192,7 +177,7 @@ export class List implements UninstantiatedList, XMLList  {
      * @param {object} list Reference to the list within a model.
      */
     extendFieldDefinitions() {
-        //Clear out
+        // Clear out
         this.viewFields = '';
 
         const apFieldFactory = $AP_INJECTOR.get<FieldFactory>('apFieldFactory');
@@ -203,8 +188,8 @@ export class List implements UninstantiatedList, XMLList  {
          * - create ows_ mapping
          * @param fieldDefinition
          */
-        var buildField = (fieldDefinition) => {
-            var field = new apFieldFactory.FieldDefinition(fieldDefinition);
+        const buildField = (fieldDefinition) => {
+            const field = new apFieldFactory.FieldDefinition(fieldDefinition);
             this.fields.push(field);
             this.viewFields += '<FieldRef Name="' + field.staticName + '"/>';
             this.mapping['ows_' + field.staticName] = {

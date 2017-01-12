@@ -2,7 +2,7 @@ import * as _ from 'lodash';
 import {CacheService} from '../services/apCacheService';
 import {DataService} from '../services/apDataService';
 import {ListFactory, UninstantiatedList, List} from './apListFactory';
-import {QueryFactory, IQuery, IQueryOptions} from './apQueryFactory';
+import {QueryFactory, Query, IQueryOptions} from './apQueryFactory';
 import {UtilityService} from '../services/apUtilityService';
 import {FieldService} from '../services/apFieldService';
 import {IndexedCacheFactory, IndexedCache} from './apIndexedCacheFactory';
@@ -26,20 +26,20 @@ export interface IUninitializedModel {
 }
 
 export interface QueriesContainer {
-    getAllListItems?: IQuery<any>;
-    [key: string]: IQuery<any>;
+    getAllListItems?: Query<any>;
+    [key: string]: Query<any>;
 }
 
 export interface IModelFactory {
     new <T extends ListItem<any>>(rawObject: Object): T;
 }
 
-interface IMockDataOptions {
+export interface MockDataOptions {
     permissionLevel?: string;
     quantity?: number;
 }
 
-interface ICreateListItemOptions<T extends ListItem<any>> {
+export interface CreateListItemOptions<T extends ListItem<any>> {
     buildValuePairs?: boolean;
     indexedCache?: IndexedCache<T>;
     getCache?: () => IndexedCache<T>;
@@ -145,7 +145,7 @@ interface ICreateListItemOptions<T extends ListItem<any>> {
      *              }
      *          });
      *
-     *          var model = this;
+     *          const model = this;
      *
      *          //Any other model setup
      *      }
@@ -233,9 +233,9 @@ export class Model {
         buildValuePairs = true,
         indexedCache = apIndexedCacheFactory.create({}),
         valuePairs = []
-    }: ICreateListItemOptions<T> = {}): ng.IPromise<T> {
+    }: CreateListItemOptions<T> = {}): ng.IPromise<T> {
 
-        var config = {
+        const config = {
             batchCmd: 'New',
             buildValuePairs,
             listName: this.getListId(),
@@ -261,10 +261,10 @@ export class Model {
         return apDataService.serviceWrapper(config)
             .then((response) => {
                 /** Online this should return an XML object */
-                let indexedCache = apDecodeService.processListItems(this, <any> config, response, config);
+                let iCache = apDecodeService.processListItems(this, <any>config, response, config);
 
                 /** Last listItem in cache is new because it has the highest id */
-                let newListItem = indexedCache.last();
+                let newListItem = iCache.last();
 
                 /** Optionally broadcast change event */
                 apUtilityService.registerChange(this, 'create', newListItem.id);
@@ -275,7 +275,7 @@ export class Model {
             .catch((err) => {
                 throw new Error('Unable to create new list item.  Err:' + err);
                 // return err;
-            })
+            });
 
     }
 
@@ -294,17 +294,19 @@ export class Model {
      * @returns {object} Newly created list item.
      */
     createEmptyItem<T extends ListItem<any>>(overrides?: Object): T {
-        var model = this;
-        var newItem = {};
-        _.each(model.list.customFields, (fieldDefinition) => {
+        const model = this;
+        const newItem = {};
+
+        model.list.customFields.forEach(fieldDefinition => {
             /** Create attributes for each non-readonly field definition */
             if (!fieldDefinition.readOnly) {
                 /** Create an attribute with the expected empty value based on field definition type */
                 newItem[fieldDefinition.mappedName] = apFieldService.getDefaultValueForType(fieldDefinition.objectType);
             }
         });
+
         /** Extend any values that should override the default empty values */
-        var rawObject = _.assign({}, newItem, overrides);
+        const rawObject = _.assign({}, newItem, overrides);
         return new model.factory<T>(rawObject);
     }
 
@@ -317,7 +319,6 @@ export class Model {
      * which resolves to the local cache after post processing entities with constructors.
      *
      * @param {string} [queryName=apConfig.defaultQueryName] A unique key to identify this query
-     * @param {object} [options] Pass options to the data service.
      * @returns {object} Promise that when resolves returns an array of list items which inherit from ListItem and
      * optionally go through a defined constructor on the model.
      *
@@ -330,11 +331,11 @@ export class Model {
          *  });
      * </pre>
      */
-    executeQuery<T extends ListItem<any>>(queryName?: string, options?: Object): ng.IPromise<IndexedCache<T>> {
-        var model = this;
-        var query = model.getQuery(queryName);
+    executeQuery<T extends ListItem<any>>(queryName?: string): ng.IPromise<IndexedCache<T>> {
+        const model = this;
+        let query = model.getQuery(queryName);
         if (query) {
-            return query.execute(options);
+            return query.execute();
         }
     }
 
@@ -349,8 +350,8 @@ export class Model {
      * @returns {ng.IPromise<Model>} Promise that is resolved with the extended model.
      */
     extendListMetadata(): ng.IPromise<Model> {
-        var model = this,
-            deferred = $q.defer()
+        const model = this,
+            deferred = $q.defer();
 
         /** Only request information if the list hasn't already been extended and is not currently being requested */
         if (!model.deferredListDefinition) {
@@ -400,25 +401,25 @@ export class Model {
      * @param {boolean} [options.staticValue=false] By default all mock data is dynamically created but if set,
      * this will cause static data to be used instead.
      */
-    generateMockData<T extends ListItem<any>>(options?: IMockDataOptions): T[] {
-        var mockData = [],
+    generateMockData<T extends ListItem<any>>(options?: MockDataOptions): T[] {
+        const mockData = [],
             model = this;
 
-        var defaults = {
+        const defaults = {
             quantity: 10,
             staticValue: false,
             permissionLevel: 'FullMask'
         };
 
         /** Extend defaults with any provided options */
-        var opts: IMockDataOptions = _.assign({}, defaults, options);
+        const opts: MockDataOptions = _.assign({}, defaults, options);
 
         _.times(opts.quantity, (count) => {
-            var mock = {
+            const mock = {
                 id: count + 1
             };
             /** Create an attribute with mock data for each field */
-            _.each(model.list.fields, (field: FieldDefinition) => {
+            model.list.fields.forEach(field => {
                 mock[field.mappedName] = field.getMockData(opts);
             });
 
@@ -446,7 +447,7 @@ export class Model {
      * </pre>
      */
     getAllListItems<T extends ListItem<any>>(): ng.IPromise<IndexedCache<T>> {
-        var model = this;
+        const model = this;
         return model.executeQuery('__getAllListItems');
     }
 
@@ -464,19 +465,20 @@ export class Model {
      *
      * @example
      * <pre>
-     * var primaryQueryCache = projectModel.getCache();
+     * const primaryQueryCache = projectModel.getCache();
      * </pre>
      *
      * <pre>
-     * var primaryQueryCache = projectModel.getCache('primary');
+     * const primaryQueryCache = projectModel.getCache('primary');
      * </pre>
      *
      * <pre>
-     * var namedQueryCache = projectModel.getCache('customQuery');
+     * const namedQueryCache = projectModel.getCache('customQuery');
      * </pre>
      */
     getCache<T extends ListItem<any>>(queryName?: string): IndexedCache<T> {
-        var model = this, query, cache;
+        const model = this;
+        let query, cache;
         query = model.getQuery(queryName);
         if (query && query.indexedCache) {
             cache = query.indexedCache;
@@ -493,7 +495,7 @@ export class Model {
      * @returns {IndexedCache<T>} All registered entities for this model.
      */
     getCachedEntities<T extends ListItem<any>>(): IndexedCache<T> {
-        var model = this;
+        const model = this;
         return apCacheService.getCachedEntities<T>(model.getListId());
     }
 
@@ -508,7 +510,7 @@ export class Model {
      * @returns {object} Returns either the requested listItem or undefined if it's not found.
      */
     getCachedEntity<T extends ListItem<any>>(listItemId: number): T {
-        var model = this;
+        const model = this;
         return apCacheService.getCachedEntity<T>(model.getListId(), listItemId);
     }
 
@@ -520,7 +522,7 @@ export class Model {
      * @description
      * Returns the field definition from the definitions defined in the custom fields array within a model.
      * <pre>
-     * var project = {
+     * const project = {
          *    title: 'Project 1',
          *    location: {
          *        lookupId: 5,
@@ -529,13 +531,13 @@ export class Model {
          * };
      *
      * //To get field metadata
-     * var locationDefinition = projectsService.getFieldDefinition('location');
+     * const locationDefinition = projectsService.getFieldDefinition('location');
      * </pre>
      * @param {string} fieldName Internal field name.
      * @returns {object} Field definition.
      */
     getFieldDefinition(fieldName: string): FieldDefinition {
-        var model = this;
+        const model = this;
         return _.find(model.list.fields, {mappedName: fieldName});
     }
 
@@ -584,13 +586,13 @@ export class Model {
      * </pre>
      */
     getListItemById<T extends ListItem<any>>(listItemId: number, options?: Object): ng.IPromise<T> {
-        var model = this,
+        const model = this,
             /** Unique Query Name */
             queryKey = 'GetListItemById-' + listItemId;
 
         /** Register a new Query if it doesn't already exist */
         if (!model.getQuery(queryKey)) {
-            var defaults = {
+            const defaults = {
                 name: queryKey,
                 operation: 'GetListItems',
                 rowLimit: 1,
@@ -605,7 +607,7 @@ export class Model {
                 '</Query>'
             };
             /** Allows us to override defaults */
-            var opts = _.assign({}, defaults, options);
+            const opts = _.assign({}, defaults, options);
             model.registerQuery(opts);
         }
 
@@ -641,19 +643,20 @@ export class Model {
      *
      * @example
      * <pre>
-     * var primaryQuery = projectModel.getQuery();
+     * const primaryQuery = projectModel.getQuery();
      * </pre>
      *
      * <pre>
-     * var primaryQuery = projectModel.getQuery('primary');
+     * const primaryQuery = projectModel.getQuery('primary');
      * </pre>
      *
      * <pre>
-     * var namedQuery = projectModel.getQuery('customQuery');
+     * const namedQuery = projectModel.getQuery('customQuery');
      * </pre>
      */
-    getQuery<T extends ListItem<any>>(queryName: string): IQuery<T> {
-        var model = this, query;
+    getQuery<T extends ListItem<any>>(queryName: string): Query<T> {
+        const model = this;
+        let query;
         if (_.isObject(model.queries[queryName])) {
             /** The named query exists */
             query = model.queries[queryName];
@@ -677,7 +680,7 @@ export class Model {
      * @returns {boolean} Returns evaluation.
      */
     isInitialised(): boolean {
-        var model = this;
+        const model = this;
         return _.isDate(model.lastServerUpdate);
     }
 
@@ -692,16 +695,20 @@ export class Model {
      * @param {object} queryOptions Initialization parameters.
      * @param {boolean} [queryOptions.force=false] Ignore cached data and force server query.
      * @param {number} [queryOptions.listItemID] Optionally request for a single list item by id.
-     * @param {boolean} [queryOptions.localStorage=false] Should we store data from this query in local storage to speed up requests in the future.
+     * @param {boolean} [queryOptions.localStorage=false] Should we store data from this query in local storage to speed up requests in the
+     * future.
      * @param {number} [queryOptions.localStorageExpiration=86400000] Set expiration in milliseconds - Defaults to a day
      * and if set to 0 doesn't expire.  Can be updated globally using apConfig.localStorageExpiration.
      * @param {string} [queryOptions.name=primary] The name that we use to identify this query.
      * @param {string} [queryOptions.operation=GetListItemChangesSinceToken] Optionally use 'GetListItems' to
      * receive a more efficient response, just don't have the ability to check for changes since the last time
-     * the query was called. Defaults to [GetListItemChangesSinceToken](http://msdn.microsoft.com/en-us/library/lists.lists.getlistitemchangessincetoken%28v=office.12%29.aspx)
-     * but for a smaller payload and faster response you can use [GetListItems](http: //spservices.codeplex.com/wikipage?title=GetListItems&referringTitle=Lists).
+     * the query was called. Defaults to
+     * [GetListItemChangesSinceToken](http://msdn.microsoft.com/en-us/library/lists.lists.getlistitemchangessincetoken%28v=office.12%29.aspx)
+     * but for a smaller payload and faster response you can use
+     * [GetListItems](http: //spservices.codeplex.com/wikipage?title=GetListItems&referringTitle=Lists).
      * @param {string} [queryOptions.query=Ordered ascending by ID] CAML query passed to SharePoint to control
-     * the data SharePoint returns. Josh McCarty has a good quick reference [here](http: //joshmccarty.com/2012/06/a-caml-query-quick-reference).
+     * the data SharePoint returns. Josh McCarty has a good quick reference
+     * [here](http: //joshmccarty.com/2012/06/a-caml-query-quick-reference).
      * @param {string} [queryOptions.queryOptions] SharePoint options xml as string.
      * <pre>
      * <QueryOptions>
@@ -712,7 +719,8 @@ export class Model {
      * </QueryOptions>
      * </pre>
      * @param {string} [queryOptions.rowLimit] The number of list items to return, 0 returns all list items.
-     * @param {boolean} [queryOptions.runOnce] Pertains to GetListItems only, optionally run a single time and return initial value for all future
+     * @param {boolean} [queryOptions.runOnce] Pertains to GetListItems only, optionally run a single time and return
+     * initial value for all future
      * calls.  Works well with data that isn't expected to change throughout the session but unlike localStorage or sessionStorage
      * the data doesn't persist between sessions.
      * @param {boolean} [queryOptions.sessionStorage=false] Use the browsers sessionStorage to cache the list items and uses the
@@ -781,7 +789,7 @@ export class Model {
      * // project id.  Let's assume this is on the projectTasksModel.
      * model.queryByProjectId(projectId) {
         *     // Unique query name
-        *     var queryKey = 'pid' + projectId;
+        *     const queryKey = 'pid' + projectId;
         *
         *     // Register project query if it doesn't exist
         *     if (!_.isObject(model.queries[queryKey])) {
@@ -815,10 +823,10 @@ export class Model {
         * };
      * </pre>
      */
-    registerQuery<T extends ListItem<any>>(queryOptions: IQueryOptions): IQuery<T> {
-        var model = this;
+    registerQuery<T extends ListItem<any>>(queryOptions: IQueryOptions): Query<T> {
+        const model = this;
 
-        var defaults = {
+        const defaults = {
             /** If name isn't set, assume this is the only model and designate as primary */
             name: ENV.defaultQueryName
         };
@@ -842,8 +850,8 @@ export class Model {
      * @example
      * Lets assume we're checking to see if a user has edit rights for a given list.
      * <pre>
-     * var userPermissions = tasksModel.resolvePermissions();
-     * var userCanEdit = userPermissions.EditListItems;
+     * const userPermissions = tasksModel.resolvePermissions();
+     * const userCanEdit = userPermissions.EditListItems;
      * </pre>
      * Example of what the returned object would look like
      * for a site admin.
@@ -886,7 +894,7 @@ export class Model {
      * </pre>
      */
     resolvePermissions(): IUserPermissionsObject {
-        var model = this,
+        const model = this,
             list = model.getList();
         if (list && list.permissions) {
             /** If request has been made to GetListItemChangesSinceToken we have already stored the
@@ -895,7 +903,7 @@ export class Model {
         } else if (model.getCachedEntities().first()) {
             /** Next option is to use the same permission as one of the
              * already cached list items for this model. */
-            return list.extendPermissionsFromListItem(model.getCachedEntities().first())
+            return list.extendPermissionsFromListItem(model.getCachedEntities().first());
         } else {
             window.console.error('Attempted to resolve permissions of a model that hasn\'t been initialized.', model);
             return new BasePermissionObject();
@@ -913,16 +921,16 @@ export class Model {
      * @returns {boolean} Evaluation of validity.
      */
     validateEntity<T extends ListItem<any>>(listItem: T): boolean {
-        var valid = true,
-            model = this;
+        const model = this;
+        let valid = true;
 
-        var checkObject = (fieldValue) => {
+        const checkObject = (fieldValue) => {
             return _.isObject(fieldValue) && _.isNumber(fieldValue.lookupId);
         };
 
-        _.each(model.list.customFields, (fieldDefinition: FieldDefinition) => {
-            var fieldValue = listItem[fieldDefinition.mappedName];
-            var fieldDescriptor = '"' + fieldDefinition.objectType + '" value.';
+        model.list.customFields.forEach(fieldDefinition => {
+            const fieldValue = listItem[fieldDefinition.mappedName];
+            const fieldDescriptor = '"' + fieldDefinition.objectType + '" value.';
             /** Only evaluate required fields */
             if ((fieldDefinition.required || fieldDefinition.Required) && valid) {
                 switch (fieldDefinition.objectType) {
@@ -962,6 +970,7 @@ export class Model {
                 return false;
             }
         });
+
         return valid;
     }
 }

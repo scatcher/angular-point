@@ -1,6 +1,6 @@
-import {auto} from 'angular';
+import { auto } from 'angular';
 import * as _ from 'lodash';
-import {DecodeService} from './apDecodeService';
+import { DecodeService } from './apDecodeService';
 
 
 /**
@@ -29,7 +29,7 @@ export class XMLToJSONService {
      * This method for finding specific nodes in the returned XML was developed by Steve Workman. See his blog post
      * http://www.steveworkman.com/html5-2/javascript/2011/improving-javascript-xml-node-finding-performance-by-2000/
      * for performance details.
-     * @returns {NodeList} List of filtered nodes.
+     * @returns {NodeList} List of fltered nodes.
      */
     filterNodes(xmlObject: Element, name: string): NodeList {
 
@@ -42,7 +42,7 @@ export class XMLToJSONService {
             return xmlObject.getElementsByTagName(name);
         }
         // Convert to jQuery object if not already
-        // var jQueryObject: JQuery = xmlObject instanceof jQuery ? xmlObject : jQuery(xmlObject);
+        // const jQueryObject: JQuery = xmlObject instanceof jQuery ? xmlObject : jQuery(xmlObject);
 
         // return jQueryObject.find('*').filter(function () {
         // return xmlObject.getElementsByTagName(name);
@@ -66,21 +66,21 @@ export class XMLToJSONService {
      */
     parse(xmlNodeSet: NodeList, options?: IParseOptions): Object[] {
         //Need to use injector because apDecode service also relies on this service so we'd otherwise have a circular dependency.
-        var apDecodeService = this.$injector.get<DecodeService>('apDecodeService');
-        var defaults = {
+        const apDecodeService = this.$injector.get<DecodeService>('apDecodeService');
+        const defaults = {
             includeAllAttrs: false, // If true, return all attributes, regardless whether they are in the mapping
             mapping: {}, // columnName: mappedName: "mappedName", objectType: "objectType"
             removeOws: true, // Specifically for GetListItems, if true, the leading ows_ will be stripped off the field name
             sparse: false // If true, empty ("") values will not be returned
         };
 
-        var opts: IParseOptions = _.assign({}, defaults, options);
+        const opts: IParseOptions = _.assign({}, defaults, options);
 
-        var jsonObjectArray = [];
+        const jsonObjectArray = [];
 
         _.each(xmlNodeSet, (node: Element | any) => {
-            var row = {};
-            var rowAttrs = node.attributes;
+            const row = {};
+            const rowAttrs = node.attributes;
 
             if (!opts.sparse) {
                 // Bring back all mapped columns, even those with no value
@@ -88,10 +88,14 @@ export class XMLToJSONService {
             }
 
             _.each(rowAttrs, (rowAttribute) => {
-                var attributeName = rowAttribute.name;
-                var columnMapping = opts.mapping[attributeName];
-                var objectName = typeof columnMapping !== "undefined" ? columnMapping.mappedName : opts.removeOws ? attributeName.split("ows_")[1] : attributeName;
-                var objectType = typeof columnMapping !== "undefined" ? columnMapping.objectType : undefined;
+                const attributeName = rowAttribute.name;
+                const columnMapping = opts.mapping[attributeName];
+
+                const objectName = typeof columnMapping !== 'undefined' ?
+                    columnMapping.mappedName : opts.removeOws ? attributeName.split('ows_')[1] : attributeName;
+
+                const objectType = typeof columnMapping !== 'undefined' ? columnMapping.objectType : undefined;
+
                 if (opts.includeAllAttrs || columnMapping !== undefined) {
                     row[objectName] = apDecodeService.parseStringValue(rowAttribute.value, objectType);
                 }

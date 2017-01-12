@@ -1,7 +1,5 @@
 import * as _ from 'lodash';
 import {Lookup} from '../factories/apLookupFactory';
-let service: FormattedFieldValueService;
-let $filter: ng.IFilterService;
 
 /**
  * @ngdoc service
@@ -12,10 +10,7 @@ let $filter: ng.IFilterService;
 export class FormattedFieldValueService {
     static $inject = ['$filter'];
 
-    constructor(_$filter_) {
-        service = this;
-        $filter = _$filter_;
-    }
+    constructor(private $filter) { }
 
     /**
      * @ngdoc function
@@ -60,40 +55,40 @@ export class FormattedFieldValueService {
      * </pre>
      * @returns {string} Stringified property on the object based on the field type.
      */
-    getFormattedFieldValue(prop: any, propertyType: string = 'String', options: {delim?: string; dateFormat?: string} = {}): string {
+    getFormattedFieldValue(prop: any, propertyType = 'String', options: {delim?: string; dateFormat?: string} = {}): string {
 
         let str: string = '';
         /** Only process if prop is defined */
         if (prop) {
             switch (propertyType) {
                 case 'Boolean':
-                    str = service.stringifyBoolean(prop);
+                    str = this.stringifyBoolean(prop);
                     break;
                 case 'Calculated': // Can be DateTime, Float, or String
-                    str = service.stringifyCalc(prop);
+                    str = this.stringifyCalc(prop);
                     break;
                 case 'Lookup':
                 case 'User':
-                    str = service.stringifyLookup(prop);
+                    str = this.stringifyLookup(prop);
                     break;
                 case 'DateTime':
-                    str = service.stringifyDate(prop, options.dateFormat);
+                    str = this.stringifyDate(prop, options.dateFormat);
                     break;
                 case 'Integer':
                 case 'Number':
                 case 'Float':
                 case 'Counter':
-                    str = service.stringifyNumber(prop);
+                    str = this.stringifyNumber(prop);
                     break;
                 case 'Currency':
-                    str = service.stringifyCurrency(prop);
+                    str = this.stringifyCurrency(prop);
                     break;
                 case 'MultiChoice':
-                    str = service.stringifyMultiChoice(prop, options.delim);
+                    str = this.stringifyMultiChoice(prop, options.delim);
                     break;
                 case 'UserMulti':
                 case 'LookupMulti':
-                    str = service.stringifyMultiLookup(prop, options.delim);
+                    str = this.stringifyMultiLookup(prop, options.delim);
                     break;
                 default:
                     str = prop;
@@ -123,11 +118,11 @@ export class FormattedFieldValueService {
         if (prop.length === 0) {
             return '';
         } else if (_.isNumber(prop)) {
-            return service.getFormattedFieldValue(prop, 'Number');
+            return this.getFormattedFieldValue(prop, 'Number');
         } else if (_.isDate(prop)) {
-            return service.getFormattedFieldValue(prop, 'DateTime');
+            return this.getFormattedFieldValue(prop, 'DateTime');
         } else {
-            return service.getFormattedFieldValue(prop, 'Text');
+            return this.getFormattedFieldValue(prop, 'Text');
         }
     }
 
@@ -141,7 +136,7 @@ export class FormattedFieldValueService {
      * @returns {string} Stringified currency.
      */
     stringifyCurrency(prop: number): string {
-        return $filter('currency')(prop, '$');
+        return this.$filter('currency')(prop, '$');
     }
 
     /**
@@ -158,7 +153,7 @@ export class FormattedFieldValueService {
     stringifyDate(prop: Date, dateFormat: string = 'short'): string {
         let str = '';
         if (_.isDate(prop)) {
-            str = dateFormat === 'json' ? prop.toJSON() : $filter('date')(prop, dateFormat);
+            str = dateFormat === 'json' ? prop.toJSON() : this.$filter('date')(prop, dateFormat);
         }
         return str;
     }
@@ -213,7 +208,7 @@ export class FormattedFieldValueService {
      * Converts an array of selected lookup values into a single concatenated string.
      * @returns {string} Concatenated string representation.
      */
-    stringifyMultLookup(prop: Lookup<any>[], delim = '; '): string {
+    stringifyMultiLookup(prop: Lookup<any>[], delim = '; '): string {
         let str = '';
         _.each(prop, function (val, valIndex) {
 
@@ -222,7 +217,7 @@ export class FormattedFieldValueService {
                 str += delim;
             }
 
-            str += service.stringifyLookup(val);
+            str += this.stringifyLookup(val);
         });
         return str;
     }

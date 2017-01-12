@@ -9,12 +9,12 @@ import {Model} from './apModelFactory';
 import {DefaultListItemQueryOptions} from '../constants/apDefaultListItemQueryOptions';
 import {ENV} from '../angular-point';
 
-var $q: ng.IQService, apIndexedCacheFactory: IndexedCacheFactory, apDefaultListItemQueryOptions,
+let $q: ng.IQService, apIndexedCacheFactory: IndexedCacheFactory, apDefaultListItemQueryOptions,
     apDataService: DataService, apDecodeService: DecodeService, apLogger: Logger;
 
 export interface IQueryOptions {
     force?: boolean;
-    //Only relevant if requesting a single item
+    // Only relevant if requesting a single item
     listItemID?: number;
     localStorage?: boolean;
     localStorageExpiration?: number;
@@ -23,7 +23,7 @@ export interface IQueryOptions {
     operation?: string;
     query?: string;
     queryOptions?: string;
-    //Returns all items if set to 0
+    // Returns all items if set to 0
     rowLimit?: number;
     runOnce?: boolean;
     sessionStorage?: boolean;
@@ -37,37 +37,6 @@ export interface IExecuteQueryOptions {
     mapping?: ListFieldMapping;
     target?: IndexedCache<any>;
     [key: string]: any;
-}
-
-export interface IQuery<T extends ListItem<any>> {
-    cacheXML?: boolean;
-    changeToken?: string;
-    execute(options?: Object): ng.IPromise<IndexedCache<T>>;
-    force: boolean;
-    getCache(): IndexedCache<T>;
-    getLocalStorage(): LocalStorageQuery;
-    getModel(): Model;
-    hydrateFromLocalStorage(localStorageQuery: LocalStorageQuery): void;
-    indexedCache: IndexedCache<T>;
-    initialized: ng.IDeferred<IndexedCache<T>>
-    lastRun: Date;
-    listItemID?: number;
-    listName: string;
-    localStorage: boolean;
-    localStorageExpiration: number;
-    name: string;
-    negotiatingWithServer: boolean;
-    // offlineXML?: string;
-    operation?: string;
-    promise?: ng.IPromise<IndexedCache<T>>;
-    query?: string;
-    queryOptions?: IQueryOptions;
-    rowLimit?: number;
-    runOnce: boolean;
-    saveToLocalStorage(): void;
-    sessionStorage: boolean;
-    viewFields: string;
-    webURL?: string;
 }
 
 export class LocalStorageQuery {
@@ -86,10 +55,10 @@ export class LocalStorageQuery {
         if (_.isNaN(localStorage)) {
             throw new Error('Local storage expiration is required to be a numeric value and instead is ' + localStorageExpiration);
         } else if (localStorageExpiration === 0) {
-            //No expiration
+            // No expiration
             hasExpired = false;
         } else {
-            //Evaluate if cache has exceeded expiration
+            // Evaluate if cache has exceeded expiration
             hasExpired = this.lastRun.getMilliseconds() + localStorageExpiration <= new Date().getMilliseconds();
         }
         return hasExpired;
@@ -110,16 +79,20 @@ export class LocalStorageQuery {
  * @param {object} queryOptions Initialization parameters.
  * @param {boolean} [queryOptions.force=false] Ignore cached data and force server query.
  * @param {number} [queryOptions.listItemID] Optionally request for a single list item by id.
- * @param {boolean} [queryOptions.localStorage=false] Should we store data from this query in local storage to speed up requests in the future.
+ * @param {boolean} [queryOptions.localStorage=false] Should we store data from this query in local storage to speed up requests
+ * in the future.
  * @param {number} [queryOptions.localStorageExpiration=86400000] Set expiration in milliseconds - Defaults to a day
  * and if set to 0 doesn't expire.  Can be updated globally using apConfig.localStorageExpiration.
  * @param {string} [queryOptions.name=primary] The name that we use to identify this query.
  * @param {string} [queryOptions.operation=GetListItemChangesSinceToken] Optionally use 'GetListItems' to
  * receive a more efficient response, just don't have the ability to check for changes since the last time
- * the query was called. Defaults to [GetListItemChangesSinceToken](http://msdn.microsoft.com/en-us/library/lists.lists.getlistitemchangessincetoken%28v=office.12%29.aspx)
- * but for a smaller payload and faster response you can use [GetListItems](http: //spservices.codeplex.com/wikipage?title=GetListItems&referringTitle=Lists).
+ * the query was called. Defaults to
+ * [GetListItemChangesSinceToken](http://msdn.microsoft.com/en-us/library/lists.lists.getlistitemchangessincetoken%28v=office.12%29.aspx)
+ * but for a smaller payload and faster response you can use
+ * [GetListItems](http: //spservices.codeplex.com/wikipage?title=GetListItems&referringTitle=Lists).
  * @param {string} [queryOptions.query=Ordered ascending by ID] CAML query passed to SharePoint to control
- * the data SharePoint returns. Josh McCarty has a good quick reference [here](http: //joshmccarty.com/2012/06/a-caml-query-quick-reference).
+ * the data SharePoint returns. Josh McCarty has a good quick reference
+ * [here](http: //joshmccarty.com/2012/06/a-caml-query-quick-reference).
  * @param {string} [queryOptions.queryOptions] SharePoint options xml as string.
  * <pre>
  * <QueryOptions>
@@ -130,7 +103,8 @@ export class LocalStorageQuery {
  * </QueryOptions>
  * </pre>
  * @param {string} [queryOptions.rowLimit] The number of list items to return, 0 returns all list items.
- * @param {boolean} [queryOptions.runOnce] Pertains to GetListItems only, optionally run a single time and return initial value for all future
+ * @param {boolean} [queryOptions.runOnce] Pertains to GetListItems only, optionally run a single time and return initial
+ * value for all future
  * calls.  Works well with data that isn't expected to change throughout the session but unlike localStorage or sessionStorage
  * the data doesn't persist between sessions.
  * @param {boolean} [queryOptions.sessionStorage=false] Use the browsers sessionStorage to cache the list items and uses the
@@ -161,7 +135,7 @@ export class LocalStorageQuery {
      * });
  * </pre>
  */
-export class Query<T extends ListItem<any>> implements IQuery<T> {
+export class Query<T extends ListItem<any>>{
     /** Very memory intensive to enable cacheXML which is disabled by default*/
     cacheXML = false;
     /** Reference to the most recent query when performing GetListItemChangesSinceToken */
@@ -213,11 +187,11 @@ export class Query<T extends ListItem<any>> implements IQuery<T> {
 
     constructor(queryOptions: IQueryOptions, model: Model) {
         let list = model.getList();
-        //Use the default viewFields from the model
+        // Use the default viewFields from the model
         this.viewFields = list.viewFields;
         this.listName = model.getListId();
 
-        //Allow all values on query to be overwritten by queryOptions object
+        // Allow all values on query to be overwritten by queryOptions object
         _.assign(this, queryOptions);
 
         /** Allow the model to be referenced at a later time */
@@ -236,9 +210,9 @@ export class Query<T extends ListItem<any>> implements IQuery<T> {
      * @returns {ng.IPromise<IndexedCache<T>>} Promise that resolves with the cache for this query.
      */
     execute(): ng.IPromise<IndexedCache<T>> {
-        var query = this;
-        var model = query.getModel();
-        var deferred = $q.defer();
+        const query = this;
+        const model = query.getModel();
+        const deferred = $q.defer();
 
         /** Return existing promise if request is already underway or has been previously executed in the past
          * 1/10th of a second */
@@ -269,14 +243,14 @@ export class Query<T extends ListItem<any>> implements IQuery<T> {
             if (!query.force && localStorageData) {
                 switch (this.operation) {
                     case 'GetListItemChangesSinceToken':
-                        //Only run the first time, after that the token/data are already in sync
+                        // Only run the first time, after that the token/data are already in sync
                         if (!query.hasExecuted) {
                             query.hydrateFromLocalStorage(localStorageData);
                         }
                         break;
                     case 'GetListItems':
                         query.hydrateFromLocalStorage(localStorageData);
-                        //Use cached data if we have data already available
+                        // Use cached data if we have data already available
                         makeRequest = this.getCache().size === 0;
                 }
             }
@@ -356,28 +330,28 @@ export class Query<T extends ListItem<any>> implements IQuery<T> {
      */
     hydrateFromLocalStorage(localStorageQuery: LocalStorageQuery): void {
         if (localStorageQuery.hasExpired(this.localStorageExpiration)) {
-            //Don't continue and purge if data has exceeded expiration
+            // Don't continue and purge if data has exceeded expiration
             localStorageQuery.removeItem();
         } else {
             const listItemProvider = apDecodeService.createListItemProvider<T>(this.getModel(), this, this.getCache());
             const fieldDefinitions = this.getList().fields;
 
-            //Identify all DateTime JSON fields so we can cast as Date objects
+            // Identify all DateTime JSON fields so we can cast as Date objects
             const dateTimeProperties = fieldDefinitions
                 .filter(fieldDefinition => fieldDefinition.objectType === 'DateTime')
                 .map(fieldDefinition => fieldDefinition.mappedName);
 
-            //Hydrate each raw list item and add to cache
+            // Hydrate each raw list item and add to cache
             _.each(localStorageQuery.indexedCache, (jsonObject: Object) => {
                 let hydratedObject = this.hydrateJSONDates(jsonObject, dateTimeProperties);
                 listItemProvider(hydratedObject);
             });
 
-            //Set the last run date
+            // Set the last run date
             this.lastRun = localStorageQuery.lastRun;
-            //Store the change token
+            // Store the change token
             this.changeToken = localStorageQuery.changeToken;
-            //Resolve initial query promise in case any other concurrent requests are waiting for the data
+            // Resolve initial query promise in case any other concurrent requests are waiting for the data
             this.initialized.resolve(this.getCache());
         }
     }
@@ -391,7 +365,7 @@ export class Query<T extends ListItem<any>> implements IQuery<T> {
      * @returns {Object} JSON object with date strings converted to Date objects.
      */
     hydrateJSONDates(jsonObject: Object, dateTimeProperties: string[]): Object {
-        _.each(dateTimeProperties, (prop: string) => {
+        dateTimeProperties.forEach(prop => {
             if (_.isString(jsonObject[prop])) {
                 jsonObject[prop] = new Date(jsonObject[prop]);
             }
@@ -412,7 +386,7 @@ export class Query<T extends ListItem<any>> implements IQuery<T> {
         let cache = this.getCache();
 
         /** Set flag if this if the first time this query has been run */
-        var firstRunQuery = _.isNull(query.lastRun);
+        const firstRunQuery = _.isNull(query.lastRun);
 
         if (firstRunQuery) {
             /** Promise resolved the first time query is completed */
@@ -420,7 +394,7 @@ export class Query<T extends ListItem<any>> implements IQuery<T> {
         }
 
         /** Set list permissions if not already set */
-        var list = model.getList();
+        const list = model.getList();
         if (!list.permissions && results.first()) {
             /** Query needs to have returned at least 1 item so we can use permMask */
             list.extendPermissionsFromListItem(results.first());
@@ -448,9 +422,8 @@ export class Query<T extends ListItem<any>> implements IQuery<T> {
      * for data already residing on the users machine.
      */
     saveToLocalStorage(): void {
-        //Don't use storage when running offline
-        if (!ENV.production) return;
-
+        // Don't use storage when running offline
+        if (!ENV.production) { return; }
         let model = this.getModel();
         let store = {
             changeToken: this.changeToken,
@@ -460,7 +433,7 @@ export class Query<T extends ListItem<any>> implements IQuery<T> {
         let stringifiedQuery = JSON.stringify(store);
         let storageType = this.localStorage ? 'local' : 'session';
         let localStorageKey = this.getLocalStorageKey();
-        //Use try/catch in case we've exceeded browser storage limit (typically 5MB)
+        // Use try/catch in case we've exceeded browser storage limit (typically 5MB)
         try {
             if (this.localStorage) {
                 localStorage.setItem(localStorageKey, stringifiedQuery);
@@ -482,7 +455,7 @@ export class Query<T extends ListItem<any>> implements IQuery<T> {
             } else {
                 sessionStorage.clear();
             }
-            //Disable storage for remainder of session to prevent throwing additional errors
+            // Disable storage for remainder of session to prevent throwing additional errors
             this.localStorage = false;
             this.sessionStorage = false;
         }
@@ -490,7 +463,7 @@ export class Query<T extends ListItem<any>> implements IQuery<T> {
 
     /** They key we use for local storage */
     private getLocalStorageKey() {
-        var model = this.getModel();
+        const model = this.getModel();
         return model.getListId() + '.query.' + this.name;
     }
 
@@ -506,7 +479,7 @@ export class Query<T extends ListItem<any>> implements IQuery<T> {
                 }
 
                 /** Convert the XML into JS objects */
-                var entities = apDecodeService.processListItems<T>(model, query, responseXML, {target: cache});
+                const entities = apDecodeService.processListItems<T>(model, query, responseXML, {target: cache});
 
                 /** Set date time to allow for time based updates */
                 query.lastRun = new Date();
@@ -528,8 +501,8 @@ export class Query<T extends ListItem<any>> implements IQuery<T> {
  * @requires angularPoint.apConfig
  */
 export class QueryFactory {
-    Query = Query;
     static $inject = ['$q', 'apDataService', 'apDefaultListItemQueryOptions', 'apIndexedCacheFactory', 'apDecodeService', 'apLogger'];
+    Query = Query;
 
     constructor(_$q_, _apDataService_, _apDefaultListItemQueryOptions_, _apIndexedCacheFactory_, _apDecodeService_, _apLogger_) {
 
@@ -550,7 +523,7 @@ export class QueryFactory {
      * @description
      * Instantiates and returns a new Query.
      */
-    create<T extends ListItem<any>>(config, model): IQuery<T> {
+    create<T extends ListItem<any>>(config, model) {
         return new Query<T>(config, model);
     }
 }

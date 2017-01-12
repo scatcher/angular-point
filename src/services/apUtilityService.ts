@@ -2,18 +2,16 @@ import * as _ from 'lodash';
 // Split values like 1;#value into id and value
 import {IUserPermissionsObject} from '../constants/apPermissionObject';
 
-class SplitIndex {
+export class SplitIndex {
     id: number;
     value: string;
 
     constructor(str) {
-        var spl = str.split(';#');
+        const spl = str.split(';#');
         this.id = parseInt(spl[0], 10);
         this.value = spl[1];
     }
 }
-
-// var service: UtilityService, $q, $timeout;
 
 /**
  * @ngdoc service
@@ -24,15 +22,10 @@ class SplitIndex {
  * @requires angularPoint.apConfig
  */
 export class UtilityService {
-    SplitIndex = SplitIndex;
     static $inject = ['$q', '$timeout'];
-
-    constructor(private $q, private $timeout) {
-        // service = this;
-        // $q = _$q_;
-        // $timeout = _$timeout_;
-
-    }
+    SplitIndex = SplitIndex;
+    isGuid = isGuid;
+    constructor(private $q, private $timeout) { }
 
     /**
      * @ngdoc function
@@ -124,11 +117,11 @@ export class UtilityService {
         let permissionMask = null;
 
         const permissions = {
-            //General
+            // General
             EmptyMask: '0x0000000000000000',
             FullMask: '0x7FFFFFFFFFFFFFFF',
 
-            //List and document permissions
+            // List and document permissions
             ViewListItems: '0x0000000000000001',
             AddListItems: '0x0000000000000002',
             EditListItems: '0x0000000000000004',
@@ -142,7 +135,7 @@ export class UtilityService {
             ManageLists: '0x0000000000000800',
             ViewFormPages: '0x0000000000001000',
 
-            //Web level permissions
+            // Web level permissions
             Open: '0x0000000000010000',
             ViewPages: '0x0000000000020000',
             AddAndCustomizePages: '0x0000000000040000',
@@ -164,7 +157,7 @@ export class UtilityService {
             CreateAlerts: '0x0000008000000000',
             EditMyUserInfo: '0x0000010000000000',
 
-            //Special Permissions
+            // Special Permissions
             EnumeratePermissions: '0x4000000000000000'
         };
 
@@ -244,7 +237,6 @@ export class UtilityService {
      * @param {any} value Checks if value is a GUID
      * @returns {boolean} Is the value a GUID.
      */
-    isGuid = isGuid;
 
     /**
      * @ngdoc function
@@ -417,7 +409,7 @@ export class UtilityService {
         const mm = date.getMonth() + 1;
         const dd = date.getDate();
         /** Add leading 0's to month and day if necessary */
-        return parseInt(yyyy + this.doubleDigit(mm) + this.doubleDigit(dd));
+        return parseInt(yyyy + this.doubleDigit(mm) + this.doubleDigit(dd), 10);
     }
 
     xmlToString(xmlData) {

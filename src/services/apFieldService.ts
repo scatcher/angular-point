@@ -2,12 +2,6 @@ let service: FieldService;
 let uniqueCount = 0;
 
 
-// interface IFieldType {
-//     defaultValue: string;
-//     dynamicMock: Function;
-//     staticMock: any;
-// }
-
 /**
  * @ngdoc service
  * @name angularPoint.apFieldService
@@ -21,7 +15,6 @@ export class FieldService {
         service = this;
         this.fieldTypes = getFieldTypes()
     }
-
 
     /**
      * @ngdoc function
@@ -150,47 +143,38 @@ function getFieldTypes() {
         Text: {
             defaultValue: '',
             staticMock: 'Test String',
-            // dynamicMock: randomString
         },
         Note: {
             defaultValue: '',
             staticMock: 'This is a sentence.',
-            // dynamicMock: randomParagraph
         },
         Boolean: {
             defaultValue: null,
             staticMock: true,
-            // dynamicMock: randomBoolean
         },
         Calculated: {
             defaultValue: null,
             staticMock: 'float;#123.45',
-            // dynamicMock: randomCalc
         },
         Choice: {
             defaultValue: '',
             staticMock: 'My Choice',
-            // dynamicMock: randomString
         },
         Counter: {
             defaultValue: null,
             staticMock: getUniqueCounter(),
-            // dynamicMock: getUniqueCounter
         },
         Currency: {
             defaultValue: null,
             staticMock: 120.50,
-            // dynamicMock: randomCurrency
         },
         DateTime: {
             defaultValue: null,
             staticMock: new Date(2014, 5, 4, 11, 33, 25),
-            // dynamicMock: randomDate
         },
         Integer: {
             defaultValue: null,
             staticMock: 14,
-            // dynamicMock: randomInteger
         },
         JSON: {
             defaultValue: '',
@@ -198,12 +182,10 @@ function getFieldTypes() {
                 {id: 1, title: 'test'},
                 {id: 2}
             ],
-            // dynamicMock: randomString
         },
         Lookup: {
             defaultValue: '',
             staticMock: {lookupId: 49, lookupValue: 'Static Lookup'},
-            // dynamicMock: randomLookup
         },
         LookupMulti: {
             defaultValue: [],
@@ -211,22 +193,18 @@ function getFieldTypes() {
                 {lookupId: 50, lookupValue: 'Static Multi 1'},
                 {lookupId: 51, lookupValue: 'Static Multi 2'}
             ],
-            // dynamicMock: randomLookupMulti
         },
         Mask: {
             defaultValue: service.mockPermMask(),
             staticMock: service.mockPermMask(),
-            // dynamicMock: service.mockPermMask
         },
         MultiChoice: {
             defaultValue: [],
             staticMock: ['A Good Choice', 'A Bad Choice'],
-            // dynamicMock: randomStringArray
         },
         User: {
             defaultValue: '',
             staticMock: {lookupId: 52, lookupValue: 'Static User'},
-            // dynamicMock: randomUser
         },
         UserMulti: {
             defaultValue: [],
@@ -234,7 +212,6 @@ function getFieldTypes() {
                 {lookupId: 53, lookupValue: 'Static User 1'},
                 {lookupId: 54, lookupValue: 'Static User 2'}
             ],
-            // dynamicMock: randomUserMulti
         }
     }
 }
@@ -243,73 +220,3 @@ function getUniqueCounter() {
     uniqueCount++;
     return uniqueCount;
 }
-
-// function randomBoolean() {
-//     return chance.bool();
-// }
-//
-// function randomCalc() {
-//     return 'float;#' + chance.floating({min: 0, max: 10000});
-// }
-//
-// function randomString() {
-//     return chance.word() + ' ' + chance.word();
-// }
-//
-// function randomStringArray() {
-//     var randomArr = [];
-//     /** Create a random (1-4) number of strings and add to array */
-//     _.times(_.random(1, 4), function () {
-//         randomArr.push(randomString());
-//     });
-//     return randomArr;
-// }
-//
-// function randomParagraph() {
-//     return chance.paragraph();
-// }
-//
-// function randomCurrency() {
-//     return parseInt(_.random(10000000, true) * 100) / 100;
-// }
-//
-// function randomDate() {
-//     return chance.date();
-// }
-//
-// function randomInteger() {
-//     return chance.integer();
-// }
-//
-//
-// function randomLookup() {
-//     return {
-//         lookupId: getUniqueCounter(),
-//         lookupValue: chance.word()
-//     };
-// }
-//
-// function randomUser() {
-//     return {
-//         lookupId: getUniqueCounter(),
-//         lookupValue: chance.name()
-//     };
-// }
-//
-// function randomLookupMulti() {
-//     var mockData = [];
-//     _.each(_.random(10), function () {
-//         mockData.push(randomLookup());
-//     });
-//     return mockData;
-// }
-//
-// function randomUserMulti() {
-//     var mockData = [];
-//     _.each(_.random(10), function () {
-//         mockData.push(randomUser());
-//     });
-//     return mockData;
-// }
-    
-    

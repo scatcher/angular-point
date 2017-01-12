@@ -2,22 +2,22 @@ import * as _ from 'lodash';
 import {ListItem} from '../factories/apListItemFactory';
 import {IndexedCache, IndexedCacheFactory} from '../factories/apIndexedCacheFactory';
 import {Model} from '../factories/apModelFactory';
-import {IQuery} from '../factories/apQueryFactory';
+import {Query} from '../factories/apQueryFactory';
 import {isGuid} from './apUtilityService';
 
-export interface ICacheService {
-    deleteEntity(listId: string, entityId: number): void;
-    getCachedEntities<T extends ListItem<any>>(listId: string): IndexedCache<T>;
-    getCachedEntity<T extends ListItem<any>>(listId: string, entityId: number): T;
-    getEntity<T extends ListItem<any>>(listId: string, entityId: number): ng.IPromise<T>;
-    getListId(keyString: string): string;
-    getListIdFromListName(name: string): string;
-    getModel(listId: string): Model;
-    getModelCache(listId: string): ModelCache;
-    registerEntity<T extends ListItem<any>>(entity: T, targetCache?: IndexedCache<T>): T;
-    registerModel(model: Model): void;
-    removeEntityById(listId: string, entityId: number): void;
-}
+// export interface ICacheService {
+//     deleteEntity(listId: string, entityId: number): void;
+//     getCachedEntities<T extends ListItem<any>>(listId: string): IndexedCache<T>;
+//     getCachedEntity<T extends ListItem<any>>(listId: string, entityId: number): T;
+//     getEntity<T extends ListItem<any>>(listId: string, entityId: number): ng.IPromise<T>;
+//     getListId(keyString: string): string;
+//     getListIdFromListName(name: string): string;
+//     getModel(listId: string): Model;
+//     getModelCache(listId: string): ModelCache;
+//     registerEntity<T extends ListItem<any>>(entity: T, targetCache?: IndexedCache<T>): T;
+//     registerModel(model: Model): void;
+//     removeEntityById(listId: string, entityId: number): void;
+// }
 let service: CacheService, $q: ng.IQService, $log: ng.ILogService, apIndexedCacheFactory: IndexedCacheFactory;
 
 /**
@@ -145,7 +145,7 @@ export class ModelCache {
  * Stores a reference for all list items based on list GUID and list item id.  Allows us to then register promises
  *     that resolve once a requested list item is registered in the future.
  */
-export class CacheService implements ICacheService {
+export class CacheService {
     static $inject = ['$q', '$log', 'apIndexedCacheFactory'];
     entityCache = entityCache;
 
@@ -171,7 +171,7 @@ export class CacheService implements ICacheService {
         let entityTypeKey = this.getListId(listId);
         this.removeEntityById(entityTypeKey, entityId);
         let model = this.getModel(entityTypeKey);
-        _.each(model.queries, (query: IQuery<any>) => {
+        _.each(model.queries, (query: Query<any>) => {
             let cache = query.getCache();
             if (cache.has(entityId)) {
                 cache.delete(entityId);
@@ -321,7 +321,7 @@ export class CacheService implements ICacheService {
             entityContainer.entity = entity;
         } else {
             /** Already exists so update to maintain any other references being used for this entity. */
-            //TODO Look at performance hit from extending and see if it would be acceptable just to replace
+            // TODO Look at performance hit from extending and see if it would be acceptable just to replace
             _.assign(entityContainer.entity, entity);
         }
 
@@ -334,7 +334,7 @@ export class CacheService implements ICacheService {
         }
 
         /** Resolve any requests for this entity */
-        _.each(entityContainer.associationQueue, (deferredRequest) => {
+        entityContainer.associationQueue.forEach(deferredRequest => {
             deferredRequest.resolve(entityContainer.entity);
             /** Remove request from queue */
             entityContainer.associationQueue.shift();

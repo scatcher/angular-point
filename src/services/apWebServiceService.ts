@@ -1,4 +1,4 @@
-const SCHEMASharePoint = "http://schemas.microsoft.com/sharepoint";
+const SCHEMASharePoint = 'http://schemas.microsoft.com/sharepoint';
 const serviceDefinitions = {
     Alerts: {
         action: SCHEMASharePoint + '/soap/2002/1/alerts/',
@@ -55,10 +55,6 @@ const serviceDefinitions = {
 };
 
 export class WebServiceService {
-    action(service) {
-        return serviceDefinitions[service] ? serviceDefinitions[service].action : SCHEMASharePoint + '/soap/';
-    }
-
     webServices = [
         'Alerts',
         'Authentication',
@@ -84,7 +80,9 @@ export class WebServiceService {
         'Webs',
         'Workflow'
     ];
-
+    action(service) {
+        return serviceDefinitions[service] ? serviceDefinitions[service].action : SCHEMASharePoint + '/soap/';
+    }
     xmlns(service) {
         return serviceDefinitions[service] ? serviceDefinitions[service].xmlns : SCHEMASharePoint + '/soap/';
     }

@@ -58,11 +58,11 @@ export class User {
 
         let thisUserExpanded = thisUser.value.split(',#');
         if (thisUserExpanded.length === 1) {
-            //Standard user columns only return a id,#value pair
+            // Standard user columns only return a id,#value pair
             this.lookupId = thisUser.id;
             this.lookupValue = thisUser.value;
         } else {
-            //Allow for case where user adds additional properties when setting up field
+            // Allow for case where user adds additional properties when setting up field
             this.lookupId = thisUser.id;
             this.lookupValue = thisUserExpanded[0].replace(/(,,)/g, ',');
             this.loginName = thisUserExpanded[1].replace(/(,,)/g, ',');

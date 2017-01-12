@@ -73,7 +73,12 @@ export class FieldChange {
     previousVersion: ListItemVersion<any>;
     propertyName: string;
 
-    constructor(propertyName: string, fieldDefinition: FieldConfigurationObject, newerVersion: ListItemVersion<any>, previousVersion: ListItemVersion<any> = <ListItemVersion<any>>{}) {
+    constructor(
+        propertyName: string,
+        fieldDefinition: FieldConfigurationObject,
+        newerVersion: ListItemVersion<any>,
+        previousVersion: ListItemVersion<any> = <ListItemVersion<any>>{}
+    ) {
 
         this.fieldName = fieldDefinition.displayName;
         this.newerVersion = newerVersion;
@@ -85,8 +90,8 @@ export class FieldChange {
         this.previousVersion = previousVersion;
     }
 
-    getFormattedValue(version: ListItemVersion<any>): string {
-        var propertyValue = '';
+    getFormattedValue(version: ListItemVersion<any> | any): string {
+        let propertyValue = '';
         if (version.getFormattedValue) {
             propertyValue = version.getFormattedValue(this.propertyName);
         }
@@ -109,7 +114,7 @@ export class FieldChangeSummary<T extends ListItem<any>> {
     constructor(newerVersion: ListItem<T> | any, previousVersion: ListItem<T> | Object | any = <ListItem<T>>{}) {
         /** Loop through each of the properties on the newer list item */
         _.each(newerVersion, (val, propertyName) => {
-            var fieldDefinition = newerVersion.getFieldDefinition(propertyName);
+            const fieldDefinition = newerVersion.getFieldDefinition(propertyName);
             /** Only log non-readonly fields that aren't the same */
             if (fieldDefinition && !fieldDefinition.readOnly &&
                 JSON.stringify(newerVersion[propertyName]) !== JSON.stringify(previousVersion[propertyName])) {
@@ -139,7 +144,7 @@ export class FieldChangeSummary<T extends ListItem<any>> {
  * version history.  Extends FieldChangeSummary.
  */
 export class VersionSummary<T extends ListItem<any>> extends FieldChangeSummary<T> {
-    listItemVersion: ListItemVersion<any>;
+    listItemVersion: ListItemVersion<any> | any;
     version: number;
 
     constructor(newerVersion: ListItemVersion<T>, previousVersion: ListItemVersion<T> | Object = {}) {
@@ -172,9 +177,9 @@ export class ChangeSummary<T extends ListItem<any>> {
 
     constructor(versions: ListItemVersions<T>) {
         /** First version won't have a previous version */
-        var previousVersion;
+        let previousVersion;
         _.each(versions, (version: ListItemVersion<T>) => {
-            var versionSummary = new VersionSummary<T>(version, previousVersion);
+            const versionSummary = new VersionSummary<T>(version, previousVersion);
             if (versionSummary.hasMajorChanges) {
                 this.significantVersionCount++;
             }
@@ -184,7 +189,7 @@ export class ChangeSummary<T extends ListItem<any>> {
         });
     }
 
-    //Use getter in case we need to alter the way we store this in future
+    // Use getter in case we need to alter the way we store this in future
     get changes() {
         return this.versionSummaryCollection;
     }
@@ -216,10 +221,10 @@ export class VersionHistoryCollection<T extends ListItem<any>> {
                     editor: fieldVersion.editor,
                     modified: fieldVersion.modified,
                     /** Iterating over object properties which converts everything to string so convert back */
-                    version: parseInt(versionNumberAsString)
+                    version: parseInt(versionNumberAsString, 10)
                 });
             /** Add field to the version history for this version with computed property name */
-            this[versionNumberAsString][fieldVersionCollection.mappedName] = fieldVersion.value
+            this[versionNumberAsString][fieldVersionCollection.mappedName] = fieldVersion.value;
         });
     }
 

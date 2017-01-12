@@ -2,7 +2,7 @@ import * as _ from 'lodash';
 import {DataService} from '../services/apDataService';
 import {XMLGroup, XMLUserProfile} from '../interfaces/index';
 /** Local references to cached promises */
-var _getGroupCollection, _getUserProfile;
+let _getGroupCollection, _getUserProfile;
 
 export interface IUserModel {
     checkIfMember(groupName: string, force?: boolean): angular.IPromise<XMLGroup>;
@@ -34,17 +34,18 @@ export class UserModel {
      * Checks to see if current user is a member of the specified group.
      * @param {string} groupName Name of the group.
      * @param {boolean} [force=false] Ignore any cached value.
-     * @returns {object} Returns the group definition if the user is a member. {ID:string, Name:string, Description:string, OwnerId:string, OwnerIsUser:string}
+     * @returns {object} Returns the group definition if the user is a member.
+     * {ID:string, Name:string, Description:string, OwnerId:string, OwnerIsUser:string}
      * @example
      * <pre>{ID: "190", Name: "Blog Contributors", Description: "We are bloggers...", OwnerID: "126", OwnerIsUser: "False"}</pre>
      */
-    checkIfMember(groupName: string, force: boolean = false): angular.IPromise<XMLGroup> {
-        //Allow function to be called before group collection is ready
-        var deferred = this.$q.defer();
+    checkIfMember(groupName: string, force = false): angular.IPromise<XMLGroup> {
+        // Allow function to be called before group collection is ready
+        const deferred = this.$q.defer();
 
-        //Initially ensure groups are ready, any future calls will receive the return
+        // Initially ensure groups are ready, any future calls will receive the return
         this.getGroupCollection(force).then((groupCollection) => {
-            var groupDefinition = _.find(groupCollection, {Name: groupName});
+            const groupDefinition = _.find(groupCollection, {Name: groupName});
             deferred.resolve(groupDefinition);
         });
 
@@ -60,10 +61,10 @@ export class UserModel {
      * @param {boolean} [force=false] Ignore any cached value.
      * @returns {IGroupDefinition[]} Promise which resolves with the array of groups the user belongs to.
      */
-    getGroupCollection(force: boolean = false): angular.IPromise<XMLGroup[]> {
+    getGroupCollection(force = false): angular.IPromise<XMLGroup[]> {
         if (!_getGroupCollection || force) {
             /** Create a new deferred object if not already defined */
-            var deferred = this.$q.defer();
+            const deferred = this.$q.defer();
             this.getUserProfile(force).then((userProfile) => {
                 this.apDataService.getGroupCollectionFromUser(userProfile.userLoginName)
                     .then((groupCollection) => {
@@ -86,7 +87,7 @@ export class UserModel {
      * @param {boolean} [force=false] Ignore any cached value.
      * @returns {object} Promise which resolves with the requested user profile.
      */
-    getUserProfile(force: boolean = false): ng.IPromise<XMLUserProfile> {
+    getUserProfile(force = false): ng.IPromise<XMLUserProfile> {
         if (!_getUserProfile || force) {
             /** Create a new deferred object if not already defined */
             _getUserProfile = this.apDataService.getUserProfileByName();

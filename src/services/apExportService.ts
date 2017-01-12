@@ -22,19 +22,22 @@ export class ExportService {
      * @description
      * Converts an array of objects into a parsed array of arrays based on a field config object.
      * @param {object[]} entities Array of objects to convert.
-     * @param {object|string[]} fields Array of objects defining the fields to parse.  Can also pass in strings representing the name of the field which will then be parsed based on field type.
+     * @param {object|string[]} fields Array of objects defining the fields to parse.  Can also pass in strings representing
+     * the name of the field which will then be parsed based on field type.
      * FieldDefinition:
      * {string} object.field Property name on the object that we want to parse.
      * {string} [object.label=object.field capitalized] Column Label
      * {function} [object.getVal] Custom function that overrides the default method of parsing based on field type.
      * @param {object} [options] Optional config settings.
-     * @param {string} [options.delim='; '] Delimiter used to separate fields that potentially contain multiple values that will be concatenated into a string.
-     * @returns {array[]} Return array of arrays, with the first array being the column names and every subsequent array representing a row in the csv dataset.
+     * @param {string} [options.delim='; '] Delimiter used to separate fields that potentially contain multiple
+     * values that will be concatenated into a string.
+     * @returns {array[]} Return array of arrays, with the first array being the column names and every subsequent
+     * array representing a row in the csv dataset.
      * @example
      * <pre>
-     * var customDelimiter = ' | ';
-     * var saveCSV = function() {
-             *    var parsedCSV = apExportService.generateCSV(entities, [
+     * const customDelimiter = ' | ';
+     * const saveCSV = function() {
+             *    const parsedCSV = apExportService.generateCSV(entities, [
              *     //Field definition
              *     { label: 'ID', field: 'id' },
              *     //Field as simple string
@@ -48,7 +51,7 @@ export class ExportService {
              *     'description',
              *     //Field definition with custom parse logic
              *     { label: 'Comments', field: 'comments', stringify: function (comments) {
-             *       var str = '';
+             *       const str = '';
              *       _.each(comments, function (comment, i) {
              *         if (i > 0) {
              *           str += '\n';
@@ -66,8 +69,8 @@ export class ExportService {
      *
      */
     generateCSV(entities: ListItem<any>[], fields: [string[]|Object[]], options?: {delim: string}): string[][] {
-        var defaults = {
-                dateFormat: 'json', //Format as JSON date rather than a formal date string
+        const defaults = {
+                dateFormat: 'json', // Format as JSON date rather than a formal date string
                 delim: '; ',
                 includeTitleRow: true
             },
@@ -78,26 +81,26 @@ export class ExportService {
 
         /** Process each of the entities in the data source */
         _.each(entities, (entity, entityIndex) => {
-            var entityArray = [];
+            const entityArray = [];
             /** Process each of the specified fields */
             _.each(fields, (f) => {
 
                 /** Handle both string and object definition */
-                var fieldDefinition: any = <any> _.isString(f) ? {field: f} : f;
+                const fieldDefinition: any = <any> _.isString(f) ? {field: f} : f;
 
                 /** Split the field name from the property if provided */
-                var fieldComponents = fieldDefinition.field.split('.');
-                var propertyName = fieldComponents[0];
+                const fieldComponents = fieldDefinition.field.split('.');
+                const propertyName = fieldComponents[0];
 
                 /** First array has the field names */
                 if (entityIndex === 0 && opts.includeTitleRow) {
                     /** Take a best guess if a column label isn't specified by capitalizing and inserting spaces between camel humps*/
-                    var label = fieldDefinition.label ?
+                    const label = fieldDefinition.label ?
                         fieldDefinition.label : this.apUtilityService.fromCamelCase(propertyName);
                     entitiesArray[0].push(label);
                 }
 
-                var val = '';
+                let val = '';
 
                 if (_.isFunction(fieldDefinition.stringify)) {
                     /** Allows us to override standard field logic for special cases */
@@ -109,12 +112,12 @@ export class ExportService {
                     }
                 } else {
                     /** Get the value based on field type defined in the model for the entity*/
-                    var modelDefinition = entity.getFieldDefinition(propertyName);
+                    const modelDefinition = entity.getFieldDefinition(propertyName);
                     val = this.apFormattedFieldValueService.getFormattedFieldValue(
                         entity[fieldDefinition.field],
                         modelDefinition.objectType,
                         opts
-                    )
+                    );
                 }
                 /** Add string to column */
                 entityArray.push(val);
@@ -132,23 +135,23 @@ export class ExportService {
      * @returns {string}
      */
     replaceWordChars(text: string): string {
-        var s = text;
+        let s = text;
         // smart single quotes and apostrophe
         s = s.replace(/[\u2018|\u2019|\u201A]/g, "\'");
         // smart double quotes
         s = s.replace(/[\u201C|\u201D|\u201E]/g, "\"");
         // ellipsis
-        s = s.replace(/\u2026/g, "...");
+        s = s.replace(/\u2026/g, '...');
         // dashes
-        s = s.replace(/[\u2013|\u2014]/g, "-");
+        s = s.replace(/[\u2013|\u2014]/g, '-');
         // circumflex
-        s = s.replace(/\u02C6/g, "^");
+        s = s.replace(/\u02C6/g, '^');
         // open angle bracket
-        s = s.replace(/\u2039/g, "<");
+        s = s.replace(/\u2039/g, '<');
         // close angle bracket
-        s = s.replace(/\u203A/g, ">");
+        s = s.replace(/\u203A/g, '>');
         // spaces
-        s = s.replace(/[\u02DC|\u00A0]/g, " ");
+        s = s.replace(/[\u02DC|\u00A0]/g, ' ');
         return s;
     }
 
@@ -170,10 +173,10 @@ export class ExportService {
      *
      */
     saveCSV(data: string[][], filename = 'debug.csv'): void {
-        var csvString = '';
-        _.each(data, function (row) {
+        let csvString = '';
+        data.forEach(row => {
             _.each(row, function (column, columnIndex) {
-                var result = column === null ? '' : this.replaceWordChars(column);
+                let result = column === null ? '' : this.replaceWordChars(column);
                 if (columnIndex > 0) {
                     csvString += ',';
                 }
@@ -213,7 +216,7 @@ export class ExportService {
         }
 
         /** If passed in fileType="csv;charset=utf-8;" we just want to use "csv" */
-        var fileExtension = fileType.split(';')[0];
+        const fileExtension = fileType.split(';')[0];
 
         if (!filename) {
             filename = 'debug.' + fileExtension;
@@ -223,7 +226,7 @@ export class ExportService {
             data = JSON.stringify(data, undefined, 4);
         }
 
-        var blob = new Blob([data], {type: 'text/' + fileType}),
+        const blob = new Blob([data], {type: 'text/' + fileType}),
             e = document.createEvent('MouseEvents'),
             a = document.createElement('a');
 

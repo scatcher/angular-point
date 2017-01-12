@@ -1,81 +1,37 @@
 import * as _ from 'lodash';
 
-import {WebServiceOperationConstants as apWebServiceOperationConstants} from '../constants/apWebServiceOperationConstants';
-import {UtilityService} from './apUtilityService';
-import {CacheService} from './apCacheService';
-import {DecodeService} from './apDecodeService';
-import {EncodeService} from './apEncodeService';
-import {FieldService} from './apFieldService';
-import {IndexedCacheFactory, IndexedCache} from '../factories/apIndexedCacheFactory';
-import {BasePermissionObject, IUserPermissionsObject} from '../constants/apPermissionObject';
-import {XMLToJSONService} from './apXMLToJSONService';
-import {ChangeService} from './apChangeService';
-import {Logger} from './apLogger';
-import {ListItem} from '../factories/apListItemFactory';
-import {FieldDefinition, XMLFieldDefinition} from '../factories/apFieldFactory';
-import {FieldVersionCollection} from '../factories/apListItemVersionFactory';
-import {Model} from '../factories/apModelFactory';
-import {IQuery} from '../factories/apQueryFactory';
-import {IWorkflowDefinition, XMLGroup, XMLUserProfile} from '../interfaces/index';
-import {ENV} from '../angular-point';
+import { WebServiceOperationConstants as apWebServiceOperationConstants } from '../constants/apWebServiceOperationConstants';
+import { UtilityService } from './apUtilityService';
+import { CacheService } from './apCacheService';
+import { DecodeService } from './apDecodeService';
+import { EncodeService } from './apEncodeService';
+import { FieldService } from './apFieldService';
+import { IndexedCacheFactory, IndexedCache } from '../factories/apIndexedCacheFactory';
+import { BasePermissionObject, IUserPermissionsObject } from '../constants/apPermissionObject';
+import { XMLToJSONService } from './apXMLToJSONService';
+import { ChangeService } from './apChangeService';
+import { Logger } from './apLogger';
+import { ListItem } from '../factories/apListItemFactory';
+import { FieldDefinition, XMLFieldDefinition } from '../factories/apFieldFactory';
+import { FieldVersionCollection } from '../factories/apListItemVersionFactory';
+import { Model } from '../factories/apModelFactory';
+import { Query } from '../factories/apQueryFactory';
+import { IWorkflowDefinition, XMLGroup, XMLUserProfile } from '../interfaces/index';
+import { ENV } from '../angular-point';
 
-
-let service: DataService, $q: ng.IQService, $timeout: ng.ITimeoutService, $http: ng.IHttpService,
-    apUtilityService: UtilityService, apCacheService: CacheService, apDecodeService: DecodeService,
-    apEncodeService: EncodeService, apFieldService: FieldService, apIndexedCacheFactory: IndexedCacheFactory,
-    SPServices, apBasePermissionObject: BasePermissionObject,
-    apXMLToJSONService: XMLToJSONService, apChangeService: ChangeService, apLogger: Logger;
-
-export interface IDataService {
-    createItemUrlFromFileRef(fileRefString: string): string;
-    generateWebServiceUrl(service: string, webURL?: string): ng.IPromise<string>;
-    getAvailableWorkflows(fileRefString: string): ng.IPromise<IWorkflowDefinition[]>;
-    getCollection(options: {operation: string; userLoginName?: string; groupName?: string; listName?: string; filterNode: string;}): ng.IPromise<Object[]>;
-    getCurrentSite(): ng.IPromise<string>;
-    getFieldVersionHistory<T extends ListItem<any>>(options: IGetFieldVersionHistoryOptions, fieldDefinition: FieldDefinition): ng.IPromise<FieldVersionCollection>
-    getGroupCollectionFromUser(login?: string): ng.IPromise<XMLGroup[]>;
-    getList(options: {listName: string; webURL?: string}): ng.IPromise<Object>;
-    getListFields(options: {listName: string; webURL?: string}): ng.IPromise<XMLFieldDefinition[]>;
-    getUserProfileByName(login?: string): ng.IPromise<XMLUserProfile>;
-    processChangeTokenXML<T extends ListItem<any>>(model: Model, query: IQuery<T>, responseXML: Element, opts): void;
-    processDeletionsSinceToken(responseXML: Element, indexedCache: IndexedCache<any>): void;
-    requestData(opts): ng.IPromise<Element>;
-    retrieveChangeToken(responseXML: Element): string;
-    retrieveListPermissions(responseXML: Element): IUserPermissionsObject
-    serviceWrapper(options): ng.IPromise<any>;
-    startWorkflow(options: {item: string; templateId: string; workflowParameters?: string; fileRef?: string;}): ng.IPromise<any>;
-    validateCollectionPayload(opts): boolean;
-}
-
-export class DataService implements IDataService {
-    queryForCurrentSite: ng.IPromise<string>;
+export class DataService {
     static $inject = ['$http', '$q', '$timeout', 'apCacheService', 'apChangeService', 'apDecodeService',
         'apDefaultListItemQueryOptions', 'apEncodeService', 'apFieldService', 'apIndexedCacheFactory',
         'apUtilityService', 'apWebServiceOperationConstants', 'apXMLToJSONService', 'SPServices',
         'apBasePermissionObject', 'apLogger'];
+    queryForCurrentSite: ng.IPromise<string>;
 
-    constructor(_$http_, _$q_, _$timeout_, _apCacheService_, _apChangeService_, _apDecodeService_,
-                _apDefaultListItemQueryOptions_, _apEncodeService_, _apFieldService_, _apIndexedCacheFactory_,
-                _apUtilityService_, _apWebServiceOperationConstants_, _apXMLToJSONService_, _SPServices_,
-                _apBasePermissionObject_, _apLogger_) {
-        service = this;
-
-        $http = _$http_;
-        $q = _$q_;
-        $timeout = _$timeout_;
-        apCacheService = _apCacheService_;
-        apChangeService = _apChangeService_;
-        apDecodeService = _apDecodeService_;
-        // apDefaultListItemQueryOptions = _apDefaultListItemQueryOptions_;
-        apEncodeService = _apEncodeService_;
-        apFieldService = _apFieldService_;
-        apIndexedCacheFactory = _apIndexedCacheFactory_;
-        apUtilityService = _apUtilityService_;
-        // apWebServiceOperationConstants = _apWebServiceOperationConstants_;
-        apXMLToJSONService = _apXMLToJSONService_;
-        SPServices = _SPServices_;
-        apBasePermissionObject = _apBasePermissionObject_;
-        apLogger = _apLogger_;
+    constructor(private $http: ng.IHttpService, private $q: ng.IQService, private $timeout: ng.ITimeoutService,
+        private apCacheService: CacheService, private apChangeService: ChangeService, private apDecodeService: DecodeService,
+        private apDefaultListItemQueryOptions, private apEncodeService: EncodeService, private apFieldService: FieldService,
+        private apIndexedCacheFactory: IndexedCacheFactory, private apUtilityService: UtilityService,
+        private apWebServiceOperationConstants, private apXMLToJSONService: XMLToJSONService, private SPServices,
+        private apBasePermissionObject, private apLogger: Logger) {
     }
 
     createItemUrlFromFileRef(fileRefString: string): string {
@@ -93,8 +49,8 @@ export class DataService implements IDataService {
      * @returns {promise} Resolves with the url for the service.
      */
     generateWebServiceUrl(service: string, webURL?: string): ng.IPromise<string> {
-        let ajaxURL = "_vti_bin/" + service + ".asmx",
-            deferred = $q.defer();
+        let ajaxURL = '_vti_bin/' + service + '.asmx',
+            deferred = this.$q.defer();
 
         if (webURL) {
             ajaxURL = webURL.charAt(webURL.length - 1) === '/' ?
@@ -121,7 +77,8 @@ export class DataService implements IDataService {
      *     .then(function(templateArray) {
          *          ....templateArray = [{
          *              "name": "WidgetApproval",
-         *              "instantiationUrl": "https: //sharepoint.mycompany.com/_layouts/IniWrkflIP.aspx?List=fc17890e-8c0…311-cea9-40d1-a183-6edde9333815}&Web={ec744d8e-ae0a-45dd-bcd1-8a63b9b399bd}",
+         *              "instantiationUrl": "https: //sharepoint.mycompany.com/_layouts/
+         *                 IniWrkflIP.aspx?List=fc17890e-8c0…311-cea9-40d1-a183-6edde9333815}&Web={ec744d8e-ae0a-45dd-bcd1-8a63b9b399bd}",
          *              "templateId": "59062311-cea9-40d1-a183-6edde9333815"
          *          }]
      *     });
@@ -139,7 +96,7 @@ export class DataService implements IDataService {
         })
             .then(function (responseXML) {
                 let workflowTemplates = [];
-                let xmlTemplates = apXMLToJSONService.filterNodes(responseXML, 'WorkflowTemplate');
+                let xmlTemplates = this.apXMLToJSONService.filterNodes(responseXML, 'WorkflowTemplate');
                 _.each(xmlTemplates, function (xmlTemplate: Element) {
                     let template = {
                         name: $(xmlTemplate).attr('Name'),
@@ -186,27 +143,27 @@ export class DataService implements IDataService {
          *       });
      * </pre>
      */
-    getCollection(options: IGetCollectionOptions): ng.IPromise<Object[]> {
+    getCollection(options: GetCollectionOptions): ng.IPromise<Object[]> {
         let defaults = {
             postProcess: processXML
         };
-        let opts: IGetCollectionOptions = _.assign({}, defaults, options);
+        let opts: GetCollectionOptions = _.assign({}, defaults, options);
 
         /** Determine the XML node to iterate over if filterNode isn't provided */
         let filterNode = opts.filterNode || opts.operation.split('Get')[1].split('Collection')[0];
 
-        let deferred = $q.defer();
+        let deferred = this.$q.defer();
 
         /** Convert the xml returned from the server into an array of js objects */
         function processXML(responseXML: Element) {
             let convertedItems = [];
-            let filteredNodes = apXMLToJSONService.filterNodes(responseXML, filterNode);
+            let filteredNodes = this.apXMLToJSONService.filterNodes(responseXML, filterNode);
             /** Get attachments only returns the links associated with a list item */
             if (opts.operation === 'GetAttachmentCollection') {
                 /** Unlike other call, get attachments only returns strings instead of an object with attributes */
                 _.each(filteredNodes, (node: Element) => convertedItems.push($(node).text()));
             } else {
-                convertedItems = apXMLToJSONService.parse(filteredNodes, {includeAllAttrs: true, removeOws: false});
+                convertedItems = this.apXMLToJSONService.parse(filteredNodes, { includeAllAttrs: true, removeOws: false });
             }
             return convertedItems;
         }
@@ -234,30 +191,30 @@ export class DataService implements IDataService {
      * @returns {promise} Resolves with the current site root url.
      */
     getCurrentSite(): ng.IPromise<string> {
-        let deferred = $q.defer();
-        //let self = this.getCurrentSite;
+        let deferred = this.$q.defer();
+
         if (!this.queryForCurrentSite) {
             /** We only want to run this once so cache the promise the first time and just reference it in the future */
             this.queryForCurrentSite = deferred.promise;
 
-            let soapData = SPServices.SOAPEnvelope.header +
-                "<WebUrlFromPageUrl xmlns='" + SPServices.SCHEMASharePoint + "/soap/' ><pageUrl>" +
-                ((location.href.indexOf("?") > 0) ? location.href.substr(0, location.href.indexOf("?")) : location.href) +
-                "</pageUrl></WebUrlFromPageUrl>" +
-                SPServices.SOAPEnvelope.footer;
+            let soapData = this.SPServices.SOAPEnvelope.header +
+                `<WebUrlFromPageUrl xmlns="` + this.SPServices.SCHEMASharePoint + `/soap/" ><pageUrl>` +
+                ((location.href.indexOf('?') > 0) ? location.href.substr(0, location.href.indexOf('?')) : location.href) +
+                '</pageUrl></WebUrlFromPageUrl>' +
+                this.SPServices.SOAPEnvelope.footer;
 
-            $http({
+            this.$http({
                 method: 'POST',
                 url: '/_vti_bin/Webs.asmx',
                 data: soapData,
-                responseType: "document",
+                responseType: 'document',
                 headers: {
-                    "Content-Type": "text/xml;charset='utf-8'"
+                    'Content-Type': 'text/xml;charset="utf-8"'
                 }
             })
                 .then((response) => {
                     /** Success */
-                    let errorMsg = apDecodeService.checkResponseForErrors(<any>response.data);
+                    let errorMsg = this.apDecodeService.checkResponseForErrors(<any>response.data);
                     if (errorMsg) {
                         this.errorHandler('Failed to get current site.  ' + errorMsg, deferred, soapData);
                     }
@@ -290,7 +247,11 @@ export class DataService implements IDataService {
      * @param {object} fieldDefinition Field definition object from the model.
      * @returns {object[]} Promise which resolves with an array of list item changes for the specified field.
      */
-    getFieldVersionHistory<T extends ListItem<any>>(options: IGetFieldVersionHistoryOptions, fieldDefinition: FieldDefinition): ng.IPromise<FieldVersionCollection> {
+    getFieldVersionHistory<T extends ListItem<any>>(
+        options: GetFieldVersionHistoryOptions,
+        fieldDefinition: FieldDefinition
+    ): ng.IPromise<FieldVersionCollection> {
+
         let defaults = {
             operation: 'GetVersionCollection'
         };
@@ -299,7 +260,7 @@ export class DataService implements IDataService {
         return this.serviceWrapper(opts)
             .then((response) => {
                 /** Parse XML response */
-                let fieldVersionCollection = apDecodeService.parseFieldVersions(response, fieldDefinition);
+                let fieldVersionCollection = this.apDecodeService.parseFieldVersions(response, fieldDefinition);
                 /** Resolve with an array of all field versions */
                 return fieldVersionCollection;
             })
@@ -319,7 +280,7 @@ export class DataService implements IDataService {
      */
     getGroupCollectionFromUser(login?: string): ng.IPromise<XMLGroup[]> {
         /** Create a new deferred object if not already defined */
-        let deferred = $q.defer();
+        let deferred = this.$q.defer();
         let getGroupCollection = (userLoginName) => {
             this.serviceWrapper({
                 operation: 'GetGroupCollectionFromUser',
@@ -348,12 +309,12 @@ export class DataService implements IDataService {
      * @param {string} [options.webURL] URL to the site containing the list if differnt from primary data site in apConfig.
      * @returns {object} Promise which resolves with an object defining field and list config.
      */
-    getList(options: {listName: string, webURL?: string}): ng.IPromise<Object> {
+    getList(options: { listName: string, webURL?: string }): ng.IPromise<Object> {
         let defaults = {
             operation: 'GetList'
         };
 
-        let opts: {operation: string; listName: string; webURL?: string} = _.assign({}, defaults, options);
+        let opts: { operation: string; listName: string; webURL?: string } = _.assign({}, defaults, options);
         return this.serviceWrapper(opts);
     }
 
@@ -367,11 +328,11 @@ export class DataService implements IDataService {
      * @param {string} [options.webURL] URL to the site containing the list if differnt from primary data site in apConfig.
      * @returns {Promise} Promise which resolves with an array of field definitions for the list.
      */
-    getListFields(options: {listName: string; webURL?: string}): ng.IPromise<XMLFieldDefinition[]> {
+    getListFields(options: { listName: string; webURL?: string }): ng.IPromise<XMLFieldDefinition[]> {
         return this.getList(options)
             .then((responseXML: Element) => {
-                let filteredNodes = apXMLToJSONService.filterNodes(responseXML, 'Field');
-                let fields = apXMLToJSONService.parse(filteredNodes, {includeAllAttrs: true, removeOws: false});
+                let filteredNodes = this.apXMLToJSONService.filterNodes(responseXML, 'Field');
+                let fields = this.apXMLToJSONService.parse(filteredNodes, { includeAllAttrs: true, removeOws: false });
                 return fields;
             });
     }
@@ -402,7 +363,7 @@ export class DataService implements IDataService {
                     userLoginName: undefined
                 };
                 // Not formatted like a normal SP response so need to manually parse
-                let filteredNodes = apXMLToJSONService.filterNodes(responseXML, 'PropertyData');
+                let filteredNodes = this.apXMLToJSONService.filterNodes(responseXML, 'PropertyData');
                 _.each(filteredNodes, (node: Element) => {
                     let nodeName = node.getElementsByTagName('Name')[0];
                     let nodeValue = node.getElementsByTagName('Value')[0];
@@ -431,19 +392,19 @@ export class DataService implements IDataService {
      * @param {Element} responseXML XML response from the server.
      * @param {IndexedCache<T>} cache Cache to process in order to handle deletions.
      */
-    processChangeTokenXML<T extends ListItem<any>>(model: Model, query: IQuery<T>, responseXML: Element, cache: IndexedCache<T>): void {
+    processChangeTokenXML<T extends ListItem<any>>(model: Model, query: Query<T>, responseXML: Element, cache: IndexedCache<T>): void {
         if (!model.deferredListDefinition) {
-            //Extend our local list definition and field definitions with XML
-            apDecodeService.extendListMetadata(model, responseXML);
+            // Extend our local list definition and field definitions with XML
+            this.apDecodeService.extendListMetadata(model, responseXML);
 
             /**If loaded from local or session cache the list/field definitions won't be extended so ensure we check before
              * resolving promise verifying list has been extended.  One of the attributes we'd expect to see on all List/Libraries
              * is "BaseType" */
             if (model.getList().BaseType) {
-                //List successfully extended
+                // List successfully extended
                 /** Replace the null placeholder with this resolved promise so we don't have to process in the future and also
                  * don't have to query again if we run Model.extendListMetadata. */
-                model.deferredListDefinition = $q.when(model);
+                model.deferredListDefinition = this.$q.when(model);
             }
         }
 
@@ -475,7 +436,7 @@ export class DataService implements IDataService {
      */
     processDeletionsSinceToken(responseXML: Element, cache: IndexedCache<any>): void {
         /** Remove any locally cached entities that were deleted from the server */
-        let filteredNodes = apXMLToJSONService.filterNodes(responseXML, 'Id');
+        let filteredNodes = this.apXMLToJSONService.filterNodes(responseXML, 'Id');
         _.each(filteredNodes, (node: Element) => {
             /** Check for the type of change */
             let changeType = $(node).attr('ChangeType');
@@ -498,17 +459,17 @@ export class DataService implements IDataService {
      * @returns {promise} Promise that resolves with the server response.
      */
     requestData(opts): ng.IPromise<Element> {
-        let deferred = $q.defer();
-        let soapData = SPServices.generateXMLComponents(opts);
+        let deferred = this.$q.defer();
+        let soapData = this.SPServices.generateXMLComponents(opts);
         let service = apWebServiceOperationConstants[opts.operation][0];
 
         this.generateWebServiceUrl(service, opts.webURL)
             .then((url) => {
-                $http.post(url, soapData.msg, {
-                    responseType: "text",
+                this.$http.post(url, soapData.msg, {
+                    responseType: 'text',
                     // responseType: "document",
                     headers: {
-                        "Content-Type": "text/xml;charset='utf-8'",
+                        'Content-Type': `text/xml;charset="utf-8"`,
                         SOAPAction: () => soapData.SOAPAction ? soapData.SOAPAction : null
                     },
                     // transformResponse: (data, headersGetter) => {
@@ -525,7 +486,7 @@ export class DataService implements IDataService {
 
                         // Success Code
                         // Errors can still be resolved without throwing an error so check the XML
-                        let errorMsg = apDecodeService.checkResponseForErrors(responseXML);
+                        let errorMsg = this.apDecodeService.checkResponseForErrors(responseXML);
                         // let errorMsg = apDecodeService.checkResponseForErrors(<any>response.data);
                         if (errorMsg) {
                             // Actuall error but returned with success resonse....thank you SharePoint
@@ -566,26 +527,26 @@ export class DataService implements IDataService {
      * @param {Element} responseXML XML response from the server.
      */
     retrieveListPermissions(responseXML: Element): IUserPermissionsObject {
-        //Permissions will be a string of Permission names delimited by commas
-        //Example: "ViewListItems, AddListItems, EditListItems, DeleteListItems, ...."
+        // Permissions will be a string of Permission names delimited by commas
+        // Example: "ViewListItems, AddListItems, EditListItems, DeleteListItems, ...."
         let listPermissions: string = $(responseXML).find('listitems').attr('EffectivePermMask');
         let permissionObject;
         if (_.isString(listPermissions)) {
             let permissionNameArray = listPermissions.split(',');
             permissionObject = new BasePermissionObject();
-            //Set each of the identified permission levels to true
+            // Set each of the identified permission levels to true
             _.each(permissionNameArray, (permission: string) => {
-                //Remove extra spaces
+                // Remove extra spaces
                 let permissionName = permission.trim();
-                //Find the permission level on the permission object that is currently set to false
-                //and set to true
+                // Find the permission level on the permission object that is currently set to false
+                // and set to true
                 permissionObject[permissionName] = true;
 
                 if (permissionName === 'FullMask') {
-                    //User has full rights so set all to true
+                    // User has full rights so set all to true
                     _.each(permissionObject, (propertyValue, propertyName) => {
                         permissionObject[propertyName] = true;
-                    })
+                    });
                 }
             });
         }
@@ -614,18 +575,18 @@ export class DataService implements IDataService {
      *      If options.filterNode is provided, returns XML parsed by node name
      *      Otherwise returns the server response
      */
-    serviceWrapper(options: IServiceWrapperOptions): ng.IPromise<any> {
+    serviceWrapper(options: ServiceWrapperOptions): ng.IPromise<any> {
         let defaults = {
             postProcess: processXML,
             webURL: ENV.site
         };
-        let opts: IServiceWrapperOptions = _.assign({}, defaults, options);
+        let opts: ServiceWrapperOptions = _.assign({}, defaults, options);
 
         /** Convert the xml returned from the server into an array of js objects */
         function processXML(responseXML: Element) {
             if (opts.filterNode) {
-                let filteredNodes = apXMLToJSONService.filterNodes(responseXML, opts.filterNode);
-                return apXMLToJSONService.parse(filteredNodes, {includeAllAttrs: true, removeOws: false});
+                let filteredNodes = this.apXMLToJSONService.filterNodes(responseXML, opts.filterNode);
+                return this.apXMLToJSONService.parse(filteredNodes, { includeAllAttrs: true, removeOws: false });
             } else {
                 return responseXML;
             }
@@ -670,7 +631,7 @@ export class DataService implements IDataService {
          *   })
      * </pre>
      */
-    startWorkflow(options: {item: string; templateId: string; workflowParameters?: string; fileRef?: string;}): ng.IPromise<any> {
+    startWorkflow(options: { item: string; templateId: string; workflowParameters?: string; fileRef?: string; }): ng.IPromise<any> {
         let defaults = {
             operation: 'StartWorkflow',
             item: '',
@@ -678,14 +639,14 @@ export class DataService implements IDataService {
             templateId: '',
             workflowParameters: '<root />'
         };
-        let opts: {item: string; fileRef: string;} = _.assign({}, defaults, options);
+        let opts: { item: string; fileRef: string; } = _.assign({}, defaults, options);
 
         /** We have the relative file reference but we need to create the fully qualified reference */
         if (!opts.item && opts.fileRef) {
             opts.item = this.createItemUrlFromFileRef(opts.fileRef);
         }
 
-        return this.serviceWrapper(<any> opts);
+        return this.serviceWrapper(<any>opts);
     }
 
     /**
@@ -705,7 +666,7 @@ export class DataService implements IDataService {
             });
         };
 
-        //Verify all required params are included
+        // Verify all required params are included
         switch (opts.operation) {
             case 'GetGroupCollectionFromUser':
                 verifyParams(['userLoginName']);
@@ -724,8 +685,8 @@ export class DataService implements IDataService {
     }
 
     private errorHandler(errorMsg: string, deferred: ng.IDeferred<any>, soapData: Object, response?: Object) {
-        //Log error to any server side logging list
-        apLogger.error(errorMsg, {
+        // Log error to any server side logging list
+        this.apLogger.error(errorMsg, {
             json: {
                 request: JSON.stringify(soapData, null, 2),
                 response: JSON.stringify(response, null, 2)
@@ -737,7 +698,7 @@ export class DataService implements IDataService {
 
 }
 
-export interface IGetCollectionOptions {
+export interface GetCollectionOptions {
     filterNode?: string;
     ID?: number;
     groupName?: string;
@@ -747,7 +708,7 @@ export interface IGetCollectionOptions {
     webURL?: string;
 }
 
-export interface IServiceWrapperOptions {
+export interface ServiceWrapperOptions {
     filterNode?: string;
     listItemID?: number;
     operation: string;
@@ -756,12 +717,7 @@ export interface IServiceWrapperOptions {
     [key: string]: any;
 }
 
-// interface IUpdateListitemOptions {
-//     buildValuePairs?: boolean;
-//     valuePairs?: [string, any][];
-// }
-
-export interface IGetFieldVersionHistoryOptions {
+export interface GetFieldVersionHistoryOptions {
     operation?: string;
     strFieldName?: string;
     strlistID: string;  // correct case

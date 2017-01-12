@@ -15,7 +15,7 @@ import {ChangeService} from '../services/apChangeService';
 import {User} from './apUserFactory';
 import {Lookup} from './apLookupFactory';
 import {IndexedCache} from './apIndexedCacheFactory';
-import {IQuery} from './apQueryFactory';
+import {Query} from './apQueryFactory';
 import {Model, IModelFactory} from './apModelFactory';
 import {FieldDefinition} from './apFieldFactory';
 import {List} from './apListFactory';
@@ -46,7 +46,7 @@ export interface IUninstantiatedListItem {
 // standard uninstantiated list item with helper methods required to instantiate with model factory
 export interface IUninstantiatedExtendedListItem<T extends ListItem<any>> extends IUninstantiatedListItem {
     getCache: () => IndexedCache<T>;
-    getQuery: () => IQuery<T>;
+    getQuery: () => Query<T>;
 }
 
 
@@ -66,7 +66,7 @@ export class ListItem<T extends ListItem<any>> implements IUninstantiatedExtende
     getCache: () => IndexedCache<T>;
     getModel: <M extends Model>() => M;
     getPristine: () => IUninstantiatedListItem;
-    getQuery: () => IQuery<T>;
+    getQuery: () => Query<T>;
     id: number;
     modified: Date;
     permMask: string;
@@ -88,14 +88,14 @@ export class ListItem<T extends ListItem<any>> implements IUninstantiatedExtende
      * since last save.
      */
     changes(): FieldChangeSummary<T> {
-        //Instantiate a copy of the original list item for comparrison
+        // Instantiate a copy of the original list item for comparrison
         let pristineListItem = _.cloneDeep<{id: number}>(this.getPristine());
         if (!pristineListItem) {
             throw new Error('Could not retrieve a pristine version of this list item.');
         }
-        //Remove id so when we instantiate we don't register in cache
+        // Remove id so when we instantiate we don't register in cache
         pristineListItem.id = undefined;
-        //Need to instantiate using the same factory as the current list item
+        // Need to instantiate using the same factory as the current list item
         let factory = <IModelFactory>this.constructor;
         let instantiatedPristineListItem = new factory(pristineListItem);
 
@@ -165,7 +165,7 @@ export class ListItem<T extends ListItem<any>> implements IUninstantiatedExtende
         };
 
         if (_.isFunction(listItem.preDeleteAction) && !listItem.preDeleteAction()) {
-            //preDeleteAction exists but returned false so we don't delete
+            // preDeleteAction exists but returned false so we don't delete
             deferred.reject('Pre-Delete Action Returned False');
         } else {
 
@@ -194,7 +194,7 @@ export class ListItem<T extends ListItem<any>> implements IUninstantiatedExtende
                     deferred.resolve(response);
                 })
                 .catch((err) => {
-                    //In the event of an error, display toast
+                    // In the event of an error, display toast
                     let msg = 'There was an error deleting list item ' + listItem.id + ' from ' + model.list.title +
                         ' due to the following Error: ' + err;
                     deferred.reject(msg);
@@ -423,8 +423,8 @@ export class ListItem<T extends ListItem<any>> implements IUninstantiatedExtende
      * @description
      * Allows us to retrieve the listItem being referenced in a given lookup field.
      * @param {string} fieldName Name of the lookup property on the list item that references a listItem.
-     * @param {number} [lookupId=listItem.fieldName.lookupId] The listItem.lookupId of the lookup object.  This allows us to also use this logic
-     * on a multi-select by iterating over each of the lookups.
+     * @param {number} [lookupId=listItem.fieldName.lookupId] The listItem.lookupId of the lookup object.  This allows us
+     * to also use this logic on a multi-select by iterating over each of the lookups.
      * @example
      * <pre>
      * let project = {
@@ -498,7 +498,9 @@ export class ListItem<T extends ListItem<any>> implements IUninstantiatedExtende
         let model = listItem.getModel();
         let promiseArray = [];
 
-        if (properties && !_.isArray(properties)) throw new Error('Properties are required to be formatted as an array of strings.');
+        if (properties && !_.isArray(properties)) {
+            throw new Error('Properties are required to be formatted as an array of strings.');
+        }
 
         if (!properties) {
             /** If fields aren't provided, pull the version history for all NON-readonly fields */
@@ -515,8 +517,12 @@ export class ListItem<T extends ListItem<any>> implements IUninstantiatedExtende
         /** Pause until all requests are resolved */
         return $q.all(promiseArray)
             .then((fieldVersionCollections: FieldVersionCollection[]) => {
-                let versionHistoryCollection = new apListItemVersionFactory.VersionHistoryCollection<T>(fieldVersionCollections, model.factory);
+
+                let versionHistoryCollection =
+                    new apListItemVersionFactory.VersionHistoryCollection<T>(fieldVersionCollections, model.factory);
+                
                 return versionHistoryCollection;
+
             });
 
         /** Constructor that creates a promise for each field */
@@ -532,10 +538,7 @@ export class ListItem<T extends ListItem<any>> implements IUninstantiatedExtende
                 webURL: undefined
             };
 
-            /** Manually set site url if defined, prevents SPServices from making a blocking call to fetch it. */
-            // if (apConfig.defaultUrl) {
             payload.webURL = ENV.site;
-            // }
 
             return apDataService.getFieldVersionHistory<T>(payload, fieldDefinition);
         }
@@ -589,7 +592,7 @@ export class ListItem<T extends ListItem<any>> implements IUninstantiatedExtende
      */
     registerPreDeleteAction(action: () => boolean): () => void {
         this.preDeleteAction = action;
-        //Return function to unregister
+        // Return function to unregister
         return () => this.preDeleteAction = undefined;
     }
 
@@ -629,7 +632,7 @@ export class ListItem<T extends ListItem<any>> implements IUninstantiatedExtende
      */
     registerPreSaveAction(action: () => boolean): () => void {
         this.preSaveAction = action;
-        //Return function to unregister
+        // Return function to unregister
         return () => this.preSaveAction = undefined;
     }
 
@@ -668,7 +671,7 @@ export class ListItem<T extends ListItem<any>> implements IUninstantiatedExtende
      */
     registerPostSaveAction(action: () => void): () => void {
         this.postSaveAction = action;
-        //Return function to unregister
+        // Return function to unregister
         return () => delete this.postSaveAction;
     }
 
@@ -758,7 +761,11 @@ export class ListItem<T extends ListItem<any>> implements IUninstantiatedExtende
          * }
      * </pre>
      */
-    saveChanges({target = this.getCache ? this.getCache() : new IndexedCache<T>(), valuePairs = undefined, buildValuePairs = true} = {}): ng.IPromise<T> {
+    saveChanges({
+        target = this.getCache ? this.getCache() : new IndexedCache<T>(),
+        valuePairs = undefined,
+        buildValuePairs = true} = {}
+    ): ng.IPromise<T> {
         let listItem = this;
         let model = listItem.getModel();
         let deferred = $q.defer();
@@ -776,10 +783,10 @@ export class ListItem<T extends ListItem<any>> implements IUninstantiatedExtende
         }
 
         if (_.isFunction(listItem.preSaveAction) && !listItem.preSaveAction()) {
-            //preSaveAction exists but returned false so we don't save
+            // preSaveAction exists but returned false so we don't save
             deferred.reject('Pre-Save Action Returned False');
         } else {
-            //Either no preSaveAction registered or it passed validation
+            // Either no preSaveAction registered or it passed validation
 
             /** Redirect if the request is actually creating a new list item.  This can occur if we create
              * an empty item that is instantiated from the model and then attempt to save instead of using
@@ -795,21 +802,20 @@ export class ListItem<T extends ListItem<any>> implements IUninstantiatedExtende
 
             let request = apDataService.serviceWrapper(config)
                 .then((response: Element) => {
-                    var indexedCache = apDecodeService.processListItems<T>(model, listItem.getQuery(), response, config);
+                    const indexedCache = apDecodeService.processListItems<T>(model, listItem.getQuery(), response, config);
 
-                    //Identify updated list item
+                    // Identify updated list item
                     let updatedListItem = indexedCache.get(listItem.id);
 
                     /** Optionally broadcast change event */
                     apUtilityService.registerChange(model, 'update', updatedListItem.id);
 
-                    //Optionally perform any post save cleanup if registered
+                    // Optionally perform any post save cleanup if registered
                     if (_.isFunction(listItem.postSaveAction)) {
                         listItem.postSaveAction();
                     }
-                    ;
 
-                    //Resolve with the updated list item
+                    // Resolve with the updated list item
                     deferred.resolve(updatedListItem);
                 });
 
@@ -856,7 +862,6 @@ export class ListItem<T extends ListItem<any>> implements IUninstantiatedExtende
         let listItem = this;
         let model = listItem.getModel();
         let definitions: FieldDefinition[] = [];
-        let fieldName: string[];
 
         if (_.isString(fieldArray)) {
             console.warn('Field names should be an array of strings instead of a single string.  This will be deperecated.');
@@ -998,7 +1003,6 @@ export class ListItemFactory {
         $q = _$q_;
         apCacheService = _apCacheService_;
         apChangeService = _apChangeService_;
-        // apConfig = _apConfig_;
         apDataService = _apDataService_;
         apDecodeService = _apDecodeService_;
         apEncodeService = _apEncodeService_;

@@ -1,5 +1,5 @@
 import * as _ from 'lodash';
-import {ListItem} from './apListItemFactory';
+import { ListItem } from './apListItemFactory';
 
 export interface IUninstantiatedIndexCache<T> {
     [key: string]: T;
@@ -16,7 +16,7 @@ export interface IUninstantiatedIndexCache<T> {
  * @constructor
  */
 export class IndexedCache<T extends ListItem<any>> {
-    //Object with keys equaling ID and values being the individual list item
+    // Object with keys equaling ID and values being the individual list item
     [key: string]: any;
 
     /**
@@ -118,7 +118,7 @@ export class IndexedCache<T extends ListItem<any>> {
      * @returns {object} Last listItem in cache.
      */
     last(): T {
-        var keys = this.keys();
+        const keys = this.keys();
         return this[keys[keys.length - 1]];
     }
 
@@ -132,7 +132,7 @@ export class IndexedCache<T extends ListItem<any>> {
      * @returns {object} First listItem in cache.
      */
     nthEntity(index: number): T {
-        var keys = this.keys();
+        const keys = this.keys();
         return this[keys[index]];
     }
 
@@ -150,11 +150,6 @@ export class IndexedCache<T extends ListItem<any>> {
             /** Only add the listItem to the cache if it's not already there */
             if (!this.has(listItem.id)) {
                 this[key] = listItem;
-            // } else {
-            //     let cachedObjectDiffersFromListItem = this.get(key) !== listItem;
-            //     if (cachedObjectDiffersFromListItem) {
-            //         console.warn('List item already exists in cache and differs from this list item.', listItem, this.get(key), this);
-            //     }
             }
         } else {
             throw new Error('A valid listItem wasn\'t provided: ' + JSON.stringify(listItem, null, 2));
@@ -198,7 +193,8 @@ export class IndexedCache<T extends ListItem<any>> {
      * @param {object} listItem Entity to add to the cache.
      */
     private addEntity(listItem: T): void {
-        console.warn('DEPRECATED METHOD!.  addEntity method deprecited.  Please use the set method in the future to comply with ES6 Map object.');
+        console.warn('DEPRECATED METHOD!.  addEntity method deprecited.  Please use the set method' +
+            ' in the future to comply with ES6 Map object.');
         this.set(listItem.id, listItem);
     }
 
@@ -231,7 +227,7 @@ export class IndexedCache<T extends ListItem<any>> {
 }
 
 /** Adds a getter to base prototype wich returns  the number of key/values stored in cache. */
-Object.defineProperty(IndexedCache.prototype, "size", {
+Object.defineProperty(IndexedCache.prototype, 'size', {
     get: function () {
         return this.count();
     },

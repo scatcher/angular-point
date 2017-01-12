@@ -2,7 +2,7 @@ import * as _ from 'lodash';
 // import * as ErrorStackParser from 'error-stack-parser';
 import {ListItem} from '../factories/apListItemFactory';
 
-declare var ErrorStackParser: any;
+declare let ErrorStackParser: any;
 
 
 let deferred: ng.IDeferred<Function>;

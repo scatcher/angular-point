@@ -8,11 +8,12 @@ import {IXMLFieldAttributeTypes} from '../constants/apXMLFieldAttributeTypes';
 import {XMLToJSONService} from './apXMLToJSONService';
 import {ListItem, IUninstantiatedExtendedListItem, IUninstantiatedListItem} from '../factories/apListItemFactory';
 import {Model} from '../factories/apModelFactory';
-import {IQuery, IExecuteQueryOptions} from '../factories/apQueryFactory';
+import {Query, IExecuteQueryOptions} from '../factories/apQueryFactory';
 import {IndexedCache} from '../factories/apIndexedCacheFactory';
 import {FieldDefinition} from '../factories/apFieldFactory';
 import {List, ListFieldMapping} from '../factories/apListFactory';
-import {FieldVersionCollection} from '../factories/apListItemVersionFactory';
+import { FieldVersionCollection } from '../factories/apListItemVersionFactory';
+
 /**
  * @ngdoc service
  * @name angularPoint.apDecodeService
@@ -28,8 +29,8 @@ export class DecodeService {
         'apXMLListAttributeTypes', 'apXMLFieldAttributeTypes', 'apXMLToJSONService'];
 
     constructor(private apCacheService: CacheService, private apLookupFactory: LookupFactory,
-                private apUserFactory: UserFactory, private apFieldService: FieldService, private apXMLListAttributeTypes: IXMLListAttributeTypes,
-                private apXMLFieldAttributeTypes: IXMLFieldAttributeTypes, private apXMLToJSONService: XMLToJSONService) {
+        private apUserFactory: UserFactory, private apFieldService: FieldService, private apXMLListAttributeTypes: IXMLListAttributeTypes,
+        private apXMLFieldAttributeTypes: IXMLFieldAttributeTypes, private apXMLToJSONService: XMLToJSONService) {
 
     }
 
@@ -85,19 +86,19 @@ export class DecodeService {
      * @returns {Function} Returns a function that takes the new list item while keeping model, query,
      * and container in scope for future reference.
      */
-    createListItemProvider<T extends ListItem<any>>(model: Model, query: IQuery<T>, indexedCache: IndexedCache<T>): (rawObject: Object) => T {
+    createListItemProvider<T extends ListItem<any>>(model: Model, query: Query<T>, indexedCache: IndexedCache<T>): (rawObject: Object) => T {
         return (rawObject: IUninstantiatedExtendedListItem<T>) => {
             let listItem: T;
 
             if (indexedCache.has(rawObject.id)) {
-                //Object already exists in cache so we just need to update properties
+                // Object already exists in cache so we just need to update properties
                 listItem = indexedCache.get(rawObject.id);
 
-                //Call constructor on original list item to perform any initialization logic again
+                // Call constructor on original list item to perform any initialization logic again
                 listItem.constructor(rawObject);
 
             } else {
-                //Creating a new List Item
+                // Creating a new List Item
 
                 /** Create Reference to the indexed cache */
                 rawObject.getCache = () => indexedCache;
@@ -111,7 +112,7 @@ export class DecodeService {
                 this.apCacheService.registerEntity<T>(listItem, indexedCache);
             }
 
-            //Store the value instead of just a reference to the original object
+            // Store the value instead of just a reference to the original object
             let pristineValue = _.cloneDeep(rawObject);
 
             /**
@@ -190,7 +191,7 @@ export class DecodeService {
      */
     extendListDefinitionFromXML(list: List, responseXML: Element): List {
         let service = this;
-        $(responseXML).find("List").each(function () {
+        $(responseXML).find('List').each(function () {
             service.extendObjectWithXMLAttributes(this, list, service.apXMLListAttributeTypes);
         });
         return list;
@@ -277,7 +278,7 @@ export class DecodeService {
          */
         if (!isNaN(str)) {
             /** Value is a number current stored as a string */
-            let int = parseInt(str);
+            let int = parseInt(str, 10);
             if (int > 0) {
                 return int;
             } else {
@@ -324,10 +325,10 @@ export class DecodeService {
             return null;
         } else {
             /** Replace dashes with slashes and the "T" deliminator with a space if found */
-            let dt = str.split("T")[0] !== str ? str.split("T") : str.split(" ");
-            let d = dt[0].split("-");
-            let t = dt[1].split(":");
-            let t3 = t[2].split("Z");
+            let dt = str.split('T')[0] !== str ? str.split('T') : str.split(' ');
+            let d = dt[0].split('-');
+            let t = dt[1].split(':');
+            let t3 = t[2].split('Z');
             return new Date(<any> d[0], (<any>d[1] - 1), <any>d[2], <any>t[0], <any>t[1], <any>t3[0]);
         }
     }
@@ -352,7 +353,7 @@ export class DecodeService {
         if (str.length === 0) {
             return null;
         } else {
-            //Send to constructor
+            // Send to constructor
             return this.apLookupFactory.create(str, options);
         }
     }
@@ -382,8 +383,7 @@ export class DecodeService {
             let json = null;
             try {
                 json = JSON.parse(str);
-            }
-            catch (err) {
+            } catch (err) {
                 console.error('Invalid JSON: ', str);
             }
             return json;
@@ -398,7 +398,7 @@ export class DecodeService {
         if (str.length === 0) {
             return null;
         }
-        //Send to constructor
+        // Send to constructor
         return this.apUserFactory.create(str);
     }
 
@@ -547,7 +547,10 @@ export class DecodeService {
      * @param {boolean} [options.removeOws=true] Specifically for GetListItems, if true, the leading ows_ will be removed.
      * @returns {object} New entity using the factory on the model.
      */
-    parseXmlEntity<T extends ListItem<any>>(xmlEntity: Element, {mapping, includeAllAttrs = false, removeOws = true}: IParseXmlEntityOptions) {
+    parseXmlEntity<T extends ListItem<any>>(
+        xmlEntity: Element,
+        {mapping, includeAllAttrs = false, removeOws = true}: IParseXmlEntityOptions
+    ) {
         let entity = {};
         let rowAttrs = xmlEntity.attributes;
 
@@ -560,8 +563,12 @@ export class DecodeService {
         _.each(rowAttrs, (attr) => {
             let thisAttrName = attr.name;
             let thisMapping = mapping[thisAttrName];
-            let thisObjectName = typeof thisMapping !== 'undefined' ? thisMapping.mappedName : removeOws ? thisAttrName.split('ows_')[1] : thisAttrName;
+
+            let thisObjectName = typeof thisMapping !== 'undefined' ?
+                thisMapping.mappedName : removeOws ? thisAttrName.split('ows_')[1] : thisAttrName;
+            
             let thisObjectType = typeof thisMapping !== 'undefined' ? thisMapping.objectType : undefined;
+
             if (includeAllAttrs || thisMapping !== undefined) {
                 entity[thisObjectName] = this.parseStringValue(attr.value, thisObjectType, {
                     entity: entity,
@@ -592,7 +599,7 @@ export class DecodeService {
      * @param {Array} [options.target=model.getCache()] Optionally pass in an Indexed Cache instead of using the defaul cache.
      * @returns {Object} Inedexed Cache.
      */
-    processListItems<T extends ListItem<any>>(model: Model, query: IQuery<T>, responseXML: Element, {
+    processListItems<T extends ListItem<any>>(model: Model, query: Query<T>, responseXML: Element, {
         includeAllAttrs = false,
         filter = 'z:row',
         mapping = model.list.mapping,
@@ -667,7 +674,5 @@ interface IProcessListItemsOptions<T extends ListItem<any>> {
     includeAllAttrs?: boolean;
     filter?: string;
     mapping: ListFieldMapping;
-    target?: IndexedCache<T>
+    target?: IndexedCache<T>;
 }
-
-
