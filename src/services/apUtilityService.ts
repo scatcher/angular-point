@@ -360,7 +360,7 @@ export class UtilityService {
          * so in that case, set everything to true
          */
         if (permissionSet.FullMask) {
-            _.each(permissionSet, function (perm, key) {
+            _.each(permissionSet, (perm, key) => {
                 permissionSet[key] = true;
             });
         }

@@ -175,7 +175,7 @@ export class ExportService {
     saveCSV(data: string[][], filename = 'debug.csv'): void {
         let csvString = '';
         data.forEach(row => {
-            _.each(row, function (column, columnIndex) {
+            _.each(row, (column, columnIndex) => {
                 let result = column === null ? '' : this.replaceWordChars(column);
                 if (columnIndex > 0) {
                     csvString += ',';

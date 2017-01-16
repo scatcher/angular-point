@@ -187,7 +187,7 @@ export function SPServicesCore(apWebServiceOperationConstants: IWebServiceOperat
         ];
 
         /** Ensure the SharePoint properties are available prior to extending with defaults */
-        _.each(mapping, function (map) {
+        _.each(mapping, (map) => {
             if (options[map[0]] && !options[map[1]]) {
                 /** Ensure SPServices properties are added in the event the true property name is used */
                 options[map[1]] = options[map[0]];
@@ -201,7 +201,7 @@ export function SPServicesCore(apWebServiceOperationConstants: IWebServiceOperat
         const opt: SPServicesOptions | any = _.assign({}, defaults, options);
 
         // Encode options which may contain special character, esp. ampersand
-        _.each(encodeOptionList, function (optionName) {
+        _.each(encodeOptionList, (optionName) => {
             if (_.isString(opt[optionName])) {
                 opt[optionName] = encodeXml(opt[optionName]);
             }

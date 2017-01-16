@@ -188,7 +188,7 @@ export class FormattedFieldValueService {
      */
     stringifyMultiChoice(prop: string[], delim = '; '): string {
         let str = '';
-        _.each(prop, function (choice, i) {
+        _.each(prop, (choice, i) => {
             if (i > 0) {
                 str += delim;
             }
@@ -210,7 +210,7 @@ export class FormattedFieldValueService {
      */
     stringifyMultiLookup(prop: Lookup<any>[], delim = '; '): string {
         let str = '';
-        _.each(prop, function (val, valIndex) {
+        _.each(prop, (val, valIndex) => {
 
             /** Add artificial delim */
             if (valIndex > 0) {

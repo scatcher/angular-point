@@ -63,7 +63,7 @@ export class CamlFactory {
     chainCamlSelects(selectStatements: Object[], joinType: string): string {
         let camlQuery = '';
         let camlQueryClosure = '';
-        _.each(selectStatements, function (statement, statementIndex) {
+        _.each(selectStatements, (statement, statementIndex) => {
             /** Add an or clause if we still have additional fields to process */
             if (statementIndex < selectStatements.length - 1) {
                 camlQuery += '<' + joinType + '>';

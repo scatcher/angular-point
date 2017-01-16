@@ -191,9 +191,11 @@ export class FieldDefinition implements FieldDefinition {
      */
     getFormattedValue(listItem: ListItem<any>, options?: Object): string {
         // Optionally provide a custom method to convert a field value into a formatted string
-        return _.isFunction(this.formatter) ? this.formatter(listItem, this, options) :
-            apFormattedFieldValueService
-                .getFormattedFieldValue(listItem[this.mappedName], this.objectType, options);
+        if (_.isFunction(this.formatter)) {
+            return this.formatter(listItem, this, options);
+        } else {
+            return apFormattedFieldValueService.getFormattedFieldValue(listItem[this.mappedName], this.objectType, options);
+        }
     }
 
     /**

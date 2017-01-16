@@ -97,8 +97,8 @@ export class DataService {
             .then(function (responseXML) {
                 let workflowTemplates = [];
                 let xmlTemplates = this.apXMLToJSONService.filterNodes(responseXML, 'WorkflowTemplate');
-                _.each(xmlTemplates, function (xmlTemplate: Element) {
-                    let template = {
+                _.each(xmlTemplates, (xmlTemplate: Element) => {
+                    const template = {
                         name: $(xmlTemplate).attr('Name'),
                         instantiationUrl: $(xmlTemplate).attr('InstantiationUrl'),
                         templateId: '{' + $(xmlTemplate).find('WorkflowTemplateIdSet').attr('TemplateId') + '}'

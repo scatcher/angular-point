@@ -209,7 +209,7 @@ export class EncodeService {
         let stringifiedValues = '';
         const idProp = idProperty || 'lookupId';
         const valProp = valueProperty || 'lookupValue';
-        _.each(multiSelectValue, function (lookupObject, iteration) {
+        _.each(multiSelectValue, (lookupObject, iteration) => {
             /** Need to format string of id's in following format [ID0];#[VAL0];#[ID1];#[VAL1] */
             stringifiedValues += lookupObject[idProp] + ';#' + (lookupObject[valProp] || '');
             /** Append delim after all but last because we don't want trailing ';#' at end of string */
