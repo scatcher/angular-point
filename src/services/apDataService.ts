@@ -93,20 +93,19 @@ export class DataService {
         return this.serviceWrapper({
             operation: 'GetTemplatesForItem',
             item: itemUrl
-        })
-            .then(function (responseXML) {
-                let workflowTemplates = [];
-                let xmlTemplates = this.apXMLToJSONService.filterNodes(responseXML, 'WorkflowTemplate');
-                _.each(xmlTemplates, (xmlTemplate: Element) => {
-                    const template = {
-                        name: $(xmlTemplate).attr('Name'),
-                        instantiationUrl: $(xmlTemplate).attr('InstantiationUrl'),
-                        templateId: '{' + $(xmlTemplate).find('WorkflowTemplateIdSet').attr('TemplateId') + '}'
-                    };
-                    workflowTemplates.push(template);
-                });
-                return workflowTemplates;
+        }).then((responseXML) => {
+            let workflowTemplates = [];
+            let xmlTemplates = this.apXMLToJSONService.filterNodes(responseXML, 'WorkflowTemplate');
+            _.each(xmlTemplates, (xmlTemplate: Element) => {
+                const template = {
+                    name: $(xmlTemplate).attr('Name'),
+                    instantiationUrl: $(xmlTemplate).attr('InstantiationUrl'),
+                    templateId: '{' + $(xmlTemplate).find('WorkflowTemplateIdSet').attr('TemplateId') + '}'
+                };
+                workflowTemplates.push(template);
             });
+            return workflowTemplates;
+        });
     }
 
     /**
@@ -144,37 +143,39 @@ export class DataService {
      * </pre>
      */
     getCollection(options: GetCollectionOptions): ng.IPromise<Object[]> {
-        let defaults = {
-            postProcess: processXML
-        };
-        let opts: GetCollectionOptions = _.assign({}, defaults, options);
 
         /** Determine the XML node to iterate over if filterNode isn't provided */
-        let filterNode = opts.filterNode || opts.operation.split('Get')[1].split('Collection')[0];
+        let filterNode = options.filterNode || options.operation.split('Get')[1].split('Collection')[0];
+
+        const defaults = {
+            /**
+             * Default XML parser - convert the xml returned from the server into an array of js objects
+             */
+            postProcess: (responseXML: Element) => {
+                let convertedItems = [];
+                const filteredNodes = this.apXMLToJSONService.filterNodes(responseXML, filterNode);
+                /** Get attachments only returns the links associated with a list item */
+                if (options.operation && options.operation === 'GetAttachmentCollection') {
+                    /** Unlike other call, get attachments only returns strings instead of an object with attributes */
+                    _.each(filteredNodes, (node: Element) => convertedItems.push($(node).text()));
+                } else {
+                    convertedItems = this.apXMLToJSONService.parse(filteredNodes, { includeAllAttrs: true, removeOws: false });
+                }
+                return convertedItems;
+            }
+        };
+
+        let opts: GetCollectionOptions = _.assign({}, defaults, options);
 
         let deferred = this.$q.defer();
 
-        /** Convert the xml returned from the server into an array of js objects */
-        function processXML(responseXML: Element) {
-            let convertedItems = [];
-            let filteredNodes = this.apXMLToJSONService.filterNodes(responseXML, filterNode);
-            /** Get attachments only returns the links associated with a list item */
-            if (opts.operation === 'GetAttachmentCollection') {
-                /** Unlike other call, get attachments only returns strings instead of an object with attributes */
-                _.each(filteredNodes, (node: Element) => convertedItems.push($(node).text()));
-            } else {
-                convertedItems = this.apXMLToJSONService.parse(filteredNodes, { includeAllAttrs: true, removeOws: false });
-            }
-            return convertedItems;
-        }
-
         let validPayload = this.validateCollectionPayload(opts);
+
         if (validPayload) {
             this.serviceWrapper(opts)
                 .then((response) => {
                     deferred.resolve(response);
-                })
-                .catch((err) => deferred.reject(err));
+                }, (err) => deferred.reject(err));
         } else {
             deferred.reject(`Invalid payload for ${opts.operation} request.`);
         }
@@ -220,8 +221,7 @@ export class DataService {
                     }
                     // environment.site = $(response.data).find("WebUrlFromPageUrlResult").text();
                     deferred.resolve(ENV.site);
-                })
-                .catch((err) => {
+                }, (err) => {
                     /** Error */
                     this.errorHandler('Failed to get current site.  ' + err, deferred, soapData);
                 });
@@ -263,8 +263,7 @@ export class DataService {
                 let fieldVersionCollection = this.apDecodeService.parseFieldVersions(response, fieldDefinition);
                 /** Resolve with an array of all field versions */
                 return fieldVersionCollection;
-            })
-            .catch((err) => {
+            }, (err) => {
                 /** Failure */
                 throw new Error(`Failed to fetch version history. Error: ${err}`);
             });
@@ -496,8 +495,7 @@ export class DataService {
                             deferred.resolve(responseXML);
                             // deferred.resolve(response.data);
                         }
-                    })
-                    .catch((err) => {
+                    }, (err) => {
                         // Failure
                         this.errorHandler(err, deferred, soapData);
                     });
@@ -576,28 +574,28 @@ export class DataService {
      *      Otherwise returns the server response
      */
     serviceWrapper(options: ServiceWrapperOptions): ng.IPromise<any> {
-        let defaults = {
-            postProcess: processXML,
+        
+        const defaults = {
+            postProcess: (responseXML: Element) => {
+                if (options.filterNode) {
+                    const filteredNodes = this.apXMLToJSONService.filterNodes(responseXML, options.filterNode);
+                    return this.apXMLToJSONService.parse(filteredNodes, { includeAllAttrs: true, removeOws: false });
+                } else {
+                    return responseXML;
+                }
+            },
             webURL: ENV.site
         };
-        let opts: ServiceWrapperOptions = _.assign({}, defaults, options);
+
+        const opts: ServiceWrapperOptions = _.assign({}, defaults, options);
 
         /** Convert the xml returned from the server into an array of js objects */
-        function processXML(responseXML: Element) {
-            if (opts.filterNode) {
-                let filteredNodes = this.apXMLToJSONService.filterNodes(responseXML, opts.filterNode);
-                return this.apXMLToJSONService.parse(filteredNodes, { includeAllAttrs: true, removeOws: false });
-            } else {
-                return responseXML;
-            }
-        }
 
         return this.requestData(opts)
             .then((responseXML) => {
                 /** Success */
                 return opts.postProcess(responseXML);
-            })
-            .catch((err: Error) => {
+            }, (err: Error) => {
                 /** Failure */
                 return err + '  Failed to complete the requested ' + opts.operation + ' operation.';
             });

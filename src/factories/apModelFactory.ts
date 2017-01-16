@@ -271,8 +271,7 @@ export class Model {
 
                 /** Return reference to last listItem in cache because it will have the new highest id */
                 return newListItem;
-            })
-            .catch((err) => {
+            }, (err) => {
                 throw new Error('Unable to create new list item.  Err:' + err);
                 // return err;
             });

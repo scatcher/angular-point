@@ -192,8 +192,7 @@ export class ListItem<T extends ListItem<any>> implements IUninstantiatedExtende
                     apCacheService.deleteEntity(config.listName, listItem.id);
 
                     deferred.resolve(response);
-                })
-                .catch((err) => {
+                }, (err) => {
                     // In the event of an error, display toast
                     let msg = 'There was an error deleting list item ' + listItem.id + ' from ' + model.list.title +
                         ' due to the following Error: ' + err;

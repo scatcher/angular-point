@@ -71,34 +71,34 @@ export class UtilityService {
      * </pre>
      */
 
-    batchProcess(entities, process, context, delay = 25, maxItems) {
-        let itemCount = entities.length;
-        let batchCount = 0;
-        const chunkMax = maxItems || itemCount;
-        let index = 0;
-        const deferred = this.$q.defer();
+    // batchProcess(entities, process, context, delay = 25, maxItems) {
+    //     let itemCount = entities.length;
+    //     let batchCount = 0;
+    //     const chunkMax = maxItems || itemCount;
+    //     let index = 0;
+    //     const deferred = this.$q.defer();
 
-        function chunkTimer() {
-            batchCount++;
-            let start = +new Date();
-            const chunkIndex = index;
+    //     function chunkTimer() {
+    //         batchCount++;
+    //         let start = +new Date();
+    //         const chunkIndex = index;
 
-            while (index < itemCount && (index - chunkIndex) < chunkMax && (<any> new Date() - start < 100)) {
-                process.call(context, entities[index], index, batchCount);
-                index += 1;
-            }
+    //         while (index < itemCount && (index - chunkIndex) < chunkMax && (<any> new Date() - start < 100)) {
+    //             process.call(context, entities[index], index, batchCount);
+    //             index += 1;
+    //         }
 
-            if (index < itemCount) {
-                this.$timeout(chunkTimer, delay);
-            } else {
-                deferred.resolve(entities);
-            }
-        }
+    //         if (index < itemCount) {
+    //             this.$timeout(chunkTimer, delay);
+    //         } else {
+    //             deferred.resolve(entities);
+    //         }
+    //     }
 
-        chunkTimer();
+    //     chunkTimer();
 
-        return deferred.promise;
-    }
+    //     return deferred.promise;
+    // }
 
 
     /**
