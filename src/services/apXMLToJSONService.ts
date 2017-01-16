@@ -65,7 +65,7 @@ export class XMLToJSONService {
      * @returns {Object[]} Object with jQuery values.
      */
     parse(xmlNodeSet: NodeList, options?: IParseOptions): Object[] {
-        //Need to use injector because apDecode service also relies on this service so we'd otherwise have a circular dependency.
+        // Need to use injector because apDecode service also relies on this service so we'd otherwise have a circular dependency.
         const apDecodeService = this.$injector.get<DecodeService>('apDecodeService');
         const defaults = {
             includeAllAttrs: false, // If true, return all attributes, regardless whether they are in the mapping
