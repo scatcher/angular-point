@@ -180,9 +180,10 @@ export class LookupCacheService {
      * </pre>
      */
     manageChangeEvents(listItemConstructor: any, propertyArray: string[]) {
+        const self = this;
         const unSubscribeOnChange = function () {
             if (this.id) {
-                this.removeEntityFromLookupCaches(this, propertyArray);
+                self.removeEntityFromLookupCaches(this, propertyArray);
             }
             // Need to return true otherwise it means validation failed and save/delete event is prevented
             return true;
