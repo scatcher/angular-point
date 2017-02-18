@@ -791,7 +791,7 @@ export class ListItem<T extends ListItem<any>> implements IUninstantiatedExtende
              * an empty item that is instantiated from the model and then attempt to save instead of using
              * model.addNewItem */
             if (!listItem.id) {
-                return model.addNewItem(listItem, {valuePairs, buildValuePairs});
+                return model.addNewItem(listItem, {valuePairs, buildValuePairs, target});
             }
 
             if (buildValuePairs === true) {
