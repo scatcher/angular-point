@@ -41,7 +41,7 @@ export interface MockDataOptions {
 
 export interface CreateListItemOptions<T extends ListItem<any>> {
     buildValuePairs?: boolean;
-    indexedCache?: IndexedCache<T>;
+    target?: IndexedCache<T>;
     getCache?: () => IndexedCache<T>;
     valuePairs?: [string, any][];
 }
@@ -209,7 +209,7 @@ export class Model {
      * defined in the model.
      * @param {object} [options] - Pass additional options to the data service.
      * @param {boolean} [options.buildValuePairs=true] Automatically generate pairs based on fields defined in model.
-     * @param {object} [options.indexedCache=apIndexedCacheFactory.create({})] Optionally place new item in a specified cache.
+     * @param {IndexedCache} [options.target=apIndexedCacheFactory.create({})] Optionally place new item in a specified cache.
      * @param {Array[]} [options.valuePairs] Precomputed value pairs to use instead of generating them for each
      * field identified in the model.
      * @returns {ng.IPromise<T>} A promise which when resolved will returned the newly created list item from there server.
@@ -231,7 +231,7 @@ export class Model {
      */
     addNewItem<T extends ListItem<any>>(entity: ListItem<T>, {
         buildValuePairs = true,
-        indexedCache = apIndexedCacheFactory.create({}),
+        target = this.getCache ? this.getCache() : apIndexedCacheFactory.create({}),
         valuePairs = []
     }: CreateListItemOptions<T> = {}): ng.IPromise<T> {
 
@@ -240,10 +240,9 @@ export class Model {
             buildValuePairs,
             listName: this.getListId(),
             // Method gets added onto new list item and allows access to parent cache
-            getCache: () => indexedCache,
-            indexedCache,
+            getCache: () => target,
+            target,
             operation: 'UpdateListItems',
-            target: indexedCache,
             valuePairs,
             webURL: this.list.identifyWebURL()
         };
