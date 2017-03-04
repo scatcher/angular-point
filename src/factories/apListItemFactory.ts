@@ -171,8 +171,8 @@ export class ListItem<T extends ListItem<any>> implements IUninstantiatedExtende
 
             /** Check to see if list item or document because documents need the FileRef as well as id to delete */
             if (listItem.fileRef && listItem.fileRef.lookupValue) {
-                let fileExtension = listItem.fileRef.lookupValue.split('.').pop();
-                if (_.isNaN(fileExtension)) {
+                let fileExtension = <any> listItem.fileRef.lookupValue.split('.').pop();
+                if (isNaN(fileExtension)) {
                     /** File extension instead of numeric extension so it's a document
                      * @Example
                      * Document: "Site/library/file.csv"
