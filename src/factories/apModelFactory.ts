@@ -10,7 +10,7 @@ import {DecodeService} from '../services/apDecodeService';
 import {EncodeService} from '../services/apEncodeService';
 import {ListItem} from './apListItemFactory';
 import {FieldDefinition} from './apFieldFactory';
-import {IUserPermissionsObject, BasePermissionObject} from '../constants/apPermissionObject';
+import {UserPermissionsObject, BasePermissionObject} from '../constants/apPermissionObject';
 import {ENV} from '../angular-point';
 
 
@@ -161,7 +161,7 @@ export class Model {
     deferredListDefinition;
     list: List;
     factory: IModelFactory;
-    fieldDefinitionsExtended: boolean = false;
+    fieldDefinitionsExtended = false;
     lastServerUpdate: Date;
     queries: QueriesContainer = {};
     requestForFieldDefinitions;
@@ -891,7 +891,7 @@ export class Model {
             * }
      * </pre>
      */
-    resolvePermissions(): IUserPermissionsObject {
+    resolvePermissions(): UserPermissionsObject {
         const model = this,
             list = model.getList();
         if (list && list.permissions) {

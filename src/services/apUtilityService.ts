@@ -1,6 +1,6 @@
 import * as _ from 'lodash';
 // Split values like 1;#value into id and value
-import {IUserPermissionsObject} from '../constants/apPermissionObject';
+import {UserPermissionsObject} from '../constants/apPermissionObject';
 
 export class SplitIndex {
     id: number;
@@ -225,8 +225,8 @@ export class UtilityService {
         // insert a space before all caps
         return str.replace(/([A-Z])/g, ' $1')
         // uppercase the first character
-            .replace(/^./, function (str) {
-                return str.toUpperCase();
+            .replace(/^./, function (s) {
+                return s.toUpperCase();
             });
     }
 
@@ -316,7 +316,7 @@ export class UtilityService {
              * }
      * </pre>
      */
-    resolvePermissions(permissionsMask): IUserPermissionsObject {
+    resolvePermissions(permissionsMask): UserPermissionsObject {
         const permissionSet = {
             ViewListItems: (1 & permissionsMask) > 0,
             AddListItems: (2 & permissionsMask) > 0,

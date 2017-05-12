@@ -109,7 +109,7 @@ export class FieldChange {
  */
 export class FieldChangeSummary<T extends ListItem<any>> {
     changeCount: number;
-    fieldsChanged: {[key: string]: FieldChange;} = {};
+    fieldsChanged: { [key: string]: FieldChange } = {};
 
     constructor(newerVersion: ListItem<T> | any, previousVersion: ListItem<T> | Object | any = <ListItem<T>>{}) {
         /** Loop through each of the properties on the newer list item */

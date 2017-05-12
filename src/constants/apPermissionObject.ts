@@ -1,4 +1,4 @@
-export interface IUserPermissionsObject {
+export interface UserPermissionsObject {
     AddAndCustomizePages: boolean;
     AddDelPrivateWebParts: boolean;
     AddListItems: boolean;
@@ -34,7 +34,7 @@ export interface IUserPermissionsObject {
     ViewVersions: boolean;
 }
 
-export class BasePermissionObject implements IUserPermissionsObject {
+export class BasePermissionObject implements UserPermissionsObject {
     AddAndCustomizePages = false;
     AddDelPrivateWebParts = false;
     AddListItems = false;

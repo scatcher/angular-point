@@ -31,7 +31,7 @@ export class XMLToJSONService {
      * for performance details.
      * @returns {NodeList} List of fltered nodes.
      */
-    filterNodes(xmlObject: Element, name: string): NodeList {
+    filterNodes(xmlObject: Element, name: string): any {
 
         if (name.indexOf(':') > -1) {
             // Something like z:row so need to filter for namespace

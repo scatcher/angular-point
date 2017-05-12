@@ -57,7 +57,7 @@ export class FormattedFieldValueService {
      */
     getFormattedFieldValue(prop: any, propertyType = 'String', options: {delim?: string; dateFormat?: string} = {}): string {
 
-        let str: string = '';
+        let str = '';
         /** Only process if prop is defined */
         if (prop) {
             switch (propertyType) {
@@ -150,7 +150,7 @@ export class FormattedFieldValueService {
      * Returns JSON date.
      * @returns {string} JSON date.
      */
-    stringifyDate(prop: Date, dateFormat: string = 'short'): string {
+    stringifyDate(prop: Date, dateFormat = 'short'): string {
         let str = '';
         if (_.isDate(prop)) {
             str = dateFormat === 'json' ? prop.toJSON() : this.$filter('date')(prop, dateFormat);

@@ -137,9 +137,9 @@ export class ExportService {
     replaceWordChars(text: string): string {
         let s = text;
         // smart single quotes and apostrophe
-        s = s.replace(/[\u2018|\u2019|\u201A]/g, "\'");
+        s = s.replace(/[\u2018|\u2019|\u201A]/g, `\'`);
         // smart double quotes
-        s = s.replace(/[\u201C|\u201D|\u201E]/g, "\"");
+        s = s.replace(/[\u201C|\u201D|\u201E]/g, `\"`);
         // ellipsis
         s = s.replace(/\u2026/g, '...');
         // dashes

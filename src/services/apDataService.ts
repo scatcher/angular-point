@@ -7,7 +7,7 @@ import { DecodeService } from './apDecodeService';
 import { EncodeService } from './apEncodeService';
 import { FieldService } from './apFieldService';
 import { IndexedCacheFactory, IndexedCache } from '../factories/apIndexedCacheFactory';
-import { BasePermissionObject, IUserPermissionsObject } from '../constants/apPermissionObject';
+import { BasePermissionObject, UserPermissionsObject } from '../constants/apPermissionObject';
 import { XMLToJSONService } from './apXMLToJSONService';
 import { ChangeService } from './apChangeService';
 import { Logger } from './apLogger';
@@ -524,7 +524,7 @@ export class DataService {
      * Note: this attribute is only found when using 'GetListItemChangesSinceToken'
      * @param {Element} responseXML XML response from the server.
      */
-    retrieveListPermissions(responseXML: Element): IUserPermissionsObject {
+    retrieveListPermissions(responseXML: Element): UserPermissionsObject {
         // Permissions will be a string of Permission names delimited by commas
         // Example: "ViewListItems, AddListItems, EditListItems, DeleteListItems, ...."
         let listPermissions: string = $(responseXML).find('listitems').attr('EffectivePermMask');
@@ -574,7 +574,7 @@ export class DataService {
      *      Otherwise returns the server response
      */
     serviceWrapper(options: ServiceWrapperOptions): ng.IPromise<any> {
-        
+
         const defaults = {
             postProcess: (responseXML: Element) => {
                 if (options.filterNode) {

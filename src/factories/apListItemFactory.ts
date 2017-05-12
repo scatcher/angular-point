@@ -19,7 +19,7 @@ import {Query} from './apQueryFactory';
 import {Model, IModelFactory} from './apModelFactory';
 import {FieldDefinition} from './apFieldFactory';
 import {List} from './apListFactory';
-import {IUserPermissionsObject} from '../constants/apPermissionObject';
+import {UserPermissionsObject} from '../constants/apPermissionObject';
 import {IWorkflowDefinition, IStartWorkflowParams} from '../interfaces/index';
 import {ENV} from '../angular-point';
 
@@ -519,7 +519,7 @@ export class ListItem<T extends ListItem<any>> implements IUninstantiatedExtende
 
                 let versionHistoryCollection =
                     new apListItemVersionFactory.VersionHistoryCollection<T>(fieldVersionCollections, model.factory);
-                
+
                 return versionHistoryCollection;
 
             });
@@ -729,7 +729,7 @@ export class ListItem<T extends ListItem<any>> implements IUninstantiatedExtende
          * }
      * </pre>
      */
-    resolvePermissions(): IUserPermissionsObject {
+    resolvePermissions(): UserPermissionsObject {
         return apUtilityService.resolvePermissions(this.permMask);
     }
 

@@ -162,7 +162,7 @@ export class Query<T extends ListItem<any>>{
     operation = 'GetListItemChangesSinceToken';
     promise: ng.IPromise<IndexedCache<T>>;
     /** Default query returns list items in ascending ID order */
-    query: string = `
+    query = `
         <Query>
            <OrderBy>
                <FieldRef Name="ID" Ascending="TRUE"/>

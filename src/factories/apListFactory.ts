@@ -1,6 +1,6 @@
 import * as _ from 'lodash';
 import {FieldFactory, FieldConfigurationObject, FieldDefinition} from './apFieldFactory';
-import {IUserPermissionsObject} from '../constants/apPermissionObject';
+import {UserPermissionsObject} from '../constants/apPermissionObject';
 import {DefaultFields} from '../constants/apDefaultFields';
 import {ListItem} from './apListItemFactory';
 import {$AP_INJECTOR, ENV} from '../angular-point';
@@ -155,7 +155,7 @@ export class List implements UninstantiatedList, XMLList  {
     guid: string;
     isReady = false;
     mapping: ListFieldMapping = {};
-    permissions: IUserPermissionsObject;
+    permissions: UserPermissionsObject;
     title: string;
     viewFields: string;
     WebFullUrl; // Only appears if extended from list definition
@@ -221,7 +221,7 @@ export class List implements UninstantiatedList, XMLList  {
      * sample list item and assume they're the same for the entire list
      * @returns {IUserPermissionsObject} Resolved permissions for the list item.
      */
-    extendPermissionsFromListItem(listItem: ListItem<any>): IUserPermissionsObject {
+    extendPermissionsFromListItem(listItem: ListItem<any>): UserPermissionsObject {
         if (!listItem) {
             throw new Error('A valid list item is required in order to extend list permissions.');
         }

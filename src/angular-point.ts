@@ -1,35 +1,35 @@
 import * as angular from 'angular';
 
-import {DefaultFields} from './constants/apDefaultFields';
-import {DefaultListItemQueryOptions} from './constants/apDefaultListItemQueryOptions';
-import {BasePermissionObject} from './constants/apPermissionObject';
-import {WebServiceOperationConstants} from './constants/apWebServiceOperationConstants';
-import {XMLFieldAttributeTypes} from './constants/apXMLFieldAttributeTypes';
-import {XMLListAttributeTypes} from './constants/apXMLListAttributeTypes';
-import {CamlFactory} from './factories/apCamlFactory';
+import { DefaultFields } from './constants/apDefaultFields';
+import { DefaultListItemQueryOptions } from './constants/apDefaultListItemQueryOptions';
+import { BasePermissionObject, UserPermissionsObject } from './constants/apPermissionObject';
+import { WebServiceOperationConstants } from './constants/apWebServiceOperationConstants';
+import { XMLFieldAttributeTypes } from './constants/apXMLFieldAttributeTypes';
+import { XMLListAttributeTypes } from './constants/apXMLListAttributeTypes';
+import { CamlFactory } from './factories/apCamlFactory';
 import { FieldFactory, FieldConfigurationObject, FieldDefinition } from './factories/apFieldFactory';
-import {IndexedCacheFactory, IndexedCache} from './factories/apIndexedCacheFactory';
-import {ListItemFactory, ListItem} from './factories/apListItemFactory';
+import { IndexedCacheFactory, IndexedCache } from './factories/apIndexedCacheFactory';
+import { ListItemFactory, ListItem } from './factories/apListItemFactory';
 import { ModelFactory, Model, QueriesContainer } from './factories/apModelFactory';
 import { ListItemVersionFactory, ChangeSummary, VersionSummary, ListItemVersion } from './factories/apListItemVersionFactory';
-import {LookupFactory, Lookup} from './factories/apLookupFactory';
-import {QueryFactory, Query} from './factories/apQueryFactory';
+import { LookupFactory, Lookup } from './factories/apLookupFactory';
+import { QueryFactory, Query } from './factories/apQueryFactory';
 import { UserFactory, User } from './factories/apUserFactory';
-import {UserModel} from './models/apUserModel';
-import {CacheService} from './services/apCacheService';
-import {ChangeService} from './services/apChangeService';
-import {DataService} from './services/apDataService';
-import {DecodeService} from './services/apDecodeService';
-import {EncodeService} from './services/apEncodeService';
-import {exceptionLoggingService} from './services/apExceptionHandlerService';
-import {ExportService} from './services/apExportService';
-import {FieldService} from './services/apFieldService';
-import {FormattedFieldValueService} from './services/apFormattedFieldValueService';
-import {SPServicesCore} from './services/apSPServices';
+import { UserModel } from './models/apUserModel';
+import { CacheService } from './services/apCacheService';
+import { ChangeService } from './services/apChangeService';
+import { DataService } from './services/apDataService';
+import { DecodeService } from './services/apDecodeService';
+import { EncodeService } from './services/apEncodeService';
+import { exceptionLoggingService } from './services/apExceptionHandlerService';
+import { ExportService } from './services/apExportService';
+import { FieldService } from './services/apFieldService';
+import { FormattedFieldValueService } from './services/apFormattedFieldValueService';
+import { SPServicesCore } from './services/apSPServices';
 import { Logger, LogEvent } from './services/apLogger';
-import {UtilityService} from './services/apUtilityService';
-import {WebServiceService} from './services/apWebServiceService';
-import {XMLToJSONService} from './services/apXMLToJSONService';
+import { UtilityService } from './services/apUtilityService';
+import { WebServiceService } from './services/apWebServiceService';
+import { XMLToJSONService } from './services/apXMLToJSONService';
 import { List, ListFieldMapping } from './factories/apListFactory';
 import { LookupCacheService } from './services/apLookupCacheService';
 import { XMLUser, XMLGroup } from './interfaces/index';
@@ -48,7 +48,7 @@ export let $AP_INJECTOR: ng.auto.IInjectorService;
  */
 export const AngularPointModule = angular.module('angularPoint', [])
 
-// Constants
+    // Constants
     .constant('apDefaultFields', DefaultFields)
     .constant('apDefaultListItemQueryOptions', DefaultListItemQueryOptions)
     .constant('apBasePermissionObject', BasePermissionObject)
@@ -90,10 +90,11 @@ export const AngularPointModule = angular.module('angularPoint', [])
     .service('apXMLToJSONService', XMLToJSONService)
 
     /** Bootstrap everything that needs to be immediately instantiated */
-    .run(['$injector', 'apListItemFactory', 'apModelFactory', ($injector: ng.auto.IInjectorService, apListItemFactory: ListItemFactory, apModelFactory: ModelFactory) => {
-        // Expose angular $injector for use by the entire application
-        $AP_INJECTOR = $injector;
-    }]);
+    .run(['$injector', 'apListItemFactory', 'apModelFactory',
+        ($injector: ng.auto.IInjectorService, apListItemFactory: ListItemFactory, apModelFactory: ModelFactory) => {
+            // Expose angular $injector for use by the entire application
+            $AP_INJECTOR = $injector;
+        }]);
 
 export let ENV;
 
@@ -120,6 +121,7 @@ export {
     Query,
     User,
     UserModel,
+    UserPermissionsObject,
     UtilityService,
     VersionSummary,
     XMLGroup,

@@ -265,7 +265,7 @@ export class LookupCacheService {
         /** Handle single and multiple lookups by only dealing with an Lookup[] */
         const backedUpLookupValues = this.backup[listId][listItem.id];
 
-        // Don't look at curent list item value in casee user changed it, look at the original backed up value that we stored so we can 
+        // Don't look at current list item value in cases user changed it, look at the original backed up value that we stored so we can
         // unregister what was originally registered.
         if (backedUpLookupValues && backedUpLookupValues[propertyName]) {
 

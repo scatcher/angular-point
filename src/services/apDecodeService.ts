@@ -474,7 +474,7 @@ export class DecodeService {
      * @param {object} [options.propertyName] Name of property on the list item.
      * @returns {*} The newly instantiated JavaScript value based on field type.
      */
-    parseStringValue(str: string, objectType?: string, options?: {entity: Object; propertyName: string;}): any {
+    parseStringValue(str: string, objectType?: string, options?: { entity: Object; propertyName: string }): any {
 
         let unescapedValue = _.unescape(str);
 
@@ -566,7 +566,7 @@ export class DecodeService {
 
             let thisObjectName = typeof thisMapping !== 'undefined' ?
                 thisMapping.mappedName : removeOws ? thisAttrName.split('ows_')[1] : thisAttrName;
-            
+
             let thisObjectType = typeof thisMapping !== 'undefined' ? thisMapping.objectType : undefined;
 
             if (includeAllAttrs || thisMapping !== undefined) {

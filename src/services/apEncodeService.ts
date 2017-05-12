@@ -77,7 +77,7 @@ export class EncodeService {
      * @returns {string} Encoded value ready to be sent to the server.
      */
     encodeValue(fieldType: string, value: any): string {
-        let str: string = '';
+        let str = '';
         /** Only process if note empty, undefined, or null.  Allow false. */
         if (value !== '' && !_.isUndefined(value) && !_.isNull(value)) {
             switch (fieldType) {
