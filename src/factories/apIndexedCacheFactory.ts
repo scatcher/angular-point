@@ -152,7 +152,7 @@ export class IndexedCache<T extends ListItem<any>> {
                 this[key] = listItem;
             }
         } else {
-            throw new Error('A valid listItem wasn\'t provided: ' + JSON.stringify(listItem, null, 2));
+            throw new Error('A valid listItem wasn\'t provided: ' + JSON.stringify(listItem));
         }
         return this;
     }

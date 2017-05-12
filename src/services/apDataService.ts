@@ -686,8 +686,8 @@ export class DataService {
         // Log error to any server side logging list
         this.apLogger.error(errorMsg, {
             json: {
-                request: JSON.stringify(soapData, null, 2),
-                response: JSON.stringify(response, null, 2)
+                request: JSON.stringify(soapData),
+                response: JSON.stringify(response)
             }
         });
 

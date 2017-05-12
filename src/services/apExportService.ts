@@ -223,7 +223,7 @@ export class ExportService {
         }
 
         if (fileType === 'json' && typeof data === 'object') {
-            data = JSON.stringify(data, undefined, 4);
+            data = JSON.stringify(data);
         }
 
         const blob = new Blob([data], {type: 'text/' + fileType}),

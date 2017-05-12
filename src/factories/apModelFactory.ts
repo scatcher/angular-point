@@ -248,7 +248,7 @@ export class Model {
         };
 
         if (entity.id) {
-            throw new Error('Cannot add a new list item that already has an ID. ' + JSON.stringify(entity, null, 2));
+            throw new Error('Cannot add a new list item that already has an ID. ' + JSON.stringify(entity));
         }
 
         if (config.buildValuePairs === true) {
