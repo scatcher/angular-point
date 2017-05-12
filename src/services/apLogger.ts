@@ -146,7 +146,8 @@ export class Logger implements Logger {
      */
     error(message: string, optionsOverride?: LogEvent): ng.IPromise<ListItem<any>> {
         let opts = _.assign({
-            message: message,
+            // Stringify if message is an error object
+            message: _.isObject(message) ? JSON.stringify(message) : message,
             type: 'error'
         }, optionsOverride);
 
