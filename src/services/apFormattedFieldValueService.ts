@@ -1,5 +1,5 @@
 import * as _ from 'lodash';
-import {Lookup} from '../factories/apLookupFactory';
+import { Lookup } from '../factories/apLookupFactory';
 
 /**
  * @ngdoc service
@@ -10,7 +10,7 @@ import {Lookup} from '../factories/apLookupFactory';
 export class FormattedFieldValueService {
     static $inject = ['$filter'];
 
-    constructor(private $filter) { }
+    constructor(private $filter) {}
 
     /**
      * @ngdoc function
@@ -55,8 +55,11 @@ export class FormattedFieldValueService {
      * </pre>
      * @returns {string} Stringified property on the object based on the field type.
      */
-    getFormattedFieldValue(prop: any, propertyType = 'String', options: {delim?: string; dateFormat?: string} = {}): string {
-
+    getFormattedFieldValue(
+        prop: any,
+        propertyType = 'String',
+        options: { delim?: string; dateFormat?: string } = {},
+    ): string {
         let str = '';
         /** Only process if prop is defined */
         if (prop) {
@@ -175,7 +178,6 @@ export class FormattedFieldValueService {
         return str;
     }
 
-
     /**
      * @ngdoc function
      * @name angularPoint.apFormattedFieldValueService:stringifyMultiChoice
@@ -197,7 +199,6 @@ export class FormattedFieldValueService {
         return str;
     }
 
-
     /**
      * @ngdoc function
      * @name angularPoint.apFormattedFieldValueService:stringifyMultiLookup
@@ -211,7 +212,6 @@ export class FormattedFieldValueService {
     stringifyMultiLookup(prop: Lookup<any>[], delim = '; '): string {
         let str = '';
         _.each(prop, (val, valIndex) => {
-
             /** Add artificial delim */
             if (valIndex > 0) {
                 str += delim;
@@ -221,7 +221,6 @@ export class FormattedFieldValueService {
         });
         return str;
     }
-
 
     /**
      * @ngdoc function
@@ -239,8 +238,4 @@ export class FormattedFieldValueService {
         }
         return str;
     }
-
 }
-
-
-

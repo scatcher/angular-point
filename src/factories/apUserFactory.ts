@@ -1,4 +1,4 @@
-import {UtilityService} from '../services/apUtilityService';
+import { UtilityService } from '../services/apUtilityService';
 
 let apUtilityService: UtilityService;
 
@@ -99,4 +99,3 @@ export class UserFactory {
         return new User(s);
     }
 }
-

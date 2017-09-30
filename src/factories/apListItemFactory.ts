@@ -1,32 +1,36 @@
 import * as _ from 'lodash';
-import {CacheService} from '../services/apCacheService';
-import {DataService} from '../services/apDataService';
-import {DecodeService} from '../services/apDecodeService';
-import {EncodeService} from '../services/apEncodeService';
-import {UtilityService} from '../services/apUtilityService';
+import { CacheService } from '../services/apCacheService';
+import { DataService } from '../services/apDataService';
+import { DecodeService } from '../services/apDecodeService';
+import { EncodeService } from '../services/apEncodeService';
+import { UtilityService } from '../services/apUtilityService';
 import {
     ListItemVersionFactory,
     FieldChangeSummary,
     ChangeSummary,
     VersionHistoryCollection,
-    FieldVersionCollection
+    FieldVersionCollection,
 } from './apListItemVersionFactory';
-import {ChangeService} from '../services/apChangeService';
-import {User} from './apUserFactory';
-import {Lookup} from './apLookupFactory';
-import {IndexedCache} from './apIndexedCacheFactory';
-import {Query} from './apQueryFactory';
-import {Model, IModelFactory} from './apModelFactory';
-import {FieldDefinition} from './apFieldFactory';
-import {List} from './apListFactory';
-import {UserPermissionsObject} from '../constants/apPermissionObject';
-import {IWorkflowDefinition, IStartWorkflowParams} from '../interfaces/index';
-import {ENV} from '../angular-point';
+import { ChangeService } from '../services/apChangeService';
+import { User } from './apUserFactory';
+import { Lookup } from './apLookupFactory';
+import { IndexedCache } from './apIndexedCacheFactory';
+import { Query } from './apQueryFactory';
+import { Model, IModelFactory } from './apModelFactory';
+import { FieldDefinition } from './apFieldFactory';
+import { List } from './apListFactory';
+import { UserPermissionsObject } from '../constants/apPermissionObject';
+import { IWorkflowDefinition, IStartWorkflowParams } from '../interfaces/index';
+import { ENV } from '../angular-point';
 
-
-let $q: ng.IQService, apCacheService: CacheService, apDataService: DataService, apDecodeService: DecodeService,
-    apEncodeService: EncodeService, apUtilityService: UtilityService,
-    apListItemVersionFactory: ListItemVersionFactory, apChangeService: ChangeService;
+let $q: ng.IQService,
+    apCacheService: CacheService,
+    apDataService: DataService,
+    apDecodeService: DecodeService,
+    apEncodeService: EncodeService,
+    apUtilityService: UtilityService,
+    apListItemVersionFactory: ListItemVersionFactory,
+    apChangeService: ChangeService;
 
 // raw list item before passed into constructor function
 export interface IUninstantiatedListItem {
@@ -48,7 +52,6 @@ export interface IUninstantiatedExtendedListItem<T extends ListItem<any>> extend
     getCache: () => IndexedCache<T>;
     getQuery: () => Query<T>;
 }
-
 
 /**
  * @ngdoc object
@@ -77,7 +80,6 @@ export class ListItem<T extends ListItem<any>> implements IUninstantiatedExtende
     private preSaveAction: () => boolean;
     private postSaveAction: () => void;
 
-
     /**
      * @ngdoc function
      * @name ListItem.changes
@@ -89,7 +91,7 @@ export class ListItem<T extends ListItem<any>> implements IUninstantiatedExtende
      */
     changes(): FieldChangeSummary<T> {
         // Instantiate a copy of the original list item for comparrison
-        let pristineListItem = _.cloneDeep<{id: number}>(this.getPristine());
+        let pristineListItem = _.cloneDeep<{ id: number }>(this.getPristine());
         if (!pristineListItem) {
             throw new Error('Could not retrieve a pristine version of this list item.');
         }
@@ -122,16 +124,14 @@ export class ListItem<T extends ListItem<any>> implements IUninstantiatedExtende
      * </pre>
      */
     deleteAttachment(url: string): ng.IPromise<any> {
-
         return apDataService.serviceWrapper({
             operation: 'DeleteAttachment',
             filterNode: 'Field',
             listItemID: this.id,
             url,
-            listName: this.getListId()
+            listName: this.getListId(),
         });
     }
-
 
     /**
      * @ngdoc function
@@ -161,17 +161,16 @@ export class ListItem<T extends ListItem<any>> implements IUninstantiatedExtende
             batchCmd: 'Delete',
             ID: listItem.id,
             valuePairs: undefined,
-            webURL: model.list.identifyWebURL()
+            webURL: model.list.identifyWebURL(),
         };
 
         if (_.isFunction(listItem.preDeleteAction) && !listItem.preDeleteAction()) {
             // preDeleteAction exists but returned false so we don't delete
             deferred.reject('Pre-Delete Action Returned False');
         } else {
-
             /** Check to see if list item or document because documents need the FileRef as well as id to delete */
             if (listItem.fileRef && listItem.fileRef.lookupValue) {
-                let fileExtension = <any> listItem.fileRef.lookupValue.split('.').pop();
+                let fileExtension = <any>listItem.fileRef.lookupValue.split('.').pop();
                 if (isNaN(fileExtension)) {
                     /** File extension instead of numeric extension so it's a document
                      * @Example
@@ -179,12 +178,11 @@ export class ListItem<T extends ListItem<any>> implements IUninstantiatedExtende
                      * List Item: "Site/List/5_.000"
                      * */
                     config.valuePairs = [['FileRef', listItem.fileRef.lookupValue]];
-
                 }
             }
 
-            apDataService.serviceWrapper(config)
-                .then((response) => {
+            apDataService.serviceWrapper(config).then(
+                response => {
                     /** Optionally broadcast change event */
                     apUtilityService.registerChange(model, 'delete', listItem.id);
 
@@ -192,17 +190,23 @@ export class ListItem<T extends ListItem<any>> implements IUninstantiatedExtende
                     apCacheService.deleteEntity(config.listName, listItem.id);
 
                     deferred.resolve(response);
-                }, (err) => {
+                },
+                err => {
                     // In the event of an error, display toast
-                    let msg = 'There was an error deleting list item ' + listItem.id + ' from ' + model.list.title +
-                        ' due to the following Error: ' + err;
+                    let msg =
+                        'There was an error deleting list item ' +
+                        listItem.id +
+                        ' from ' +
+                        model.list.title +
+                        ' due to the following Error: ' +
+                        err;
                     deferred.reject(msg);
-                });
+                },
+            );
         }
 
         return deferred.promise;
     }
-
 
     /**
      * @ngdoc function
@@ -221,17 +225,16 @@ export class ListItem<T extends ListItem<any>> implements IUninstantiatedExtende
          * };
      * </pre>
      */
-    getAttachmentCollection(): ng.IPromise<string[]> {
+    getAttachmentCollection() {
         let listItem = this;
         return apDataService.getCollection({
             operation: 'GetAttachmentCollection',
             listName: listItem.getListId(),
             webURL: listItem.getList().webURL,
             ID: listItem.id,
-            filterNode: 'Attachment'
-        });
+            filterNode: 'Attachment',
+        }) as ng.IPromise<string[]>;
     }
-
 
     /**
      * @ngdoc function
@@ -245,7 +248,6 @@ export class ListItem<T extends ListItem<any>> implements IUninstantiatedExtende
         return apDataService.getAvailableWorkflows(listItem.fileRef.lookupValue);
     }
 
-
     /**
      * @ngdoc function
      * @name ListItem.getChanges
@@ -258,7 +260,6 @@ export class ListItem<T extends ListItem<any>> implements IUninstantiatedExtende
         let model = this.getModel();
         return model.getListItemById(this.id);
     }
-
 
     /**
      * @ngdoc function
@@ -281,8 +282,9 @@ export class ListItem<T extends ListItem<any>> implements IUninstantiatedExtende
      * </pre>
      */
     getChangeSummary(fieldNames?: string[]): ng.IPromise<ChangeSummary<T>> {
-        return this.getVersionHistory(fieldNames)
-            .then((versionHistoryCollection: VersionHistoryCollection<T>) => versionHistoryCollection.generateChangeSummary());
+        return this.getVersionHistory(fieldNames).then((versionHistoryCollection: VersionHistoryCollection<T>) =>
+            versionHistoryCollection.generateChangeSummary(),
+        );
     }
 
     /**
@@ -302,7 +304,6 @@ export class ListItem<T extends ListItem<any>> implements IUninstantiatedExtende
         let fieldDefinition = listItem.getFieldDefinition(fieldName);
         return fieldDefinition.choices || fieldDefinition.Choices || [];
     }
-
 
     /**
      * @ngdoc function
@@ -330,7 +331,6 @@ export class ListItem<T extends ListItem<any>> implements IUninstantiatedExtende
         return listItem.getModel().getFieldDefinition(fieldName);
     }
 
-
     /**
      * @ngdoc function
      * @name ListItem.getFieldDescription
@@ -347,7 +347,6 @@ export class ListItem<T extends ListItem<any>> implements IUninstantiatedExtende
         let fieldDefinition = listItem.getFieldDefinition(fieldName);
         return fieldDefinition.description || fieldDefinition.Description || '';
     }
-
 
     /**
      * @ngdoc function
@@ -366,7 +365,6 @@ export class ListItem<T extends ListItem<any>> implements IUninstantiatedExtende
         let fieldDefinition = listItem.getFieldDefinition(fieldName);
         return fieldDefinition.label || fieldDefinition.DisplayName || fieldDefinition.displayName;
     }
-
 
     /**
      * @ngdoc function
@@ -388,7 +386,6 @@ export class ListItem<T extends ListItem<any>> implements IUninstantiatedExtende
         return fieldDefinition.getFormattedValue(this, options);
     }
 
-
     /**
      * @ngdoc function
      * @name ListItem.getList
@@ -400,7 +397,6 @@ export class ListItem<T extends ListItem<any>> implements IUninstantiatedExtende
         let model: Model = this.getModel();
         return model.getList();
     }
-
 
     /**
      * @ngdoc function
@@ -414,7 +410,6 @@ export class ListItem<T extends ListItem<any>> implements IUninstantiatedExtende
         let model = this.getModel();
         return model.getListId();
     }
-
 
     /**
      * @ngdoc function
@@ -460,9 +455,7 @@ export class ListItem<T extends ListItem<any>> implements IUninstantiatedExtende
             }
         }
         return lookupReference;
-
     }
-
 
     /**
      * @ngdoc function
@@ -508,25 +501,23 @@ export class ListItem<T extends ListItem<any>> implements IUninstantiatedExtende
         }
 
         /** Generate promises for each field */
-        _.each(properties, (prop) => {
+        _.each(properties, prop => {
             let promise = createPromise(prop);
             promiseArray.push(promise);
         });
 
         /** Pause until all requests are resolved */
-        return $q.all(promiseArray)
-            .then((fieldVersionCollections: FieldVersionCollection[]) => {
+        return $q.all(promiseArray).then((fieldVersionCollections: FieldVersionCollection[]) => {
+            let versionHistoryCollection = new apListItemVersionFactory.VersionHistoryCollection<T>(
+                fieldVersionCollections,
+                model.factory,
+            );
 
-                let versionHistoryCollection =
-                    new apListItemVersionFactory.VersionHistoryCollection<T>(fieldVersionCollections, model.factory);
-
-                return versionHistoryCollection;
-
-            });
+            return versionHistoryCollection;
+        });
 
         /** Constructor that creates a promise for each field */
         function createPromise(prop: string) {
-
             let fieldDefinition = listItem.getFieldDefinition(prop);
 
             let payload = {
@@ -534,7 +525,7 @@ export class ListItem<T extends ListItem<any>> implements IUninstantiatedExtende
                 strlistID: model.getListId(), // correct case
                 strlistItemID: listItem.id, // correct case
                 strFieldName: fieldDefinition.staticName,
-                webURL: undefined
+                webURL: undefined,
             };
 
             payload.webURL = ENV.site;
@@ -553,7 +544,6 @@ export class ListItem<T extends ListItem<any>> implements IUninstantiatedExtende
     isPristine() {
         return !this.changes().hasMajorChanges;
     }
-
 
     /**
      * @ngdoc function
@@ -592,9 +582,8 @@ export class ListItem<T extends ListItem<any>> implements IUninstantiatedExtende
     registerPreDeleteAction(action: () => boolean): () => void {
         this.preDeleteAction = action;
         // Return function to unregister
-        return () => this.preDeleteAction = undefined;
+        return () => (this.preDeleteAction = undefined);
     }
-
 
     /**
      * @ngdoc function
@@ -632,7 +621,7 @@ export class ListItem<T extends ListItem<any>> implements IUninstantiatedExtende
     registerPreSaveAction(action: () => boolean): () => void {
         this.preSaveAction = action;
         // Return function to unregister
-        return () => this.preSaveAction = undefined;
+        return () => (this.preSaveAction = undefined);
     }
 
     /**
@@ -673,7 +662,6 @@ export class ListItem<T extends ListItem<any>> implements IUninstantiatedExtende
         // Return function to unregister
         return () => delete this.postSaveAction;
     }
-
 
     /**
      * @ngdoc function
@@ -733,7 +721,6 @@ export class ListItem<T extends ListItem<any>> implements IUninstantiatedExtende
         return apUtilityService.resolvePermissions(this.permMask);
     }
 
-
     /**
      * @ngdoc function
      * @name ListItem.saveChanges
@@ -760,15 +747,16 @@ export class ListItem<T extends ListItem<any>> implements IUninstantiatedExtende
          * }
      * </pre>
      */
-    saveChanges({
-        target = this.getCache ? this.getCache() : new IndexedCache<T>(),
-        valuePairs = undefined,
-        buildValuePairs = true} = {}
+    saveChanges(
+        {
+            target = this.getCache ? this.getCache() : new IndexedCache<T>(),
+            valuePairs = undefined,
+            buildValuePairs = true,
+        } = {},
     ): ng.IPromise<T> {
         let listItem = this;
         let model = listItem.getModel();
         let deferred = $q.defer();
-
 
         let config = {
             batchCmd: 'Update',
@@ -778,8 +766,8 @@ export class ListItem<T extends ListItem<any>> implements IUninstantiatedExtende
             operation: 'UpdateListItems',
             target,
             valuePairs,
-            webURL: model.list.identifyWebURL()
-        }
+            webURL: model.list.identifyWebURL(),
+        };
 
         if (_.isFunction(listItem.preSaveAction) && !listItem.preSaveAction()) {
             // preSaveAction exists but returned false so we don't save
@@ -791,42 +779,38 @@ export class ListItem<T extends ListItem<any>> implements IUninstantiatedExtende
              * an empty item that is instantiated from the model and then attempt to save instead of using
              * model.addNewItem */
             if (!listItem.id) {
-                return model.addNewItem(listItem, {valuePairs, buildValuePairs, target});
+                return model.addNewItem(listItem, { valuePairs, buildValuePairs, target }) as ng.IPromise<T>;
             }
 
             if (buildValuePairs === true) {
-                let editableFields = _.filter(model.list.fields, {readOnly: false});
+                let editableFields = _.filter(model.list.fields, { readOnly: false });
                 config.valuePairs = apEncodeService.generateValuePairs(editableFields, listItem);
             }
 
-            let request = apDataService.serviceWrapper(config)
-                .then((response: Element) => {
-                    const indexedCache = apDecodeService.processListItems<T>(model, listItem.getQuery(), response, config);
+            let request = apDataService.serviceWrapper(config).then((response: Element) => {
+                const indexedCache = apDecodeService.processListItems<T>(model, listItem.getQuery(), response, config);
 
-                    // Identify updated list item
-                    let updatedListItem = indexedCache.get(listItem.id);
+                // Identify updated list item
+                let updatedListItem = indexedCache.get(listItem.id);
 
-                    /** Optionally broadcast change event */
-                    apUtilityService.registerChange(model, 'update', updatedListItem.id);
+                /** Optionally broadcast change event */
+                apUtilityService.registerChange(model, 'update', updatedListItem.id);
 
-                    // Optionally perform any post save cleanup if registered
-                    if (_.isFunction(listItem.postSaveAction)) {
-                        listItem.postSaveAction();
-                    }
+                // Optionally perform any post save cleanup if registered
+                if (_.isFunction(listItem.postSaveAction)) {
+                    listItem.postSaveAction();
+                }
 
-                    // Resolve with the updated list item
-                    deferred.resolve(updatedListItem);
-                });
+                // Resolve with the updated list item
+                deferred.resolve(updatedListItem);
+            });
 
             /** Notify change service to expect a request, only useful at this point when working offline */
-            apChangeService.registerListItemUpdate<T>(listItem, config, deferred.promise);
-
-
+            apChangeService.registerListItemUpdate<T>(listItem, config, deferred.promise as ng.IPromise<T>);
         }
 
-        return deferred.promise;
+        return deferred.promise as ng.IPromise<T>;
     }
-
 
     /**
      * @ngdoc function
@@ -856,21 +840,25 @@ export class ListItem<T extends ListItem<any>> implements IUninstantiatedExtende
          * }
      * </pre>
      */
-    saveFields(fieldArray: string[], {target = this.getCache ? this.getCache() : new IndexedCache<T>()} = {}): ng.IPromise<T> {
-
+    saveFields(
+        fieldArray: string[],
+        { target = this.getCache ? this.getCache() : new IndexedCache<T>() } = {},
+    ): ng.IPromise<T> {
         let listItem = this;
         let model = listItem.getModel();
         let definitions: FieldDefinition[] = [];
 
         if (_.isString(fieldArray)) {
-            console.warn('Field names should be an array of strings instead of a single string.  This will be deperecated.');
+            console.warn(
+                'Field names should be an array of strings instead of a single string.  This will be deperecated.',
+            );
         }
         /** Allow a string to be passed in to save a single field */
         let fieldNames = _.isString(fieldArray) ? [fieldArray] : fieldArray;
 
         /** Find the field definition for each of the requested fields */
         for (let fieldName of fieldNames) {
-            let match = _.find(model.list.customFields, {mappedName: fieldName});
+            let match = _.find(model.list.customFields, { mappedName: fieldName });
             if (match) {
                 definitions.push(match);
             }
@@ -882,10 +870,9 @@ export class ListItem<T extends ListItem<any>> implements IUninstantiatedExtende
         return this.saveChanges({
             buildValuePairs: false,
             target,
-            valuePairs
+            valuePairs,
         });
     }
-
 
     /**
      * @ngdoc function
@@ -909,7 +896,6 @@ export class ListItem<T extends ListItem<any>> implements IUninstantiatedExtende
             _.assign(this, pristineState);
         }
     }
-
 
     /**
      * @ngdoc function
@@ -935,28 +921,30 @@ export class ListItem<T extends ListItem<any>> implements IUninstantiatedExtende
             initiateRequest();
         } else {
             /** We first need to get the template GUID for the workflow */
-            listItem.getAvailableWorkflows()
-                .then((workflows) => {
-                    let targetWorklow = _.find(workflows, {name: options.workflowName});
-                    if (!targetWorklow) {
-                        throw new Error(`A workflow with the name ${options.workflowName} wasn't found.  The workflows available are [${_.map(workflows, 'name').toString() }].`);
-                    }
-                    /** Create an extended set of options to pass any overrides to apDataService */
-                    options.templateId = targetWorklow.templateId;
-                    initiateRequest();
-                });
+            listItem.getAvailableWorkflows().then(workflows => {
+                let targetWorklow = _.find(workflows, { name: options.workflowName });
+                if (!targetWorklow) {
+                    throw new Error(
+                        `A workflow with the name ${options.workflowName} wasn't found.  The workflows available are [${_.map(
+                            workflows,
+                            'name',
+                        ).toString()}].`,
+                    );
+                }
+                /** Create an extended set of options to pass any overrides to apDataService */
+                options.templateId = targetWorklow.templateId;
+                initiateRequest();
+            });
         }
 
         return deferred.promise;
 
         function initiateRequest() {
-            apDataService.startWorkflow(options)
-                .then((xmlResponse) => {
-                    deferred.resolve(xmlResponse);
-                });
+            apDataService.startWorkflow(options).then(xmlResponse => {
+                deferred.resolve(xmlResponse);
+            });
         }
     }
-
 
     /**
      * @ngdoc function
@@ -970,9 +958,7 @@ export class ListItem<T extends ListItem<any>> implements IUninstantiatedExtende
             model = listItem.getModel();
         return model.validateEntity(listItem);
     }
-
 }
-
 
 /** In the event that a factory isn't specified, just use a
  * standard constructor to allow it to inherit from ListItem */
@@ -996,9 +982,28 @@ export class StandardListItem {
  */
 export class ListItemFactory {
     ListItem = ListItem;
-    static $inject = ['$q', 'apCacheService', 'apChangeService', 'apDataService', 'apDecodeService', 'apEncodeService', 'apUtilityService', 'apListItemVersionFactory'];
+    // tslint:disable-next-line:member-ordering
+    static $inject = [
+        '$q',
+        'apCacheService',
+        'apChangeService',
+        'apDataService',
+        'apDecodeService',
+        'apEncodeService',
+        'apUtilityService',
+        'apListItemVersionFactory',
+    ];
 
-    constructor(_$q_, _apCacheService_, _apChangeService_, _apDataService_, _apDecodeService_, _apEncodeService_, _apUtilityService_, _apListItemVersionFactory_) {
+    constructor(
+        _$q_,
+        _apCacheService_,
+        _apChangeService_,
+        _apDataService_,
+        _apDecodeService_,
+        _apEncodeService_,
+        _apUtilityService_,
+        _apListItemVersionFactory_,
+    ) {
         $q = _$q_;
         apCacheService = _apCacheService_;
         apChangeService = _apChangeService_;
@@ -1031,5 +1036,4 @@ export class ListItemFactory {
     createGenericFactory() {
         return new StandardListItem();
     }
-
 }

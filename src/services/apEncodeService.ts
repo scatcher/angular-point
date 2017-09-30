@@ -1,9 +1,9 @@
 import * as _ from 'lodash';
 
-import {UtilityService} from './apUtilityService';
-import {FieldDefinition} from '../factories/apFieldFactory';
-import {ListItem} from '../factories/apListItemFactory';
-import {Lookup} from '../factories/apLookupFactory';
+import { UtilityService } from './apUtilityService';
+import { FieldDefinition } from '../factories/apFieldFactory';
+import { ListItem } from '../factories/apListItemFactory';
+import { Lookup } from '../factories/apLookupFactory';
 
 /**
  * @ngdoc service
@@ -17,9 +17,7 @@ export class EncodeService {
     static $inject = ['apUtilityService', 'SPServices'];
     savedTimeZone;
 
-    constructor(private apUtilityService: UtilityService, private SPServices) {
-
-    }
+    constructor(private apUtilityService: UtilityService, private SPServices) {}
 
     /**
      * Converts an array of selected values into a SharePoint MultiChoice string
@@ -38,7 +36,6 @@ export class EncodeService {
             for (let choice of choices) {
                 str += choice + delim;
             }
-
         }
         return str;
     }
@@ -134,7 +131,7 @@ export class EncodeService {
      */
     generateValuePairs(fieldDefinitions: FieldDefinition[], listItem: ListItem<any>): [string, string][] {
         const pairs = [];
-        _.each(fieldDefinitions, (field) => {
+        _.each(fieldDefinitions, field => {
             /** Check to see if item contains data for this field */
             if (_.has(listItem, field.mappedName)) {
                 pairs.push(this.createValuePair(field, listItem[field.mappedName]));
@@ -160,7 +157,14 @@ export class EncodeService {
         if (!_.isDate(date) && _.isString(date) && date.split('-').length === 3) {
             /** Date string formatted YYYY-MM-DD */
             const dateComponents = date.split('-');
-            jsDate = new Date(parseInt(dateComponents[0], 10), parseInt(dateComponents[1], 10) - 1, parseInt(dateComponents[2], 10), 0, 0, 0);
+            jsDate = new Date(
+                parseInt(dateComponents[0], 10),
+                parseInt(dateComponents[1], 10) - 1,
+                parseInt(dateComponents[2], 10),
+                0,
+                0,
+                0,
+            );
         } else if (!_.isDate(date)) {
             throw new Error('Invalid Date Provided: ' + date.toString());
         } else {
@@ -205,7 +209,11 @@ export class EncodeService {
      * @param {string} [valueProperty='lookupValue'] Property name where we'll find the value for this object.
      * @returns {string} Need to format string of id's in following format [ID0];#;#[ID1];#;#[ID1]
      */
-    stringifySharePointMultiSelect(multiSelectValue: Lookup<any>[], idProperty = 'lookupId', valueProperty = 'lookupValue'): string {
+    stringifySharePointMultiSelect(
+        multiSelectValue: Lookup<any>[],
+        idProperty = 'lookupId',
+        valueProperty = 'lookupValue',
+    ): string {
         let stringifiedValues = '';
         const idProp = idProperty || 'lookupId';
         const valProp = valueProperty || 'lookupValue';
@@ -213,13 +221,10 @@ export class EncodeService {
             /** Need to format string of id's in following format [ID0];#[VAL0];#[ID1];#[VAL1] */
             stringifiedValues += lookupObject[idProp] + ';#' + (lookupObject[valProp] || '');
             /** Append delim after all but last because we don't want trailing ';#' at end of string */
-            if (iteration < (multiSelectValue.length - 1)) {
+            if (iteration < multiSelectValue.length - 1) {
                 stringifiedValues += ';#';
             }
         });
         return stringifiedValues;
     }
-
-
 }
-

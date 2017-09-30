@@ -1,5 +1,5 @@
 import * as _ from 'lodash';
-import {FieldDefinition} from './apFieldFactory';
+import { FieldDefinition } from './apFieldFactory';
 
 /**
  * @ngdoc function
@@ -10,7 +10,6 @@ import {FieldDefinition} from './apFieldFactory';
  */
 
 export class CamlFactory {
-
     /**
      * @ngdoc function
      * @name angularPoint.apCamlFactory:camlContainsQuery
@@ -99,22 +98,30 @@ export class CamlFactory {
         switch (fieldDefinition.objectType) {
             case 'HTML':
             case 'JSON':
-                camlSelector = '' +
+                camlSelector =
+                    '' +
                     '<Contains>' +
-                    '<FieldRef Name="' + fieldDefinition.staticName + '" />' +
+                    '<FieldRef Name="' +
+                    fieldDefinition.staticName +
+                    '" />' +
                     /** Use CDATA wrapper to escape [&, <, > ] */
-                    '<Value Type="Text"><![CDATA[' + searchString + ']]></Value>' +
+                    '<Value Type="Text"><![CDATA[' +
+                    searchString +
+                    ']]></Value>' +
                     '</Contains>';
                 break;
             default:
-                camlSelector = '' +
+                camlSelector =
+                    '' +
                     '<Contains>' +
-                    '<FieldRef Name="' + fieldDefinition.staticName + '" />' +
-                    '<Value Type="Text">' + searchString + '</Value>' +
+                    '<FieldRef Name="' +
+                    fieldDefinition.staticName +
+                    '" />' +
+                    '<Value Type="Text">' +
+                    searchString +
+                    '</Value>' +
                     '</Contains>';
         }
         return camlSelector;
     }
-
-
 }

@@ -1,13 +1,13 @@
 import * as _ from 'lodash';
-import {FieldFactory, FieldConfigurationObject, FieldDefinition} from './apFieldFactory';
-import {UserPermissionsObject} from '../constants/apPermissionObject';
-import {DefaultFields} from '../constants/apDefaultFields';
-import {ListItem} from './apListItemFactory';
-import {$AP_INJECTOR, ENV} from '../angular-point';
+import { FieldFactory, FieldConfigurationObject, FieldDefinition } from './apFieldFactory';
+import { UserPermissionsObject } from '../constants/apPermissionObject';
+import { DefaultFields } from '../constants/apDefaultFields';
+import { ListItem } from './apListItemFactory';
+import { $AP_INJECTOR, ENV } from '../angular-point';
 
 export interface UninstantiatedList {
     customFields: FieldConfigurationObject[];
-    environments?: {[key: string]: string};
+    environments?: { [key: string]: string };
     guid?: string;
     title: string;
     viewFields?: string;
@@ -147,10 +147,10 @@ export interface XMLList {
  * @requires angularPoint.apListFactory
  * @constructor
  */
-export class List implements UninstantiatedList, XMLList  {
+export class List implements UninstantiatedList, XMLList {
     BaseType?: string; // Only added once a list has been extended with list definition from server
     customFields: FieldDefinition[] = [];
-    environments: {[key: string]: string};
+    environments: { [key: string]: string };
     fields: FieldDefinition[] = [];
     guid: string;
     isReady = false;
@@ -164,7 +164,7 @@ export class List implements UninstantiatedList, XMLList  {
     constructor(config: UninstantiatedList) {
         this.webURL = ENV.site;
         _.assign(this, config);
-        this.environments = this.environments || {production: this.guid};
+        this.environments = this.environments || { production: this.guid };
         this.extendFieldDefinitions();
     }
 
@@ -188,13 +188,13 @@ export class List implements UninstantiatedList, XMLList  {
          * - create ows_ mapping
          * @param fieldDefinition
          */
-        const buildField = (fieldDefinition) => {
+        const buildField = fieldDefinition => {
             const field = new apFieldFactory.FieldDefinition(fieldDefinition);
             this.fields.push(field);
             this.viewFields += '<FieldRef Name="' + field.staticName + '"/>';
             this.mapping['ows_' + field.staticName] = {
                 mappedName: field.mappedName,
-                objectType: field.objectType
+                objectType: field.objectType,
             };
         };
 
@@ -202,10 +202,10 @@ export class List implements UninstantiatedList, XMLList  {
         this.viewFields += '<ViewFields>';
 
         /** Add the default fields */
-        _.each(DefaultFields, (field) => buildField(field));
+        _.each(DefaultFields, field => buildField(field));
 
         /** Add each of the fields defined in the model */
-        _.each(this.customFields, (field) => buildField(field));
+        _.each(this.customFields, field => buildField(field));
 
         /** Close viewFields */
         this.viewFields += '</ViewFields>';
@@ -228,7 +228,6 @@ export class List implements UninstantiatedList, XMLList  {
         this.permissions = listItem.resolvePermissions();
         return this.permissions;
     }
-
 
     /**
      * @ngdoc function
@@ -257,10 +256,7 @@ export class List implements UninstantiatedList, XMLList  {
         return this.webURL;
         // return this.WebFullUrl ? this.WebFullUrl : this.webURL;
     }
-
-
 }
-
 
 /**
  * @ngdoc service
@@ -289,5 +285,3 @@ export class ListFactory {
         return new List(config);
     }
 }
-
-

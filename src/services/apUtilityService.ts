@@ -1,6 +1,6 @@
 import * as _ from 'lodash';
 // Split values like 1;#value into id and value
-import {UserPermissionsObject} from '../constants/apPermissionObject';
+import { UserPermissionsObject } from '../constants/apPermissionObject';
 
 export class SplitIndex {
     id: number;
@@ -25,7 +25,7 @@ export class UtilityService {
     static $inject = ['$q', '$timeout'];
     SplitIndex = SplitIndex;
     isGuid = isGuid;
-    constructor(private $q, private $timeout) { }
+    constructor(private $q, private $timeout) {}
 
     /**
      * @ngdoc function
@@ -100,7 +100,6 @@ export class UtilityService {
     //     return deferred.promise;
     // }
 
-
     /**
      * @ngdoc function
      * @name angularPoint.apUtilityService:convertEffectivePermMask
@@ -158,7 +157,7 @@ export class UtilityService {
             EditMyUserInfo: '0x0000010000000000',
 
             // Special Permissions
-            EnumeratePermissions: '0x4000000000000000'
+            EnumeratePermissions: '0x4000000000000000',
         };
 
         if (permissions[permMaskName]) {
@@ -193,7 +192,6 @@ export class UtilityService {
         return startInt <= dateToCheckInt && dateToCheckInt <= endInt;
     }
 
-
     /**
      * @ngdoc function
      * @name angularPoint.apUtilityService:doubleDigit
@@ -211,7 +209,6 @@ export class UtilityService {
         }
     }
 
-
     /**
      * @ngdoc function
      * @name angularPoint.apUtilityService:fromCamelCase
@@ -223,11 +220,14 @@ export class UtilityService {
      */
     fromCamelCase(str): string {
         // insert a space before all caps
-        return str.replace(/([A-Z])/g, ' $1')
-        // uppercase the first character
-            .replace(/^./, function (s) {
-                return s.toUpperCase();
-            });
+        return (
+            str
+                .replace(/([A-Z])/g, ' $1')
+                // uppercase the first character
+                .replace(/^./, function(s) {
+                    return s.toUpperCase();
+                })
+        );
     }
 
     /**
@@ -254,7 +254,6 @@ export class UtilityService {
             model.sync.registerChange(changeType, listItemId);
         }
     }
-
 
     /**
      * @ngdoc function
@@ -318,6 +317,7 @@ export class UtilityService {
      */
     resolvePermissions(permissionsMask): UserPermissionsObject {
         const permissionSet = {
+            // tslint:disable:no-bitwise
             ViewListItems: (1 & permissionsMask) > 0,
             AddListItems: (2 & permissionsMask) > 0,
             EditListItems: (4 & permissionsMask) > 0,
@@ -341,7 +341,7 @@ export class UtilityService {
             CreateSSCSite: (4194314 & permissionsMask) > 0,
             ManageSubwebs: (8388608 & permissionsMask) > 0,
             CreateGroups: (16777216 & permissionsMask) > 0,
-            ManagePermissions: (33554432 * permissionsMask) > 0,
+            ManagePermissions: 33554432 * permissionsMask > 0,
             BrowseDirectories: (67108864 & permissionsMask) > 0,
             BrowseUserInfo: (134217728 & permissionsMask) > 0,
             AddDelPrivateWebParts: (268435456 & permissionsMask) > 0,
@@ -352,7 +352,8 @@ export class UtilityService {
             CreateAlerts: (549755813888 & permissionsMask) > 0,
             EditMyUserInfo: (1099511627776 & permissionsMask) > 0,
             EnumeratePermissions: (4611686018427387904 & permissionsMask) > 0,
-            FullMask: (9223372036854775807 == permissionsMask)
+            // tslint:disable-next-line:triple-equals
+            FullMask: 9223372036854775807 == permissionsMask,
         };
 
         /**
@@ -367,7 +368,6 @@ export class UtilityService {
 
         return permissionSet;
     }
-
 
     /**
      * @ngdoc function
@@ -388,13 +388,14 @@ export class UtilityService {
         return str;
     }
 
-
     toCamelCase(str): string {
-        return str.replace(/(?:^\w|[A-Z]|\b\w)/g, function (letter, index) {
-            return index == 0 ? letter.toLowerCase() : letter.toUpperCase();
-        }).replace(/\s+/g, '');
+        return str
+            .replace(/(?:^\w|[A-Z]|\b\w)/g, function(letter, index) {
+                // tslint:disable-next-line:triple-equals
+                return index == 0 ? letter.toLowerCase() : letter.toUpperCase();
+            })
+            .replace(/\s+/g, '');
     }
-
 
     /**
      * @ngdoc function
@@ -416,27 +417,24 @@ export class UtilityService {
         let xmlString;
         if (typeof XMLSerializer !== 'undefined') {
             /** Modern Browsers */
-            xmlString = (new XMLSerializer()).serializeToString(xmlData);
+            xmlString = new XMLSerializer().serializeToString(xmlData);
         } else {
             /** Old versions of IE */
             xmlString = xmlData.xml;
         }
         return xmlString;
     }
-
-
 }
 
 /** Extend lodash with a simple helper function */
 _.mixin({
-    isDefined: function (value) {
+    isDefined: function(value) {
         return !_.isUndefined(value);
     },
     /** Based on functionality in Breeze.js */
-    isGuid: function (value) {
-        return (typeof value === 'string') && /[a-fA-F\d]{8}-(?:[a-fA-F\d]{4}-){3}[a-fA-F\d]{12}/
-                .test(value);
-    }
+    isGuid: function(value) {
+        return typeof value === 'string' && /[a-fA-F\d]{8}-(?:[a-fA-F\d]{4}-){3}[a-fA-F\d]{12}/.test(value);
+    },
 });
 
 /**
@@ -447,8 +445,7 @@ _.mixin({
  * @returns {boolean} Is the value a GUID.
  */
 export function isGuid(value): boolean {
-    return (typeof value === 'string') && /[a-fA-F\d]{8}-(?:[a-fA-F\d]{4}-){3}[a-fA-F\d]{12}/
-            .test(value);
+    return typeof value === 'string' && /[a-fA-F\d]{8}-(?:[a-fA-F\d]{4}-){3}[a-fA-F\d]{12}/.test(value);
 }
 
 export function isDefined(value) {

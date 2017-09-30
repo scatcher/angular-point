@@ -1,4 +1,4 @@
-import {UtilityService} from '../services/apUtilityService';
+import { UtilityService } from '../services/apUtilityService';
 
 let $q: ng.IQService;
 let apUtilityService: UtilityService;
@@ -63,6 +63,3 @@ export class LookupFactory {
         return new Lookup<T>(str, options);
     }
 }
-
-
-

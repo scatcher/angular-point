@@ -152,7 +152,7 @@ export class IndexedCache<T extends ListItem<any>> {
                 this[key] = listItem;
             }
         } else {
-            throw new Error('A valid listItem wasn\'t provided: ' + JSON.stringify(listItem));
+            throw new Error("A valid listItem wasn't provided: " + JSON.stringify(listItem));
         }
         return this;
     }
@@ -193,8 +193,10 @@ export class IndexedCache<T extends ListItem<any>> {
      * @param {object} listItem Entity to add to the cache.
      */
     private addEntity(listItem: T): void {
-        console.warn('DEPRECATED METHOD!.  addEntity method deprecited.  Please use the set method' +
-            ' in the future to comply with ES6 Map object.');
+        console.warn(
+            'DEPRECATED METHOD!.  addEntity method deprecited.  Please use the set method' +
+                ' in the future to comply with ES6 Map object.',
+        );
         this.set(listItem.id, listItem);
     }
 
@@ -223,18 +225,16 @@ export class IndexedCache<T extends ListItem<any>> {
         console.warn('DEPRECATED METHOD! Use IndexedCache.delete() instead of removeEntityById().');
         this.delete(id);
     }
-
 }
 
 /** Adds a getter to base prototype wich returns  the number of key/values stored in cache. */
 Object.defineProperty(IndexedCache.prototype, 'size', {
-    get: function () {
+    get: function() {
         return this.count();
     },
     enumerable: false,
-    configurable: false
+    configurable: false,
 });
-
 
 /**
  * @ngdoc object
@@ -255,6 +255,4 @@ export class IndexedCacheFactory {
     create<T extends ListItem<any>>(overrides?: IUninstantiatedIndexCache<T>): IndexedCache<T> {
         return new IndexedCache<T>(overrides);
     }
-
-
 }

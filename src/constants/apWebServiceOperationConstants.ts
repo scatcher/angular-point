@@ -1,5 +1,5 @@
 export interface IWebServiceOperationConstants {
-    [key: string]: [string, boolean]
+    [key: string]: [string, boolean];
 }
 
 export const WebServiceOperationConstants: IWebServiceOperationConstants = {
@@ -227,5 +227,5 @@ export const WebServiceOperationConstants: IWebServiceOperationConstants = {
     GetToDosForItem: ['Workflow', false],
     GetWorkflowDataForItem: ['Workflow', false],
     GetWorkflowTaskData: ['Workflow', false],
-    StartWorkflow: ['Workflow', true]
+    StartWorkflow: ['Workflow', true],
 };

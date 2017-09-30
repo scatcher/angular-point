@@ -1,9 +1,9 @@
 import * as _ from 'lodash';
-import {ListItem} from '../factories/apListItemFactory';
-import {IndexedCache, IndexedCacheFactory} from '../factories/apIndexedCacheFactory';
-import {Model} from '../factories/apModelFactory';
-import {Query} from '../factories/apQueryFactory';
-import {isGuid} from './apUtilityService';
+import { ListItem } from '../factories/apListItemFactory';
+import { IndexedCache, IndexedCacheFactory } from '../factories/apIndexedCacheFactory';
+import { Model } from '../factories/apModelFactory';
+import { Query } from '../factories/apQueryFactory';
+import { isGuid } from './apUtilityService';
 
 // export interface ICacheService {
 //     deleteEntity(listId: string, entityId: number): void;
@@ -39,7 +39,6 @@ let service: CacheService, $q: ng.IQService, $log: ng.ILogService, apIndexedCach
  * </pre>
  */
 let listNameToIdMap = {},
-
     /**
      * @description Stores list GUID when a new model is registered with a reference to the model for
      *     future reference.
@@ -85,7 +84,6 @@ let listNameToIdMap = {},
      */
     entityCache = {};
 
-
 /**
  * @name EntityCache
  * @description
@@ -125,7 +123,6 @@ export class EntityContainer {
     removeEntity() {
         service.removeEntityById(this.listId, this.entityId);
     }
-
 }
 
 /**
@@ -135,7 +132,7 @@ export class EntityContainer {
  * @constructor
  */
 export class ModelCache {
-    [key: string]: EntityContainer
+    [key: string]: EntityContainer;
 }
 
 /**
@@ -150,7 +147,6 @@ export class CacheService {
     entityCache = entityCache;
 
     constructor(_$q_, _$log_, _apIndexedCacheFactory_) {
-
         $q = _$q_;
         $log = _$log_;
         apIndexedCacheFactory = _apIndexedCacheFactory_;
@@ -227,7 +223,7 @@ export class CacheService {
      */
     getEntity<T extends ListItem<any>>(listId: string, entityId: number): ng.IPromise<T> {
         let entityContainer = this.getEntityContainer(listId, entityId);
-        return entityContainer.getEntity();
+        return entityContainer.getEntity() as ng.IPromise<T>;
     }
 
     private getEntityContainer(listId: string, entityId: number): EntityContainer {
@@ -300,7 +296,6 @@ export class CacheService {
         return entityCache[entityTypeKey];
     }
 
-
     /**
      * @ngdoc function
      * @name angularPoint.apCacheService:registerEntity
@@ -358,12 +353,12 @@ export class CacheService {
             /** Store a reference to the model by list title */
             listNameToIdMap[model.list.title] = {
                 model: model,
-                listId: listId
+                listId: listId,
             };
 
             /** Store a reference to the model by list guid */
             listsMappedByListId[listId] = {
-                model: model
+                model: model,
             };
         }
     }
@@ -383,7 +378,4 @@ export class CacheService {
             delete modelCache[entityId];
         }
     }
-
-
 }
-

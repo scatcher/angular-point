@@ -1,16 +1,21 @@
 import * as _ from 'lodash';
-import {IndexedCacheFactory, IndexedCache} from './apIndexedCacheFactory';
-import {DataService} from '../services/apDataService';
-import {DecodeService} from '../services/apDecodeService';
-import {Logger} from '../services/apLogger';
-import {ListFieldMapping, List} from './apListFactory';
-import {ListItem} from './apListItemFactory';
-import {Model} from './apModelFactory';
-import {DefaultListItemQueryOptions} from '../constants/apDefaultListItemQueryOptions';
-import {ENV} from '../angular-point';
 
-let $q: ng.IQService, apIndexedCacheFactory: IndexedCacheFactory, apDefaultListItemQueryOptions,
-    apDataService: DataService, apDecodeService: DecodeService, apLogger: Logger;
+import { ENV } from '../angular-point';
+import { DefaultListItemQueryOptions } from '../constants/apDefaultListItemQueryOptions';
+import { DataService } from '../services/apDataService';
+import { DecodeService } from '../services/apDecodeService';
+import { Logger } from '../services/apLogger';
+import { IndexedCache, IndexedCacheFactory } from './apIndexedCacheFactory';
+import { List, ListFieldMapping } from './apListFactory';
+import { ListItem } from './apListItemFactory';
+import { Model } from './apModelFactory';
+
+let $q: ng.IQService,
+    apIndexedCacheFactory: IndexedCacheFactory,
+    apDefaultListItemQueryOptions,
+    apDataService: DataService,
+    apDecodeService: DecodeService,
+    apLogger: Logger;
 
 export interface IQueryOptions {
     force?: boolean;
@@ -41,7 +46,7 @@ export interface IExecuteQueryOptions {
 
 export class LocalStorageQuery {
     changeToken: string;
-    indexedCache: {[key: number]: Object};
+    indexedCache: { [key: number]: Object };
     lastRun: Date;
 
     constructor(private key: string, stringifiedQuery: string) {
@@ -53,7 +58,9 @@ export class LocalStorageQuery {
     hasExpired(localStorageExpiration: number = ENV.localStorageExpiration): boolean {
         let hasExpired = true;
         if (_.isNaN(localStorage)) {
-            throw new Error('Local storage expiration is required to be a numeric value and instead is ' + localStorageExpiration);
+            throw new Error(
+                'Local storage expiration is required to be a numeric value and instead is ' + localStorageExpiration,
+            );
         } else if (localStorageExpiration === 0) {
             // No expiration
             hasExpired = false;
@@ -68,7 +75,6 @@ export class LocalStorageQuery {
         localStorage.removeItem(this.key);
     }
 }
-
 
 /**
  * @ngdoc function
@@ -135,7 +141,7 @@ export class LocalStorageQuery {
      * });
  * </pre>
  */
-export class Query<T extends ListItem<any>>{
+export class Query<T extends ListItem<any>> {
     /** Very memory intensive to enable cacheXML which is disabled by default*/
     cacheXML = false;
     /** Reference to the most recent query when performing GetListItemChangesSinceToken */
@@ -198,7 +204,6 @@ export class Query<T extends ListItem<any>>{
         this.getModel = () => model;
     }
 
-
     /**
      * @ngdoc function
      * @name Query.execute
@@ -216,7 +221,10 @@ export class Query<T extends ListItem<any>>{
 
         /** Return existing promise if request is already underway or has been previously executed in the past
          * 1/10th of a second */
-        if (query.negotiatingWithServer || (_.isDate(query.lastRun) && query.lastRun.getTime() + ENV.queryDebounceTime > new Date().getTime())) {
+        if (
+            query.negotiatingWithServer ||
+            (_.isDate(query.lastRun) && query.lastRun.getTime() + ENV.queryDebounceTime > new Date().getTime())
+        ) {
             return query.promise;
         } else {
             /** Set flag to prevent another call while this query is active */
@@ -262,19 +270,18 @@ export class Query<T extends ListItem<any>>{
 
             /** Only make server request if necessary. */
             if (makeRequest) {
-                this.makeRequest()
-                    .then((results) => {
-                        this.postExecutionCleanup(results);
-                        deferred.resolve(results);
-                    });
+                this.makeRequest().then(results => {
+                    this.postExecutionCleanup(results);
+                    deferred.resolve(results);
+                });
             } else {
                 this.postExecutionCleanup(this.getCache());
                 deferred.resolve(this.getCache());
             }
 
             /** Save reference on the query **/
-            query.promise = deferred.promise;
-            return deferred.promise;
+            query.promise = deferred.promise as ng.IPromise<IndexedCache<T>>;
+            return deferred.promise as ng.IPromise<IndexedCache<T>>;
         }
     }
 
@@ -312,7 +319,8 @@ export class Query<T extends ListItem<any>>{
      * @returns {LocalStorageQuery} Local storage data for this query.
      */
     getLocalStorage(): LocalStorageQuery {
-        let parsedQuery, localStorageKey = this.getLocalStorageKey();
+        let parsedQuery,
+            localStorageKey = this.getLocalStorageKey();
         let stringifiedQuery = localStorage.getItem(localStorageKey) || sessionStorage.getItem(localStorageKey);
         if (stringifiedQuery) {
             parsedQuery = new LocalStorageQuery(localStorageKey, stringifiedQuery);
@@ -423,13 +431,15 @@ export class Query<T extends ListItem<any>>{
      */
     saveToLocalStorage(): void {
         // Don't use storage when running offline
-        if (!ENV.production) { return; }
+        if (!ENV.production) {
+            return;
+        }
         let model = this.getModel();
         let store = {
             changeToken: this.changeToken,
             indexedCache: this.getCache(),
-            lastRun: this.lastRun
-        }
+            lastRun: this.lastRun,
+        };
         let stringifiedQuery = JSON.stringify(store);
         let storageType = this.localStorage ? 'local' : 'session';
         let localStorageKey = this.getLocalStorageKey();
@@ -441,14 +451,15 @@ export class Query<T extends ListItem<any>>{
                 sessionStorage.setItem(localStorageKey, stringifiedQuery);
             }
         } catch (e) {
+            // tslint:disable-next-line:triple-equals
             if (e.code == 22) {
                 // Storage full, maybe notify user or do some clean-up
             }
-            apLogger.debug('Looks like we\'re out of space in ' + storageType + ' storage.', {
+            apLogger.debug(`Looks like we're out of space in ` + storageType + ' storage.', {
                 json: {
                     query: this.name,
-                    model: this.getModel().list.title
-                }
+                    model: this.getModel().list.title,
+                },
             });
             if (this.localStorage) {
                 localStorage.clear();
@@ -472,22 +483,19 @@ export class Query<T extends ListItem<any>>{
         let model = this.getModel();
         let cache = this.getCache();
 
-        return apDataService.serviceWrapper(query)
-            .then((responseXML) => {
-                if (query.operation === 'GetListItemChangesSinceToken') {
-                    apDataService.processChangeTokenXML<T>(model, query, responseXML, cache);
-                }
+        return apDataService.serviceWrapper(query).then(responseXML => {
+            if (query.operation === 'GetListItemChangesSinceToken') {
+                apDataService.processChangeTokenXML<T>(model, query, responseXML, cache);
+            }
 
-                /** Convert the XML into JS objects */
-                const entities = apDecodeService.processListItems<T>(model, query, responseXML, {target: cache});
+            /** Convert the XML into JS objects */
+            const entities = apDecodeService.processListItems<T>(model, query, responseXML, { target: cache });
 
-                /** Set date time to allow for time based updates */
-                query.lastRun = new Date();
+            /** Set date time to allow for time based updates */
+            query.lastRun = new Date();
 
-                return entities;
-            });
-
-
+            return entities;
+        });
     }
 }
 
@@ -501,11 +509,24 @@ export class Query<T extends ListItem<any>>{
  * @requires angularPoint.apConfig
  */
 export class QueryFactory {
-    static $inject = ['$q', 'apDataService', 'apDefaultListItemQueryOptions', 'apIndexedCacheFactory', 'apDecodeService', 'apLogger'];
+    static $inject = [
+        '$q',
+        'apDataService',
+        'apDefaultListItemQueryOptions',
+        'apIndexedCacheFactory',
+        'apDecodeService',
+        'apLogger',
+    ];
     Query = Query;
 
-    constructor(_$q_, _apDataService_, _apDefaultListItemQueryOptions_, _apIndexedCacheFactory_, _apDecodeService_, _apLogger_) {
-
+    constructor(
+        _$q_,
+        _apDataService_,
+        _apDefaultListItemQueryOptions_,
+        _apIndexedCacheFactory_,
+        _apDecodeService_,
+        _apLogger_,
+    ) {
         $q = _$q_;
         apDataService = _apDataService_;
         apDefaultListItemQueryOptions = _apDefaultListItemQueryOptions_;
@@ -527,6 +548,3 @@ export class QueryFactory {
         return new Query<T>(config, model);
     }
 }
-
-
-

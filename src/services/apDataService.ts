@@ -20,19 +20,45 @@ import { IWorkflowDefinition, XMLGroup, XMLUserProfile } from '../interfaces/ind
 import { ENV } from '../angular-point';
 
 export class DataService {
-    static $inject = ['$http', '$q', '$timeout', 'apCacheService', 'apChangeService', 'apDecodeService',
-        'apDefaultListItemQueryOptions', 'apEncodeService', 'apFieldService', 'apIndexedCacheFactory',
-        'apUtilityService', 'apWebServiceOperationConstants', 'apXMLToJSONService', 'SPServices',
-        'apBasePermissionObject', 'apLogger'];
+    static $inject = [
+        '$http',
+        '$q',
+        '$timeout',
+        'apCacheService',
+        'apChangeService',
+        'apDecodeService',
+        'apDefaultListItemQueryOptions',
+        'apEncodeService',
+        'apFieldService',
+        'apIndexedCacheFactory',
+        'apUtilityService',
+        'apWebServiceOperationConstants',
+        'apXMLToJSONService',
+        'SPServices',
+        'apBasePermissionObject',
+        'apLogger',
+    ];
     queryForCurrentSite: ng.IPromise<string>;
 
-    constructor(private $http: ng.IHttpService, private $q: ng.IQService, private $timeout: ng.ITimeoutService,
-        private apCacheService: CacheService, private apChangeService: ChangeService, private apDecodeService: DecodeService,
-        private apDefaultListItemQueryOptions, private apEncodeService: EncodeService, private apFieldService: FieldService,
-        private apIndexedCacheFactory: IndexedCacheFactory, private apUtilityService: UtilityService,
-        private apWebServiceOperationConstants, private apXMLToJSONService: XMLToJSONService, private SPServices,
-        private apBasePermissionObject, private apLogger: Logger) {
-    }
+    constructor(
+        private $http: ng.IHttpService,
+        private $q: ng.IQService,
+        private $timeout: ng.ITimeoutService,
+        private apCacheService: CacheService,
+        private apChangeService: ChangeService,
+        private apDecodeService: DecodeService,
+        private apDefaultListItemQueryOptions,
+        private apEncodeService: EncodeService,
+        private apFieldService: FieldService,
+        private apIndexedCacheFactory: IndexedCacheFactory,
+        private apUtilityService: UtilityService,
+        // tslint:disable-next-line:no-shadowed-variable
+        private apWebServiceOperationConstants,
+        private apXMLToJSONService: XMLToJSONService,
+        private SPServices,
+        private apBasePermissionObject,
+        private apLogger: Logger,
+    ) {}
 
     createItemUrlFromFileRef(fileRefString: string): string {
         return window.location.protocol + '//' + window.location.hostname + '/' + fileRefString;
@@ -48,21 +74,20 @@ export class DataService {
      * @param {string} [webURL] Optionally provide the URL so we don't need to make a call to the server.
      * @returns {promise} Resolves with the url for the service.
      */
-    generateWebServiceUrl(service: string, webURL?: string): ng.IPromise<string> {
+    generateWebServiceUrl(service: string, webURL?: string) {
         let ajaxURL = '_vti_bin/' + service + '.asmx',
             deferred = this.$q.defer();
 
         if (webURL) {
-            ajaxURL = webURL.charAt(webURL.length - 1) === '/' ?
-                webURL + ajaxURL : webURL + '/' + ajaxURL;
+            ajaxURL = webURL.charAt(webURL.length - 1) === '/' ? webURL + ajaxURL : webURL + '/' + ajaxURL;
             deferred.resolve(ajaxURL);
         } else {
-            this.getCurrentSite().then((thisSite) => {
-                ajaxURL = thisSite + ((thisSite.charAt(thisSite.length - 1) === '/') ? ajaxURL : ('/' + ajaxURL));
+            this.getCurrentSite().then(thisSite => {
+                ajaxURL = thisSite + (thisSite.charAt(thisSite.length - 1) === '/' ? ajaxURL : '/' + ajaxURL);
                 deferred.resolve(ajaxURL);
             });
         }
-        return deferred.promise;
+        return deferred.promise as ng.IPromise<string>;
     }
 
     /**
@@ -92,15 +117,20 @@ export class DataService {
 
         return this.serviceWrapper({
             operation: 'GetTemplatesForItem',
-            item: itemUrl
-        }).then((responseXML) => {
+            item: itemUrl,
+        }).then(responseXML => {
             let workflowTemplates = [];
             let xmlTemplates = this.apXMLToJSONService.filterNodes(responseXML, 'WorkflowTemplate');
             _.each(xmlTemplates, (xmlTemplate: Element) => {
                 const template = {
                     name: $(xmlTemplate).attr('Name'),
                     instantiationUrl: $(xmlTemplate).attr('InstantiationUrl'),
-                    templateId: '{' + $(xmlTemplate).find('WorkflowTemplateIdSet').attr('TemplateId') + '}'
+                    templateId:
+                        '{' +
+                        $(xmlTemplate)
+                            .find('WorkflowTemplateIdSet')
+                            .attr('TemplateId') +
+                        '}',
                 };
                 workflowTemplates.push(template);
             });
@@ -142,8 +172,7 @@ export class DataService {
          *       });
      * </pre>
      */
-    getCollection(options: GetCollectionOptions): ng.IPromise<Object[]> {
-
+    getCollection(options: GetCollectionOptions) {
         /** Determine the XML node to iterate over if filterNode isn't provided */
         let filterNode = options.filterNode || options.operation.split('Get')[1].split('Collection')[0];
 
@@ -159,10 +188,13 @@ export class DataService {
                     /** Unlike other call, get attachments only returns strings instead of an object with attributes */
                     _.each(filteredNodes, (node: Element) => convertedItems.push($(node).text()));
                 } else {
-                    convertedItems = this.apXMLToJSONService.parse(filteredNodes, { includeAllAttrs: true, removeOws: false });
+                    convertedItems = this.apXMLToJSONService.parse(filteredNodes, {
+                        includeAllAttrs: true,
+                        removeOws: false,
+                    });
                 }
                 return convertedItems;
-            }
+            },
         };
 
         let opts: GetCollectionOptions = _.assign({}, defaults, options);
@@ -172,15 +204,17 @@ export class DataService {
         let validPayload = this.validateCollectionPayload(opts);
 
         if (validPayload) {
-            this.serviceWrapper(opts)
-                .then((response) => {
+            this.serviceWrapper(opts).then(
+                response => {
                     deferred.resolve(response);
-                }, (err) => deferred.reject(err));
+                },
+                err => deferred.reject(err),
+            );
         } else {
             deferred.reject(`Invalid payload for ${opts.operation} request.`);
         }
 
-        return deferred.promise;
+        return deferred.promise as ng.IPromise<Object[]>;
     }
 
     /**
@@ -196,11 +230,14 @@ export class DataService {
 
         if (!this.queryForCurrentSite) {
             /** We only want to run this once so cache the promise the first time and just reference it in the future */
-            this.queryForCurrentSite = deferred.promise;
+            this.queryForCurrentSite = deferred.promise as ng.IPromise<string>;
 
-            let soapData = this.SPServices.SOAPEnvelope.header +
-                `<WebUrlFromPageUrl xmlns="` + this.SPServices.SCHEMASharePoint + `/soap/" ><pageUrl>` +
-                ((location.href.indexOf('?') > 0) ? location.href.substr(0, location.href.indexOf('?')) : location.href) +
+            let soapData =
+                this.SPServices.SOAPEnvelope.header +
+                `<WebUrlFromPageUrl xmlns="` +
+                this.SPServices.SCHEMASharePoint +
+                `/soap/" ><pageUrl>` +
+                (location.href.indexOf('?') > 0 ? location.href.substr(0, location.href.indexOf('?')) : location.href) +
                 '</pageUrl></WebUrlFromPageUrl>' +
                 this.SPServices.SOAPEnvelope.footer;
 
@@ -210,10 +247,10 @@ export class DataService {
                 data: soapData,
                 responseType: 'document',
                 headers: {
-                    'Content-Type': 'text/xml;charset="utf-8"'
-                }
-            })
-                .then((response) => {
+                    'Content-Type': 'text/xml;charset="utf-8"',
+                },
+            }).then(
+                response => {
                     /** Success */
                     let errorMsg = this.apDecodeService.checkResponseForErrors(<any>response.data);
                     if (errorMsg) {
@@ -221,10 +258,12 @@ export class DataService {
                     }
                     // environment.site = $(response.data).find("WebUrlFromPageUrlResult").text();
                     deferred.resolve(ENV.site);
-                }, (err) => {
+                },
+                err => {
                     /** Error */
                     this.errorHandler('Failed to get current site.  ' + err, deferred, soapData);
-                });
+                },
+            );
         }
         return this.queryForCurrentSite;
     }
@@ -249,24 +288,25 @@ export class DataService {
      */
     getFieldVersionHistory<T extends ListItem<any>>(
         options: GetFieldVersionHistoryOptions,
-        fieldDefinition: FieldDefinition
-    ): ng.IPromise<FieldVersionCollection> {
-
+        fieldDefinition: FieldDefinition,
+    ) {
         let defaults = {
-            operation: 'GetVersionCollection'
+            operation: 'GetVersionCollection',
         };
         let opts = _.assign({}, defaults, options);
 
-        return this.serviceWrapper(opts)
-            .then((response) => {
+        return this.serviceWrapper(opts).then(
+            response => {
                 /** Parse XML response */
                 let fieldVersionCollection = this.apDecodeService.parseFieldVersions(response, fieldDefinition);
                 /** Resolve with an array of all field versions */
                 return fieldVersionCollection;
-            }, (err) => {
+            },
+            err => {
                 /** Failure */
                 throw new Error(`Failed to fetch version history. Error: ${err}`);
-            });
+            },
+        );
     }
 
     /**
@@ -277,25 +317,24 @@ export class DataService {
      * @param {string} [login=CurrentUser] Optional param of another user's login to return the profile for.
      * @returns {string[]} Promise which resolves with the array of groups the user belongs to.
      */
-    getGroupCollectionFromUser(login?: string): ng.IPromise<XMLGroup[]> {
+    getGroupCollectionFromUser(login?: string) {
         /** Create a new deferred object if not already defined */
         let deferred = this.$q.defer();
-        let getGroupCollection = (userLoginName) => {
+        let getGroupCollection = userLoginName => {
             this.serviceWrapper({
                 operation: 'GetGroupCollectionFromUser',
                 userLoginName: userLoginName,
-                filterNode: 'Group'
+                filterNode: 'Group',
             }).then((groupCollection: XMLGroup[]) => deferred.resolve(groupCollection));
         };
 
         if (!login) {
             /** No login name provided so lookup profile for current user */
-            this.getUserProfileByName()
-                .then((userProfile) => getGroupCollection(userProfile.userLoginName));
+            this.getUserProfileByName().then(userProfile => getGroupCollection(userProfile.userLoginName));
         } else {
             getGroupCollection(login);
         }
-        return deferred.promise;
+        return deferred.promise as ng.IPromise<XMLGroup[]>;
     }
 
     /**
@@ -308,9 +347,9 @@ export class DataService {
      * @param {string} [options.webURL] URL to the site containing the list if differnt from primary data site in apConfig.
      * @returns {object} Promise which resolves with an object defining field and list config.
      */
-    getList(options: { listName: string, webURL?: string }): ng.IPromise<Object> {
+    getList(options: { listName: string; webURL?: string }): ng.IPromise<Object> {
         let defaults = {
-            operation: 'GetList'
+            operation: 'GetList',
         };
 
         let opts: { operation: string; listName: string; webURL?: string } = _.assign({}, defaults, options);
@@ -328,12 +367,11 @@ export class DataService {
      * @returns {Promise} Promise which resolves with an array of field definitions for the list.
      */
     getListFields(options: { listName: string; webURL?: string }): ng.IPromise<XMLFieldDefinition[]> {
-        return this.getList(options)
-            .then((responseXML: Element) => {
-                let filteredNodes = this.apXMLToJSONService.filterNodes(responseXML, 'Field');
-                let fields = this.apXMLToJSONService.parse(filteredNodes, { includeAllAttrs: true, removeOws: false });
-                return fields;
-            });
+        return this.getList(options).then((responseXML: Element) => {
+            let filteredNodes = this.apXMLToJSONService.filterNodes(responseXML, 'Field');
+            let fields = this.apXMLToJSONService.parse(filteredNodes, { includeAllAttrs: true, removeOws: false });
+            return fields;
+        });
     }
 
     /**
@@ -346,37 +384,37 @@ export class DataService {
      * @param {string} [login=CurrentUser] Optional param of another user's login to return the profile for.
      * @returns {object} Promise which resolves with the requested user profile.
      */
-    getUserProfileByName(login?: string): ng.IPromise<XMLUserProfile> {
+    getUserProfileByName(login?: string) {
         let payload = {
             accountName: undefined,
-            operation: 'GetUserProfileByName'
+            operation: 'GetUserProfileByName',
         };
         if (login) {
             payload.accountName = login;
         }
 
-        return this.serviceWrapper(payload)
-            .then((responseXML) => {
-                let userProfile = {
-                    AccountName: undefined,
-                    userLoginName: undefined
-                };
-                // Not formatted like a normal SP response so need to manually parse
-                let filteredNodes = this.apXMLToJSONService.filterNodes(responseXML, 'PropertyData');
-                _.each(filteredNodes, (node: Element) => {
-                    let nodeName = node.getElementsByTagName('Name')[0];
-                    let nodeValue = node.getElementsByTagName('Value')[0];
+        return this.serviceWrapper(payload).then(responseXML => {
+            let userProfile = {
+                AccountName: undefined,
+                userLoginName: undefined,
+            };
+            // Not formatted like a normal SP response so need to manually parse
+            let filteredNodes = this.apXMLToJSONService.filterNodes(responseXML, 'PropertyData');
+            _.each(filteredNodes, (node: Element) => {
+                let nodeName = node.getElementsByTagName('Name')[0];
+                let nodeValue = node.getElementsByTagName('Value')[0];
 
-                    if (nodeName && nodeValue) {
-                        userProfile[nodeName.textContent.trim()] = nodeValue.textContent.trim();
-                    }
-                });
-
-                /** Optionally specify a necessary prefix that should appear before the user login */
-                userProfile.userLoginName = ENV.userLoginNamePrefix ?
-                    (ENV.userLoginNamePrefix + userProfile.AccountName) : userProfile.AccountName;
-                return userProfile;
+                if (nodeName && nodeValue) {
+                    userProfile[nodeName.textContent.trim()] = nodeValue.textContent.trim();
+                }
             });
+
+            /** Optionally specify a necessary prefix that should appear before the user login */
+            userProfile.userLoginName = ENV.userLoginNamePrefix
+                ? ENV.userLoginNamePrefix + userProfile.AccountName
+                : userProfile.AccountName;
+            return userProfile as XMLUserProfile;
+        });
     }
 
     /**
@@ -391,7 +429,12 @@ export class DataService {
      * @param {Element} responseXML XML response from the server.
      * @param {IndexedCache<T>} cache Cache to process in order to handle deletions.
      */
-    processChangeTokenXML<T extends ListItem<any>>(model: Model, query: Query<T>, responseXML: Element, cache: IndexedCache<T>): void {
+    processChangeTokenXML<T extends ListItem<any>>(
+        model: Model,
+        query: Query<T>,
+        responseXML: Element,
+        cache: IndexedCache<T>,
+    ): void {
         if (!model.deferredListDefinition) {
             // Extend our local list definition and field definitions with XML
             this.apDecodeService.extendListMetadata(model, responseXML);
@@ -457,19 +500,19 @@ export class DataService {
      * @param {object} opts Payload object containing the details of the request.
      * @returns {promise} Promise that resolves with the server response.
      */
-    requestData(opts): ng.IPromise<Element> {
+    requestData(opts) {
         let deferred = this.$q.defer();
         let soapData = this.SPServices.generateXMLComponents(opts);
         let service = apWebServiceOperationConstants[opts.operation][0];
 
-        this.generateWebServiceUrl(service, opts.webURL)
-            .then((url) => {
-                this.$http.post(url, soapData.msg, {
+        this.generateWebServiceUrl(service, opts.webURL).then(url => {
+            this.$http
+                .post(url, soapData.msg, {
                     responseType: 'text',
                     // responseType: "document",
                     headers: {
                         'Content-Type': `text/xml;charset="utf-8"`,
-                        SOAPAction: () => soapData.SOAPAction ? soapData.SOAPAction : null
+                        SOAPAction: () => (soapData.SOAPAction ? soapData.SOAPAction : null),
                     },
                     // transformResponse: (data, headersGetter) => {
                     //     // if (_.isString(data)) {
@@ -478,8 +521,8 @@ export class DataService {
                     //     return jQuery.parseXML(data);
                     // }
                 })
-                    .then((response: any) => {
-
+                .then(
+                    (response: any) => {
                         const parser = new DOMParser();
                         const responseXML = parser.parseFromString(response.data, 'text/xml');
 
@@ -495,13 +538,15 @@ export class DataService {
                             deferred.resolve(responseXML);
                             // deferred.resolve(response.data);
                         }
-                    }, (err) => {
+                    },
+                    err => {
                         // Failure
                         this.errorHandler(err, deferred, soapData);
-                    });
-            });
+                    },
+                );
+        });
 
-        return deferred.promise;
+        return deferred.promise as ng.IPromise<Element>;
     }
 
     /**
@@ -513,7 +558,9 @@ export class DataService {
      * @param {Element} responseXML XML response from the server.
      */
     retrieveChangeToken(responseXML: Element): string {
-        return $(responseXML).find('Changes').attr('LastChangeToken');
+        return $(responseXML)
+            .find('Changes')
+            .attr('LastChangeToken');
     }
 
     /**
@@ -527,7 +574,9 @@ export class DataService {
     retrieveListPermissions(responseXML: Element): UserPermissionsObject {
         // Permissions will be a string of Permission names delimited by commas
         // Example: "ViewListItems, AddListItems, EditListItems, DeleteListItems, ...."
-        let listPermissions: string = $(responseXML).find('listitems').attr('EffectivePermMask');
+        let listPermissions: string = $(responseXML)
+            .find('listitems')
+            .attr('EffectivePermMask');
         let permissionObject;
         if (_.isString(listPermissions)) {
             let permissionNameArray = listPermissions.split(',');
@@ -550,7 +599,6 @@ export class DataService {
         }
 
         return permissionObject;
-
     }
 
     /**
@@ -574,7 +622,6 @@ export class DataService {
      *      Otherwise returns the server response
      */
     serviceWrapper(options: ServiceWrapperOptions): ng.IPromise<any> {
-
         const defaults = {
             postProcess: (responseXML: Element) => {
                 if (options.filterNode) {
@@ -584,22 +631,23 @@ export class DataService {
                     return responseXML;
                 }
             },
-            webURL: ENV.site
+            webURL: ENV.site,
         };
 
         const opts: ServiceWrapperOptions = _.assign({}, defaults, options);
 
         /** Convert the xml returned from the server into an array of js objects */
 
-        return this.requestData(opts)
-            .then((responseXML) => {
+        return this.requestData(opts).then(
+            responseXML => {
                 /** Success */
                 return opts.postProcess(responseXML);
-            }, (err: Error) => {
+            },
+            (err: Error) => {
                 /** Failure */
                 return err + '  Failed to complete the requested ' + opts.operation + ' operation.';
-            });
-
+            },
+        );
     }
 
     /**
@@ -629,15 +677,20 @@ export class DataService {
          *   })
      * </pre>
      */
-    startWorkflow(options: { item: string; templateId: string; workflowParameters?: string; fileRef?: string; }): ng.IPromise<any> {
+    startWorkflow(options: {
+        item: string;
+        templateId: string;
+        workflowParameters?: string;
+        fileRef?: string;
+    }): ng.IPromise<any> {
         let defaults = {
             operation: 'StartWorkflow',
             item: '',
             fileRef: '',
             templateId: '',
-            workflowParameters: '<root />'
+            workflowParameters: '<root />',
         };
-        let opts: { item: string; fileRef: string; } = _.assign({}, defaults, options);
+        let opts: { item: string; fileRef: string } = _.assign({}, defaults, options);
 
         /** We have the relative file reference but we need to create the fully qualified reference */
         if (!opts.item && opts.fileRef) {
@@ -655,8 +708,8 @@ export class DataService {
      */
     validateCollectionPayload(opts): boolean {
         let validPayload = true;
-        let verifyParams = (params) => {
-            _.each(params, (param) => {
+        let verifyParams = params => {
+            _.each(params, param => {
                 if (!opts[param]) {
                     console.warn('options' + param + ' is required to complete this operation');
                     validPayload = false;
@@ -687,13 +740,12 @@ export class DataService {
         this.apLogger.error(errorMsg, {
             json: {
                 request: JSON.stringify(soapData),
-                response: JSON.stringify(response)
-            }
+                response: JSON.stringify(response),
+            },
         });
 
         deferred.reject(errorMsg);
     }
-
 }
 
 export interface GetCollectionOptions {
@@ -718,8 +770,7 @@ export interface ServiceWrapperOptions {
 export interface GetFieldVersionHistoryOptions {
     operation?: string;
     strFieldName?: string;
-    strlistID: string;  // correct case
+    strlistID: string; // correct case
     strlistItemID: number; // correct case
     webURL?: string;
 }
-

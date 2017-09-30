@@ -1,23 +1,28 @@
 import * as _ from 'lodash';
-import {CacheService} from '../services/apCacheService';
-import {DataService} from '../services/apDataService';
-import {ListFactory, UninstantiatedList, List} from './apListFactory';
-import {QueryFactory, Query, IQueryOptions} from './apQueryFactory';
-import {UtilityService} from '../services/apUtilityService';
-import {FieldService} from '../services/apFieldService';
-import {IndexedCacheFactory, IndexedCache} from './apIndexedCacheFactory';
-import {DecodeService} from '../services/apDecodeService';
-import {EncodeService} from '../services/apEncodeService';
-import {ListItem} from './apListItemFactory';
-import {FieldDefinition} from './apFieldFactory';
-import {UserPermissionsObject, BasePermissionObject} from '../constants/apPermissionObject';
-import {ENV} from '../angular-point';
+import { CacheService } from '../services/apCacheService';
+import { DataService } from '../services/apDataService';
+import { ListFactory, UninstantiatedList, List } from './apListFactory';
+import { QueryFactory, Query, IQueryOptions } from './apQueryFactory';
+import { UtilityService } from '../services/apUtilityService';
+import { FieldService } from '../services/apFieldService';
+import { IndexedCacheFactory, IndexedCache } from './apIndexedCacheFactory';
+import { DecodeService } from '../services/apDecodeService';
+import { EncodeService } from '../services/apEncodeService';
+import { ListItem } from './apListItemFactory';
+import { FieldDefinition } from './apFieldFactory';
+import { UserPermissionsObject, BasePermissionObject } from '../constants/apPermissionObject';
+import { ENV } from '../angular-point';
 
-
-let apCacheService: CacheService, apDataService: DataService, apListFactory: ListFactory,
-    apQueryFactory: QueryFactory, apUtilityService: UtilityService,
-    apFieldService: FieldService, apIndexedCacheFactory: IndexedCacheFactory,
-    apDecodeService: DecodeService, apEncodeService: EncodeService, $q: ng.IQService;
+let apCacheService: CacheService,
+    apDataService: DataService,
+    apListFactory: ListFactory,
+    apQueryFactory: QueryFactory,
+    apUtilityService: UtilityService,
+    apFieldService: FieldService,
+    apIndexedCacheFactory: IndexedCacheFactory,
+    apDecodeService: DecodeService,
+    apEncodeService: EncodeService,
+    $q: ng.IQService;
 
 export interface IUninitializedModel {
     factory: IModelFactory;
@@ -167,7 +172,6 @@ export class Model {
     requestForFieldDefinitions;
 
     constructor(config: IUninitializedModel) {
-
         /** Assign all properties of config to the model */
         _.assign(this, config);
 
@@ -183,7 +187,7 @@ export class Model {
         /** Convenience querys that simply returns all list items within a list. */
         this.registerQuery({
             name: '__getAllListItems',
-            operation: 'GetListItems'
+            operation: 'GetListItems',
         });
 
         /** Get a single list item from a list, primarily used to quickly identify user
@@ -194,9 +198,8 @@ export class Model {
         this.registerQuery({
             name: '__sample',
             operation: 'GetListItems',
-            rowLimit: 1
+            rowLimit: 1,
         });
-
     }
 
     /**
@@ -229,12 +232,14 @@ export class Model {
      * </file>
      * </pre>
      */
-    addNewItem<T extends ListItem<any>>(entity: ListItem<T>, {
-        buildValuePairs = true,
-        target = this.getCache ? this.getCache() : apIndexedCacheFactory.create({}),
-        valuePairs = []
-    }: CreateListItemOptions<T> = {}): ng.IPromise<T> {
-
+    addNewItem<T extends ListItem<any>>(
+        entity: ListItem<T>,
+        {
+            buildValuePairs = true,
+            target = this.getCache ? this.getCache() : apIndexedCacheFactory.create({}),
+            valuePairs = [],
+        }: CreateListItemOptions<T> = {},
+    ): ng.IPromise<ListItem<T>> {
         const config = {
             batchCmd: 'New',
             buildValuePairs,
@@ -244,7 +249,7 @@ export class Model {
             target,
             operation: 'UpdateListItems',
             valuePairs,
-            webURL: this.list.identifyWebURL()
+            webURL: this.list.identifyWebURL(),
         };
 
         if (entity.id) {
@@ -252,13 +257,13 @@ export class Model {
         }
 
         if (config.buildValuePairs === true) {
-            let editableFields: FieldDefinition[] = _.filter(this.list.fields, {readOnly: false});
+            let editableFields: FieldDefinition[] = _.filter(this.list.fields, { readOnly: false });
             config.valuePairs = apEncodeService.generateValuePairs(editableFields, entity);
         }
 
         /** Overload the function then pass anything past the first parameter to the supporting methods */
-        return apDataService.serviceWrapper(config)
-            .then((response) => {
+        return apDataService.serviceWrapper(config).then(
+            response => {
                 /** Online this should return an XML object */
                 let iCache = apDecodeService.processListItems(this, <any>config, response, config);
 
@@ -269,14 +274,14 @@ export class Model {
                 apUtilityService.registerChange(this, 'create', newListItem.id);
 
                 /** Return reference to last listItem in cache because it will have the new highest id */
-                return newListItem;
-            }, (err) => {
+                return newListItem as ListItem<T>;
+            },
+            err => {
                 throw new Error('Unable to create new list item.  Err:' + err);
                 // return err;
-            });
-
+            },
+        );
     }
-
 
     /**
      * @ngdoc function
@@ -333,10 +338,9 @@ export class Model {
         const model = this;
         let query = model.getQuery(queryName);
         if (query) {
-            return query.execute();
+            return query.execute() as ng.IPromise<IndexedCache<T>>;
         }
     }
-
 
     /**
      * @ngdoc function
@@ -358,7 +362,7 @@ export class Model {
 
             let getListAction = apDataService.getList({
                 listName: model.getListId(),
-                webURL: model.getList().webURL
+                webURL: model.getList().webURL,
             });
 
             /** We can potentially have 2 seperate requests for data so store them in array so we can wait until
@@ -375,12 +379,10 @@ export class Model {
                 promiseArray.push(model.executeQuery('__sample'));
             }
 
-            $q.all(promiseArray)
-                .then((resolvedPromises) => {
-                    apDecodeService.extendListMetadata(model, <any> resolvedPromises[0]);
-                    deferred.resolve(model);
-                });
-
+            $q.all(promiseArray).then(resolvedPromises => {
+                apDecodeService.extendListMetadata(model, <any>resolvedPromises[0]);
+                deferred.resolve(model);
+            });
         }
         return model.deferredListDefinition;
     }
@@ -406,15 +408,15 @@ export class Model {
         const defaults = {
             quantity: 10,
             staticValue: false,
-            permissionLevel: 'FullMask'
+            permissionLevel: 'FullMask',
         };
 
         /** Extend defaults with any provided options */
         const opts: MockDataOptions = _.assign({}, defaults, options);
 
-        _.times(opts.quantity, (count) => {
+        _.times(opts.quantity, count => {
             const mock = {
-                id: count + 1
+                id: count + 1,
             };
             /** Create an attribute with mock data for each field */
             model.list.fields.forEach(field => {
@@ -497,7 +499,6 @@ export class Model {
         return apCacheService.getCachedEntities<T>(model.getListId());
     }
 
-
     /**
      * @ngdoc function
      * @name Model.getCachedEntity
@@ -511,7 +512,6 @@ export class Model {
         const model = this;
         return apCacheService.getCachedEntity<T>(model.getListId(), listItemId);
     }
-
 
     /**
      * @ngdoc function
@@ -536,9 +536,8 @@ export class Model {
      */
     getFieldDefinition(fieldName: string): FieldDefinition {
         const model = this;
-        return _.find(model.list.fields, {mappedName: fieldName});
+        return _.find(model.list.fields, { mappedName: fieldName });
     }
-
 
     /**
      * @ngdoc function
@@ -552,7 +551,6 @@ export class Model {
         return this.list;
     }
 
-
     /**
      * @ngdoc function
      * @name ListItem.getListId
@@ -563,7 +561,6 @@ export class Model {
     getListId(): string {
         return this.getList().getListId();
     }
-
 
     /**
      * @ngdoc function
@@ -594,28 +591,29 @@ export class Model {
                 name: queryKey,
                 operation: 'GetListItems',
                 rowLimit: 1,
-                CAMLQuery: '' +
-                '<Query>' +
-                ' <Where>' +
-                '   <Eq>' +
-                '     <FieldRef Name="ID"/>' +
-                '     <Value Type="Number">' + listItemId + '</Value>' +
-                '   </Eq>' +
-                ' </Where>' +
-                '</Query>'
+                CAMLQuery:
+                    '' +
+                    '<Query>' +
+                    ' <Where>' +
+                    '   <Eq>' +
+                    '     <FieldRef Name="ID"/>' +
+                    '     <Value Type="Number">' +
+                    listItemId +
+                    '</Value>' +
+                    '   </Eq>' +
+                    ' </Where>' +
+                    '</Query>',
             };
             /** Allows us to override defaults */
             const opts = _.assign({}, defaults, options);
             model.registerQuery(opts);
         }
 
-        return model.executeQuery<T>(queryKey)
-            .then((indexedCache: IndexedCache<T>) => {
-                /** Should return an indexed cache object with a single listItem so just return the requested listItem */
-                return indexedCache.first();
-            });
+        return model.executeQuery<T>(queryKey).then((indexedCache: IndexedCache<T>) => {
+            /** Should return an indexed cache object with a single listItem so just return the requested listItem */
+            return indexedCache.first();
+        });
     }
-
 
     /**
      * @ngdoc function
@@ -628,7 +626,6 @@ export class Model {
     getModel(): Model {
         return this;
     }
-
 
     /**
      * @ngdoc function
@@ -668,7 +665,6 @@ export class Model {
         return query;
     }
 
-
     /**
      * @ngdoc function
      * @name Model.isInitialised
@@ -681,7 +677,6 @@ export class Model {
         const model = this;
         return _.isDate(model.lastServerUpdate);
     }
-
 
     /**
      * @ngdoc function
@@ -701,7 +696,8 @@ export class Model {
      * @param {string} [queryOptions.operation=GetListItemChangesSinceToken] Optionally use 'GetListItems' to
      * receive a more efficient response, just don't have the ability to check for changes since the last time
      * the query was called. Defaults to
-     * [GetListItemChangesSinceToken](http://msdn.microsoft.com/en-us/library/lists.lists.getlistitemchangessincetoken%28v=office.12%29.aspx)
+     * [GetListItemChangesSinceToken]
+     * (http://msdn.microsoft.com/en-us/library/lists.lists.getlistitemchangessincetoken%28v=office.12%29.aspx)
      * but for a smaller payload and faster response you can use
      * [GetListItems](http: //spservices.codeplex.com/wikipage?title=GetListItems&referringTitle=Lists).
      * @param {string} [queryOptions.query=Ordered ascending by ID] CAML query passed to SharePoint to control
@@ -826,7 +822,7 @@ export class Model {
 
         const defaults = {
             /** If name isn't set, assume this is the only model and designate as primary */
-            name: ENV.defaultQueryName
+            name: ENV.defaultQueryName,
         };
 
         queryOptions = _.assign({}, defaults, queryOptions);
@@ -836,7 +832,6 @@ export class Model {
         /** Return the newly created query */
         return model.queries[queryOptions.name];
     }
-
 
     /**
      * @ngdoc function
@@ -903,7 +898,7 @@ export class Model {
              * already cached list items for this model. */
             return list.extendPermissionsFromListItem(model.getCachedEntities().first());
         } else {
-            window.console.error('Attempted to resolve permissions of a model that hasn\'t been initialized.', model);
+            window.console.error(`Attempted to resolve permissions of a model that hasn't been initialized.`, model);
             return new BasePermissionObject();
         }
     }
@@ -922,7 +917,7 @@ export class Model {
         const model = this;
         let valid = true;
 
-        const checkObject = (fieldValue) => {
+        const checkObject = fieldValue => {
             return _.isObject(fieldValue) && _.isNumber(fieldValue.lookupId);
         };
 
@@ -948,7 +943,7 @@ export class Model {
                         valid = _.isArray(fieldValue) && fieldValue.length > 0;
                         if (valid) {
                             /** Additionally check that each lookup/person contains a lookupId */
-                            _.each(fieldValue, (fieldObject) => {
+                            _.each(fieldValue, fieldObject => {
                                 if (valid) {
                                     valid = checkObject(fieldObject);
                                 } else {
@@ -961,7 +956,6 @@ export class Model {
                     default:
                         /** Evaluate everything else as a string */
                         valid = !_.isEmpty(fieldValue);
-
                 }
             }
             if (!valid) {
@@ -974,11 +968,32 @@ export class Model {
 }
 
 export class ModelFactory {
-    static $inject = ['$q', 'apCacheService', 'apDataService', 'apDecodeService', 'apEncodeService', 'apFieldService', 'apIndexedCacheFactory', 'apListFactory', 'apQueryFactory', 'apUtilityService'];
+    static $inject = [
+        '$q',
+        'apCacheService',
+        'apDataService',
+        'apDecodeService',
+        'apEncodeService',
+        'apFieldService',
+        'apIndexedCacheFactory',
+        'apListFactory',
+        'apQueryFactory',
+        'apUtilityService',
+    ];
     Model = Model;
 
-    constructor(_$q_, _apCacheService_, _apDataService_, _apDecodeService_, _apEncodeService_, _apFieldService_, _apIndexedCacheFactory_, _apListFactory_, _apQueryFactory_, _apUtilityService_) {
-
+    constructor(
+        _$q_,
+        _apCacheService_,
+        _apDataService_,
+        _apDecodeService_,
+        _apEncodeService_,
+        _apFieldService_,
+        _apIndexedCacheFactory_,
+        _apListFactory_,
+        _apQueryFactory_,
+        _apUtilityService_,
+    ) {
         $q = _$q_;
         apCacheService = _apCacheService_;
         apDataService = _apDataService_;
@@ -994,8 +1009,4 @@ export class ModelFactory {
     create(config: IUninitializedModel) {
         return new Model(config);
     }
-
 }
-
-
-

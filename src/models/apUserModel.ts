@@ -1,6 +1,6 @@
 import * as _ from 'lodash';
-import {DataService} from '../services/apDataService';
-import {XMLGroup, XMLUserProfile} from '../interfaces/index';
+import { DataService } from '../services/apDataService';
+import { XMLGroup, XMLUserProfile } from '../interfaces/index';
 /** Local references to cached promises */
 let _getGroupCollection, _getUserProfile;
 
@@ -22,9 +22,7 @@ export interface IUserModel {
 export class UserModel {
     static $inject = ['$q', 'apDataService'];
 
-    constructor(private $q: ng.IQService, private apDataService: DataService) {
-
-    }
+    constructor(private $q: ng.IQService, private apDataService: DataService) {}
 
     /**
      * @ngdoc function
@@ -39,17 +37,17 @@ export class UserModel {
      * @example
      * <pre>{ID: "190", Name: "Blog Contributors", Description: "We are bloggers...", OwnerID: "126", OwnerIsUser: "False"}</pre>
      */
-    checkIfMember(groupName: string, force = false): angular.IPromise<XMLGroup> {
+    checkIfMember(groupName: string, force = false) {
         // Allow function to be called before group collection is ready
         const deferred = this.$q.defer();
 
         // Initially ensure groups are ready, any future calls will receive the return
-        this.getGroupCollection(force).then((groupCollection) => {
-            const groupDefinition = _.find(groupCollection, {Name: groupName});
+        this.getGroupCollection(force).then(groupCollection => {
+            const groupDefinition = _.find(groupCollection, { Name: groupName });
             deferred.resolve(groupDefinition);
         });
 
-        return deferred.promise;
+        return deferred.promise as ng.IPromise<XMLGroup>;
     }
 
     /**
@@ -65,11 +63,10 @@ export class UserModel {
         if (!_getGroupCollection || force) {
             /** Create a new deferred object if not already defined */
             const deferred = this.$q.defer();
-            this.getUserProfile(force).then((userProfile) => {
-                this.apDataService.getGroupCollectionFromUser(userProfile.userLoginName)
-                    .then((groupCollection) => {
-                        deferred.resolve(groupCollection);
-                    });
+            this.getUserProfile(force).then(userProfile => {
+                this.apDataService.getGroupCollectionFromUser(userProfile.userLoginName).then(groupCollection => {
+                    deferred.resolve(groupCollection);
+                });
             });
             _getGroupCollection = deferred.promise;
         }
@@ -94,5 +91,4 @@ export class UserModel {
         }
         return _getUserProfile;
     }
-
 }

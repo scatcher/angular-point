@@ -1,6 +1,5 @@
-import {ListItem} from '../factories/apListItemFactory';
-import {IndexedCache} from '../factories/apIndexedCacheFactory';
-
+import { ListItem } from '../factories/apListItemFactory';
+import { IndexedCache } from '../factories/apIndexedCacheFactory';
 
 export interface XMLGroup {
     Description: string;
@@ -23,7 +22,7 @@ export interface XMLUser {
 }
 
 export interface XMLUserProfile {
-    userLoginName: string; //Added to allow us to optionally add a prefix if necessary from apConfig
+    userLoginName: string; // Added to allow us to optionally add a prefix if necessary from apConfig
     UserProfile_GUID: string;
     AccountName: string;
     FirstName: string;
@@ -99,7 +98,6 @@ export interface IStartWorkflowParams {
     workflowName?: string;
     workflowParameters?: string;
 }
-
 
 // declare module ngTable {
 //     export interface INGTableParamsObject {

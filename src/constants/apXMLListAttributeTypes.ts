@@ -48,6 +48,5 @@ export const XMLListAttributeTypes: IXMLListAttributeTypes = {
     PreserveEmptyValues: 'Boolean',
     StrictTypeCoercion: 'Boolean',
     EnforceDataValidation: 'Boolean',
-    MaxItemsPerThrottledOperation: 'Number'
+    MaxItemsPerThrottledOperation: 'Number',
 };
-

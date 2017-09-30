@@ -1,6 +1,6 @@
 import * as _ from 'lodash';
-import {ListItem} from '../factories/apListItemFactory';
-import {IndexedCache} from '../factories/apIndexedCacheFactory';
+import { ListItem } from '../factories/apListItemFactory';
+import { IndexedCache } from '../factories/apIndexedCacheFactory';
 
 export interface IUpdateOptions<T extends ListItem<any>> {
     batchCmd: string;
@@ -27,7 +27,11 @@ export interface IChangeServiceCallback {
 export class ChangeService {
     callbackQueue: IChangeServiceCallback[] = [];
 
-    registerListItemUpdate<T extends ListItem<any>>(entity: ListItem<T>, options: IUpdateOptions<T>, promise: ng.IPromise<ListItem<T>>) {
+    registerListItemUpdate<T extends ListItem<any>>(
+        entity: ListItem<T>,
+        options: IUpdateOptions<T>,
+        promise: ng.IPromise<ListItem<T>>,
+    ) {
         this.callbackQueue.forEach(callback => {
             callback(entity, options, promise);
         });
@@ -37,4 +41,3 @@ export class ChangeService {
         this.callbackQueue.push(callback);
     }
 }
-

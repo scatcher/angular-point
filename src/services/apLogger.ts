@@ -1,9 +1,8 @@
 import * as _ from 'lodash';
 // import * as ErrorStackParser from 'error-stack-parser';
-import {ListItem} from '../factories/apListItemFactory';
+import { ListItem } from '../factories/apListItemFactory';
 
 declare let ErrorStackParser: any;
-
 
 let deferred: ng.IDeferred<Function>;
 let registerCallback: ng.IPromise<Function>;
@@ -129,13 +128,16 @@ export class Logger implements Logger {
      * @param {ILogger} [optionsOverride] Override any log options.
      */
     debug(message: string, optionsOverride?: LogEvent): ng.IPromise<ListItem<any>> {
-        let opts = _.assign({
-            message: message,
-            type: 'debug'
-        }, optionsOverride);
+        let opts = _.assign(
+            {
+                message: message,
+                type: 'debug',
+            },
+            optionsOverride,
+        );
 
         return this.notify(opts);
-    };
+    }
 
     /**
      * @ngdoc function
@@ -145,14 +147,17 @@ export class Logger implements Logger {
      * @param {ILogger} [optionsOverride] Override any log options.
      */
     error(message: string, optionsOverride?: LogEvent): ng.IPromise<ListItem<any>> {
-        let opts = _.assign({
-            // Stringify if message is an error object
-            message: _.isObject(message) ? JSON.stringify(message) : message,
-            type: 'error'
-        }, optionsOverride);
+        let opts = _.assign(
+            {
+                // Stringify if message is an error object
+                message: _.isObject(message) ? JSON.stringify(message) : message,
+                type: 'error',
+            },
+            optionsOverride,
+        );
 
         return this.notify(opts);
-    };
+    }
 
     /**
      * @ngdoc function
@@ -168,17 +173,22 @@ export class Logger implements Logger {
             /* global ErrorStackParser:true */
             const stackTrace = ErrorStackParser.parse(exception);
 
-            this.error(exception.message, _.assign({}, {
-                event: 'exception',
-                stackTrace: stackTrace,
-                cause: (cause || '')
-            }, optionsOverride));
-
+            this.error(
+                exception.message,
+                _.assign(
+                    {},
+                    {
+                        event: 'exception',
+                        stackTrace: stackTrace,
+                        cause: cause || '',
+                    },
+                    optionsOverride,
+                ),
+            );
         } catch (loggingError) {
             this.$log.warn('Error server-side logging failed');
             this.$log.log(loggingError);
         }
-
     }
 
     /**
@@ -189,13 +199,16 @@ export class Logger implements Logger {
      * @param {ILogger} [optionsOverride] Override any log options.
      */
     info(message: string, optionsOverride?: LogEvent): ng.IPromise<ListItem<any>> {
-        let opts = _.assign({
-            message: message,
-            type: 'info'
-        }, optionsOverride);
+        let opts = _.assign(
+            {
+                message: message,
+                type: 'info',
+            },
+            optionsOverride,
+        );
 
         return this.notify(opts);
-    };
+    }
 
     /**
      * @ngdoc function
@@ -205,13 +218,16 @@ export class Logger implements Logger {
      * @param {ILogger} [optionsOverride] Override any log options.
      */
     log(message: string, optionsOverride?: LogEvent): ng.IPromise<ListItem<any>> {
-        let opts = _.assign({
-            message: message,
-            type: 'log'
-        }, optionsOverride);
+        let opts = _.assign(
+            {
+                message: message,
+                type: 'log',
+            },
+            optionsOverride,
+        );
 
         return this.notify(opts);
-    };
+    }
 
     registerEvent(logEvent: LogEvent): ng.IPromise<ListItem<any>> {
         return registerCallback.then((callback: Function) => {
@@ -240,13 +256,16 @@ export class Logger implements Logger {
      * @param {ILogger} [optionsOverride] Override any log options.
      */
     warn(message: string, optionsOverride?: LogEvent): ng.IPromise<ListItem<any>> {
-        let opts = _.assign({
-            message: message,
-            type: 'warn'
-        }, optionsOverride);
+        let opts = _.assign(
+            {
+                message: message,
+                type: 'warn',
+            },
+            optionsOverride,
+        );
 
         return this.notify(opts);
-    };
+    }
 
     private notify(options: LogEvent) {
         // url before navigation
@@ -254,11 +273,7 @@ export class Logger implements Logger {
         return this.$timeout(() => {
             /** Allow navigation to settle before capturing 2nd url */
             url += '2: ' + this.$window.location.href;
-            return this.registerEvent(_.assign({}, {url}, options));
+            return this.registerEvent(_.assign({}, { url }, options));
         }, 100);
     }
-
 }
-
-
-

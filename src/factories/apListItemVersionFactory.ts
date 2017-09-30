@@ -1,8 +1,8 @@
 import * as _ from 'lodash';
-import {ListItem} from './apListItemFactory';
-import {User} from './apUserFactory';
-import {FieldDefinition, FieldConfigurationObject} from './apFieldFactory';
-import {IModelFactory} from './apModelFactory';
+import { ListItem } from './apListItemFactory';
+import { User } from './apUserFactory';
+import { FieldDefinition, FieldConfigurationObject } from './apFieldFactory';
+import { IModelFactory } from './apModelFactory';
 
 export interface ListItemVersions<T extends ListItem<any>> {
     [key: number]: ListItemVersion<T>;
@@ -30,7 +30,7 @@ export interface FieldVersion {
  */
 export class FieldVersionCollection {
     fieldDefinition: FieldDefinition;
-    versions: {[key: number]: FieldVersion} = {};
+    versions: { [key: number]: FieldVersion } = {};
 
     constructor(fieldDefinition: FieldDefinition) {
         this.fieldDefinition = fieldDefinition;
@@ -52,7 +52,7 @@ export class FieldVersionCollection {
             editor,
             modified,
             value,
-            version
+            version,
         };
     }
 
@@ -77,9 +77,8 @@ export class FieldChange {
         propertyName: string,
         fieldDefinition: FieldConfigurationObject,
         newerVersion: ListItemVersion<any>,
-        previousVersion: ListItemVersion<any> = <ListItemVersion<any>>{}
+        previousVersion: ListItemVersion<any> = <ListItemVersion<any>>{},
     ) {
-
         this.fieldName = fieldDefinition.displayName;
         this.newerVersion = newerVersion;
         /** Need to set property name before calling this.getFormattedValue */
@@ -113,12 +112,14 @@ export class FieldChangeSummary<T extends ListItem<any>> {
 
     constructor(newerVersion: ListItem<T> | any, previousVersion: ListItem<T> | Object | any = <ListItem<T>>{}) {
         /** Loop through each of the properties on the newer list item */
-        _.each(newerVersion, (val, propertyName) => {
+        _.each(newerVersion, (val, propertyName: string) => {
             const fieldDefinition = newerVersion.getFieldDefinition(propertyName);
             /** Only log non-readonly fields that aren't the same */
-            if (fieldDefinition && !fieldDefinition.readOnly &&
-                JSON.stringify(newerVersion[propertyName]) !== JSON.stringify(previousVersion[propertyName])) {
-
+            if (
+                fieldDefinition &&
+                !fieldDefinition.readOnly &&
+                JSON.stringify(newerVersion[propertyName]) !== JSON.stringify(previousVersion[propertyName])
+            ) {
                 let fieldChange = new FieldChange(propertyName, fieldDefinition, newerVersion, previousVersion);
                 if (fieldChange.newValue !== fieldChange.oldValue) {
                     /** This field has changed */
@@ -162,7 +163,6 @@ export class VersionSummary<T extends ListItem<any>> extends FieldChangeSummary<
     }
 }
 
-
 /**
  * @ngdoc object
  * @name apListItemVersionFactory.ChangeSummary
@@ -173,7 +173,7 @@ export class VersionSummary<T extends ListItem<any>> extends FieldChangeSummary<
 export class ChangeSummary<T extends ListItem<any>> {
     /** The number of versions where list item data actually changed */
     significantVersionCount = 0;
-    private versionSummaryCollection: {[key: number]: VersionSummary<T>} = {};
+    private versionSummaryCollection: { [key: number]: VersionSummary<T> } = {};
 
     constructor(versions: ListItemVersions<T>) {
         /** First version won't have a previous version */
@@ -208,7 +208,7 @@ export class VersionHistoryCollection<T extends ListItem<any>> {
     // getFactory: () => IModelFactory;
     constructor(fieldVersionCollections: FieldVersionCollection[], factory: IModelFactory) {
         /** Iterate through each of the field version collections */
-        _.each(fieldVersionCollections, (fieldVersionCollection) => {
+        _.each(fieldVersionCollections, fieldVersionCollection => {
             this.addFieldCollection(fieldVersionCollection, factory);
         });
     }
@@ -217,11 +217,13 @@ export class VersionHistoryCollection<T extends ListItem<any>> {
         /** Iterate through each version of this field */
         _.each(fieldVersionCollection.versions, (fieldVersion: FieldVersion, versionNumberAsString: string) => {
             /** Create a new version object if it doesn't already exist */
-            this[versionNumberAsString] = this[versionNumberAsString] || new factory<T>({
+            this[versionNumberAsString] =
+                this[versionNumberAsString] ||
+                new factory<T>({
                     editor: fieldVersion.editor,
                     modified: fieldVersion.modified,
                     /** Iterating over object properties which converts everything to string so convert back */
-                    version: parseInt(versionNumberAsString, 10)
+                    version: parseInt(versionNumberAsString, 10),
                 });
             /** Add field to the version history for this version with computed property name */
             this[versionNumberAsString][fieldVersionCollection.mappedName] = fieldVersion.value;
@@ -255,5 +257,3 @@ export class ListItemVersionFactory {
     VersionHistoryCollection = VersionHistoryCollection;
     VersionSummary = VersionSummary;
 }
-
-

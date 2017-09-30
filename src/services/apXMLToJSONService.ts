@@ -2,7 +2,6 @@ import { auto } from 'angular';
 import * as _ from 'lodash';
 import { DecodeService } from './apDecodeService';
 
-
 /**
  * @ngdoc service
  * @name apXMLToJSONService
@@ -15,9 +14,7 @@ import { DecodeService } from './apDecodeService';
 export class XMLToJSONService {
     static $inject = ['$injector'];
 
-    constructor(private $injector: auto.IInjectorService) {
-
-    }
+    constructor(private $injector: auto.IInjectorService) {}
 
     /**
      * @ngdoc function
@@ -32,7 +29,6 @@ export class XMLToJSONService {
      * @returns {NodeList} List of fltered nodes.
      */
     filterNodes(xmlObject: Element, name: string): any {
-
         if (name.indexOf(':') > -1) {
             // Something like z:row so need to filter for namespace
             const tagName = name.split(':')[1]; // "row"
@@ -71,7 +67,7 @@ export class XMLToJSONService {
             includeAllAttrs: false, // If true, return all attributes, regardless whether they are in the mapping
             mapping: {}, // columnName: mappedName: "mappedName", objectType: "objectType"
             removeOws: true, // Specifically for GetListItems, if true, the leading ows_ will be stripped off the field name
-            sparse: false // If true, empty ("") values will not be returned
+            sparse: false, // If true, empty ("") values will not be returned
         };
 
         const opts: IParseOptions = _.assign({}, defaults, options);
@@ -84,15 +80,17 @@ export class XMLToJSONService {
 
             if (!opts.sparse) {
                 // Bring back all mapped columns, even those with no value
-                _.each(opts.mapping, (column) => row[column.mappedName] = '');
+                _.each(opts.mapping, column => (row[column.mappedName] = ''));
             }
 
-            _.each(rowAttrs, (rowAttribute) => {
+            _.each(rowAttrs, (rowAttribute: any) => {
                 const attributeName = rowAttribute.name;
                 const columnMapping = opts.mapping[attributeName];
 
-                const objectName = typeof columnMapping !== 'undefined' ?
-                    columnMapping.mappedName : opts.removeOws ? attributeName.split('ows_')[1] : attributeName;
+                const objectName =
+                    typeof columnMapping !== 'undefined'
+                        ? columnMapping.mappedName
+                        : opts.removeOws ? attributeName.split('ows_')[1] : attributeName;
 
                 const objectType = typeof columnMapping !== 'undefined' ? columnMapping.objectType : undefined;
 
@@ -103,12 +101,10 @@ export class XMLToJSONService {
 
             // Push this item into the JSON Object
             jsonObjectArray.push(row);
-
         });
 
         // Return the JSON object
         return jsonObjectArray;
-
     }
 }
 
@@ -118,6 +114,3 @@ export interface IParseOptions {
     removeOws?: boolean;
     sparse?: boolean;
 }
-
-
-

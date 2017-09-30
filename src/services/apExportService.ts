@@ -1,5 +1,5 @@
 import * as _ from 'lodash';
-import {ListItem} from '../factories/apListItemFactory';
+import { ListItem } from '../factories/apListItemFactory';
 
 /**
  * @ngdoc service
@@ -11,9 +11,7 @@ import {ListItem} from '../factories/apListItemFactory';
 export class ExportService {
     static $inject = ['apUtilityService', 'apFormattedFieldValueService'];
 
-    constructor(private apUtilityService, private apFormattedFieldValueService) {
-
-    }
+    constructor(private apUtilityService, private apFormattedFieldValueService) {}
 
     /**
      * @ngdoc function
@@ -68,25 +66,22 @@ export class ExportService {
      * </pre>
      *
      */
-    generateCSV(entities: ListItem<any>[], fields: [string[]|Object[]], options?: {delim: string}): string[][] {
+    generateCSV(entities: ListItem<any>[], fields: [string[] | Object[]], options?: { delim: string }): string[][] {
         const defaults = {
                 dateFormat: 'json', // Format as JSON date rather than a formal date string
                 delim: '; ',
-                includeTitleRow: true
+                includeTitleRow: true,
             },
             opts = _.assign({}, defaults, options),
-            entitiesArray = [
-                []
-            ];
+            entitiesArray = [[]];
 
         /** Process each of the entities in the data source */
         _.each(entities, (entity, entityIndex) => {
             const entityArray = [];
             /** Process each of the specified fields */
-            _.each(fields, (f) => {
-
+            _.each(fields, f => {
                 /** Handle both string and object definition */
-                const fieldDefinition: any = <any> _.isString(f) ? {field: f} : f;
+                const fieldDefinition: any = <any>_.isString(f) ? { field: f } : f;
 
                 /** Split the field name from the property if provided */
                 const fieldComponents = fieldDefinition.field.split('.');
@@ -95,8 +90,9 @@ export class ExportService {
                 /** First array has the field names */
                 if (entityIndex === 0 && opts.includeTitleRow) {
                     /** Take a best guess if a column label isn't specified by capitalizing and inserting spaces between camel humps*/
-                    const label = fieldDefinition.label ?
-                        fieldDefinition.label : this.apUtilityService.fromCamelCase(propertyName);
+                    const label = fieldDefinition.label
+                        ? fieldDefinition.label
+                        : this.apUtilityService.fromCamelCase(propertyName);
                     entitiesArray[0].push(label);
                 }
 
@@ -116,7 +112,7 @@ export class ExportService {
                     val = this.apFormattedFieldValueService.getFormattedFieldValue(
                         entity[fieldDefinition.field],
                         modelDefinition.objectType,
-                        opts
+                        opts,
                     );
                 }
                 /** Add string to column */
@@ -226,7 +222,7 @@ export class ExportService {
             data = JSON.stringify(data);
         }
 
-        const blob = new Blob([data], {type: 'text/' + fileType}),
+        const blob = new Blob([data], { type: 'text/' + fileType }),
             e = document.createEvent('MouseEvents'),
             a = document.createElement('a');
 
@@ -276,7 +272,4 @@ export class ExportService {
     saveXML(data: Element, filename = 'debug.xml') {
         this.saveFile(data, 'xml', filename);
     }
-
-
 }
-

@@ -1,11 +1,12 @@
 import * as _ from 'lodash';
-import {FieldService} from '../services/apFieldService';
-import {UtilityService} from '../services/apUtilityService';
-import {FormattedFieldValueService} from '../services/apFormattedFieldValueService';
-import {ListItem} from './apListItemFactory';
+import { FieldService } from '../services/apFieldService';
+import { UtilityService } from '../services/apUtilityService';
+import { FormattedFieldValueService } from '../services/apFormattedFieldValueService';
+import { ListItem } from './apListItemFactory';
 
-
-let apFieldService: FieldService, apUtilityService: UtilityService, apFormattedFieldValueService: FormattedFieldValueService;
+let apFieldService: FieldService,
+    apUtilityService: UtilityService,
+    apFormattedFieldValueService: FormattedFieldValueService;
 
 export interface XMLFieldDefinition {
     ID?: string;
@@ -54,7 +55,6 @@ export interface FieldConfigurationObject {
 export interface FieldDefinition extends XMLFieldDefinition, FieldConfigurationObject {
     [key: string]: any;
 }
-
 
 /**
  * @ngdoc object
@@ -150,7 +150,6 @@ export class FieldDefinition implements FieldDefinition {
     constructor(obj) {
         _.assign(this, obj);
         this.displayName = this.displayName ? this.displayName : apUtilityService.fromCamelCase(this.mappedName);
-
     }
 
     /**
@@ -194,7 +193,11 @@ export class FieldDefinition implements FieldDefinition {
         if (_.isFunction(this.formatter)) {
             return this.formatter(listItem, this, options);
         } else {
-            return apFormattedFieldValueService.getFormattedFieldValue(listItem[this.mappedName], this.objectType, options);
+            return apFormattedFieldValueService.getFormattedFieldValue(
+                listItem[this.mappedName],
+                this.objectType,
+                options,
+            );
         }
     }
 
@@ -209,7 +212,6 @@ export class FieldDefinition implements FieldDefinition {
     getMockData(options): any {
         return apFieldService.getMockData(this.objectType, options);
     }
-
 }
 
 /**
@@ -233,4 +235,3 @@ export class FieldFactory {
         apFormattedFieldValueService = _apFormattedFieldValueService_;
     }
 }
-

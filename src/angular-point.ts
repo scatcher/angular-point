@@ -11,7 +11,12 @@ import { FieldFactory, FieldConfigurationObject, FieldDefinition } from './facto
 import { IndexedCacheFactory, IndexedCache } from './factories/apIndexedCacheFactory';
 import { ListItemFactory, ListItem } from './factories/apListItemFactory';
 import { ModelFactory, Model, QueriesContainer } from './factories/apModelFactory';
-import { ListItemVersionFactory, ChangeSummary, VersionSummary, ListItemVersion } from './factories/apListItemVersionFactory';
+import {
+    ListItemVersionFactory,
+    ChangeSummary,
+    VersionSummary,
+    ListItemVersion,
+} from './factories/apListItemVersionFactory';
 import { LookupFactory, Lookup } from './factories/apLookupFactory';
 import { QueryFactory, Query } from './factories/apQueryFactory';
 import { UserFactory, User } from './factories/apUserFactory';
@@ -34,7 +39,6 @@ import { List, ListFieldMapping } from './factories/apListFactory';
 import { LookupCacheService } from './services/apLookupCacheService';
 import { XMLUser, XMLGroup } from './interfaces/index';
 
-
 export let $AP_INJECTOR: ng.auto.IInjectorService;
 
 /**
@@ -46,8 +50,8 @@ export let $AP_INJECTOR: ng.auto.IInjectorService;
  * functionality in your project.
  * @installModule
  */
-export const AngularPointModule = angular.module('angularPoint', [])
-
+export const AngularPointModule = angular
+    .module('angularPoint', [])
     // Constants
     .constant('apDefaultFields', DefaultFields)
     .constant('apDefaultListItemQueryOptions', DefaultListItemQueryOptions)
@@ -55,7 +59,6 @@ export const AngularPointModule = angular.module('angularPoint', [])
     .constant('apWebServiceOperationConstants', WebServiceOperationConstants)
     .constant('apXMLFieldAttributeTypes', XMLFieldAttributeTypes)
     .constant('apXMLListAttributeTypes', XMLListAttributeTypes)
-
     // Factories
     .service('apCamlFactory', CamlFactory)
     .service('apFieldFactory', FieldFactory)
@@ -67,10 +70,8 @@ export const AngularPointModule = angular.module('angularPoint', [])
     .service('apModelFactory', ModelFactory)
     .service('apQueryFactory', QueryFactory)
     .service('apUserFactory', UserFactory)
-
     // Models
     .service('apUserModel', UserModel)
-
     // Services
     .service('apCacheService', CacheService)
     .service('apChangeService', ChangeService)
@@ -83,18 +84,20 @@ export const AngularPointModule = angular.module('angularPoint', [])
     .service('apFormattedFieldValueService', FormattedFieldValueService)
     .service('apLogger', Logger)
     .service('apLookupCacheService', LookupCacheService)
-
     .factory('SPServices', SPServicesCore)
     .service('apUtilityService', UtilityService)
     .service('apWebServiceService', WebServiceService)
     .service('apXMLToJSONService', XMLToJSONService)
-
     /** Bootstrap everything that needs to be immediately instantiated */
-    .run(['$injector', 'apListItemFactory', 'apModelFactory',
+    .run([
+        '$injector',
+        'apListItemFactory',
+        'apModelFactory',
         ($injector: ng.auto.IInjectorService, apListItemFactory: ListItemFactory, apModelFactory: ModelFactory) => {
             // Expose angular $injector for use by the entire application
             $AP_INJECTOR = $injector;
-        }]);
+        },
+    ]);
 
 export let ENV;
 

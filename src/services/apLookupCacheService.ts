@@ -114,7 +114,7 @@ export class LookupCacheService {
     backup: { [key: string]: { [key: number]: {} } } = {};
     lookupCache = {};
 
-    constructor(private apIndexedCacheFactory) { }
+    constructor(private apIndexedCacheFactory) {}
 
     /**
      * @ngdoc function
@@ -136,7 +136,10 @@ export class LookupCacheService {
         }
     }
 
-    getPropertyCache<T extends ListItem<any>>(propertyName: string, listId: string): { [key: number]: IndexedCache<T> } {
+    getPropertyCache<T extends ListItem<any>>(
+        propertyName: string,
+        listId: string,
+    ): { [key: number]: IndexedCache<T> } {
         this.lookupCache[listId] = this.lookupCache[listId] || {};
         this.lookupCache[listId][propertyName] = this.lookupCache[listId][propertyName] || {};
         return this.lookupCache[listId][propertyName];
@@ -181,7 +184,7 @@ export class LookupCacheService {
      */
     manageChangeEvents(listItemConstructor: any, propertyArray: string[]) {
         const self = this;
-        const unSubscribeOnChange = function () {
+        const unSubscribeOnChange = function() {
             if (this.id) {
                 self.removeEntityFromLookupCaches(this, propertyArray);
             }
@@ -198,8 +201,9 @@ export class LookupCacheService {
             const listId = listItem.getListId();
 
             /** Only cache entities saved to server and we know because they'd have an id */
-            propertyArray.forEach(propertyName => this.removeEntityFromSingleLookupCache(listItem, propertyName, listId));
-
+            propertyArray.forEach(propertyName =>
+                this.removeEntityFromSingleLookupCache(listItem, propertyName, listId),
+            );
         }
     }
 
@@ -216,7 +220,7 @@ export class LookupCacheService {
         propertyName: string,
         listId: string,
         cacheId: number,
-        asObject = false
+        asObject = false,
     ): IndexedCache<T> | T[] {
         const cache = this.getPropertyCache(propertyName, listId);
         if (asObject) {
@@ -241,7 +245,6 @@ export class LookupCacheService {
         this.backup[listId][listItem.id][propertyName] = _.cloneDeep(listItem[propertyName]);
     }
 
-
     private cacheSingleLookup(listItem: ListItem<any>, propertyName: string, listId: string): void {
         if (listItem[propertyName]) {
             /** Handle single and multiple lookups by only dealing with an Lookup[] */
@@ -250,14 +253,14 @@ export class LookupCacheService {
             lookups.forEach((lookup: Lookup<any>) => {
                 if (lookup && lookup.lookupId) {
                     const propertyCache = this.getPropertyCache(propertyName, listId);
-                    propertyCache[lookup.lookupId] = propertyCache[lookup.lookupId] || this.apIndexedCacheFactory.create();
+                    propertyCache[lookup.lookupId] =
+                        propertyCache[lookup.lookupId] || this.apIndexedCacheFactory.create();
                     const lookupCache = propertyCache[lookup.lookupId];
                     lookupCache.set(listItem.id, listItem);
                 } else {
                     throw new Error('A valid lookup was not found.');
                 }
             });
-
         }
     }
 
@@ -268,9 +271,9 @@ export class LookupCacheService {
         // Don't look at current list item value in cases user changed it, look at the original backed up value that we stored so we can
         // unregister what was originally registered.
         if (backedUpLookupValues && backedUpLookupValues[propertyName]) {
-
-            const lookups = _.isArray(backedUpLookupValues[propertyName]) ?
-                backedUpLookupValues[propertyName] : [backedUpLookupValues[propertyName]];
+            const lookups = _.isArray(backedUpLookupValues[propertyName])
+                ? backedUpLookupValues[propertyName]
+                : [backedUpLookupValues[propertyName]];
 
             lookups.forEach((lookup: Lookup<any>) => {
                 if (lookup && lookup.lookupId) {
@@ -283,9 +286,6 @@ export class LookupCacheService {
                     throw new Error('A valid lookup was not found.');
                 }
             });
-
         }
     }
-
 }
-

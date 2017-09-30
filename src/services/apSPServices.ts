@@ -1,10 +1,11 @@
 import * as _ from 'lodash';
 // Set up SOAP envelope
-import {IWebServiceOperationConstants} from '../constants/apWebServiceOperationConstants';
-import {WebServiceService} from './apWebServiceService';
+import { IWebServiceOperationConstants } from '../constants/apWebServiceOperationConstants';
+import { WebServiceService } from './apWebServiceService';
 export class SOAPEnvelope {
     opheader: string;
     opfooter: string;
+    // tslint:disable-next-line:max-line-length
     header = `<soap:Envelope  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/"><soap:Body>`;
     footer = '</soap:Body></soap:Envelope>';
     payload = '';
@@ -45,7 +46,8 @@ export interface SPServicesOptions {
 
     /** Array of destination URLs for copy operations */
     DestinationUrls?: Array<any>;
-    /** An SPWebServiceBehavior indicating whether the client supports Windows SharePoint Services 2.0 or Windows SharePoint Services 3.0: {Version2 | Version3 } */
+    /** An SPWebServiceBehavior indicating whether the client supports Windows SharePoint Services 2.0 or Windows SharePoint
+     * Services 3.0: {Version2 | Version3 } */
     behavior?: string;
     /** A Storage value indicating how the Web Part is stored: {None | Personal | Shared} */
     storage?: string;
@@ -57,9 +59,11 @@ export interface SPServicesOptions {
     nonGregorian?: boolean;
     /** Specifies if the action is a claim or a release. Specifies true for a claim and false for a release. */
     fClaim?: boolean;
-    /** The recurrence ID for the meeting that needs its association removed. This parameter can be set to 0 for single-instance meetings. */
+    /** The recurrence ID for the meeting that needs its association removed. This parameter can be set to 0 for
+     * single-instance meetings. */
     recurrenceId?: number;
-    /** An integer that is used to determine the ordering of updates in case they arrive out of sequence. Updates with a lower-than-current sequence are discarded. If the sequence is equal to the current sequence, the latest update are applied. */
+    /** An integer that is used to determine the ordering of updates in case they arrive out of sequence. Updates with a
+     * lower-than-current sequence are discarded. If the sequence is equal to the current sequence, the latest update are applied. */
     sequence?: number;
     /** SocialDataService maximumItemsToReturn */
     maximumItemsToReturn?: number;
@@ -77,13 +81,12 @@ export interface SPServicesOptions {
     principalType?: string;
 
     /** Allow the user to force async */
-        async?: boolean;
+    async?: boolean;
     /** Function to call on completion */
     completefunc?: (xData: XMLHttpRequest, status: string) => void;
 }
 
-
-//TODO Cleanup and convert to TS
+// TODO Cleanup and convert to TS
 /**
  * @ngdoc service
  * @name angularPoint.SPServices
@@ -94,8 +97,10 @@ export interface SPServicesOptions {
  *
  * */
 SPServicesCore.$inject = ['apWebServiceOperationConstants', 'apWebServiceService'];
-export function SPServicesCore(apWebServiceOperationConstants: IWebServiceOperationConstants, apWebServiceService: WebServiceService) {
-
+export function SPServicesCore(
+    apWebServiceOperationConstants: IWebServiceOperationConstants,
+    apWebServiceService: WebServiceService,
+) {
     /*
      * SPServices - Work with SharePoint's Web Services using jQuery
      * Version 2014.02a
@@ -126,7 +131,6 @@ export function SPServicesCore(apWebServiceOperationConstants: IWebServiceOperat
     // for their session by calling this function.  Each operation requires a different set of options;
     // we allow for all in a standardized way.
     const defaults = {
-
         operation: '', // The Web SPServicesCore operation
         webURL: '', // URL of the target Web
         makeViewDefault: false, // true to make the view the default view for the list
@@ -144,27 +148,32 @@ export function SPServicesCore(apWebServiceOperationConstants: IWebServiceOperat
 
         // As of v0.7.1, removed all options which were assigned an empty string ('')
         DestinationUrls: [], // Array of destination URLs for copy operations
-        behavior: 'Version3', // An SPWebServiceBehavior indicating whether the client supports Windows SharePoint Services 2.0 or Windows SharePoint Services 3.0: {Version2 | Version3 }
+        // An SPWebServiceBehavior indicating whether the client supports Windows SharePoint Services 2.0 or
+        // Windows SharePoint Services 3.0: {Version2 | Version3 }
+        behavior: 'Version3',
         storage: 'Shared', // A Storage value indicating how the Web Part is stored: {None | Personal | Shared}
         objectType: 'List', // objectType for operations which require it
         cancelMeeting: true, // true to delete a meeting;false to remove its association with a Meeting Workspace site
         nonGregorian: false, // true if the calendar is set to a format other than Gregorian;otherwise, false.
         fClaim: false, // Specifies if the action is a claim or a release. Specifies true for a claim and false for a release.
-        recurrenceId: 0, // The recurrence ID for the meeting that needs its association removed. This parameter can be set to 0 for single-instance meetings.
-        sequence: 0, // An integer that is used to determine the ordering of updates in case they arrive out of sequence. Updates with a lower-than-current sequence are discarded. If the sequence is equal to the current sequence, the latest update are applied.
+        // The recurrence ID for the meeting that needs its association removed. This parameter can be set to 0 for
+        // single-instance meetings.
+        recurrenceId: 0,
+        // An integer that is used to determine the ordering of updates in case they arrive out of sequence. Updates with a
+        // lower-than - current sequence are discarded. If the sequence is equal to the current sequence, the latest update are applied.
+        sequence: 0,
         maximumItemsToReturn: 0, // SocialDataService maximumItemsToReturn
         startIndex: 0, // SocialDataService startIndex
         isHighPriority: false, // SocialDataService isHighPriority
         isPrivate: false, // SocialDataService isPrivate
         rating: 1, // SocialDataService rating
         maxResults: 10, // Unless otherwise specified, the maximum number of principals that can be returned from a provider is 10.
-        principalType: 'User', // Specifies user scope and other information: [None | User | DistributionList | SecurityGroup | SharePointGroup | All]
+        // Specifies user scope and other information: [None | User | DistributionList | SecurityGroup | SharePointGroup | All]
+        principalType: 'User',
 
         async: true, // Allow the user to force async
-        completefunc: null // Function to call on completion
-
+        completefunc: null, // Function to call on completion
     }; // End SPServices.defaults
-
 
     // Main function, which calls SharePoint's Web Services directly.
     const SPServices = {
@@ -172,22 +181,21 @@ export function SPServicesCore(apWebServiceOperationConstants: IWebServiceOperat
         encodeXml: encodeXml,
         generateXMLComponents: generateXMLComponents,
         SCHEMASharePoint: SCHEMASharePoint,
-        SOAPEnvelope: new SOAPEnvelope()
+        SOAPEnvelope: new SOAPEnvelope(),
     };
 
     function generateXMLComponents(options: SPServicesOptions) {
-
         /** Key/Value mapping of SharePoint properties to SPServices properties */
         const mapping = [
             ['query', 'CAMLQuery'],
             ['viewFields', 'CAMLViewFields'],
             ['rowLimit', 'CAMLRowLimit'],
             ['queryOptions', 'CAMLQueryOptions'],
-            ['listItemID', 'ID']
+            ['listItemID', 'ID'],
         ];
 
         /** Ensure the SharePoint properties are available prior to extending with defaults */
-        _.each(mapping, (map) => {
+        _.each(mapping, map => {
             if (options[map[0]] && !options[map[1]]) {
                 /** Ensure SPServices properties are added in the event the true property name is used */
                 options[map[1]] = options[map[0]];
@@ -201,7 +209,7 @@ export function SPServicesCore(apWebServiceOperationConstants: IWebServiceOperat
         const opt: SPServicesOptions | any = _.assign({}, defaults, options);
 
         // Encode options which may contain special character, esp. ampersand
-        _.each(encodeOptionList, (optionName) => {
+        _.each(encodeOptionList, optionName => {
             if (_.isString(opt[optionName])) {
                 opt[optionName] = encodeXml(opt[optionName]);
             }
@@ -290,7 +298,14 @@ export function SPServicesCore(apWebServiceOperationConstants: IWebServiceOperat
                 addToPayload(opt, ['pageUrl', 'checkoutToLocal', 'lastmodified']);
                 break;
             case 'CreateContentType':
-                addToPayload(opt, ['listName', 'displayName', 'parentType', 'fields', 'contentTypeProperties', 'addToView']);
+                addToPayload(opt, [
+                    'listName',
+                    'displayName',
+                    'parentType',
+                    'fields',
+                    'contentTypeProperties',
+                    'addToView',
+                ]);
                 break;
             case 'DeleteAttachment':
                 addToPayload(opt, ['listName', 'listItemID', 'url']);
@@ -322,33 +337,35 @@ export function SPServicesCore(apWebServiceOperationConstants: IWebServiceOperat
                 addToPayload(opt, ['listName']);
                 break;
             case 'GetListItems':
-                addToPayload(opt,
-                    ['listName', 'viewName',
-                        ['query', 'CAMLQuery'],
-                        ['viewFields', 'CAMLViewFields'],
-                        ['rowLimit', 'CAMLRowLimit'],
-                        ['queryOptions', 'CAMLQueryOptions']
-                    ]);
+                addToPayload(opt, [
+                    'listName',
+                    'viewName',
+                    ['query', 'CAMLQuery'],
+                    ['viewFields', 'CAMLViewFields'],
+                    ['rowLimit', 'CAMLRowLimit'],
+                    ['queryOptions', 'CAMLQueryOptions'],
+                ]);
                 break;
             case 'GetListItemChanges':
                 addToPayload(opt, ['listName', 'viewFields', 'since', 'contains']);
                 break;
             case 'GetListItemChangesSinceToken':
-                addToPayload(opt,
-                    ['listName', 'viewName',
-                        ['query', 'CAMLQuery'],
-                        ['viewFields', 'CAMLViewFields'],
-                        ['rowLimit', 'CAMLRowLimit'],
-                        ['queryOptions', 'CAMLQueryOptions'],
-                        {
-                            name: 'changeToken',
-                            sendNull: false
-                        },
-                        {
-                            name: 'contains',
-                            sendNull: false
-                        }
-                    ]);
+                addToPayload(opt, [
+                    'listName',
+                    'viewName',
+                    ['query', 'CAMLQuery'],
+                    ['viewFields', 'CAMLViewFields'],
+                    ['rowLimit', 'CAMLRowLimit'],
+                    ['queryOptions', 'CAMLQueryOptions'],
+                    {
+                        name: 'changeToken',
+                        sendNull: false,
+                    },
+                    {
+                        name: 'contains',
+                        sendNull: false,
+                    },
+                ]);
                 break;
             case 'GetVersionCollection':
                 addToPayload(opt, ['strlistID', 'strlistItemID', 'strFieldName']); // correct case
@@ -357,7 +374,15 @@ export function SPServicesCore(apWebServiceOperationConstants: IWebServiceOperat
                 addToPayload(opt, ['pageUrl']);
                 break;
             case 'UpdateContentType':
-                addToPayload(opt, ['listName', 'contentTypeId', 'contentTypeProperties', 'newFields', 'updateFields', 'deleteFields', 'addToView']);
+                addToPayload(opt, [
+                    'listName',
+                    'contentTypeId',
+                    'contentTypeProperties',
+                    'newFields',
+                    'updateFields',
+                    'deleteFields',
+                    'addToView',
+                ]);
                 break;
             case 'UpdateContentTypesXmlDocument':
                 addToPayload(opt, ['listName', 'newDocument']);
@@ -366,7 +391,14 @@ export function SPServicesCore(apWebServiceOperationConstants: IWebServiceOperat
                 addToPayload(opt, ['listName', 'contentTypeId', 'newDocument']);
                 break;
             case 'UpdateList':
-                addToPayload(opt, ['listName', 'listProperties', 'newFields', 'updateFields', 'deleteFields', 'listVersion']);
+                addToPayload(opt, [
+                    'listName',
+                    'listProperties',
+                    'newFields',
+                    'updateFields',
+                    'deleteFields',
+                    'listVersion',
+                ]);
                 break;
             case 'UpdateListItems':
                 addToPayload(opt, ['listName']);
@@ -375,7 +407,9 @@ export function SPServicesCore(apWebServiceOperationConstants: IWebServiceOperat
                 } else {
                     soapEnvelope.payload += `<updates><Batch OnError="Continue"><Method ID="1" Cmd="${opt.batchCmd}">`;
                     _.each(opt.valuePairs, (valuePair: [string, string]) => {
-                        soapEnvelope.payload += `<Field Name="${ valuePair[0] }">${ escapeColumnValue(valuePair[1]) }</Field>`;
+                        soapEnvelope.payload += `<Field Name="${valuePair[0]}">${escapeColumnValue(
+                            valuePair[1],
+                        )}</Field>`;
                     });
                     if (opt.batchCmd !== 'New') {
                         soapEnvelope.payload += `<Field Name="ID">${opt.ID}</Field>`;
@@ -386,7 +420,17 @@ export function SPServicesCore(apWebServiceOperationConstants: IWebServiceOperat
 
             // MEETINGS OPERATIONS
             case 'AddMeeting':
-                addToPayload(opt, ['organizerEmail', 'uid', 'sequence', 'utcDateStamp', 'title', 'location', 'utcDateStart', 'utcDateEnd', 'nonGregorian']);
+                addToPayload(opt, [
+                    'organizerEmail',
+                    'uid',
+                    'sequence',
+                    'utcDateStamp',
+                    'title',
+                    'location',
+                    'utcDateStart',
+                    'utcDateEnd',
+                    'nonGregorian',
+                ]);
                 break;
             case 'CreateWorkspace':
                 addToPayload(opt, ['title', 'templateName', 'lcid', 'timeZoneInformation']);
@@ -408,7 +452,13 @@ export function SPServicesCore(apWebServiceOperationConstants: IWebServiceOperat
 
             // PERMISSION OPERATIONS
             case 'AddPermission':
-                addToPayload(opt, ['objectName', 'objectType', 'permissionIdentifier', 'permissionType', 'permissionMask']);
+                addToPayload(opt, [
+                    'objectName',
+                    'objectType',
+                    'permissionIdentifier',
+                    'permissionType',
+                    'permissionMask',
+                ]);
                 break;
             case 'AddPermissionCollection':
                 addToPayload(opt, ['objectName', 'objectType', 'permissionsInfoXml']);
@@ -423,7 +473,13 @@ export function SPServicesCore(apWebServiceOperationConstants: IWebServiceOperat
                 addToPayload(opt, ['objectName', 'objectType', 'memberIdsXml']);
                 break;
             case 'UpdatePermission':
-                addToPayload(opt, ['objectName', 'objectType', 'permissionIdentifier', 'permissionType', 'permissionMask']);
+                addToPayload(opt, [
+                    'objectName',
+                    'objectType',
+                    'permissionIdentifier',
+                    'permissionType',
+                    'permissionMask',
+                ]);
                 break;
 
             // PUBLISHEDLINKSSERVICE OPERATIONS
@@ -495,9 +551,23 @@ export function SPServicesCore(apWebServiceOperationConstants: IWebServiceOperat
 
             // SITES OPERATIONS
             case 'CreateWeb':
-                addToPayload(opt, ['url', 'title', 'description', 'templateName', 'language', 'languageSpecified',
-                    'locale', 'localeSpecified', 'collationLocale', 'collationLocaleSpecified', 'uniquePermissions',
-                    'uniquePermissionsSpecified', 'anonymous', 'anonymousSpecified', 'presence', 'presenceSpecified'
+                addToPayload(opt, [
+                    'url',
+                    'title',
+                    'description',
+                    'templateName',
+                    'language',
+                    'languageSpecified',
+                    'locale',
+                    'localeSpecified',
+                    'collationLocale',
+                    'collationLocaleSpecified',
+                    'uniquePermissions',
+                    'uniquePermissionsSpecified',
+                    'anonymous',
+                    'anonymousSpecified',
+                    'presence',
+                    'presenceSpecified',
                 ]);
                 break;
             case 'DeleteWeb':
@@ -829,9 +899,7 @@ export function SPServicesCore(apWebServiceOperationConstants: IWebServiceOperat
             case 'GetUserProfileByName':
                 // Note that this operation is inconsistent with the others, using AccountName rather than accountName
                 if (typeof opt.accountName !== 'undefined' && opt.accountName.length > 0) {
-                    addToPayload(opt, [
-                        ['AccountName', 'accountName']
-                    ]);
+                    addToPayload(opt, [['AccountName', 'accountName']]);
                 } else {
                     addToPayload(opt, ['AccountName']);
                 }
@@ -899,7 +967,16 @@ export function SPServicesCore(apWebServiceOperationConstants: IWebServiceOperat
 
             // VIEW OPERATIONS
             case 'AddView':
-                addToPayload(opt, ['listName', 'viewName', 'viewFields', 'query', 'rowLimit', 'rowLimit', 'type', 'makeViewDefault']);
+                addToPayload(opt, [
+                    'listName',
+                    'viewName',
+                    'viewFields',
+                    'query',
+                    'rowLimit',
+                    'rowLimit',
+                    'type',
+                    'makeViewDefault',
+                ]);
                 break;
             case 'DeleteView':
                 addToPayload(opt, ['listName', 'viewName']);
@@ -914,11 +991,33 @@ export function SPServicesCore(apWebServiceOperationConstants: IWebServiceOperat
                 addToPayload(opt, ['listName', 'viewName']);
                 break;
             case 'UpdateView':
-                addToPayload(opt, ['listName', 'viewName', 'viewProperties', 'query', 'viewFields', 'aggregations', 'formats', 'rowLimit']);
+                addToPayload(opt, [
+                    'listName',
+                    'viewName',
+                    'viewProperties',
+                    'query',
+                    'viewFields',
+                    'aggregations',
+                    'formats',
+                    'rowLimit',
+                ]);
                 break;
             case 'UpdateViewHtml':
-                addToPayload(opt, ['listName', 'viewName', 'viewProperties', 'toolbar', 'viewHeader', 'viewBody', 'viewFooter', 'viewEmpty', 'rowLimitExceeded',
-                    'query', 'viewFields', 'aggregations', 'formats', 'rowLimit'
+                addToPayload(opt, [
+                    'listName',
+                    'viewName',
+                    'viewProperties',
+                    'toolbar',
+                    'viewHeader',
+                    'viewBody',
+                    'viewFooter',
+                    'viewEmpty',
+                    'rowLimitExceeded',
+                    'query',
+                    'viewFields',
+                    'aggregations',
+                    'formats',
+                    'rowLimit',
                 ]);
                 break;
 
@@ -963,9 +1062,7 @@ export function SPServicesCore(apWebServiceOperationConstants: IWebServiceOperat
                 addToPayload(opt, ['objectUrl']);
                 break;
             case 'GetWeb':
-                addToPayload(opt, [
-                    ['webUrl', 'webURL']
-                ]);
+                addToPayload(opt, [['webUrl', 'webURL']]);
                 break;
             case 'GetWebCollection':
                 break;
@@ -975,12 +1072,16 @@ export function SPServicesCore(apWebServiceOperationConstants: IWebServiceOperat
                 addToPayload(opt, ['newFields', 'updateFields', 'deleteFields']);
                 break;
             case 'Webs.UpdateContentType':
-                addToPayload(opt, ['contentTypeId', 'contentTypeProperties', 'newFields', 'updateFields', 'deleteFields']);
+                addToPayload(opt, [
+                    'contentTypeId',
+                    'contentTypeProperties',
+                    'newFields',
+                    'updateFields',
+                    'deleteFields',
+                ]);
                 break;
             case 'WebUrlFromPageUrl':
-                addToPayload(opt, [
-                    ['pageUrl', 'pageURL']
-                ]);
+                addToPayload(opt, [['pageUrl', 'pageURL']]);
                 break;
 
             // WORKFLOW OPERATIONS
@@ -1011,23 +1112,28 @@ export function SPServicesCore(apWebServiceOperationConstants: IWebServiceOperat
         }
 
         // Glue together the pieces of the SOAP message
-        const msg = soapEnvelope.header + soapEnvelope.opheader + soapEnvelope.payload + soapEnvelope.opfooter + soapEnvelope.footer;
+        const msg =
+            soapEnvelope.header +
+            soapEnvelope.opheader +
+            soapEnvelope.payload +
+            soapEnvelope.opfooter +
+            soapEnvelope.footer;
         const soapAction = apWebServiceOperationConstants[opt.operation][1] ? SOAPAction : false;
 
         return {
             msg: msg,
             SOAPEnvelope: soapEnvelope,
-            SOAPAction: soapAction
+            SOAPAction: soapAction,
         };
 
         // Add the option values to the soapEnvelope.payload for the operation
         //  opt = options for the call
         //  paramArray = an array of option names to add to the payload
         //      'paramName' if the parameter name and the option name match
-        //      ['paramName', 'optionName'] if the parameter name and the option name are different (this handles early 'wrappings' with inconsistent naming)
+        //      ['paramName', 'optionName'] if the parameter name and the option name are different
+        //                                  (this handles early 'wrappings' with inconsistent naming)
         //      {name: 'paramName', sendNull: false} indicates the element is marked as 'add to payload only if non-null'
         function addToPayload(opt, paramArray) {
-
             let i;
 
             for (i = 0; i < paramArray.length; i++) {
@@ -1038,27 +1144,32 @@ export function SPServicesCore(apWebServiceOperationConstants: IWebServiceOperat
                 } else if (_.isArray(paramArray[i]) && paramArray[i].length === 2) {
                     soapEnvelope.payload += wrapNode(paramArray[i][0], opt[paramArray[i][1]]);
                     // the element not a string or an array and is marked as "add to payload only if non-null'
-                } else if ((typeof paramArray[i] === 'object') && (paramArray[i].sendNull !== undefined)) {
-                    soapEnvelope.payload += ((opt[paramArray[i].name] === undefined) || (opt[paramArray[i].name].length === 0)) ? '' : wrapNode(paramArray[i].name, opt[paramArray[i].name]);
+                } else if (typeof paramArray[i] === 'object' && paramArray[i].sendNull !== undefined) {
+                    soapEnvelope.payload +=
+                        opt[paramArray[i].name] === undefined || opt[paramArray[i].name].length === 0
+                            ? ''
+                            : wrapNode(paramArray[i].name, opt[paramArray[i].name]);
                     // something isn't right, so report it
                 } else {
-                    console.error(opt.operation, 'paramArray[' + i + ']: ' + paramArray[i], 'Invalid paramArray element passed to addToPayload()');
+                    console.error(
+                        opt.operation,
+                        'paramArray[' + i + ']: ' + paramArray[i],
+                        'Invalid paramArray element passed to addToPayload()',
+                    );
                 }
             }
         } // End of function addToPayload
 
-        // The SiteData operations have the same names as other Web SPServicesCore operations. To make them easy to call and unique, I'm using
-        // the SiteData prefix on their names. This function replaces that name with the right name in the soapEnvelope.
+        // The SiteData operations have the same names as other Web SPServicesCore operations. To make them easy to
+        // call and unique, I'm using the SiteData prefix on their names. This function replaces that name with the
+        // right name in the soapEnvelope.
         function siteDataFixSOAPEnvelope(SOAPEnvelope, siteDataOperation) {
             const siteDataOp = siteDataOperation.substring(8);
             SOAPEnvelope.opheader = SOAPEnvelope.opheader.replace(siteDataOperation, siteDataOp);
             SOAPEnvelope.opfooter = SOAPEnvelope.opfooter.replace(siteDataOperation, siteDataOp);
             return SOAPEnvelope;
         } // End of function siteDataFixSOAPEnvelope
-
-
     } // End SPServices.generateXMLComponents
-
 
     ////// PRIVATE FUNCTIONS ////////
     // Wrap an XML node (n) around a value (v)
@@ -1077,11 +1188,11 @@ export function SPServicesCore(apWebServiceOperationConstants: IWebServiceOperat
         '&': '&amp;',
         '"': '&quot;',
         '<': '&lt;',
-        '>': '&gt;'
+        '>': '&gt;',
     };
 
     function encodeXml(string) {
-        return string.replace(/([\&"<>])/g, function (str, item) {
+        return string.replace(/([\&"<>])/g, function(str, item) {
             return xml_special_to_escaped_one_map[item];
         });
     }
@@ -1112,8 +1223,4 @@ export function SPServicesCore(apWebServiceOperationConstants: IWebServiceOperat
     // };
 
     return SPServices;
-
 }
-
-
-

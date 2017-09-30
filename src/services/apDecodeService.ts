@@ -1,17 +1,17 @@
 import * as _ from 'lodash';
-import {CacheService} from './apCacheService';
-import {LookupFactory, Lookup} from '../factories/apLookupFactory';
-import {UserFactory, User} from '../factories/apUserFactory';
-import {FieldService} from './apFieldService';
-import {IXMLListAttributeTypes} from '../constants/apXMLListAttributeTypes';
-import {IXMLFieldAttributeTypes} from '../constants/apXMLFieldAttributeTypes';
-import {XMLToJSONService} from './apXMLToJSONService';
-import {ListItem, IUninstantiatedExtendedListItem, IUninstantiatedListItem} from '../factories/apListItemFactory';
-import {Model} from '../factories/apModelFactory';
-import {Query, IExecuteQueryOptions} from '../factories/apQueryFactory';
-import {IndexedCache} from '../factories/apIndexedCacheFactory';
-import {FieldDefinition} from '../factories/apFieldFactory';
-import {List, ListFieldMapping} from '../factories/apListFactory';
+import { CacheService } from './apCacheService';
+import { LookupFactory, Lookup } from '../factories/apLookupFactory';
+import { UserFactory, User } from '../factories/apUserFactory';
+import { FieldService } from './apFieldService';
+import { IXMLListAttributeTypes } from '../constants/apXMLListAttributeTypes';
+import { IXMLFieldAttributeTypes } from '../constants/apXMLFieldAttributeTypes';
+import { XMLToJSONService } from './apXMLToJSONService';
+import { ListItem, IUninstantiatedExtendedListItem, IUninstantiatedListItem } from '../factories/apListItemFactory';
+import { Model } from '../factories/apModelFactory';
+import { Query, IExecuteQueryOptions } from '../factories/apQueryFactory';
+import { IndexedCache } from '../factories/apIndexedCacheFactory';
+import { FieldDefinition } from '../factories/apFieldFactory';
+import { List, ListFieldMapping } from '../factories/apListFactory';
 import { FieldVersionCollection } from '../factories/apListItemVersionFactory';
 
 /**
@@ -25,14 +25,25 @@ import { FieldVersionCollection } from '../factories/apListItemVersionFactory';
  * @requires angularPoint.apCacheService
  */
 export class DecodeService {
-    static $inject = ['apCacheService', 'apLookupFactory', 'apUserFactory', 'apFieldService',
-        'apXMLListAttributeTypes', 'apXMLFieldAttributeTypes', 'apXMLToJSONService'];
+    static $inject = [
+        'apCacheService',
+        'apLookupFactory',
+        'apUserFactory',
+        'apFieldService',
+        'apXMLListAttributeTypes',
+        'apXMLFieldAttributeTypes',
+        'apXMLToJSONService',
+    ];
 
-    constructor(private apCacheService: CacheService, private apLookupFactory: LookupFactory,
-        private apUserFactory: UserFactory, private apFieldService: FieldService, private apXMLListAttributeTypes: IXMLListAttributeTypes,
-        private apXMLFieldAttributeTypes: IXMLFieldAttributeTypes, private apXMLToJSONService: XMLToJSONService) {
-
-    }
+    constructor(
+        private apCacheService: CacheService,
+        private apLookupFactory: LookupFactory,
+        private apUserFactory: UserFactory,
+        private apFieldService: FieldService,
+        private apXMLListAttributeTypes: IXMLListAttributeTypes,
+        private apXMLFieldAttributeTypes: IXMLFieldAttributeTypes,
+        private apXMLToJSONService: XMLToJSONService,
+    ) {}
 
     /**
      * @ngdoc function
@@ -48,12 +59,14 @@ export class DecodeService {
         let error;
         /** Look for <errorstring></errorstring> or <ErrorText></ErrorText> for details on any errors */
         let errorElements = ['ErrorText', 'errorstring'];
-        _.each(errorElements, (element) => {
-            $(responseXML).find(element).each(function () {
-                error = $(this).text();
-                /** Break early if found */
-                return false;
-            });
+        _.each(errorElements, element => {
+            $(responseXML)
+                .find(element)
+                .each(function() {
+                    error = $(this).text();
+                    /** Break early if found */
+                    return false;
+                });
         });
         return error;
     }
@@ -86,7 +99,11 @@ export class DecodeService {
      * @returns {Function} Returns a function that takes the new list item while keeping model, query,
      * and container in scope for future reference.
      */
-    createListItemProvider<T extends ListItem<any>>(model: Model, query: Query<T>, indexedCache: IndexedCache<T>): (rawObject: Object) => T {
+    createListItemProvider<T extends ListItem<any>>(
+        model: Model,
+        query: Query<T>,
+        indexedCache: IndexedCache<T>,
+    ): (rawObject: Object) => T {
         return (rawObject: IUninstantiatedExtendedListItem<T>) => {
             let listItem: T;
 
@@ -96,7 +113,6 @@ export class DecodeService {
 
                 // Call constructor on original list item to perform any initialization logic again
                 listItem.constructor(rawObject);
-
             } else {
                 // Creating a new List Item
 
@@ -125,7 +141,7 @@ export class DecodeService {
             listItem.getPristine = () => pristineValue;
 
             return indexedCache.get(rawObject.id);
-        }
+        };
     }
 
     /**
@@ -143,7 +159,7 @@ export class DecodeService {
         let fieldMap = {};
 
         /** Map all custom fields with keys of the staticName and values = field definition */
-        _.each(fieldDefinitions, (field) => {
+        _.each(fieldDefinitions, field => {
             if (field.staticName) {
                 fieldMap[field.staticName] = field;
             }
@@ -158,7 +174,6 @@ export class DecodeService {
 
             /** If we've defined this field then we should extend it */
             if (fieldDefinition) {
-
                 this.extendObjectWithXMLAttributes(xmlField, fieldDefinition, this.apXMLFieldAttributeTypes);
 
                 /** Additional processing for Choice fields to include the default value and choices */
@@ -166,10 +181,12 @@ export class DecodeService {
                     fieldDefinition.Choices = [];
                     /** Convert XML Choices object to an array of choices */
                     let xmlChoices = $(xmlField).find('CHOICE');
-                    _.each(xmlChoices, (xmlChoice) => {
+                    _.each(xmlChoices, xmlChoice => {
                         fieldDefinition.Choices.push($(xmlChoice).text());
                     });
-                    fieldDefinition.Default = $(xmlField).find('Default').text();
+                    fieldDefinition.Default = $(xmlField)
+                        .find('Default')
+                        .text();
                 }
             }
         });
@@ -191,9 +208,11 @@ export class DecodeService {
      */
     extendListDefinitionFromXML(list: List, responseXML: Element): List {
         let service = this;
-        $(responseXML).find('List').each(function () {
-            service.extendObjectWithXMLAttributes(this, list, service.apXMLListAttributeTypes);
-        });
+        $(responseXML)
+            .find('List')
+            .each(function() {
+                service.extendObjectWithXMLAttributes(this, list, service.apXMLListAttributeTypes);
+            });
         return list;
     }
 
@@ -241,7 +260,6 @@ export class DecodeService {
         });
         return objectToExtend;
     }
-
 
     jsAttachments(str): string[] | number | string {
         /* Depending on CAMLQueryOptions Config an attachment can be formatted in 1 of the below 3 ways:
@@ -329,7 +347,7 @@ export class DecodeService {
             let d = dt[0].split('-');
             let t = dt[1].split(':');
             let t3 = t[2].split('Z');
-            return new Date(<any> d[0], (<any>d[1] - 1), <any>d[2], <any>t[0], <any>t[1], <any>t3[0]);
+            return new Date(<any>d[0], <any>d[1] - 1, <any>d[2], <any>t[0], <any>t[1], <any>t3[0]);
         }
     }
 
@@ -436,7 +454,6 @@ export class DecodeService {
         let fieldVersionCollection = new FieldVersionCollection(fieldDefinition);
 
         _.each(xmlVersions, (xmlVersion, index) => {
-
             /** Bug in SOAP Web SPServicesCore returns time in UTC time for version history
              *  Details: https://spservices.codeplex.com/discussions/391879
              */
@@ -447,12 +464,14 @@ export class DecodeService {
             /** Turn the SharePoint formatted date into a valid date object */
             let modified = this.convertUTCDateToLocalDate(utcDate);
             /** Properly format field based on definition from model */
-            let value = this.parseStringValue($(xmlVersion).attr(fieldDefinition.staticName), fieldDefinition.objectType);
+            let value = this.parseStringValue(
+                $(xmlVersion).attr(fieldDefinition.staticName),
+                fieldDefinition.objectType,
+            );
             let version = versionCount - index;
 
             /** Add each distict version to the version collection */
             fieldVersionCollection.addVersion(editor, modified, value, version);
-
         });
 
         return fieldVersionCollection;
@@ -475,7 +494,6 @@ export class DecodeService {
      * @returns {*} The newly instantiated JavaScript value based on field type.
      */
     parseStringValue(str: string, objectType?: string, options?: { entity: Object; propertyName: string }): any {
-
         let unescapedValue = _.unescape(str);
 
         let colValue;
@@ -549,37 +567,37 @@ export class DecodeService {
      */
     parseXmlEntity<T extends ListItem<any>>(
         xmlEntity: Element,
-        {mapping, includeAllAttrs = false, removeOws = true}: IParseXmlEntityOptions
+        { mapping, includeAllAttrs = false, removeOws = true }: IParseXmlEntityOptions,
     ) {
         let entity = {};
         let rowAttrs = xmlEntity.attributes;
 
         /** Bring back all mapped columns, even those with no value */
-        _.each(mapping, (fieldDefinition) => {
+        _.each(mapping, fieldDefinition => {
             entity[fieldDefinition.mappedName] = this.apFieldService.getDefaultValueForType(fieldDefinition.objectType);
         });
 
         /** Parse through the element's attributes */
-        _.each(rowAttrs, (attr) => {
+        _.each(rowAttrs, attr => {
             let thisAttrName = attr.name;
             let thisMapping = mapping[thisAttrName];
 
-            let thisObjectName = typeof thisMapping !== 'undefined' ?
-                thisMapping.mappedName : removeOws ? thisAttrName.split('ows_')[1] : thisAttrName;
+            let thisObjectName =
+                typeof thisMapping !== 'undefined'
+                    ? thisMapping.mappedName
+                    : removeOws ? thisAttrName.split('ows_')[1] : thisAttrName;
 
             let thisObjectType = typeof thisMapping !== 'undefined' ? thisMapping.objectType : undefined;
 
             if (includeAllAttrs || thisMapping !== undefined) {
                 entity[thisObjectName] = this.parseStringValue(attr.value, thisObjectType, {
                     entity: entity,
-                    propertyName: thisObjectName
+                    propertyName: thisObjectName,
                 });
             }
-
         });
         return entity;
     }
-
 
     /**
      * @ngdoc function
@@ -599,13 +617,12 @@ export class DecodeService {
      * @param {Array} [options.target=model.getCache()] Optionally pass in an Indexed Cache instead of using the defaul cache.
      * @returns {Object} Inedexed Cache.
      */
-    processListItems<T extends ListItem<any>>(model: Model, query: Query<T>, responseXML: Element, {
-        includeAllAttrs = false,
-        filter = 'z:row',
-        mapping = model.list.mapping,
-        target = model.getCache<T>()
-    } = {}): IndexedCache<T> {
-
+    processListItems<T extends ListItem<any>>(
+        model: Model,
+        query: Query<T>,
+        responseXML: Element,
+        { includeAllAttrs = false, filter = 'z:row', mapping = model.list.mapping, target = model.getCache<T>() } = {},
+    ): IndexedCache<T> {
         /** Map returned XML to JS objects based on mapping from model */
         let filteredNodes = this.apXMLToJSONService.filterNodes(responseXML, filter);
 
@@ -613,7 +630,7 @@ export class DecodeService {
         let listItemProvider = this.createListItemProvider<T>(model, query, target);
 
         /** Convert XML entities into JS objects */
-        let parsedEntities = this.xmlToJson(filteredNodes, {mapping, includeAllAttrs});
+        let parsedEntities = this.xmlToJson(filteredNodes, { mapping, includeAllAttrs });
 
         /** Instantiate each list list item with factory on model and add to cache */
         _.each(parsedEntities, (rawListItemObject: IUninstantiatedListItem) => {
@@ -639,22 +656,18 @@ export class DecodeService {
      * be stripped off the field name.
      * @returns {object[]} An array of JavaScript objects.
      */
-    xmlToJson<T extends ListItem<any>>(xmlEntities: Element | NodeList | any, {
-        mapping,
-        includeAllAttrs = false,
-        removeOws = true
-    }: IXMLToJsonOptions<T>): Object[] {
-        let parseOptions = {mapping, includeAllAttrs, removeOws}
+    xmlToJson<T extends ListItem<any>>(
+        xmlEntities: Element | NodeList | any,
+        { mapping, includeAllAttrs = false, removeOws = true }: IXMLToJsonOptions<T>,
+    ): Object[] {
+        let parseOptions = { mapping, includeAllAttrs, removeOws };
         return _.map(xmlEntities, (xmlEntity: Element) => {
             return this.parseXmlEntity(xmlEntity, parseOptions);
         });
     }
-
 }
 
-
 /**********************PRIVATE*********************/
-
 
 export interface IXMLToJsonOptions<T extends ListItem<any>> extends IExecuteQueryOptions {
     includeAllAttrs?: boolean;

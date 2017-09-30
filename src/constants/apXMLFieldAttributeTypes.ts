@@ -17,5 +17,5 @@ export const XMLFieldAttributeTypes: IXMLFieldAttributeTypes = {
     NumLines: 'Number',
     ReadOnly: 'Boolean',
     Required: 'Boolean',
-    Sortable: 'Boolean'
+    Sortable: 'Boolean',
 };

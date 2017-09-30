@@ -1,7 +1,6 @@
 let service: FieldService;
 let uniqueCount = 0;
 
-
 /**
  * @ngdoc service
  * @name angularPoint.apFieldService
@@ -13,7 +12,7 @@ export class FieldService {
 
     constructor() {
         service = this;
-        this.fieldTypes = getFieldTypes()
+        this.fieldTypes = getFieldTypes();
     }
 
     /**
@@ -43,7 +42,6 @@ export class FieldService {
     getDefinition(fieldType) {
         return service.fieldTypes[fieldType] ? service.fieldTypes[fieldType] : service.fieldTypes['Text'];
     }
-
 
     /**
      * @ngdoc function
@@ -85,7 +83,7 @@ export class FieldService {
      * @param {string} [options.permissionLevel=FullMask] Optional mask.
      * @returns {string} Values for mask.
      */
-    mockPermMask(options?: {permissionLevel: string}) {
+    mockPermMask(options?: { permissionLevel: string }) {
         let mask = 'FullMask';
         if (options && options.permissionLevel) {
             mask = options.permissionLevel;
@@ -125,7 +123,7 @@ export class FieldService {
                 permissionValue = 0x0000000000000010;
                 break;
             case 'FullMask':
-                permissionValue = 0x7FFFFFFFFFFFFFFF;
+                permissionValue = 0x7fffffffffffffff;
                 break;
             case 'ViewListItems':
             default:
@@ -134,9 +132,7 @@ export class FieldService {
         }
         return permissionValue;
     }
-
 }
-
 
 function getFieldTypes() {
     return {
@@ -166,7 +162,7 @@ function getFieldTypes() {
         },
         Currency: {
             defaultValue: null,
-            staticMock: 120.50,
+            staticMock: 120.5,
         },
         DateTime: {
             defaultValue: null,
@@ -178,20 +174,17 @@ function getFieldTypes() {
         },
         JSON: {
             defaultValue: '',
-            staticMock: [
-                {id: 1, title: 'test'},
-                {id: 2}
-            ],
+            staticMock: [{ id: 1, title: 'test' }, { id: 2 }],
         },
         Lookup: {
             defaultValue: '',
-            staticMock: {lookupId: 49, lookupValue: 'Static Lookup'},
+            staticMock: { lookupId: 49, lookupValue: 'Static Lookup' },
         },
         LookupMulti: {
             defaultValue: [],
             staticMock: [
-                {lookupId: 50, lookupValue: 'Static Multi 1'},
-                {lookupId: 51, lookupValue: 'Static Multi 2'}
+                { lookupId: 50, lookupValue: 'Static Multi 1' },
+                { lookupId: 51, lookupValue: 'Static Multi 2' },
             ],
         },
         Mask: {
@@ -204,16 +197,16 @@ function getFieldTypes() {
         },
         User: {
             defaultValue: '',
-            staticMock: {lookupId: 52, lookupValue: 'Static User'},
+            staticMock: { lookupId: 52, lookupValue: 'Static User' },
         },
         UserMulti: {
             defaultValue: [],
             staticMock: [
-                {lookupId: 53, lookupValue: 'Static User 1'},
-                {lookupId: 54, lookupValue: 'Static User 2'}
+                { lookupId: 53, lookupValue: 'Static User 1' },
+                { lookupId: 54, lookupValue: 'Static User 2' },
             ],
-        }
-    }
+        },
+    };
 }
 
 function getUniqueCounter() {
