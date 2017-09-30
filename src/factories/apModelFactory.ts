@@ -36,7 +36,7 @@ export interface QueriesContainer {
 }
 
 export interface IModelFactory {
-    new <T extends ListItem<any>>(rawObject: Object): T;
+    new <T extends ListItem<any>>(rawObject: Object);
 }
 
 export interface MockDataOptions {
