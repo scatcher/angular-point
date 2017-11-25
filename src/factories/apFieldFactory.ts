@@ -3,38 +3,11 @@ import { FieldService } from '../services/apFieldService';
 import { UtilityService } from '../services/apUtilityService';
 import { FormattedFieldValueService } from '../services/apFormattedFieldValueService';
 import { ListItem } from './apListItemFactory';
+import { XMLFieldDefinition, FieldTypeEnum } from '../interfaces';
 
 let apFieldService: FieldService,
     apUtilityService: UtilityService,
     apFormattedFieldValueService: FormattedFieldValueService;
-
-export interface XMLFieldDefinition {
-    ID?: string;
-    Type?: string;
-    ReadOnly?: string;
-    Hidden?: string;
-    DisplayName?: string;
-    Required?: string;
-    SourceID?: string;
-    ColName?: string;
-    StaticName?: string;
-    Choices?: string[];
-    Description?: string;
-    Indexed?: string;
-    EnforceUniqueValues?: string;
-    RowOrdinal?: string;
-    Sortable?: string;
-    Filterable?: string;
-    RelationshipDeleteBehavior?: string;
-    List?: string;
-    ShowField?: string;
-    ResultType?: string;
-    FillInChoice?: string;
-    Name?: string;
-    NumLines?: string;
-    RichText?: string;
-    Format?: string;
-}
 
 export interface FieldConfigurationObject {
     choices?: string[];
@@ -44,7 +17,7 @@ export interface FieldConfigurationObject {
     label?: string;
     // JS property name that we use to store the value for this field.
     mappedName: string;
-    objectType: string;
+    objectType: FieldTypeEnum;
     readOnly?: boolean;
     required?: boolean;
     staticName: string;
@@ -143,7 +116,7 @@ export class FieldDefinition implements FieldDefinition {
     formatter?: (listItem: ListItem<any>, fieldDefinition: FieldDefinition, options?: Object) => string;
     label?: string;
     mappedName: string;
-    objectType = 'Text';
+    objectType: FieldTypeEnum = FieldTypeEnum.Text;
     readOnly = false;
     staticName: string;
 
@@ -179,13 +152,13 @@ export class FieldDefinition implements FieldDefinition {
      * <pre>
      *  //In model.list.customFields defining a field
      * {
-		 * 	  mappedName: 'lookup',
-		 * 	  objectType: 'Lookup',
-         *    staticName: 'MyAwesomeLookup',
-		 * 	  formatter: (listItem: ListItem<any>, fieldDefinition: IFieldDefinition, options?: Object) => {
-		 * 	  	 return listItem[fieldDefinition.mappedName].lookupValue.toUpperCase();
-		 * 	  }
-		 * }
+     * 	  mappedName: 'lookup',
+     * 	  objectType: 'Lookup',
+     *    staticName: 'MyAwesomeLookup',
+     * 	  formatter: (listItem: ListItem<any>, fieldDefinition: IFieldDefinition, options?: Object) => {
+     * 	  	 return listItem[fieldDefinition.mappedName].lookupValue.toUpperCase();
+     * 	  }
+     * }
      * </pre>
      */
     getFormattedValue(listItem: ListItem<any>, options?: Object): string {

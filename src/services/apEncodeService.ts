@@ -4,6 +4,7 @@ import { UtilityService } from './apUtilityService';
 import { FieldDefinition } from '../factories/apFieldFactory';
 import { ListItem } from '../factories/apListItemFactory';
 import { Lookup } from '../factories/apLookupFactory';
+import { FieldTypeEnum } from '../interfaces/index';
 
 /**
  * @ngdoc service
@@ -51,11 +52,11 @@ export class EncodeService {
      * @param {object} fieldDefinition The field definition, typically defined in the model.
      * <pre>
      * {
-             *  staticName: "Title",
-             *  objectType: "Text",
-             *  mappedName: "lastName",
-             *  readOnly:false
-             * }
+     *  staticName: "Title",
+     *  objectType: "Text",
+     *  mappedName: "lastName",
+     *  readOnly:false
+     * }
      * </pre>
      * @param {*} value Current field value.
      * @returns {Array} [fieldName, fieldValue]
@@ -73,7 +74,7 @@ export class EncodeService {
      * @param {*} value Value to be encoded.
      * @returns {string} Encoded value ready to be sent to the server.
      */
-    encodeValue(fieldType: string, value: any): string {
+    encodeValue(fieldType: FieldTypeEnum, value: any): string {
         let str = '';
         /** Only process if note empty, undefined, or null.  Allow false. */
         if (value !== '' && !_.isUndefined(value) && !_.isNull(value)) {

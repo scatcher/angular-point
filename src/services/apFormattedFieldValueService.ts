@@ -1,5 +1,6 @@
 import * as _ from 'lodash';
 import { Lookup } from '../factories/apLookupFactory';
+import { FieldTypeEnum } from '../interfaces/index';
 
 /**
  * @ngdoc service
@@ -17,7 +18,7 @@ export class FormattedFieldValueService {
      * @name angularPoint.apFormattedFieldValueService:getFormattedFieldValue
      * @methodOf angularPoint.apFormattedFieldValueService
      * @param {object|array|string|integer|boolean} prop Target that we'd like to stringify.
-     * @param {string} [propertyType='String'] Assumes by default that it's already a string.  Most of the normal field
+     * @param {string} [propertyType='Text'] Assumes by default that it's already a string.  Most of the normal field
      * types identified in the model field definitions are supported.
      *
      * - Lookup
@@ -37,18 +38,18 @@ export class FormattedFieldValueService {
      * @example
      * <pre>
      *  var project = {
-         *    title: 'Super Project',
-         *   members: [
-         *     { lookupId: 12, lookupValue: 'Joe' },
-         *     { lookupId: 19, lookupValue: 'Beth' }
-         *   ]
-         * };
+     *    title: 'Super Project',
+     *   members: [
+     *     { lookupId: 12, lookupValue: 'Joe' },
+     *     { lookupId: 19, lookupValue: 'Beth' }
+     *   ]
+     * };
      *
      * var membersAsString = apFormattedFieldValueService:getFormattedFieldValue({
-         *    project.members,
-         *    'UserMulti',
-         *    { delim: ' | '} //Custom Delimiter
-         * });
+     *    project.members,
+     *    'UserMulti',
+     *    { delim: ' | '} //Custom Delimiter
+     * });
      *
      * // membersAsString = 'Joe | Beth';
      *
@@ -57,40 +58,41 @@ export class FormattedFieldValueService {
      */
     getFormattedFieldValue(
         prop: any,
-        propertyType = 'String',
+        propertyType = FieldTypeEnum.Text,
         options: { delim?: string; dateFormat?: string } = {},
     ): string {
         let str = '';
         /** Only process if prop is defined */
         if (prop) {
             switch (propertyType) {
-                case 'Boolean':
+                case FieldTypeEnum.Boolean:
                     str = this.stringifyBoolean(prop);
                     break;
-                case 'Calculated': // Can be DateTime, Float, or String
+                case FieldTypeEnum.Calculated: // Can be DateTime, Float, or String
                     str = this.stringifyCalc(prop);
                     break;
-                case 'Lookup':
-                case 'User':
+                case FieldTypeEnum.Lookup:
+                case FieldTypeEnum.User:
                     str = this.stringifyLookup(prop);
                     break;
-                case 'DateTime':
+                case FieldTypeEnum.DateTime:
                     str = this.stringifyDate(prop, options.dateFormat);
                     break;
+                case FieldTypeEnum.Number:
+                // Don't use Integer or Float, here for backwards compatibility with older version of angular-point
                 case 'Integer':
-                case 'Number':
                 case 'Float':
-                case 'Counter':
+                case FieldTypeEnum.Counter:
                     str = this.stringifyNumber(prop);
                     break;
-                case 'Currency':
+                case FieldTypeEnum.Currency:
                     str = this.stringifyCurrency(prop);
                     break;
-                case 'MultiChoice':
+                case FieldTypeEnum.MultiChoice:
                     str = this.stringifyMultiChoice(prop, options.delim);
                     break;
-                case 'UserMulti':
-                case 'LookupMulti':
+                case FieldTypeEnum.UserMulti:
+                case FieldTypeEnum.LookupMulti:
                     str = this.stringifyMultiLookup(prop, options.delim);
                     break;
                 default:

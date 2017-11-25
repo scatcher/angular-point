@@ -1,6 +1,9 @@
 import { ListItem } from '../factories/apListItemFactory';
 import { IndexedCache } from '../factories/apIndexedCacheFactory';
 
+export * from './xml-field.interface';
+export * from './field-types.enum';
+
 export interface XMLGroup {
     Description: string;
     ID: string;

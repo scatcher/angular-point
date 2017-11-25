@@ -12,7 +12,8 @@ import { XMLToJSONService } from './apXMLToJSONService';
 import { ChangeService } from './apChangeService';
 import { Logger } from './apLogger';
 import { ListItem } from '../factories/apListItemFactory';
-import { FieldDefinition, XMLFieldDefinition } from '../factories/apFieldFactory';
+import { FieldDefinition } from '../factories';
+import { XMLFieldDefinition } from '../interfaces';
 import { FieldVersionCollection } from '../factories/apListItemVersionFactory';
 import { Model } from '../factories/apModelFactory';
 import { Query } from '../factories/apQueryFactory';
@@ -100,12 +101,12 @@ export class DataService {
      * <pre>
      * DataService.getAvailableWorkflows(listItem.fileRef.lookupValue)
      *     .then(function(templateArray) {
-         *          ....templateArray = [{
-         *              "name": "WidgetApproval",
-         *              "instantiationUrl": "https: //sharepoint.mycompany.com/_layouts/
-         *                 IniWrkflIP.aspx?List=fc17890e-8c0…311-cea9-40d1-a183-6edde9333815}&Web={ec744d8e-ae0a-45dd-bcd1-8a63b9b399bd}",
-         *              "templateId": "59062311-cea9-40d1-a183-6edde9333815"
-         *          }]
+     *          ....templateArray = [{
+     *              "name": "WidgetApproval",
+     *              "instantiationUrl": "https: //sharepoint.mycompany.com/_layouts/
+     *                 IniWrkflIP.aspx?List=fc17890e-8c0…311-cea9-40d1-a183-6edde9333815}&Web={ec744d8e-ae0a-45dd-bcd1-8a63b9b399bd}",
+     *              "templateId": "59062311-cea9-40d1-a183-6edde9333815"
+     *          }]
      *     });
      * </pre>
      * @param {string} fileRefString Relative or static url referencing the item.
@@ -165,11 +166,11 @@ export class DataService {
      * @example
      * <pre>
      * DataService.getCollection({
-         *        operation: "GetGroupCollectionFromUser",
-         *        userLoginName: $scope.state.selectedUser.LoginName
-         *        }).then(function (response) {
-         *            postProcessFunction(response);
-         *       });
+     *        operation: "GetGroupCollectionFromUser",
+     *        userLoginName: $scope.state.selectedUser.LoginName
+     *        }).then(function (response) {
+     *            postProcessFunction(response);
+     *       });
      * </pre>
      */
     getCollection(options: GetCollectionOptions) {
@@ -276,12 +277,12 @@ export class DataService {
      * @param {object} options Configuration object passed to SPServices.
      * <pre>
      * let options = {
-         *        operation: 'GetVersionCollection',
-         *        webURL: apConfig.defaultUrl,
-         *        strlistID: model.getListId(),
-         *        strlistItemID: listItem.id,
-         *        strFieldName: fieldDefinition.staticName
-         *    };
+     *        operation: 'GetVersionCollection',
+     *        webURL: apConfig.defaultUrl,
+     *        strlistID: model.getListId(),
+     *        strlistItemID: listItem.id,
+     *        strFieldName: fieldDefinition.staticName
+     *    };
      * </pre>
      * @param {object} fieldDefinition Field definition object from the model.
      * @returns {object[]} Promise which resolves with an array of list item changes for the specified field.
@@ -370,7 +371,7 @@ export class DataService {
         return this.getList(options).then((responseXML: Element) => {
             let filteredNodes = this.apXMLToJSONService.filterNodes(responseXML, 'Field');
             let fields = this.apXMLToJSONService.parse(filteredNodes, { includeAllAttrs: true, removeOws: false });
-            return fields;
+            return fields as XMLFieldDefinition[];
         });
     }
 
@@ -667,14 +668,14 @@ export class DataService {
      * @example
      * <pre>
      * DataService.startWorkflow({
-         *     item: "https: //server/site/Lists/item" + idData + "_.000",
-         *     templateId: "{c29c1291-a25c-47d7-9345-8fb1de2a1fa3}",
-         *     workflowParameters: "<Data><monthName>" + txtBox.value + "</monthName></Data>",
-         *   ...}).then(function() {
-         *       //Success
-         *   }, function(err) {
-         *       //Error
-         *   })
+     *     item: "https: //server/site/Lists/item" + idData + "_.000",
+     *     templateId: "{c29c1291-a25c-47d7-9345-8fb1de2a1fa3}",
+     *     workflowParameters: "<Data><monthName>" + txtBox.value + "</monthName></Data>",
+     *   ...}).then(function() {
+     *       //Success
+     *   }, function(err) {
+     *       //Error
+     *   })
      * </pre>
      */
     startWorkflow(options: {
