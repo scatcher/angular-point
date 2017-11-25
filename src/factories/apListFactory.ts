@@ -4,6 +4,7 @@ import { UserPermissionsObject } from '../constants/apPermissionObject';
 import { DefaultFields } from '../constants/apDefaultFields';
 import { ListItem } from './apListItemFactory';
 import { $AP_INJECTOR, ENV } from '../angular-point';
+import { XMLList } from '../interfaces';
 
 export interface UninstantiatedList {
     customFields: FieldConfigurationObject[];
@@ -22,74 +23,6 @@ export interface ListFieldMapping {
 }
 
 /**
- * XML List Object gets converted into JSON object with the following properties.
- */
-export interface XMLList {
-    AllowDeletion?: string;
-    AllowMultiResponses?: string;
-    AnonymousPermMask?: string;
-    Author?: string;
-    BaseType?: string;
-    Created?: string;
-    DefaultViewUrl?: string;
-    Description?: string;
-    Direction?: string;
-    DocTemplateUrl?: string;
-    EmailAlias?: string;
-    EnableAttachments?: string;
-    EnableFolderCreation?: string;
-    EnableMinorVersion?: string;
-    EnableModeration?: string;
-    EnablePeopleSelector?: string;
-    EnableResourceSelector?: string;
-    EnableVersioning?: string;
-    EnforceDataValidation?: string;
-    EventSinkAssembly?: string;
-    EventSinkClass?: string;
-    EventSinkData?: string;
-    ExcludeFromOfflineClient?: string;
-    FeatureId?: string;
-    Flags?: string;
-    HasExternalDataSource?: string;
-    HasRelatedLists?: string;
-    HasUniqueScopes?: string;
-    Hidden?: string;
-    ID?: string;
-    ImageUrl?: string;
-    IrmEnabled?: string;
-    IsApplicationList?: string;
-    ItemCount?: string;
-    LastDeleted?: string;
-    MajorVersionLimit?: string;
-    MajorWithMinorVersionsLimit?: string;
-    MaxItemsPerThrottledOperation?: string;
-    Modified?: string;
-    MultipleDataList?: string;
-    Name?: string;
-    NoThrottleListOperations?: string;
-    Ordered?: string;
-    PreserveEmptyValues?: string;
-    ReadSecurity?: string;
-    RequireCheckout?: string;
-    RootFolder?: string;
-    ScopeId?: string;
-    SendToLocation?: string;
-    ServerTemplate?: string;
-    ShowUser?: string;
-    StrictTypeCoercion?: string;
-    ThrottleListOperations?: string;
-    ThumbnailSize?: string;
-    Title?: string;
-    Version?: string;
-    WebFullUrl?: string;
-    WebId?: string;
-    WebImageHeight?: string;
-    WebImageWidth?: string;
-    WorkFlowId?: string;
-    WriteSecurity?: string;
-}
-
-/**
  * @ngdoc object
  * @name List
  * @description
@@ -105,35 +38,35 @@ export interface XMLList {
  * <pre>
  * [
  *   {
-         *       staticName: "Title",
-         *       objectType: "Text",
-         *       mappedName: "lastName",
-         *       readOnly:false
-         *   },
+ *       staticName: "Title",
+ *       objectType: "Text",
+ *       mappedName: "lastName",
+ *       readOnly:false
+ *   },
  *   {
-         *       staticName: "FirstName",
-         *       objectType: "Text",
-         *       mappedName: "firstName",
-         *       readOnly:false
-         *   },
+ *       staticName: "FirstName",
+ *       objectType: "Text",
+ *       mappedName: "firstName",
+ *       readOnly:false
+ *   },
  *   {
-         *       staticName: "Organization",
-         *       objectType: "Lookup",
-         *       mappedName: "organization",
-         *       readOnly:false
-         *   },
+ *       staticName: "Organization",
+ *       objectType: "Lookup",
+ *       mappedName: "organization",
+ *       readOnly:false
+ *   },
  *   {
-         *       staticName: "Account",
-         *       objectType: "User",
-         *       mappedName: "account",
-         *       readOnly:false
-         *   },
+ *       staticName: "Account",
+ *       objectType: "User",
+ *       mappedName: "account",
+ *       readOnly:false
+ *   },
  *   {
-         *       staticName: "Details",
-         *       objectType: "Text",
-         *       mappedName: "details",
-         *       readOnly:false
-         *   }
+ *       staticName: "Details",
+ *       objectType: "Text",
+ *       mappedName: "details",
+ *       readOnly:false
+ *   }
  * ]
  * </pre>
  * @property {string} viewFields XML string defining each of the fields to include in all CRUD requests,

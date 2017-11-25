@@ -3,6 +3,7 @@ import { IndexedCache } from '../factories/apIndexedCacheFactory';
 
 export * from './xml-field.interface';
 export * from './field-types.enum';
+export * from './xml-list.interface';
 
 export interface XMLGroup {
     Description: string;

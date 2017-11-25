@@ -3,7 +3,7 @@
     "description": "A library designed to allow Angular2 to work with SharePoint's SOAP API's.",
     "authors": ["Scott <angular-point@scotthatcher.com>"],
     "homepage": "https://github.com/scatcher/angular-point",
-    "version": "6.0.0",
+    "version": "6.0.1",
     "license": "MIT",
     "angular-cli": {},
     "scripts": {

@@ -37,7 +37,7 @@ import { WebServiceService } from './services/apWebServiceService';
 import { XMLToJSONService } from './services/apXMLToJSONService';
 import { List, ListFieldMapping } from './factories/apListFactory';
 import { LookupCacheService } from './services/apLookupCacheService';
-import { XMLUser, XMLGroup, XMLFieldDefinition } from './interfaces';
+import { FieldTypeEnum, XMLUser, XMLGroup, XMLFieldDefinition, XMLList } from './interfaces';
 
 export let $AP_INJECTOR: ng.auto.IInjectorService;
 
@@ -110,6 +110,7 @@ export {
     DataService,
     FieldConfigurationObject,
     FieldDefinition,
+    FieldTypeEnum,
     IndexedCache,
     IndexedCacheFactory,
     List,
@@ -129,6 +130,7 @@ export {
     VersionSummary,
     XMLFieldDefinition,
     XMLGroup,
+    XMLList,
     XMLToJSONService,
     XMLUser,
 };
