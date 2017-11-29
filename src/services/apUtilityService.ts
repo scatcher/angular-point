@@ -45,28 +45,28 @@ export class UtilityService {
      * @example
      * <pre>
      * function buildProjectSummary = function() {
-             *    var deferred = $q.defer();
-             *
-             *    // Taken from a fictitious projectsthis.js
-             *    projectModel.getAllListItems().then(function(entities) {
-             *      var summaryObject = {};
-             *      var extendProjectSummary = function(project) {
-             *          // Do some process intensive stuff here
-             *
-             *      };
-             *
-             *      // Now that we have all of our projects we want to iterate
-             *      // over each to create our summary object. The problem is
-             *      // this could easily cause the page to hang with a sufficient
-             *      // number of entities.
-             *      apUtilitythis.batchProcess(entities, extendProjectSummary, function() {
-             *          // Long running process is complete so resolve promise
-             *          deferred.resolve(summaryObject);
-             *      }, 25, 1000);
-             *    };
-             *
-             *    return deferred.promise;
-             * }
+     *    var deferred = $q.defer();
+     *
+     *    // Taken from a fictitious projectsthis.js
+     *    projectModel.getAllListItems().then(function(entities) {
+     *      var summaryObject = {};
+     *      var extendProjectSummary = function(project) {
+     *          // Do some process intensive stuff here
+     *
+     *      };
+     *
+     *      // Now that we have all of our projects we want to iterate
+     *      // over each to create our summary object. The problem is
+     *      // this could easily cause the page to hang with a sufficient
+     *      // number of entities.
+     *      apUtilitythis.batchProcess(entities, extendProjectSummary, function() {
+     *          // Long running process is complete so resolve promise
+     *          deferred.resolve(summaryObject);
+     *      }, 25, 1000);
+     *    };
+     *
+     *    return deferred.promise;
+     * }
      *
      * </pre>
      */
@@ -279,40 +279,40 @@ export class UtilityService {
      * for a site admin.
      * <pre>
      * perm = {
-             *    "ViewListItems":true,
-             *    "AddListItems":true,
-             *    "EditListItems":true,
-             *    "DeleteListItems":true,
-             *    "ApproveItems":true,
-             *    "OpenItems":true,
-             *    "ViewVersions":true,
-             *    "DeleteVersions":true,
-             *    "CancelCheckout":true,
-             *    "PersonalViews":true,
-             *    "ManageLists":true,
-             *    "ViewFormPages":true,
-             *    "Open":true,
-             *    "ViewPages":true,
-             *    "AddAndCustomizePages":true,
-             *    "ApplyThemeAndBorder":true,
-             *    "ApplyStyleSheets":true,
-             *    "ViewUsageData":true,
-             *    "CreateSSCSite":true,
-             *    "ManageSubwebs":true,
-             *    "CreateGroups":true,
-             *    "ManagePermissions":true,
-             *    "BrowseDirectories":true,
-             *    "BrowseUserInfo":true,
-             *    "AddDelPrivateWebParts":true,
-             *    "UpdatePersonalWebParts":true,
-             *    "ManageWeb":true,
-             *    "UseRemoteAPIs":true,
-             *    "ManageAlerts":true,
-             *    "CreateAlerts":true,
-             *    "EditMyUserInfo":true,
-             *    "EnumeratePermissions":true,
-             *    "FullMask":true
-             * }
+     *    "ViewListItems":true,
+     *    "AddListItems":true,
+     *    "EditListItems":true,
+     *    "DeleteListItems":true,
+     *    "ApproveItems":true,
+     *    "OpenItems":true,
+     *    "ViewVersions":true,
+     *    "DeleteVersions":true,
+     *    "CancelCheckout":true,
+     *    "PersonalViews":true,
+     *    "ManageLists":true,
+     *    "ViewFormPages":true,
+     *    "Open":true,
+     *    "ViewPages":true,
+     *    "AddAndCustomizePages":true,
+     *    "ApplyThemeAndBorder":true,
+     *    "ApplyStyleSheets":true,
+     *    "ViewUsageData":true,
+     *    "CreateSSCSite":true,
+     *    "ManageSubwebs":true,
+     *    "CreateGroups":true,
+     *    "ManagePermissions":true,
+     *    "BrowseDirectories":true,
+     *    "BrowseUserInfo":true,
+     *    "AddDelPrivateWebParts":true,
+     *    "UpdatePersonalWebParts":true,
+     *    "ManageWeb":true,
+     *    "UseRemoteAPIs":true,
+     *    "ManageAlerts":true,
+     *    "CreateAlerts":true,
+     *    "EditMyUserInfo":true,
+     *    "EnumeratePermissions":true,
+     *    "FullMask":true
+     * }
      * </pre>
      */
     resolvePermissions(permissionsMask): UserPermissionsObject {

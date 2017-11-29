@@ -3,86 +3,53 @@ import { ListItem } from '../factories/apListItemFactory';
 import { IndexedCache, IndexedCacheFactory } from '../factories/apIndexedCacheFactory';
 import { Model } from '../factories/apModelFactory';
 import { Query } from '../factories/apQueryFactory';
-import { isGuid } from './apUtilityService';
 
-// export interface ICacheService {
-//     deleteEntity(listId: string, entityId: number): void;
-//     getCachedEntities<T extends ListItem<any>>(listId: string): IndexedCache<T>;
-//     getCachedEntity<T extends ListItem<any>>(listId: string, entityId: number): T;
-//     getEntity<T extends ListItem<any>>(listId: string, entityId: number): ng.IPromise<T>;
-//     getListId(keyString: string): string;
-//     getListIdFromListName(name: string): string;
-//     getModel(listId: string): Model;
-//     getModelCache(listId: string): ModelCache;
-//     registerEntity<T extends ListItem<any>>(entity: T, targetCache?: IndexedCache<T>): T;
-//     registerModel(model: Model): void;
-//     removeEntityById(listId: string, entityId: number): void;
-// }
 let service: CacheService, $q: ng.IQService, $log: ng.ILogService, apIndexedCacheFactory: IndexedCacheFactory;
 
 /**
- * @description Stores list names when a new model is registered along with the GUID to allow us to
- *     retrieve the GUID in future
+ * @description Stores list GUID when a new model is registered with a reference to the model for
+ *     future reference.
  * @example
  * <pre>
- *     listNameToIdMap = {
-         *          list1Name: {
-         *              model: list1Model,
-         *              listId: list1GUID
-         *          },
-         *          list2Name: {
-         *              model: list2Model,
-         *              listId: list2GUID
-         *          }
-         *          ...
-         *     }
+ *     listsMappedByListId = {
+ *          list1GUID: {
+ *              model: list1Model
+ *          },
+ *          list2GUID: {
+ *              model: list2Model
+ *          }
+ *          ...
+ *     }
  * </pre>
  */
-let listNameToIdMap = {},
-    /**
-     * @description Stores list GUID when a new model is registered with a reference to the model for
-     *     future reference.
-     * @example
-     * <pre>
-     *     listsMappedByListId = {
-         *          list1GUID: {
-         *              model: list1Model
-         *          },
-         *          list2GUID: {
-         *              model: list2Model
-         *          }
-         *          ...
-         *     }
-     * </pre>
-     */
-    listsMappedByListId = {},
-    /**
-     * @description The Main cache object which stores ModelCache objects.  Keys being the model GUID and
-     *     value being an a ModelCache object
-     * @example
-     * <pre>
-     *     entityCache = {
-         *          list1GUID: {
-         *              item1ID: { //EnityCache for entity 1
-         *                  associationQueue: [],
-         *                  updateCount: 3,
-         *                  listId: list1GUID,
-         *                  entityId: item1ID,
-         *                  entityLocations: [],
-         *                  entity: {} //This is where the actual entity is referenced
-         *              }
-         *              item2ID: { //EnityCache for entity 2
-         *                  ...
-         *              }
-         *          },
-         *          list2GUID: {
-         *              item1ID: ...
-         *          }
-         *          ...
-         *     }
-     * </pre>
-     */
-    entityCache = {};
+const listsMappedByListId = {};
+/**
+ * @description The Main cache object which stores ModelCache objects.  Keys being the model GUID and
+ *     value being an a ModelCache object
+ * @example
+ * <pre>
+ *     entityCache = {
+ *          list1GUID: {
+ *              item1ID: { //EnityCache for entity 1
+ *                  associationQueue: [],
+ *                  updateCount: 3,
+ *                  listId: list1GUID,
+ *                  entityId: item1ID,
+ *                  entityLocations: [],
+ *                  entity: {} //This is where the actual entity is referenced
+ *              }
+ *              item2ID: { //EnityCache for entity 2
+ *                  ...
+ *              }
+ *          },
+ *          list2GUID: {
+ *              item1ID: ...
+ *          }
+ *          ...
+ *     }
+ * </pre>
+ */
+const entityCache = {};
 
 /**
  * @name EntityCache
@@ -97,12 +64,9 @@ export class EntityContainer {
     associationQueue = [];
     entity;
     entityLocations = [];
-    listId;
     updateCount = 0;
 
-    constructor(listId: string, private entityId: number) {
-        this.listId = service.getListId(listId);
-    }
+    constructor(private listId: string, private entityId: number) {}
 
     /**
      * @name EntityContainer.getEntity
@@ -110,7 +74,7 @@ export class EntityContainer {
      * Promise which returns the requested entity once it has been registered in the cache.
      */
     getEntity() {
-        let deferred = $q.defer();
+        const deferred = $q.defer();
         if (this.entity) {
             /** Entity already exists so resolve immediately */
             deferred.resolve(this.entity);
@@ -164,9 +128,8 @@ export class CacheService {
      * @param {number} entityId The entity.id.
      */
     deleteEntity(listId: string, entityId: number): void {
-        let entityTypeKey = this.getListId(listId);
-        this.removeEntityById(entityTypeKey, entityId);
-        let model = this.getModel(entityTypeKey);
+        this.removeEntityById(listId, entityId);
+        let model = this.getModel(listId);
         _.each(model.queries, (query: Query<any>) => {
             let cache = query.getCache();
             if (cache.has(entityId)) {
@@ -227,47 +190,10 @@ export class CacheService {
     }
 
     private getEntityContainer(listId: string, entityId: number): EntityContainer {
-        let entityTypeKey = this.getListId(listId);
-        let modelCache = this.getModelCache(entityTypeKey);
+        let modelCache = this.getModelCache(listId);
         /** Create the object structure if it doesn't already exist */
-        modelCache[entityId] = modelCache[entityId] || new EntityContainer(entityTypeKey, entityId);
+        modelCache[entityId] = modelCache[entityId] || new EntityContainer(listId, entityId);
         return modelCache[entityId];
-    }
-
-    /**
-     * @ngdoc function
-     * @name angularPoint.apCacheService:getListId
-     * @methodOf angularPoint.apCacheService
-     * @description
-     * Allows us to use either the List Name or the list GUID and returns the lowercase GUID
-     * @param {string} keyString List GUID or name.
-     * @returns {string} Lowercase list GUID.
-     */
-    getListId(keyString: string): string {
-        if (isGuid(keyString)) {
-            /** GUID */
-            return keyString.toLowerCase();
-        } else {
-            /** List Title */
-            return this.getListIdFromListName(keyString);
-        }
-    }
-
-    /**
-     * @ngdoc function
-     * @name angularPoint.apCacheService:getListIdFromListName
-     * @methodOf angularPoint.apCacheService
-     * @description
-     * Allows us to lookup an entity cache using the name of the list instead of the GUID.
-     * @param {string} name The name of the list.
-     * @returns {string} GUID for the list.
-     */
-    getListIdFromListName(name: string): string {
-        let guid;
-        if (listNameToIdMap[name] && listNameToIdMap[name].listId) {
-            guid = listNameToIdMap[name].listId;
-        }
-        return guid;
     }
 
     /**
@@ -280,20 +206,18 @@ export class CacheService {
      * @returns {object} A reference to the requested model.
      */
     getModel(listId: string): Model {
-        let model,
-            entityTypeKey = this.getListId(listId);
+        let model;
 
-        if (listsMappedByListId[entityTypeKey]) {
-            model = listsMappedByListId[entityTypeKey].model;
+        if (listsMappedByListId[listId]) {
+            model = listsMappedByListId[listId].model;
         }
         return model;
     }
 
     /** Locates the stored cache for a model */
     getModelCache(listId: string): ModelCache {
-        let entityTypeKey = this.getListId(listId);
-        entityCache[entityTypeKey] = entityCache[entityTypeKey] || new ModelCache();
-        return entityCache[entityTypeKey];
+        entityCache[listId] = entityCache[listId] || new ModelCache();
+        return entityCache[listId];
     }
 
     /**
@@ -348,13 +272,8 @@ export class CacheService {
      * @param {object} model Model to create the cache for.
      */
     registerModel(model: Model): void {
-        if (model.list && model.getListId() && model.list.title) {
-            let listId = model.getListId().toLowerCase();
-            /** Store a reference to the model by list title */
-            listNameToIdMap[model.list.title] = {
-                model: model,
-                listId: listId,
-            };
+        if (model.list && model.getListId()) {
+            let listId = model.getListId();
 
             /** Store a reference to the model by list guid */
             listsMappedByListId[listId] = {
