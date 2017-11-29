@@ -1,4 +1,4 @@
-#angular-point [![Build Status](https://travis-ci.org/scatcher/angular-point.png?branch=master)](https://travis-ci.org/scatcher/angular-point)
+#angular-point
 
 ##AngularJS + SharePoint = angular-point
 
