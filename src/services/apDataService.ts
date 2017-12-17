@@ -1,4 +1,5 @@
 import * as _ from 'lodash';
+import * as ng from 'angular';
 
 import { WebServiceOperationConstants as apWebServiceOperationConstants } from '../constants/apWebServiceOperationConstants';
 import { UtilityService } from './apUtilityService';
@@ -39,7 +40,6 @@ export class DataService {
         'apBasePermissionObject',
         'apLogger',
     ];
-    queryForCurrentSite: ng.IPromise<string>;
 
     constructor(
         private $http: ng.IHttpService,
@@ -69,26 +69,13 @@ export class DataService {
      * @ngdoc function
      * @name DataService.generateWebServiceUrl
      * @description
-     * Builds the appropriate SharePoint resource URL.  If a URL isn't provided and it hasn't already been cached
-     * we make a call to the server to find the root URL.  All future requests will then use this cached value.
-     * @param {string} service The name of the service the SOAP operation is using.
-     * @param {string} [webURL] Optionally provide the URL so we don't need to make a call to the server.
-     * @returns {promise} Resolves with the url for the service.
+     * Builds the appropriate SharePoint resource URL and handles both urls with and without ending slashes
+     * @param {string} [webURL] Optionally provide the URL.
+     * @returns {string} The url for the service.
      */
-    generateWebServiceUrl(service: string, webURL?: string) {
-        let ajaxURL = '_vti_bin/' + service + '.asmx',
-            deferred = this.$q.defer();
-
-        if (webURL) {
-            ajaxURL = webURL.charAt(webURL.length - 1) === '/' ? webURL + ajaxURL : webURL + '/' + ajaxURL;
-            deferred.resolve(ajaxURL);
-        } else {
-            this.getCurrentSite().then(thisSite => {
-                ajaxURL = thisSite + (thisSite.charAt(thisSite.length - 1) === '/' ? ajaxURL : '/' + ajaxURL);
-                deferred.resolve(ajaxURL);
-            });
-        }
-        return deferred.promise as ng.IPromise<string>;
+    generateWebServiceUrl(service: string, webURL = ENV.site) {
+        let ajaxURL = '_vti_bin/' + service + '.asmx';
+        return webURL.charAt(webURL.length - 1) === '/' ? webURL + ajaxURL : webURL + '/' + ajaxURL;
     }
 
     /**
@@ -222,51 +209,14 @@ export class DataService {
      * @ngdoc function
      * @name DataService.getCurrentSite
      * @description
-     * Requests and caches the root url for the current site.  It caches the response so any future calls receive
-     * the cached promise.
+     * Still here for backwards compatibility.  Previously fetched site from SharePoint.
+     * @deprecated
      * @returns {promise} Resolves with the current site root url.
      */
     getCurrentSite(): ng.IPromise<string> {
         let deferred = this.$q.defer();
-
-        if (!this.queryForCurrentSite) {
-            /** We only want to run this once so cache the promise the first time and just reference it in the future */
-            this.queryForCurrentSite = deferred.promise as ng.IPromise<string>;
-
-            let soapData =
-                this.SPServices.SOAPEnvelope.header +
-                `<WebUrlFromPageUrl xmlns="` +
-                this.SPServices.SCHEMASharePoint +
-                `/soap/" ><pageUrl>` +
-                (location.href.indexOf('?') > 0 ? location.href.substr(0, location.href.indexOf('?')) : location.href) +
-                '</pageUrl></WebUrlFromPageUrl>' +
-                this.SPServices.SOAPEnvelope.footer;
-
-            this.$http({
-                method: 'POST',
-                url: '/_vti_bin/Webs.asmx',
-                data: soapData,
-                responseType: 'document',
-                headers: {
-                    'Content-Type': 'text/xml;charset="utf-8"',
-                },
-            }).then(
-                response => {
-                    /** Success */
-                    let errorMsg = this.apDecodeService.checkResponseForErrors(<any>response.data);
-                    if (errorMsg) {
-                        this.errorHandler('Failed to get current site.  ' + errorMsg, deferred, soapData);
-                    }
-                    // environment.site = $(response.data).find("WebUrlFromPageUrlResult").text();
-                    deferred.resolve(ENV.site);
-                },
-                err => {
-                    /** Error */
-                    this.errorHandler('Failed to get current site.  ' + err, deferred, soapData);
-                },
-            );
-        }
-        return this.queryForCurrentSite;
+        deferred.resolve(ENV.site);
+        return deferred.promise as ng.IPromise<string>;
     }
 
     /**
@@ -435,7 +385,7 @@ export class DataService {
         query: Query<T>,
         responseXML: Element,
         cache: IndexedCache<T>,
-    ): void {
+    ) {
         if (!model.deferredListDefinition) {
             // Extend our local list definition and field definitions with XML
             this.apDecodeService.extendListMetadata(model, responseXML);
@@ -477,9 +427,9 @@ export class DataService {
      * @param {Element} responseXML XML response from the server.
      * @param {Object} cache Cached object of key value pairs.
      */
-    processDeletionsSinceToken(responseXML: Element, cache: IndexedCache<any>): void {
+    processDeletionsSinceToken(responseXML: Element, cache: IndexedCache<any>) {
         /** Remove any locally cached entities that were deleted from the server */
-        let filteredNodes = this.apXMLToJSONService.filterNodes(responseXML, 'Id');
+        const filteredNodes = this.apXMLToJSONService.filterNodes(responseXML, 'Id');
         _.each(filteredNodes, (node: Element) => {
             /** Check for the type of change */
             let changeType = $(node).attr('ChangeType');
@@ -502,52 +452,43 @@ export class DataService {
      * @returns {promise} Promise that resolves with the server response.
      */
     requestData(opts) {
-        let deferred = this.$q.defer();
-        let soapData = this.SPServices.generateXMLComponents(opts);
-        let service = apWebServiceOperationConstants[opts.operation][0];
+        const deferred = this.$q.defer();
+        const soapData = this.SPServices.generateXMLComponents(opts);
+        const service = apWebServiceOperationConstants[opts.operation][0];
 
-        this.generateWebServiceUrl(service, opts.webURL).then(url => {
-            this.$http
-                .post(url, soapData.msg, {
-                    responseType: 'text',
-                    // responseType: "document",
-                    headers: {
-                        'Content-Type': `text/xml;charset="utf-8"`,
-                        SOAPAction: () => (soapData.SOAPAction ? soapData.SOAPAction : null),
-                    },
-                    // transformResponse: (data, headersGetter) => {
-                    //     // if (_.isString(data)) {
-                    //     //     data = $.parseXML(data);
-                    //     // }
-                    //     return jQuery.parseXML(data);
-                    // }
-                })
-                .then(
-                    (response: any) => {
-                        const parser = new DOMParser();
-                        const responseXML = parser.parseFromString(response.data, 'text/xml');
+        const webServiceUrl = this.generateWebServiceUrl(service, opts.webURL);
+        this.$http
+            .post(webServiceUrl, soapData.msg, {
+                responseType: 'text',
+                headers: {
+                    'Content-Type': `text/xml;charset="utf-8"`,
+                    SOAPAction: () => (soapData.SOAPAction ? soapData.SOAPAction : null),
+                },
+            })
+            .then(
+                (response: any) => {
+                    const parser = new DOMParser();
+                    const responseXML = parser.parseFromString(response.data, 'text/xml');
 
-                        // Success Code
-                        // Errors can still be resolved without throwing an error so check the XML
-                        let errorMsg = this.apDecodeService.checkResponseForErrors(responseXML);
-                        // let errorMsg = apDecodeService.checkResponseForErrors(<any>response.data);
-                        if (errorMsg) {
-                            // Actuall error but returned with success resonse....thank you SharePoint
-                            this.errorHandler(errorMsg, deferred, soapData, response);
-                        } else {
-                            /** Real success */
-                            deferred.resolve(responseXML);
-                            // deferred.resolve(response.data);
-                        }
-                    },
-                    err => {
-                        // Failure
-                        this.errorHandler(err, deferred, soapData);
-                    },
-                );
-        });
+                    // Success Code
+                    // Errors can still be resolved without throwing an error so check the XML
+                    let errorMsg = this.apDecodeService.checkResponseForErrors(responseXML);
+                    // let errorMsg = apDecodeService.checkResponseForErrors(<any>response.data);
+                    if (errorMsg) {
+                        // Actual error but returned with success resonse....thank you SharePoint
+                        this.errorHandler(errorMsg, deferred, soapData, response);
+                    } else {
+                        /** Real success */
+                        deferred.resolve(responseXML);
+                    }
+                },
+                err => {
+                    // Failure
+                    this.errorHandler(err, deferred, soapData);
+                },
+            );
 
-        return deferred.promise as ng.IPromise<Element>;
+        return deferred.promise;
     }
 
     /**
@@ -558,7 +499,7 @@ export class DataService {
      * Note: this attribute is only found when using 'GetListItemChangesSinceToken'
      * @param {Element} responseXML XML response from the server.
      */
-    retrieveChangeToken(responseXML: Element): string {
+    retrieveChangeToken(responseXML: Element) {
         return $(responseXML)
             .find('Changes')
             .attr('LastChangeToken');
@@ -622,7 +563,7 @@ export class DataService {
      *      If options.filterNode is provided, returns XML parsed by node name
      *      Otherwise returns the server response
      */
-    serviceWrapper(options: ServiceWrapperOptions): ng.IPromise<any> {
+    serviceWrapper(options: ServiceWrapperOptions) {
         const defaults = {
             postProcess: (responseXML: Element) => {
                 if (options.filterNode) {
@@ -638,7 +579,6 @@ export class DataService {
         const opts: ServiceWrapperOptions = _.assign({}, defaults, options);
 
         /** Convert the xml returned from the server into an array of js objects */
-
         return this.requestData(opts).then(
             responseXML => {
                 /** Success */
@@ -678,27 +618,23 @@ export class DataService {
      *   })
      * </pre>
      */
-    startWorkflow(options: {
-        item: string;
-        templateId: string;
-        workflowParameters?: string;
-        fileRef?: string;
-    }): ng.IPromise<any> {
-        let defaults = {
+    startWorkflow(options: { item: string; templateId: string; workflowParameters?: string; fileRef?: string }) {
+        const defaults = {
             operation: 'StartWorkflow',
             item: '',
             fileRef: '',
             templateId: '',
             workflowParameters: '<root />',
         };
-        let opts: { item: string; fileRef: string } = _.assign({}, defaults, options);
+
+        const opts = _.assign({}, defaults, options);
 
         /** We have the relative file reference but we need to create the fully qualified reference */
         if (!opts.item && opts.fileRef) {
             opts.item = this.createItemUrlFromFileRef(opts.fileRef);
         }
 
-        return this.serviceWrapper(<any>opts);
+        return this.serviceWrapper(opts);
     }
 
     /**
@@ -707,7 +643,7 @@ export class DataService {
      * @param {object} opts Payload config.
      * @returns {boolean} Collection is valid.
      */
-    validateCollectionPayload(opts): boolean {
+    validateCollectionPayload(opts) {
         let validPayload = true;
         let verifyParams = params => {
             _.each(params, param => {
