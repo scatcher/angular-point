@@ -1,12 +1,12 @@
-#angular-point [![Build Status](https://travis-ci.org/scatcher/angular-point.png?branch=master)](https://travis-ci.org/scatcher/angular-point)
+# angular-point
 
-##AngularJS + SharePoint = angular-point
+## AngularJS + SharePoint = angular-point
 
 angular-point was created to make the client-side development story on the SharePoint more staightforward for JavaScript developers and reduce startup time for new projects.  We utilize SharePoint as the hosting provider, data store, and authentication mechanism but from there all application logic moves to the client's browser.  This approach can dramatically improve application performance as well as user perception of performance due to the fact that there is onle a single page load throughout the entire user session.  angular-point embraces the [Single-Page Application (SPA)](https://en.wikipedia.org/wiki/Single-page_application) approach and relies heavily on Google's [AngularJS](https://angularjs.org/) framework.
 
 This library is the core component in all angular-point based SharePoint/AngularJS SPA applications.
 
-##Highlights
+## Highlights
 
 * Each list is defined in single location [listName]Model.js and this model handles all caching of data and syncing 
 with SharePoint.
@@ -81,7 +81,7 @@ module app {
 
 ````
 
-##Background
+## Background
 This project evolved out of the necessity to create rich custom "apps" in a range of SharePoint environments (2007+) 
 without the ability to deploy server-side code.  For many years we built these applications using a combination of XSL 
 Templates and jQuery but the limited amount of code reuse and temperamental nature of SharePoint Designer "inspired" 
@@ -93,7 +93,7 @@ library.  Since that point, a lot has changed but much of the core transactional
 Over the past year this project has been converted from vanilla ES5 to TypeScript and the benefits of having strong 
 typing in all projects that use this library is pretty amazing.  
 
-##Getting Started
+## Getting Started
 (1) Install with bower
 ````cmd
 bower install angular-point
@@ -110,13 +110,13 @@ tsd link
 (5) Create your models which represents your lists or library (details below).
 
 
-##Examples
+## Examples
 
 A simple TodoMVC sample app can be found here at the [angular-point-todomvc](https://github.com/scatcher/angular-point-todomvc) repo.  It's a pretty simple tweak of the TypeScript & AngularJS TodoMVC project but it adds the necessary methods to connect to a real SharePoint Todo list and perform the normal CRUD events.  It also includes mock data so you can play with it locally without deployment to SharePoint.
 
 A much more complex example can be found here ( [angular-point-example](https://github.com/scatcher/angular-point-example)) although due to the amount of prorietary content that needed to be removed it might serve to be more confussing that helpful.  
 
-##Dependencies
+## Dependencies
 The only required library that angular-point depends on is [lodash](https://lodash.com/).  Optionally also include [angular-toastr](https://github.com/Foxandxss/angular-toastr) in your project if you'd like to utilize built in toasts.
 ````cmd
 bower install lodash --save
@@ -124,7 +124,7 @@ bower install angular-toastr --save
 ````
 Make sure these are loaded prior to angular-point.
 
-##Model
+## Model
 The model is where we define the list item constructor and the [list](http://scatcher.github.io/angular-point/#/api/List) itself.  It is extended
 using the core ap.Model class which provides all common model functionality.  More information can be found at the main
 [angular-point docs](http://scatcher.github.io/angular-point/#/api/angularPoint) site on the left side nav under "Model".
@@ -352,8 +352,8 @@ return inside of an [IndexedCache](http://scatcher.github.io/angular-point/#/api
 At this point the data source is ready to be used within the application.
 
 
-##Offline Development 
-#####(Made to work with [angular-point-tools](https://github.com/scatcher/angular-point-tools))
+## Offline Development 
+##### (Made to work with [angular-point-tools](https://github.com/scatcher/angular-point-tools))
 
 The offline development environment included with library attempts to utilize cached XML query responses from the 
 lists you're planning to use.  As a fallback, the offline environment attempts to generate mock XML responses 
@@ -368,7 +368,7 @@ in the app/index.html file so there is no need to manually create script/style r
 code will cause any necessary compilers (TypeScript/LESS) to run and the browser will automatically refresh.
 
 
-##Authentication
+## Authentication
 SharePoint handles authentication so in order to load the main application index.html file, the user has already 
 been authenticated by SharePoint.  At that point we know who the user is and can retrieve any other information at 
 that time.  We still use SharePoint groups to manage user permissions and there is a supporting 
@@ -379,7 +379,7 @@ permissions of the user so we can ensure only authorized data can be retrieved/m
 attempting the update information in the typical SharePoint environment.
 
 
-##Optional Modules
+## Optional Modules
 This is the core component of the angular-point project but there are a few optional modules:
 
 * [angular-point-attachments](https://github.com/scatcher/angular-point-attachments) Simple directive for angular-point that handles base64 encoding on file upload, deletion, and viewing of attachments.
@@ -393,7 +393,7 @@ This is the core component of the angular-point project but there are a few opti
 * [angular-point-tools](https://github.com/scatcher/angular-point-tools) Build tools shared by angular-point projects.
 
 
-##Angular 2
+## Angular 2
 At this point there is relatively little in this library that relies and Angular 1.  That being said, my experiences so far with 
 Angular 2 have been pretty bumpy so we'll need to see what the development story looks like as we get a little closer to
 a production ready release of NG2.
