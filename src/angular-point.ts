@@ -1,5 +1,4 @@
 import * as angular from 'angular';
-
 import { DefaultFields } from './constants/apDefaultFields';
 import { DefaultListItemQueryOptions } from './constants/apDefaultListItemQueryOptions';
 import { BasePermissionObject, UserPermissionsObject } from './constants/apPermissionObject';
@@ -7,19 +6,21 @@ import { WebServiceOperationConstants } from './constants/apWebServiceOperationC
 import { XMLFieldAttributeTypes } from './constants/apXMLFieldAttributeTypes';
 import { XMLListAttributeTypes } from './constants/apXMLListAttributeTypes';
 import { CamlFactory } from './factories/apCamlFactory';
-import { FieldFactory, FieldConfigurationObject, FieldDefinition } from './factories/apFieldFactory';
-import { IndexedCacheFactory, IndexedCache } from './factories/apIndexedCacheFactory';
-import { ListItemFactory, ListItem } from './factories/apListItemFactory';
-import { ModelFactory, Model, QueriesContainer } from './factories/apModelFactory';
+import { FieldConfigurationObject, FieldDefinition, FieldFactory } from './factories/apFieldFactory';
+import { IndexedCache, IndexedCacheFactory } from './factories/apIndexedCacheFactory';
+import { List } from './factories/apListFactory';
+import { ListItem, ListItemFactory } from './factories/apListItemFactory';
 import {
-    ListItemVersionFactory,
     ChangeSummary,
-    VersionSummary,
     ListItemVersion,
+    ListItemVersionFactory,
+    VersionSummary,
 } from './factories/apListItemVersionFactory';
-import { LookupFactory, Lookup } from './factories/apLookupFactory';
-import { QueryFactory, Query } from './factories/apQueryFactory';
-import { UserFactory, User } from './factories/apUserFactory';
+import { Lookup, LookupFactory } from './factories/apLookupFactory';
+import { Model, ModelFactory, QueriesContainer } from './factories/apModelFactory';
+import { Query, QueryFactory } from './factories/apQueryFactory';
+import { User, UserFactory } from './factories/apUserFactory';
+import { FieldTypeEnum, FieldTypeUnion, XMLFieldDefinition, XMLGroup, XMLList, XMLUser } from './interfaces';
 import { UserModel } from './models/apUserModel';
 import { CacheService } from './services/apCacheService';
 import { ChangeService } from './services/apChangeService';
@@ -30,14 +31,12 @@ import { exceptionLoggingService } from './services/apExceptionHandlerService';
 import { ExportService } from './services/apExportService';
 import { FieldService } from './services/apFieldService';
 import { FormattedFieldValueService } from './services/apFormattedFieldValueService';
+import { LogEvent, Logger } from './services/apLogger';
+import { LookupCacheService } from './services/apLookupCacheService';
 import { SPServicesCore } from './services/apSPServices';
-import { Logger, LogEvent } from './services/apLogger';
 import { UtilityService } from './services/apUtilityService';
 import { WebServiceService } from './services/apWebServiceService';
 import { XMLToJSONService } from './services/apXMLToJSONService';
-import { List, ListFieldMapping } from './factories/apListFactory';
-import { LookupCacheService } from './services/apLookupCacheService';
-import { FieldTypeEnum, XMLUser, XMLGroup, XMLFieldDefinition, XMLList } from './interfaces';
 
 export let $AP_INJECTOR: ng.auto.IInjectorService;
 
@@ -111,6 +110,7 @@ export {
     FieldConfigurationObject,
     FieldDefinition,
     FieldTypeEnum,
+    FieldTypeUnion,
     IndexedCache,
     IndexedCacheFactory,
     List,

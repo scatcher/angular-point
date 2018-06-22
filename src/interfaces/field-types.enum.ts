@@ -1,4 +1,5 @@
 export enum FieldTypeEnum {
+    Attachments = 'Attachments',
     Boolean = 'Boolean',
     Calculated = 'Calculated',
     Choice = 'Choice',
@@ -21,3 +22,25 @@ export enum FieldTypeEnum {
     Integer = 'Integer',
     Float = 'Float',
 }
+
+export type FieldTypeUnion =
+    | FieldTypeEnum.Attachments
+    | FieldTypeEnum.Boolean
+    | FieldTypeEnum.Calculated
+    | FieldTypeEnum.Choice
+    | FieldTypeEnum.Counter
+    | FieldTypeEnum.Currency
+    | FieldTypeEnum.DateTime
+    | FieldTypeEnum.Lookup
+    | FieldTypeEnum.LookupMulti
+    | FieldTypeEnum.Mask
+    | FieldTypeEnum.MultiChoice
+    | FieldTypeEnum.Note
+    | FieldTypeEnum.Number
+    | FieldTypeEnum.Text
+    | FieldTypeEnum.User
+    | FieldTypeEnum.UserMulti
+    | FieldTypeEnum.JSON
+    | FieldTypeEnum.HTML
+    | FieldTypeEnum.Integer
+    | FieldTypeEnum.Float;

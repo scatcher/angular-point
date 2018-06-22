@@ -1,9 +1,9 @@
 import * as _ from 'lodash';
+import { FieldTypeEnum, FieldTypeUnion, XMLFieldDefinition } from '../interfaces';
 import { FieldService } from '../services/apFieldService';
-import { UtilityService } from '../services/apUtilityService';
 import { FormattedFieldValueService } from '../services/apFormattedFieldValueService';
+import { UtilityService } from '../services/apUtilityService';
 import { ListItem } from './apListItemFactory';
-import { XMLFieldDefinition, FieldTypeEnum } from '../interfaces';
 
 let apFieldService: FieldService,
     apUtilityService: UtilityService,
@@ -17,7 +17,7 @@ export interface FieldConfigurationObject {
     label?: string;
     // JS property name that we use to store the value for this field.
     mappedName: string;
-    objectType: FieldTypeEnum;
+    objectType: FieldTypeUnion;
     readOnly?: boolean;
     required?: boolean;
     staticName: string;
