@@ -5,7 +5,7 @@
         "Scott <angular-point@scotthatcher.com>"
     ],
     "homepage": "https://github.com/scatcher/angular-point",
-    "version": "6.3.0",
+    "version": "6.4.0",
     "license": "MIT",
     "angular-cli": {},
     "scripts": {

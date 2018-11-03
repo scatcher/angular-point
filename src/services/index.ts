@@ -1,3 +1,4 @@
+export * from './apAtttachmentsService';
 export * from './apCacheService';
 export * from './apChangeService';
 export * from './apDataService';

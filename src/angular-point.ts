@@ -22,6 +22,7 @@ import { Query, QueryFactory } from './factories/apQueryFactory';
 import { User, UserFactory } from './factories/apUserFactory';
 import { FieldTypeEnum, FieldTypeUnion, XMLFieldDefinition, XMLGroup, XMLList, XMLUser } from './interfaces';
 import { UserModel } from './models/apUserModel';
+import { AttachmentService } from './services/apAttachmentsService';
 import { CacheService } from './services/apCacheService';
 import { ChangeService } from './services/apChangeService';
 import { DataService } from './services/apDataService';
@@ -72,6 +73,7 @@ export const AngularPointModule = angular
     // Models
     .service('apUserModel', UserModel)
     // Services
+    .service('apAttachmentsService', AttachmentService)
     .service('apCacheService', CacheService)
     .service('apChangeService', ChangeService)
     .service('apDataService', DataService)
@@ -105,6 +107,7 @@ export function registerEnvironment(env) {
 }
 
 export {
+    AttachmentService,
     ChangeSummary,
     DataService,
     FieldConfigurationObject,

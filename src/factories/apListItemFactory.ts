@@ -22,8 +22,10 @@ import { List } from './apListFactory';
 import { UserPermissionsObject } from '../constants/apPermissionObject';
 import { IWorkflowDefinition, IStartWorkflowParams } from '../interfaces/index';
 import { ENV } from '../angular-point';
+import { AttachmentService } from '../services/apAttachmentsService';
 
 let $q: ng.IQService,
+    apAttachmentsService: AttachmentService,
     apCacheService: CacheService,
     apDataService: DataService,
     apDecodeService: DecodeService,
@@ -81,10 +83,61 @@ export class ListItem<T extends ListItem<any>> implements IUninstantiatedExtende
     private postSaveAction: () => void;
 
     /**
+     * @description
+     * Upload an attachment for a given list item.
+     * @example
+     * <pre>
+     * const fileInput: HTMLInputElement = document.getElementById('ap-file');
+     * const file = fileInput.files[0];
+     * listItem.addAttachment(file);
+     * </pre>
+     */
+    addAttachment(file: File, filename?: string) {
+        let listItem = this;
+        let model = listItem.getModel();
+        let deferred = $q.defer();
+
+        /** Ensure file name contains no illegal characters */
+        if (!file || (!filename && !file.name)) {
+            deferred.reject(`A valid file is required to complete this action.`);
+        } else if (apAttachmentsService.checkFilename(filename || file.name)) {
+            deferred.reject(apAttachmentsService.checkFilename(filename || file.name));
+        } else {
+            apAttachmentsService.getFileBuffer(file).then(buffer => {
+                let binary = '';
+                const bytes = new Uint8Array(buffer);
+                let i = bytes.byteLength;
+                while (i--) {
+                    binary = String.fromCharCode(bytes[i]) + binary;
+                }
+
+                apDataService
+                    .serviceWrapper({
+                        operation: 'AddAttachment',
+                        listName: model.list.getListId(),
+                        listItemID: listItem.id,
+                        fileName: filename || file.name,
+                        attachment: btoa(binary),
+                    })
+                    .then(response => {
+                            /** Optionally broadcast change event */
+                            apUtilityService.registerChange(model, 'update', listItem.id);
+
+                            deferred.resolve(response);
+                        }, err => {
+                            deferred.reject(err);
+                        });
+            });
+        }
+
+        return deferred.promise;
+    }
+
+    /**
      * @ngdoc function
      * @name ListItem.changes
      * @description
-     * Checks a given list item compared to its pristine state and retuns a field change summary
+     * Checks a given list item compared to its pristine state and returns a field change summary
      * with information on any significant changes to non-readonly fields.
      * @returns {FieldChangeSummary<T>} Change summary of all fields that have been modified
      * since last save.
@@ -114,23 +167,33 @@ export class ListItem<T extends ListItem<any>> implements IUninstantiatedExtende
      * @example
      * <pre>
      * $scope.deleteAttachment = function (attachment) {
-         *     let confirmation = window.confirm("Are you sure you want to delete this file?");
-         *     if (confirmation) {
-         *         scope.listItem.deleteAttachment(attachment).then(function () {
-         *             alert("Attachment successfully deleted");
-         *         });
-         *     }
-         * };
+     *     let confirmation = window.confirm("Are you sure you want to delete this file?");
+     *     if (confirmation) {
+     *         scope.listItem.deleteAttachment(attachment).then(function () {
+     *             alert("Attachment successfully deleted");
+     *         });
+     *     }
+     * };
      * </pre>
      */
     deleteAttachment(url: string): ng.IPromise<any> {
-        return apDataService.serviceWrapper({
-            operation: 'DeleteAttachment',
-            filterNode: 'Field',
-            listItemID: this.id,
-            url,
-            listName: this.getListId(),
-        });
+        let listItem = this;
+        let model = listItem.getModel();
+
+        return apDataService
+            .serviceWrapper({
+                operation: 'DeleteAttachment',
+                filterNode: 'Field',
+                listItemID: this.id,
+                url,
+                listName: this.getListId(),
+            })
+            .then(response => {
+                /** Optionally broadcast change event */
+                apUtilityService.registerChange(model, 'update', listItem.id);
+
+                return response;
+            });
     }
 
     /**
@@ -218,11 +281,11 @@ export class ListItem<T extends ListItem<any>> implements IUninstantiatedExtende
      * <pre>
      * //Pull down all attachments for the current list item
      * let fetchAttachments = function (listItem) {
-         *     listItem.getAttachmentCollection()
-         *         .then(function (attachments) {
-         *             scope.attachments = attachments;
-         *         });
-         * };
+     *     listItem.getAttachmentCollection()
+     *         .then(function (attachments) {
+     *             scope.attachments = attachments;
+     *         });
+     * };
      * </pre>
      */
     getAttachmentCollection() {
@@ -276,9 +339,9 @@ export class ListItem<T extends ListItem<any>> implements IUninstantiatedExtende
      * <pre>
      * myGenericListItem.getChangeSummary(['title', 'project'])
      *     .then(function(changeSummary: ChangeSummary) {
-         *            // We now have an array of every version of these fields
-         *            $ctrl.changeSummary = changeSummary;
-         *      };
+     *            // We now have an array of every version of these fields
+     *            $ctrl.changeSummary = changeSummary;
+     *      };
      * </pre>
      */
     getChangeSummary(fieldNames?: string[]): ng.IPromise<ChangeSummary<T>> {
@@ -313,12 +376,12 @@ export class ListItem<T extends ListItem<any>> implements IUninstantiatedExtende
      * @example
      * <pre>
      * let project = {
-         *    title: 'Project 1',
-         *    location: {
-         *        lookupId: 5,
-         *        lookupValue: 'Some Building'
-         *    }
-         * };
+     *    title: 'Project 1',
+     *    location: {
+     *        lookupId: 5,
+     *        lookupValue: 'Some Building'
+     *    }
+     * };
      *
      * //To get field metadata
      * let locationDefinition = project.getFieldDefinition('location');
@@ -422,12 +485,12 @@ export class ListItem<T extends ListItem<any>> implements IUninstantiatedExtende
      * @example
      * <pre>
      * let project = {
-         *    title: 'Project 1',
-         *    location: {
-         *        lookupId: 5,
-         *        lookupValue: 'Some Building'
-         *    }
-         * };
+     *    title: 'Project 1',
+     *    location: {
+     *        lookupId: 5,
+     *        lookupValue: 'Some Building'
+     *    }
+     * };
      *
      * //To get the location listItem
      * let listItem = project.getLookupReference('location');
@@ -477,12 +540,12 @@ export class ListItem<T extends ListItem<any>> implements IUninstantiatedExtende
      * <pre>
      * myGenericListItem.getVersionHistory(['title', 'project'])
      *     .then(function(versionHistory) {
-         *            // We now have an array of every version of these fields
-         *            $ctrl.versionHistory = versionHistory;
-         *      })
+     *            // We now have an array of every version of these fields
+     *            $ctrl.versionHistory = versionHistory;
+     *      })
      *      .catch(function(err) {
-         *          // Do something with the error
-         *      });
+     *          // Do something with the error
+     *      });
      * </pre>
      */
     getVersionHistory(properties?: string[]): ng.IPromise<VersionHistoryCollection<T>> {
@@ -560,19 +623,19 @@ export class ListItem<T extends ListItem<any>> implements IUninstantiatedExtende
      * <pre>
      * //In example projectsService.ts
      *  export class Project extends ListItem<Project>{
-         *      title: string;
-         *      users: User[];
-         *      ...some other expected attributes
-         *      constructor(obj) {
-         *          super(obj);
-         *          _.assign(this, obj);
-         *      }
-         *  }
+     *      title: string;
+     *      users: User[];
+     *      ...some other expected attributes
+     *      constructor(obj) {
+     *          super(obj);
+     *          _.assign(this, obj);
+     *      }
+     *  }
      *
      *  let unregister = Project.prototype.registerPreDeleteAction(function() {
-         *      //Do some validation here and return true if user can delete
-         *      //otherwise return false to prevent delete action
-         *  });
+     *      //Do some validation here and return true if user can delete
+     *      //otherwise return false to prevent delete action
+     *  });
      *
      *  //At some point in the future if no longer necessary
      *  unregister();
@@ -599,19 +662,19 @@ export class ListItem<T extends ListItem<any>> implements IUninstantiatedExtende
      * <pre>
      * //In example projectsService.ts
      *  export class Project extends ListItem<Project>{
-         *      title: string;
-         *      users: User[];
-         *      ...some other expected attributes
-         *      constructor(obj) {
-         *          super(obj);
-         *          _.assign(this, obj);
-         *      }
-         *  }
+     *      title: string;
+     *      users: User[];
+     *      ...some other expected attributes
+     *      constructor(obj) {
+     *          super(obj);
+     *          _.assign(this, obj);
+     *      }
+     *  }
      *
      *  let unregister = Project.prototype.registerPreSaveAction(function() {
-         *      //Do some validation here and return true if user can save
-         *      //otherwise return false to prevent save action
-         *  });
+     *      //Do some validation here and return true if user can save
+     *      //otherwise return false to prevent save action
+     *  });
      *
      *  //At some point in the future if no longer necessary
      *  unregister();
@@ -638,19 +701,19 @@ export class ListItem<T extends ListItem<any>> implements IUninstantiatedExtende
      * <pre>
      * //In example projectsService.ts
      *  export class Project extends ListItem<Project>{
-         *      title: string;
-         *      users: User[];
-         *      ...some other expected attributes
-         *      constructor(obj) {
-         *          super(obj);
-         *          _.assign(this, obj);
-         *      }
-         *  }
+     *      title: string;
+     *      users: User[];
+     *      ...some other expected attributes
+     *      constructor(obj) {
+     *          super(obj);
+     *          _.assign(this, obj);
+     *      }
+     *  }
      *
      *  let unregister = Project.prototype.registerPostSaveAction(function() {
-         *      //Use this method to perform any cleanup after save event
-         *      //for any list item of this type
-         *  });
+     *      //Use this method to perform any cleanup after save event
+     *      //for any list item of this type
+     *  });
      *
      *  //At some point in the future if no longer necessary
      *  unregister();
@@ -673,48 +736,48 @@ export class ListItem<T extends ListItem<any>> implements IUninstantiatedExtende
      * Lets assume we're checking to see if a user has edit rights for a given task list item.
      * <pre>
      * let canUserEdit = function(task) {
-         *      let userPermissions = task.resolvePermissions();
-         *      return userPermissions.EditListItems;
-         * };
+     *      let userPermissions = task.resolvePermissions();
+     *      return userPermissions.EditListItems;
+     * };
      * </pre>
      * Example of what the returned object would look like
      * for a site admin.
      * <pre>
      * userPermissions = {
-         *    "ViewListItems": true,
-         *    "AddListItems": true,
-         *    "EditListItems": true,
-         *    "DeleteListItems": true,
-         *    "ApproveItems": true,
-         *    "OpenItems": true,
-         *    "ViewVersions": true,
-         *    "DeleteVersions": true,
-         *    "CancelCheckout": true,
-         *    "PersonalViews": true,
-         *    "ManageLists": true,
-         *    "ViewFormPages": true,
-         *    "Open": true,
-         *    "ViewPages": true,
-         *    "AddAndCustomizePages": true,
-         *    "ApplyThemeAndBorder": true,
-         *    "ApplyStyleSheets": true,
-         *    "ViewUsageData": true,
-         *    "CreateSSCSite": true,
-         *    "ManageSubwebs": true,
-         *    "CreateGroups": true,
-         *    "ManagePermissions": true,
-         *    "BrowseDirectories": true,
-         *    "BrowseUserInfo": true,
-         *    "AddDelPrivateWebParts": true,
-         *    "UpdatePersonalWebParts": true,
-         *    "ManageWeb": true,
-         *    "UseRemoteAPIs": true,
-         *    "ManageAlerts": true,
-         *    "CreateAlerts": true,
-         *    "EditMyUserInfo": true,
-         *    "EnumeratePermissions": true,
-         *    "FullMask": true
-         * }
+     *    "ViewListItems": true,
+     *    "AddListItems": true,
+     *    "EditListItems": true,
+     *    "DeleteListItems": true,
+     *    "ApproveItems": true,
+     *    "OpenItems": true,
+     *    "ViewVersions": true,
+     *    "DeleteVersions": true,
+     *    "CancelCheckout": true,
+     *    "PersonalViews": true,
+     *    "ManageLists": true,
+     *    "ViewFormPages": true,
+     *    "Open": true,
+     *    "ViewPages": true,
+     *    "AddAndCustomizePages": true,
+     *    "ApplyThemeAndBorder": true,
+     *    "ApplyStyleSheets": true,
+     *    "ViewUsageData": true,
+     *    "CreateSSCSite": true,
+     *    "ManageSubwebs": true,
+     *    "CreateGroups": true,
+     *    "ManagePermissions": true,
+     *    "BrowseDirectories": true,
+     *    "BrowseUserInfo": true,
+     *    "AddDelPrivateWebParts": true,
+     *    "UpdatePersonalWebParts": true,
+     *    "ManageWeb": true,
+     *    "UseRemoteAPIs": true,
+     *    "ManageAlerts": true,
+     *    "CreateAlerts": true,
+     *    "EditMyUserInfo": true,
+     *    "EnumeratePermissions": true,
+     *    "FullMask": true
+     * }
      * </pre>
      */
     resolvePermissions(): UserPermissionsObject {
@@ -736,24 +799,22 @@ export class ListItem<T extends ListItem<any>> implements IUninstantiatedExtende
      * // Example of save function on a fictitious
      * // app/modules/tasks/TaskDetailsCtrl.js modal form.
      * $scope.saveChanges = function(task) {
-         *      task.saveChanges().then(function() {
-         *          // Successfully saved so we can do something
-         *          // like close form
-         *
-         *          }, function() {
-         *          // Failure
-         *
-         *          });
-         * }
+     *      task.saveChanges().then(function() {
+     *          // Successfully saved so we can do something
+     *          // like close form
+     *
+     *          }, function() {
+     *          // Failure
+     *
+     *          });
+     * }
      * </pre>
      */
-    saveChanges(
-        {
-            target = this.getCache ? this.getCache() : new IndexedCache<T>(),
-            valuePairs = undefined,
-            buildValuePairs = true,
-        } = {},
-    ): ng.IPromise<T> {
+    saveChanges({
+        target = this.getCache ? this.getCache() : new IndexedCache<T>(),
+        valuePairs = undefined,
+        buildValuePairs = true,
+    } = {}): ng.IPromise<T> {
         let listItem = this;
         let model = listItem.getModel();
         let deferred = $q.defer();
@@ -827,17 +888,17 @@ export class ListItem<T extends ListItem<any>> implements IUninstantiatedExtende
      * // Similar to saveChanges but instead we only save
      * // specified fields instead of pushing everything.
      * $scope.updateStatus = function(task) {
-         *      task.saveFields(['status', 'notes'])
-         *          .then(function(updatedListItem) {
-         *              // Successfully updated the status and
-         *              // notes fields for the given task
-         *
-         *          })
-         *          .catch(function(err) {
-         *              // Failure to update the field
-         *
-         *          });
-         * }
+     *      task.saveFields(['status', 'notes'])
+     *          .then(function(updatedListItem) {
+     *              // Successfully updated the status and
+     *              // notes fields for the given task
+     *
+     *          })
+     *          .catch(function(err) {
+     *              // Failure to update the field
+     *
+     *          });
+     * }
      * </pre>
      */
     saveFields(
@@ -925,10 +986,9 @@ export class ListItem<T extends ListItem<any>> implements IUninstantiatedExtende
                 let targetWorklow = _.find(workflows, { name: options.workflowName });
                 if (!targetWorklow) {
                     throw new Error(
-                        `A workflow with the name ${options.workflowName} wasn't found.  The workflows available are [${_.map(
-                            workflows,
-                            'name',
-                        ).toString()}].`,
+                        `A workflow with the name ${
+                            options.workflowName
+                        } wasn't found.  The workflows available are [${_.map(workflows, 'name').toString()}].`,
                     );
                 }
                 /** Create an extended set of options to pass any overrides to apDataService */
@@ -985,6 +1045,7 @@ export class ListItemFactory {
     // tslint:disable-next-line:member-ordering
     static $inject = [
         '$q',
+        'apAttachmentsService',
         'apCacheService',
         'apChangeService',
         'apDataService',
@@ -996,6 +1057,7 @@ export class ListItemFactory {
 
     constructor(
         _$q_,
+        _apAttachmentsService_,
         _apCacheService_,
         _apChangeService_,
         _apDataService_,
@@ -1005,6 +1067,7 @@ export class ListItemFactory {
         _apListItemVersionFactory_,
     ) {
         $q = _$q_;
+        apAttachmentsService = _apAttachmentsService_;
         apCacheService = _apCacheService_;
         apChangeService = _apChangeService_;
         apDataService = _apDataService_;
