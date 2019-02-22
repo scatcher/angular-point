@@ -1,6 +1,7 @@
 import * as _ from 'lodash';
 // Split values like 1;#value into id and value
 import { UserPermissionsObject } from '../constants/apPermissionObject';
+import { ListItemChangeType } from '../enums';
 
 export class SplitIndex {
     id: number;
@@ -247,7 +248,7 @@ export class UtilityService {
      * //Todo Break this functionality into FireBase module that can be used if desired.
      * @param {object} model event
      */
-    registerChange(model, changeType: string, listItemId: number) {
+    registerChange(model, changeType: ListItemChangeType, listItemId: number) {
         /** Disabled this functionality until I can spend the necessary time to test */
         if (model.sync && _.isFunction(model.sync.registerChange)) {
             /** Register change after successful update */

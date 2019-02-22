@@ -1,17 +1,18 @@
 import * as _ from 'lodash';
+import { ENV } from '../angular-point';
+import { BasePermissionObject, UserPermissionsObject } from '../constants/apPermissionObject';
+import { ListItemChangeType } from '../enums';
 import { CacheService } from '../services/apCacheService';
 import { DataService } from '../services/apDataService';
-import { ListFactory, UninstantiatedList, List } from './apListFactory';
-import { QueryFactory, Query, IQueryOptions } from './apQueryFactory';
-import { UtilityService } from '../services/apUtilityService';
-import { FieldService } from '../services/apFieldService';
-import { IndexedCacheFactory, IndexedCache } from './apIndexedCacheFactory';
 import { DecodeService } from '../services/apDecodeService';
 import { EncodeService } from '../services/apEncodeService';
-import { ListItem } from './apListItemFactory';
+import { FieldService } from '../services/apFieldService';
+import { UtilityService } from '../services/apUtilityService';
 import { FieldDefinition } from './apFieldFactory';
-import { UserPermissionsObject, BasePermissionObject } from '../constants/apPermissionObject';
-import { ENV } from '../angular-point';
+import { IndexedCache, IndexedCacheFactory } from './apIndexedCacheFactory';
+import { List, ListFactory, UninstantiatedList } from './apListFactory';
+import { ListItem } from './apListItemFactory';
+import { IQueryOptions, Query, QueryFactory } from './apQueryFactory';
 
 let apCacheService: CacheService,
     apDataService: DataService,
@@ -271,7 +272,7 @@ export class Model {
                 let newListItem = iCache.last();
 
                 /** Optionally broadcast change event */
-                apUtilityService.registerChange(this, 'create', newListItem.id);
+                apUtilityService.registerChange(this, ListItemChangeType.Create, newListItem.id);
 
                 /** Return reference to last listItem in cache because it will have the new highest id */
                 return newListItem as ListItem<T>;

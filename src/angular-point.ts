@@ -5,6 +5,7 @@ import { BasePermissionObject, UserPermissionsObject } from './constants/apPermi
 import { WebServiceOperationConstants } from './constants/apWebServiceOperationConstants';
 import { XMLFieldAttributeTypes } from './constants/apXMLFieldAttributeTypes';
 import { XMLListAttributeTypes } from './constants/apXMLListAttributeTypes';
+import { ListItemChangeType } from './enums';
 import { CamlFactory } from './factories/apCamlFactory';
 import { FieldConfigurationObject, FieldDefinition, FieldFactory } from './factories/apFieldFactory';
 import { IndexedCache, IndexedCacheFactory } from './factories/apIndexedCacheFactory';
@@ -118,6 +119,7 @@ export {
     IndexedCacheFactory,
     List,
     ListItem,
+    ListItemChangeType,
     ListItemVersion,
     LogEvent,
     Logger,

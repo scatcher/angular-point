@@ -1,28 +1,23 @@
 import * as _ from 'lodash';
+import { ENV } from '../angular-point';
+import { UserPermissionsObject } from '../constants/apPermissionObject';
+import { ListItemChangeType } from '../enums';
+import { IStartWorkflowParams, IWorkflowDefinition } from '../interfaces/index';
+import { AttachmentService } from '../services/apAttachmentsService';
 import { CacheService } from '../services/apCacheService';
+import { ChangeService } from '../services/apChangeService';
 import { DataService } from '../services/apDataService';
 import { DecodeService } from '../services/apDecodeService';
 import { EncodeService } from '../services/apEncodeService';
 import { UtilityService } from '../services/apUtilityService';
-import {
-    ListItemVersionFactory,
-    FieldChangeSummary,
-    ChangeSummary,
-    VersionHistoryCollection,
-    FieldVersionCollection,
-} from './apListItemVersionFactory';
-import { ChangeService } from '../services/apChangeService';
-import { User } from './apUserFactory';
-import { Lookup } from './apLookupFactory';
-import { IndexedCache } from './apIndexedCacheFactory';
-import { Query } from './apQueryFactory';
-import { Model, IModelFactory } from './apModelFactory';
 import { FieldDefinition } from './apFieldFactory';
+import { IndexedCache } from './apIndexedCacheFactory';
 import { List } from './apListFactory';
-import { UserPermissionsObject } from '../constants/apPermissionObject';
-import { IWorkflowDefinition, IStartWorkflowParams } from '../interfaces/index';
-import { ENV } from '../angular-point';
-import { AttachmentService } from '../services/apAttachmentsService';
+import { ChangeSummary, FieldChangeSummary, FieldVersionCollection, ListItemVersionFactory, VersionHistoryCollection } from './apListItemVersionFactory';
+import { Lookup } from './apLookupFactory';
+import { IModelFactory, Model } from './apModelFactory';
+import { Query } from './apQueryFactory';
+import { User } from './apUserFactory';
 
 let $q: ng.IQService,
     apAttachmentsService: AttachmentService,
@@ -121,7 +116,7 @@ export class ListItem<T extends ListItem<any>> implements IUninstantiatedExtende
                     })
                     .then(response => {
                             /** Optionally broadcast change event */
-                            apUtilityService.registerChange(model, 'update', listItem.id);
+                            apUtilityService.registerChange(model, ListItemChangeType.Update, listItem.id);
 
                             deferred.resolve(response);
                         }, err => {
@@ -190,7 +185,7 @@ export class ListItem<T extends ListItem<any>> implements IUninstantiatedExtende
             })
             .then(response => {
                 /** Optionally broadcast change event */
-                apUtilityService.registerChange(model, 'update', listItem.id);
+                apUtilityService.registerChange(model, ListItemChangeType.Update, listItem.id);
 
                 return response;
             });
@@ -247,7 +242,7 @@ export class ListItem<T extends ListItem<any>> implements IUninstantiatedExtende
             apDataService.serviceWrapper(config).then(
                 response => {
                     /** Optionally broadcast change event */
-                    apUtilityService.registerChange(model, 'delete', listItem.id);
+                    apUtilityService.registerChange(model, ListItemChangeType.Delete, listItem.id);
 
                     /** Success */
                     apCacheService.deleteEntity(config.listName, listItem.id);
@@ -855,7 +850,7 @@ export class ListItem<T extends ListItem<any>> implements IUninstantiatedExtende
                 let updatedListItem = indexedCache.get(listItem.id);
 
                 /** Optionally broadcast change event */
-                apUtilityService.registerChange(model, 'update', updatedListItem.id);
+                apUtilityService.registerChange(model, ListItemChangeType.Update, updatedListItem.id);
 
                 // Optionally perform any post save cleanup if registered
                 if (_.isFunction(listItem.postSaveAction)) {
