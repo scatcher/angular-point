@@ -208,7 +208,7 @@ export class VersionHistoryCollection<T extends ListItem<any>> {
     // getFactory: () => IModelFactory;
     constructor(fieldVersionCollections: FieldVersionCollection[], factory: IModelFactory) {
         /** Iterate through each of the field version collections */
-        _.each(fieldVersionCollections, fieldVersionCollection => {
+        _.each(fieldVersionCollections, (fieldVersionCollection) => {
             this.addFieldCollection(fieldVersionCollection, factory);
         });
     }
@@ -217,16 +217,16 @@ export class VersionHistoryCollection<T extends ListItem<any>> {
         /** Iterate through each version of this field */
         _.each(fieldVersionCollection.versions, (fieldVersion: FieldVersion, versionNumberAsString: string) => {
             /** Create a new version object if it doesn't already exist */
-            this[versionNumberAsString] =
-                this[versionNumberAsString] ||
+            this[fieldVersion.modified.toUTCString()] =
+                this[fieldVersion.modified.toUTCString()] ||
                 new factory<T>({
                     editor: fieldVersion.editor,
                     modified: fieldVersion.modified,
                     /** Iterating over object properties which converts everything to string so convert back */
-                    version: parseInt(versionNumberAsString, 10),
+                    version: Number(versionNumberAsString),
                 });
             /** Add field to the version history for this version with computed property name */
-            this[versionNumberAsString][fieldVersionCollection.mappedName] = fieldVersion.value;
+            this[fieldVersion.modified.toUTCString()][fieldVersionCollection.mappedName] = fieldVersion.value;
         });
     }
 
