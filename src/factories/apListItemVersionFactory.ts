@@ -127,6 +127,24 @@ export class FieldChangeSummary<T extends ListItem<any>> {
                 }
             }
         });
+
+        _.each(previousVersion, (val, propertyName: string) => {
+            const fieldDefinition = previousVersion.getFieldDefinition(propertyName);
+            /** Only log non-readonly fields that aren't the same */
+            if (
+                this.fieldsChanged[propertyName] === undefined && //only check for changes not already identified
+                fieldDefinition &&
+                !fieldDefinition.readOnly &&
+                JSON.stringify(previousVersion[propertyName]) !== JSON.stringify(newerVersion[propertyName])
+            ) {
+                let fieldChange = new FieldChange(propertyName, fieldDefinition, newerVersion, previousVersion);
+                if (fieldChange.newValue !== fieldChange.oldValue) {
+                    /** This field has changed */
+                    this.fieldsChanged[propertyName] = fieldChange;
+                }
+            }
+        });
+
         this.changeCount = _.keys(this.fieldsChanged).length;
     }
 
