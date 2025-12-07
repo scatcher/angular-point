@@ -371,8 +371,10 @@ export class DecodeService {
         if (str.length === 0) {
             return null;
         } else {
-            // Send to constructor
-            return this.apLookupFactory.create(str, options);
+            const lookup = this.apLookupFactory.create(str, options);
+            // Return null for orphaned lookups (deleted referenced items)
+            // Orphaned lookups have an ID but empty lookupValue (e.g., "18611;#")
+            return lookup.lookupValue ? lookup : null;
         }
     }
 
@@ -386,7 +388,10 @@ export class DecodeService {
                 /** Ensure a lookup id is present before attempting to push a new lookup */
                 if (thisLookupMulti[i]) {
                     let thisLookup = this.jsLookup(thisLookupMulti[i] + ';#' + thisLookupMulti[i + 1], options);
-                    thisLookupMultiObject.push(thisLookup);
+                    // Only include valid lookups (jsLookup returns null for orphaned)
+                    if (thisLookup) {
+                        thisLookupMultiObject.push(thisLookup);
+                    }
                 }
             }
             return thisLookupMultiObject;
